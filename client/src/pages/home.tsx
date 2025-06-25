@@ -37,6 +37,17 @@ export default function Home() {
       
       const data = await response.json();
       console.log('Fetched articles:', data); // Debug log
+      
+      // Sort articles by priority when in 'all' (trending) category
+      if (selectedCategory === 'all') {
+        return data.sort((a: Article, b: Article) => {
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+          return bPriority - aPriority; // High priority first
+        });
+      }
+      
       return data;
     },
   });

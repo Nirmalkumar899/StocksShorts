@@ -59,13 +59,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       {/* Content Overlay - Larger area for full content */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-black/20 p-4 text-white min-h-[55%] flex flex-col justify-end">
         <div className="flex items-center justify-between mb-2 flex-shrink-0">
-          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-            article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/30 text-green-300' :
-            article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/30 text-red-300' :
-            'bg-gray-500/30 text-gray-300'
-          }`}>
-            {article.type.toUpperCase()}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-500/30 text-blue-300">
+              {article.type.toUpperCase()}
+            </span>
+            {/* Sentiment color indicator without text */}
+            <div className={`w-3 h-3 rounded-full ${
+              article.sentiment.toLowerCase() === 'positive' ? 'bg-green-400' :
+              article.sentiment.toLowerCase() === 'negative' ? 'bg-red-400' :
+              'bg-gray-400'
+            }`}></div>
+          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -92,18 +96,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <span className="font-medium truncate max-w-[150px]">{article.source}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/30 text-green-300' :
-                article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/30 text-red-300' :
-                'bg-gray-500/30 text-gray-300'
-              }`}>
-                {article.sentiment}
-              </span>
-              {article.priority && (
-                <span className="text-white/60 text-xs">
-                  {article.priority}
-                </span>
-              )}
+              {/* Small sentiment color indicator */}
+              <div className={`w-2 h-2 rounded-full ${
+                article.sentiment.toLowerCase() === 'positive' ? 'bg-green-400' :
+                article.sentiment.toLowerCase() === 'negative' ? 'bg-red-400' :
+                'bg-gray-400'
+              }`}></div>
             </div>
           </div>
         </div>
