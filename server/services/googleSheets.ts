@@ -24,6 +24,11 @@ export class GoogleSheetsService {
     // If Google Sheets credentials are not configured, return sample data
     if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
       console.log('Google Sheets credentials not configured, using sample data');
+      console.log('Missing credentials:', {
+        email: !!process.env.GOOGLE_CLIENT_EMAIL,
+        key: !!process.env.GOOGLE_PRIVATE_KEY,
+        sheetId: !!process.env.GOOGLE_SHEETS_ID
+      });
       return sampleArticles;
     }
 
