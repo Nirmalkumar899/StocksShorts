@@ -4,26 +4,26 @@ import type { Article } from "@shared/schema";
 export const sampleArticles: Article[] = [
   {
     id: 1,
-    title: "Nifty 50 Hits All-Time High Amid Strong FII Inflows",
-    content: "The benchmark Nifty 50 index surged to a new record high of 25,445 points today, driven by robust foreign institutional investor inflows and positive global cues. Banking and IT stocks led the rally.",
-    type: "Index",
+    title: "Nifty jumps 200 pts on June 25 amid ceasefire relief",
+    content: "Nifty 50 surged 200.40 pts to close at 25,244.75 on June 25, 2025, buoyed by global optimism after tentative Israel-Iran ceasefire. IT, auto, and media stocks rallied. Volume fell to 260.6 mn vs 450.2 mn on June 24, showing quiet strength. Broader market gains in midcaps and metals also supported sentiment.",
+    type: "Trending",
     time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    source: "Economic Times",
+    source: "Economic Times, NSE, ET Now",
     sentiment: "Positive",
     priority: "High",
-    imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
+    imageUrl: null,
     createdAt: new Date(),
   },
   {
     id: 2,
-    title: "New IPO Alert: Tech Startup Files for ₹500 Crore Public Issue",
-    content: "A leading fintech startup has filed draft papers with SEBI for an initial public offering worth ₹500 crores. The company plans to use the proceeds for technology upgrades and market expansion.",
-    type: "IPO",
-    time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    source: "Business Standard",
-    sentiment: "Positive",
-    priority: "Medium",
-    imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=400&fit=crop",
+    title: "High-wave Doji signals indecision despite rally",
+    content: "Nifty formed a High-Wave Doji on June 25, 2025, settling 25,244.75 (+200 pts). Despite strong gains from ceasefire optimism, lack of sustainable breakout near 25,300 suggests short-term consolidation likely before fresh upmove.",
+    type: "Trending",
+    time: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+    source: "LiveMint",
+    sentiment: "Neutral",
+    priority: "High",
+    imageUrl: null,
     createdAt: new Date(),
   },
   {
@@ -32,7 +32,7 @@ export const sampleArticles: Article[] = [
     content: "Stock market volatility can be intimidating for new investors. Learn the key factors that drive market movements, how to analyze price fluctuations, and strategies to manage risk in your investment portfolio effectively.",
     type: "Educational",
     time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-    source: "StockShorts Academy",
+    source: "StocksShorts Academy",
     sentiment: "Neutral",
     priority: "Medium",
     imageUrl: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=400&fit=crop",
@@ -56,7 +56,7 @@ export const sampleArticles: Article[] = [
     content: "ABC Industries has broken above its 200-day moving average with strong volumes, signaling a potential bullish breakout. The stock has formed a cup and handle pattern over the past three months, indicating further upside potential.",
     type: "Breakout Stocks",
     time: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 hours ago
-    source: "StockShorts Analysis",
+    source: "StocksShorts Analysis",
     sentiment: "Positive",
     priority: "High",
     imageUrl: "https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=400&fit=crop",

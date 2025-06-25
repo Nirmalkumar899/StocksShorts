@@ -24,12 +24,12 @@ export class GoogleSheetsService {
     // If Google Sheets credentials are not configured, return sample data
     if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
       console.log('Google Sheets credentials not configured, using sample data');
-      console.log('Missing credentials:', {
-        email: !!process.env.GOOGLE_CLIENT_EMAIL,
-        key: !!process.env.GOOGLE_PRIVATE_KEY,
-        sheetId: !!process.env.GOOGLE_SHEETS_ID
-      });
-      return sampleArticles;
+      // Return fresh sample data with updated timestamps
+      return sampleArticles.map(article => ({
+        ...article,
+        createdAt: new Date(),
+        time: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000) // Random time within last 24 hours
+      }));
     }
 
     try {

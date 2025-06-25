@@ -23,20 +23,31 @@ export default function Home() {
     error,
     refetch
   } = useQuery<Article[]>({
-    queryKey: ['/api/articles', selectedCategory],
+    queryKey: ['/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
     queryFn: async () => {
-      const url = selectedCategory !== 'all' ? `/api/articles?category=${selectedCategory}` : '/api/articles';
+      let url = '/api/articles';
+      if (selectedCategory !== 'all') {
+        url = `/api/articles?category=${selectedCategory}`;
+      }
+      
       const response = await fetch(url, {
         credentials: 'include',
       });
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Fetch error:', errorText);
         throw new Error(errorText || 'Failed to fetch articles');
       }
       
       const data = await response.json();
-      console.log('Fetched articles:', data); // Debug log
+      console.log('Fetched articles:', data);
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        console.error('Expected array but got:', typeof data, data);
+        return [];
+      }
       
       // Sort articles by priority when in 'all' (trending) category
       if (selectedCategory === 'all') {
@@ -50,6 +61,8 @@ export default function Home() {
       
       return data;
     },
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Refresh articles mutation
