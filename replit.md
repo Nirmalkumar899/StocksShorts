@@ -40,13 +40,23 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 ### API Endpoints
 - `GET /api/articles` - Fetch all articles or filter by category
 - `GET /api/articles/:id` - Get specific article by ID
+- `GET /api/articles/:id/related` - Get related articles for a specific article
 - `POST /api/articles/refresh` - Force refresh from Google Sheets
+- `GET /api/auth/user` - Get authenticated user info
+- `GET /api/login` - Start Google OAuth login flow
+- `GET /api/logout` - Sign out user
+- `POST /api/articles/:id/save` - Save article (requires auth)
+- `DELETE /api/articles/:id/save` - Unsave article (requires auth)
+- `GET /api/saved-articles` - Get user's saved articles (requires auth)
 
 ### UI Components
 - **Header**: Brand logo, refresh button, theme toggle
-- **CategoryFilter**: Horizontal scrollable category buttons
-- **NewsCard**: Article display with sentiment indicators
-- **BottomNavigation**: Mobile navigation with Home, Saved, Search, Profile tabs
+- **CategoryFilter**: 2-row grid layout with 8 categories including Research Reports
+- **NewsCard**: Article display with sentiment indicators and save functionality
+- **BottomNavigation**: Mobile navigation with Home, SEBI RIA, Contact, Profile tabs
+- **SebiRia**: SEBI RIA connection page with "Coming Soon" status
+- **Contact**: Message form for user inquiries
+- **Profile**: Google authentication and user account management
 
 ## Data Flow
 
@@ -100,12 +110,14 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 
 ## Recent Changes
 
-- June 25, 2025: Enhanced text readability with stronger overlays, text shadows, and backdrop blur
-- June 25, 2025: Improved contrast for category tags and sentiment indicators with borders and shadows
-- June 25, 2025: Increased overlay coverage to 60% of screen height for better text visibility
-- June 25, 2025: Implemented priority-based sorting for trending section (High > Medium > Low priority)
-- June 25, 2025: Replaced text-based sentiment with color-only indicators (Green=Positive, Red=Negative, Gray=Neutral)
-- June 25, 2025: Connected to Google Sheets with intelligent image selection and contextual content
+- June 25, 2025: Added Research Report category with FileText icon
+- June 25, 2025: Redesigned category filter to 2-row grid layout with smaller icons (4 columns)
+- June 25, 2025: Updated bottom navigation with SEBI RIA, Contact, and Profile sections
+- June 25, 2025: Implemented Replit Auth for Google sign-in with database integration
+- June 25, 2025: Created SEBI RIA page with "Coming Soon" message
+- June 25, 2025: Added Contact page with message form functionality
+- June 25, 2025: Built Profile page with Google authentication and sign-in/out features
+- June 25, 2025: Enhanced text readability with stronger overlays and improved contrast
 
 ## User Preferences
 

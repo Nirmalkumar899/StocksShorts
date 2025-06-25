@@ -10,6 +10,15 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/sebi-ria">
+        {() => <SebiRia onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/contact">
+        {() => <Contact onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/profile">
+        {() => <Profile onBack={() => window.history.back()} />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
