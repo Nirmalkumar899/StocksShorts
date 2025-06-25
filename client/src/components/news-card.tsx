@@ -42,29 +42,23 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       onClick={onClick}
     >
       {/* Article Image - Takes most of the space */}
-      {article.imageUrl ? (
-        <div className="flex-1 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
-          <img 
-            src={article.imageUrl} 
-            alt={article.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
-        </div>
-      ) : (
-        // Fallback background with gradient for articles without images
-        <div className="flex-1 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-          <div className="text-white/20 text-8xl">📈</div>
-        </div>
-      )}
+      <div className="flex-1 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
+        <img 
+          src={article.imageUrl || getContextualImage(article)} 
+          alt={article.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            // Fallback to contextual image if original fails
+            target.src = getContextualImage(article);
+          }}
+        />
+      </div>
       
-      {/* Content Overlay - Fixed at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 text-white max-h-60 overflow-hidden">
-        <div className="flex items-center justify-between mb-2">
-          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+      {/* Content Overlay - Larger area for full content */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-black/20 p-4 text-white min-h-[45%] flex flex-col justify-end">
+        <div className="flex items-center justify-between mb-3">
+          <span className={`text-xs font-medium px-3 py-1 rounded-full ${
             article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/30 text-green-300' :
             article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/30 text-red-300' :
             'bg-gray-500/30 text-gray-300'
@@ -81,18 +75,34 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </Button>
         </div>
         
-        <h2 className="text-lg font-bold text-white leading-tight mb-2 line-clamp-2">
+        <h2 className="text-xl font-bold text-white leading-tight mb-3">
           {article.title}
         </h2>
         
-        <p className="text-white/90 text-sm leading-relaxed mb-3 line-clamp-4">
+        <div className="text-white/95 text-sm leading-relaxed mb-4 max-h-32 overflow-y-auto">
           {article.content}
-        </p>
+        </div>
         
-        <div className="flex items-center space-x-4 text-white/70 text-xs">
-          <span>{formatTimeAgo(article.time)}</span>
-          <span>•</span>
-          <span>{article.source}</span>
+        <div className="flex items-center justify-between text-white/80 text-xs">
+          <div className="flex items-center space-x-3">
+            <span className="font-medium">{formatTimeAgo(article.time)}</span>
+            <span>•</span>
+            <span className="font-medium">{article.source}</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/30 text-green-300' :
+              article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/30 text-red-300' :
+              'bg-gray-500/30 text-gray-300'
+            }`}>
+              {article.sentiment}
+            </span>
+            {article.priority && (
+              <span className="text-white/60 text-xs">
+                {article.priority}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
