@@ -98,8 +98,12 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 
 ## Changelog
 
-Changelog:
-- June 25, 2025. Initial setup
+## Recent Changes
+
+- June 25, 2025: Updated categories to include Index, Warrants, StocksShorts Special, Breakout Stocks, Educational, IPO, Global, Most Active, Order Win  
+- June 25, 2025: Added image support for articles with Inshorts-style layout  
+- June 25, 2025: Created sample data for demonstration while Google Sheets integration is being configured  
+- June 25, 2025: Enhanced news cards with proper image display and error handling
 
 ## User Preferences
 

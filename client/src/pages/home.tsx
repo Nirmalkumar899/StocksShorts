@@ -200,8 +200,8 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          // News Cards
-          <div className="space-y-1">
+          // News Cards - Inshorts style layout
+          <div className="space-y-2 px-4 py-2">
             {articles.map((article) => (
               <NewsCard
                 key={article.id}

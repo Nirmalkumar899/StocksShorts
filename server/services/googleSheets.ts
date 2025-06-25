@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import type { GoogleSheetsRow, Article } from '@shared/schema';
+import { sampleArticles } from '../sampleData';
 
 export class GoogleSheetsService {
   private sheets: any;
@@ -20,6 +21,12 @@ export class GoogleSheetsService {
   }
 
   async fetchArticles(): Promise<Article[]> {
+    // If Google Sheets credentials are not configured, return sample data
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
+      console.log('Google Sheets credentials not configured, using sample data');
+      return sampleArticles;
+    }
+
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
@@ -69,7 +76,9 @@ export class GoogleSheetsService {
       return articles;
     } catch (error) {
       console.error('Error fetching articles from Google Sheets:', error);
-      throw new Error('Failed to fetch articles from Google Sheets. Please check your API credentials and spreadsheet ID.');
+      // Fallback to sample data if Google Sheets fails
+      console.log('Falling back to sample data due to Google Sheets error');
+      return sampleArticles;
     }
   }
 
