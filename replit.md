@@ -106,6 +106,11 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 - `npm run start`: Production server startup
 - `npm run db:push`: Database schema updates
 
+### DNS Configuration
+- Custom domain setup instructions in `DNS_SETUP.md`
+- Replit deployment with automatic SSL/TLS
+- A records and CNAME configuration for production
+
 ## Changelog
 
 ## Recent Changes
