@@ -20,7 +20,7 @@ interface CategoryFilterProps {
 
 const categories = [
   { id: 'all', label: 'Trending', icon: TrendingUp },
-  { id: 'stocksshorts-special', label: 'Special', icon: Award },
+  { id: 'stocksshorts-special', label: 'Special', icon: Award, special: true },
   { id: 'breakout-stocks', label: 'Breakout', icon: TrendingUp },
   { id: 'index', label: 'Index', icon: BarChart3 },
   { id: 'warrants', label: 'Warrants', icon: FileText },
@@ -39,6 +39,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
         {categories.map((category) => {
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
+          const isSpecial = category.special;
           
           return (
             <Button
@@ -47,17 +48,23 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               size="sm"
               onClick={() => onCategoryChange(category.id)}
               className={`
-                flex flex-col items-center justify-center p-2 h-14 text-xs font-medium transition-all duration-200
+                relative flex flex-col items-center justify-center p-2 h-14 text-xs font-medium transition-all duration-200 overflow-hidden
                 ${isSelected
                   ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg border-0 transform scale-105'
+                  : isSpecial
+                  ? 'bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-800 dark:text-amber-200 border-2 border-amber-300 dark:border-amber-600 hover:from-amber-100 hover:to-orange-200 dark:hover:from-amber-800/40 dark:hover:to-orange-800/40 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-lg hover:scale-105 animate-pulse'
                   : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 hover:border-blue-200 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-md hover:scale-102'
                 }
+                ${isSpecial && !isSelected ? 'before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-100%] before:animate-[shimmer_2s_infinite] before:skew-x-12' : ''}
               `}
             >
-              <Icon className="h-3.5 w-3.5 mb-1" />
+              <Icon className={`h-3.5 w-3.5 mb-1 ${isSpecial && !isSelected ? 'text-amber-600 dark:text-amber-300' : ''}`} />
               <span className="text-[10px] leading-tight text-center break-words">
                 {category.label}
               </span>
+              {isSpecial && !isSelected && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-ping"></div>
+              )}
             </Button>
           );
         })}

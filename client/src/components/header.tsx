@@ -7,6 +7,15 @@ interface HeaderProps {
   isRefreshing: boolean;
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
 
