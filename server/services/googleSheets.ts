@@ -67,6 +67,10 @@ export class GoogleSheetsService {
           const sentiment = sentimentValue.toLowerCase().includes('positive') ? 'Positive' :
                            sentimentValue.toLowerCase().includes('negative') ? 'Negative' : 'Neutral';
 
+          // Handle imageUrl - check if it's a proper URL or just text
+          const imageUrlValue = row[7] || '';
+          const imageUrl = imageUrlValue.startsWith('http') ? imageUrlValue : null;
+
           return {
             id: parseInt(row[0]) || index + 1,
             title: row[1] || 'Untitled',
@@ -75,8 +79,8 @@ export class GoogleSheetsService {
             time: parsedTime,
             source: row[5] || 'Unknown Source',
             sentiment,
-            priority: 'Medium', // Default priority since it's not in sheet
-            imageUrl: row[7] || null, // ImageURL column
+            priority: imageUrlValue || 'Medium', // Use imageUrl column value as priority if not a URL
+            imageUrl,
             createdAt: new Date(),
           };
         });

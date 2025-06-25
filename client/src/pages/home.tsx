@@ -142,42 +142,29 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
-      <CategoryFilter 
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
-      />
+  // Debug log
+  console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
-      <main className="pb-16">
+  return (
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0">
+        <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
+        <CategoryFilter 
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
         {isLoading ? (
           // Loading State
-          <div className="px-4 py-6 space-y-4">
-            {[...Array(3)].map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-6 h-6 bg-gray-200 dark:bg-neutral-700 rounded"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-neutral-700 rounded w-20"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-neutral-700 rounded w-16 ml-auto"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-5 bg-gray-200 dark:bg-neutral-700 rounded w-full"></div>
-                    <div className="h-5 bg-gray-200 dark:bg-neutral-700 rounded w-4/5"></div>
-                  </div>
-                  <div className="space-y-2 mt-3">
-                    <div className="h-4 bg-gray-200 dark:bg-neutral-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-neutral-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-neutral-700 rounded w-3/4"></div>
-                  </div>
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="h-3 bg-gray-200 dark:bg-neutral-700 rounded w-24"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-neutral-700 rounded w-20"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
+            </div>
           </div>
         ) : articles.length === 0 ? (
           // Empty State
@@ -204,7 +191,7 @@ export default function Home() {
           </div>
         ) : (
           // News Cards - Inshorts style full-screen layout
-          <div className="h-screen overflow-y-auto snap-y snap-mandatory">
+          <div className="h-full overflow-y-auto snap-y snap-mandatory">
             {articles.map((article) => (
               <NewsCard
                 key={article.id}
@@ -215,34 +202,12 @@ export default function Home() {
             ))}
           </div>
         )}
+      </div>
 
-        {/* Load More Button */}
-        {articles.length > 0 && (
-          <div className="px-4 py-6">
-            <Button
-              variant="outline"
-              onClick={handleLoadMore}
-              className="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400 rounded-xl font-medium transition-colors"
-            >
-              Load More Articles
-            </Button>
-          </div>
-        )}
-      </main>
-
-      {/* Floating Action Button */}
-      {showScrollTop && (
-        <div className="fixed bottom-20 right-6 z-40">
-          <Button
-            onClick={scrollToTop}
-            className="w-14 h-14 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
-          >
-            <ArrowUp className="h-5 w-5" />
-          </Button>
-        </div>
-      )}
-
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab="home" onTabChange={() => {}} />
+      </div>
     </div>
   );
 }
