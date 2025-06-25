@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, Bookmark, Search, User } from "lucide-react";
+import { Home, ShieldCheck, MessageCircle, User } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -8,8 +8,8 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'saved', label: 'Saved', icon: Bookmark },
-  { id: 'search', label: 'Search', icon: Search },
+  { id: 'sebi-ria', label: 'SEBI RIA', icon: ShieldCheck },
+  { id: 'contact', label: 'Contact', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
 

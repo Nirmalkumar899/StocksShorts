@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
+import SebiRia from "@/pages/sebi-ria";
+import Contact from "@/pages/contact";
+import Profile from "@/pages/profile";
 
 function Router() {
   return (
