@@ -51,8 +51,8 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 
 ### UI Components
 - **Header**: Brand logo, refresh button, theme toggle
-- **CategoryFilter**: 2-row grid layout with 8 categories including Research Reports
-- **NewsCard**: Article display with sentiment indicators and save functionality
+- **CategoryFilter**: 2-row grid layout with 11 categories (6 columns): Trending, Special, Breakout, Index, Warrants, Educational, IPO, Global, Active, Orders, Research
+- **NewsCard**: Article display with sentiment indicators and contextual images
 - **BottomNavigation**: Mobile navigation with Home, SEBI RIA, Contact, Profile tabs
 - **SebiRia**: SEBI RIA connection page with "Coming Soon" status
 - **Contact**: Message form for user inquiries
@@ -110,8 +110,8 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 
 ## Recent Changes
 
-- June 25, 2025: Added Research Report category with FileText icon
-- June 25, 2025: Redesigned category filter to 2-row grid layout with smaller icons (4 columns)
+- June 25, 2025: Restored all original categories in proper order: Trending, Special, Breakout, Index, Warrants, Educational, IPO, Global, Active, Orders, Research
+- June 25, 2025: Arranged categories in 2-row grid layout with 6 columns (11 total categories)
 - June 25, 2025: Updated bottom navigation with SEBI RIA, Contact, and Profile sections
 - June 25, 2025: Implemented Replit Auth for Google sign-in with database integration
 - June 25, 2025: Created SEBI RIA page with "Coming Soon" message
@@ -122,3 +122,21 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+### Category Structure (Priority Order)
+1. Trending (priority-based sorting: High > Medium > Low)
+2. StocksShorts Special  
+3. Breakout Stocks
+4. Index
+5. Warrants
+6. Educational
+7. IPO
+8. Global
+9. Most Active
+10. Order Win
+11. Research Report
+
+### Navigation Requirements
+- SEBI RIA: "Coming Soon" message
+- Contact: One-click messaging functionality
+- Profile: Gmail-only authentication, no additional info required
