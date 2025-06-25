@@ -74,7 +74,7 @@ export default function Contact({ onBack }: ContactProps) {
             </div>
             <CardTitle className="text-xl">AskQuery</CardTitle>
             <CardDescription>
-              Send us your questions - we'll get back to you fast
+              Chat with our support team - instant messaging
             </CardDescription>
           </CardHeader>
           <CardContent>
