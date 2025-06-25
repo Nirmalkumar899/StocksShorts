@@ -8,7 +8,7 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'sebi-ria', label: 'Connect', icon: ShieldCheck },
+  { id: 'sebi-ria', label: 'Connect SEBI RIA', icon: ShieldCheck },
   { id: 'contact', label: 'Chat', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
@@ -26,14 +26,14 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
               key={item.id}
               variant="ghost"
               onClick={() => onTabChange(item.id)}
-              className={`flex flex-col items-center py-2 px-4 transition-colors ${
+              className={`flex flex-col items-center py-2 px-2 transition-colors min-w-0 ${
                 isActive 
                   ? 'text-primary' 
                   : 'text-neutral-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary'
               }`}
             >
               <Icon className="h-5 w-5 mb-1" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
             </Button>
           );
         })}

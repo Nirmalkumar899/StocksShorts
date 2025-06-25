@@ -100,14 +100,18 @@ export default function Home() {
   };
 
   const handleTabChange = (tab: string) => {
+    console.log('Tab clicked:', tab);
     if (tab === 'home') {
       // Already on home, do nothing
       return;
     } else if (tab === 'sebi-ria') {
+      console.log('Navigating to SEBI RIA');
       window.location.href = '/sebi-ria';
     } else if (tab === 'contact') {
+      console.log('Navigating to Contact');
       window.location.href = '/contact';
     } else if (tab === 'profile') {
+      console.log('Navigating to Profile');
       window.location.href = '/profile';
     }
   };
