@@ -26,16 +26,19 @@ export default function Home() {
   } = useQuery<Article[]>({
     queryKey: ['/api/articles', selectedCategory],
     queryFn: async () => {
-      const response = await fetch(`/api/articles${selectedCategory !== 'all' ? `?category=${selectedCategory}` : ''}`, {
+      const url = selectedCategory !== 'all' ? `/api/articles?category=${selectedCategory}` : '/api/articles';
+      const response = await fetch(url, {
         credentials: 'include',
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch articles');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to fetch articles');
       }
       
-      return response.json();
+      const data = await response.json();
+      console.log('Fetched articles:', data); // Debug log
+      return data;
     },
   });
 

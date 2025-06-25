@@ -5,7 +5,7 @@ export const sampleArticles: Article[] = [
   {
     id: 1,
     title: "Nifty 50 Hits All-Time High Amid Strong FII Inflows",
-    content: "The benchmark Nifty 50 index surged to a new record high of 25,445 points today, driven by robust foreign institutional investor inflows and positive global cues. Banking and IT stocks led the rally with HDFC Bank and Infosys contributing significantly to the gains.",
+    content: "The benchmark Nifty 50 index surged to a new record high of 25,445 points today, driven by robust foreign institutional investor inflows and positive global cues. Banking and IT stocks led the rally.",
     type: "Index",
     time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     source: "Economic Times",
@@ -17,7 +17,7 @@ export const sampleArticles: Article[] = [
   {
     id: 2,
     title: "New IPO Alert: Tech Startup Files for ₹500 Crore Public Issue",
-    content: "A leading fintech startup has filed draft papers with SEBI for an initial public offering worth ₹500 crores. The company plans to use the proceeds for technology upgrades and market expansion across tier-2 cities.",
+    content: "A leading fintech startup has filed draft papers with SEBI for an initial public offering worth ₹500 crores. The company plans to use the proceeds for technology upgrades and market expansion.",
     type: "IPO",
     time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
     source: "Business Standard",

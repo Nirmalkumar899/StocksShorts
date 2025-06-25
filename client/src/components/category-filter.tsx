@@ -19,7 +19,7 @@ interface CategoryFilterProps {
 }
 
 const categories = [
-  { id: 'all', label: 'All', icon: Globe },
+  { id: 'all', label: 'Trending', icon: Globe },
   { id: 'index', label: 'Index', icon: BarChart3 },
   { id: 'warrants', label: 'Warrants', icon: FileText },
   { id: 'stocksshorts-special', label: 'Special', icon: Award },
