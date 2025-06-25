@@ -45,12 +45,12 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
               <p>• Professional financial guidance</p>
             </div>
             <div className="pt-4">
-              <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 text-center">
-                <p className="text-yellow-800 dark:text-yellow-200 font-medium">
-                  🚧 Coming Soon
+              <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg p-6 text-center">
+                <p className="text-blue-800 dark:text-blue-200 font-bold text-lg mb-2">
+                  Coming Soon
                 </p>
-                <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
-                  We're working on connecting you with certified SEBI RIAs
+                <p className="text-blue-700 dark:text-blue-300 text-sm">
+                  We're working on connecting you with certified SEBI Registered Investment Advisors
                 </p>
               </div>
             </div>

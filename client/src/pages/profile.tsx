@@ -67,7 +67,7 @@ export default function Profile({ onBack }: ProfileProps) {
                 </div>
                 <CardTitle className="text-xl">Welcome to StockShorts</CardTitle>
                 <CardDescription>
-                  Sign in to save articles and get personalized recommendations
+                  Sign in with Gmail - no additional information required
                 </CardDescription>
               </>
             )}
@@ -92,16 +92,16 @@ export default function Profile({ onBack }: ProfileProps) {
             ) : (
               <>
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>• Save articles for later reading</p>
-                  <p>• Get personalized recommendations</p>
-                  <p>• Access premium features</p>
+                  <p>• One-click Google sign-in</p>
+                  <p>• No forms or additional details needed</p>
+                  <p>• Secure authentication via Gmail</p>
                 </div>
                 <Button 
-                  className="w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
                   onClick={() => window.location.href = '/api/login'}
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Sign In with Google
+                  Continue with Gmail
                 </Button>
               </>
             )}

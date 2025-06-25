@@ -32,17 +32,19 @@ export default function Contact({ onBack }: ContactProps) {
 
     setIsSubmitting(true);
     
-    // Simulate API call - in real app, this would send to backend
-    setTimeout(() => {
-      toast({
-        title: "Message sent successfully!",
-        description: "We'll get back to you within 24 hours",
-      });
-      setMessage("");
-      setEmail("");
-      setSubject("");
-      setIsSubmitting(false);
-    }, 1000);
+    // One-click messaging - send directly via mailto for immediate action
+    const mailtoLink = `mailto:contact@stockshorts.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`From: ${email}\n\nMessage:\n${message}`)}`;
+    window.location.href = mailtoLink;
+    
+    toast({
+      title: "Opening your email app...",
+      description: "Your message is ready to send with one click",
+    });
+    
+    setMessage("");
+    setEmail("");
+    setSubject("");
+    setIsSubmitting(false);
   };
 
   return (

@@ -137,6 +137,6 @@ Preferred communication style: Simple, everyday language.
 11. Research Report
 
 ### Navigation Requirements
-- SEBI RIA: "Coming Soon" message
-- Contact: One-click messaging functionality
-- Profile: Gmail-only authentication, no additional info required
+- SEBI RIA: Clean "Coming Soon" message for investment advisor connections
+- Contact: One-click messaging via mailto link (opens user's email app)
+- Profile: Gmail-only authentication with no additional forms or information required
