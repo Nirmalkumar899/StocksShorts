@@ -100,10 +100,12 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 
 ## Recent Changes
 
-- June 25, 2025: Updated categories to include Index, Warrants, StocksShorts Special, Breakout Stocks, Educational, IPO, Global, Most Active, Order Win  
-- June 25, 2025: Added image support for articles with Inshorts-style layout  
-- June 25, 2025: Created sample data for demonstration while Google Sheets integration is being configured  
-- June 25, 2025: Enhanced news cards with proper image display and error handling
+- June 25, 2025: Created true Inshorts-style single-page interface with full-screen article cards
+- June 25, 2025: Fixed date handling errors and made interface responsive to Google Sheets data
+- June 25, 2025: Reduced category icon sizes to maximize space for images and content
+- June 25, 2025: Implemented snap scrolling and proper layout with fixed header/categories/bottom nav
+- June 25, 2025: Added sentiment-based color coding (Green=Positive, Red=Negative, Gray=Neutral)
+- June 25, 2025: Connected to Google Sheets with proper column mapping: ID, Title, Content, Type, TimeAgo, Source, Sentiment, ImageURL
 
 ## User Preferences
 

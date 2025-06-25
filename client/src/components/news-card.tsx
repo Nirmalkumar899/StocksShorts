@@ -38,11 +38,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   return (
     <div 
-      className="h-screen snap-start flex flex-col bg-white dark:bg-neutral-900 relative overflow-hidden cursor-pointer"
+      className="h-full snap-start flex flex-col bg-white dark:bg-neutral-900 relative overflow-hidden cursor-pointer"
       onClick={onClick}
     >
-      {/* Article Image */}
-      {article.imageUrl && (
+      {/* Article Image - Takes most of the space */}
+      {article.imageUrl ? (
         <div className="flex-1 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
           <img 
             src={article.imageUrl} 
@@ -54,15 +54,20 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             }}
           />
         </div>
+      ) : (
+        // Fallback background with gradient for articles without images
+        <div className="flex-1 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+          <div className="text-white/20 text-8xl">📈</div>
+        </div>
       )}
       
-      {/* Content Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white">
-        <div className="flex items-center justify-between mb-3">
+      {/* Content Overlay - Fixed at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 text-white max-h-60 overflow-hidden">
+        <div className="flex items-center justify-between mb-2">
           <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-            article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/20 text-green-400' :
-            article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/20 text-red-400' :
-            'bg-gray-500/20 text-gray-400'
+            article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/30 text-green-300' :
+            article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/30 text-red-300' :
+            'bg-gray-500/30 text-gray-300'
           }`}>
             {article.type.toUpperCase()}
           </span>
@@ -76,11 +81,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </Button>
         </div>
         
-        <h2 className="text-xl font-bold text-white leading-tight mb-3">
+        <h2 className="text-lg font-bold text-white leading-tight mb-2 line-clamp-2">
           {article.title}
         </h2>
         
-        <p className="text-white/90 text-sm leading-relaxed mb-4">
+        <p className="text-white/90 text-sm leading-relaxed mb-3 line-clamp-4">
           {article.content}
         </p>
         

@@ -6,8 +6,16 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatTimeAgo(date: Date | string): string {
+  if (!date) return 'Recently';
+  
   const now = new Date();
   const articleDate = typeof date === 'string' ? new Date(date) : date;
+  
+  // Handle invalid dates
+  if (!articleDate || isNaN(articleDate.getTime())) {
+    return 'Recently';
+  }
+  
   const diffInSeconds = Math.floor((now.getTime() - articleDate.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
