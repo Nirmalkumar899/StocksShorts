@@ -35,45 +35,48 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sheet1!A2:I', // Updated to include image URL column
+        range: 'Sheet1!A2:H', // ID, Title, Content, Type, TimeAgo, Source, Sentiment, ImageURL
       });
 
       const rows: string[][] = response.data.values || [];
       
       const articles: Article[] = rows
-        .filter(row => row.length >= 8) // Ensure all required fields are present
+        .filter(row => row.length >= 6) // At least ID, Title, Content, Type, TimeAgo, Source
         .map((row, index) => {
-          // Parse time string to Date object
-          const timeStr = row[4];
+          // Google Sheets structure: ID, Title, Content, Type, TimeAgo, Source, Sentiment (Positive/Negative)
+          const timeStr = row[4] || '1 hour ago';
           let parsedTime: Date;
           
           try {
-            // Try parsing various time formats
+            // Handle "TimeAgo" column format
             if (timeStr.includes('ago')) {
-              // Handle relative time like "2 hours ago"
               parsedTime = this.parseRelativeTime(timeStr);
             } else {
-              // Handle absolute time formats
               parsedTime = new Date(timeStr);
             }
           } catch (error) {
             console.warn(`Invalid time format for row ${index + 2}: ${timeStr}`);
-            parsedTime = new Date(); // Default to current time
+            parsedTime = new Date();
           }
 
           // Ensure content is within 350 character limit
-          const content = row[2].length > 350 ? row[2].substring(0, 347) + '...' : row[2];
+          const content = row[2] && row[2].length > 350 ? row[2].substring(0, 347) + '...' : row[2] || '';
+
+          // Map sentiment column (Positive/Negative) to our format
+          const sentimentValue = row[6] || 'Neutral';
+          const sentiment = sentimentValue.toLowerCase().includes('positive') ? 'Positive' :
+                           sentimentValue.toLowerCase().includes('negative') ? 'Negative' : 'Neutral';
 
           return {
             id: parseInt(row[0]) || index + 1,
             title: row[1] || 'Untitled',
             content,
-            type: row[3] || 'MARKET',
+            type: row[3] || 'Index',
             time: parsedTime,
             source: row[5] || 'Unknown Source',
-            sentiment: row[6] || 'Neutral',
-            priority: row[7] || 'Medium',
-            imageUrl: row[8] || null, // Add image URL support
+            sentiment,
+            priority: 'Medium', // Default priority since it's not in sheet
+            imageUrl: row[7] || null, // ImageURL column
             createdAt: new Date(),
           };
         });

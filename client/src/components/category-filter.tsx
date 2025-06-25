@@ -45,14 +45,14 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               variant={isSelected ? "default" : "secondary"}
               size="sm"
               onClick={() => onCategoryChange(category.id)}
-              className={`flex flex-col items-center py-2 px-1 rounded-lg text-xs font-medium transition-all h-auto ${
+              className={`flex flex-col items-center py-1 px-1 rounded-lg text-xs font-medium transition-all h-12 ${
                 isSelected
                   ? 'bg-primary text-white hover:bg-primary/90'
                   : 'bg-gray-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-gray-200 dark:hover:bg-neutral-700'
               }`}
             >
-              <Icon className="h-4 w-4 mb-1" />
-              <span className="text-xs leading-tight text-center">{category.label}</span>
+              <Icon className="h-3 w-3 mb-0.5" />
+              <span className="text-[10px] leading-tight text-center">{category.label}</span>
             </Button>
           );
         })}

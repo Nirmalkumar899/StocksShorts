@@ -37,13 +37,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   return (
-    <Card 
-      className={`bg-white dark:bg-neutral-900 shadow-sm border-l-4 ${getBorderColor()} hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden`}
+    <div 
+      className="h-screen snap-start flex flex-col bg-white dark:bg-neutral-900 relative overflow-hidden cursor-pointer"
       onClick={onClick}
     >
       {/* Article Image */}
       {article.imageUrl && (
-        <div className="w-full h-48 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
+        <div className="flex-1 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
           <img 
             src={article.imageUrl} 
             alt={article.title}
@@ -56,58 +56,40 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </div>
       )}
       
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <div className={`w-6 h-6 bg-${sentimentColor}/10 rounded-full flex items-center justify-center`}>
-              {getSentimentIcon()}
-            </div>
-            <span className={`text-xs font-medium text-${sentimentColor} bg-${sentimentColor}/10 px-2 py-1 rounded-full`}>
-              {article.type.toUpperCase()}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className={`text-xs font-medium ${
-              article.sentiment.toLowerCase() === 'positive' ? 'text-success' :
-              article.sentiment.toLowerCase() === 'negative' ? 'text-danger' :
-              'text-neutral-600 dark:text-neutral-400'
-            }`}>
-              {article.sentiment}
-            </span>
-            <span className="text-xs text-neutral-400">
-              {article.priority}
-            </span>
-          </div>
-        </div>
-        
-        <h2 className="text-lg font-semibold text-neutral-800 dark:text-white leading-tight mb-3">
-          {article.title}
-        </h2>
-        
-        <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed line-clamp-4">
-          {article.content}
-        </p>
-        
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-neutral-800">
-          <div className="flex items-center space-x-4">
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {formatTimeAgo(article.time)}
-            </span>
-            <span className="text-xs text-neutral-400">•</span>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-              {article.source}
-            </span>
-          </div>
+      {/* Content Overlay */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white">
+        <div className="flex items-center justify-between mb-3">
+          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+            article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500/20 text-green-400' :
+            article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500/20 text-red-400' :
+            'bg-gray-500/20 text-gray-400'
+          }`}>
+            {article.type.toUpperCase()}
+          </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={onShare}
-            className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors p-1"
+            className="text-white/80 hover:text-white transition-colors p-1"
           >
             <Share2 className="h-4 w-4" />
           </Button>
         </div>
+        
+        <h2 className="text-xl font-bold text-white leading-tight mb-3">
+          {article.title}
+        </h2>
+        
+        <p className="text-white/90 text-sm leading-relaxed mb-4">
+          {article.content}
+        </p>
+        
+        <div className="flex items-center space-x-4 text-white/70 text-xs">
+          <span>{formatTimeAgo(article.time)}</span>
+          <span>•</span>
+          <span>{article.source}</span>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

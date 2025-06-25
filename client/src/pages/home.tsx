@@ -147,7 +147,7 @@ export default function Home() {
         onCategoryChange={handleCategoryChange}
       />
 
-      <main className="pb-20">
+      <main className="pb-16">
         {isLoading ? (
           // Loading State
           <div className="px-4 py-6 space-y-4">
@@ -200,8 +200,8 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          // News Cards - Inshorts style layout
-          <div className="space-y-2 px-4 py-2">
+          // News Cards - Inshorts style full-screen layout
+          <div className="h-screen overflow-y-auto snap-y snap-mandatory">
             {articles.map((article) => (
               <NewsCard
                 key={article.id}
