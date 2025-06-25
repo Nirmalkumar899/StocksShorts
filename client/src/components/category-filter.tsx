@@ -19,16 +19,14 @@ interface CategoryFilterProps {
 }
 
 const categories = [
-  { id: 'all', label: 'Trending', icon: Globe },
-  { id: 'index', label: 'Index', icon: BarChart3 },
-  { id: 'warrants', label: 'Warrants', icon: FileText },
-  { id: 'stocksshorts-special', label: 'Special', icon: Award },
-  { id: 'breakout-stocks', label: 'Breakout', icon: TrendingUp },
-  { id: 'educational', label: 'Educational', icon: BookOpen },
-  { id: 'ipo', label: 'IPO', icon: Rocket },
-  { id: 'global', label: 'Global', icon: Globe },
-  { id: 'most-active', label: 'Active', icon: Zap },
-  { id: 'order-win', label: 'Orders', icon: Target },
+  { id: 'all', label: 'Trending', icon: TrendingUp },
+  { id: 'Nifty', label: 'Nifty', icon: BarChart3 },
+  { id: 'Sensex', label: 'Sensex', icon: TrendingUp },
+  { id: 'IPO', label: 'IPOs', icon: Rocket },
+  { id: 'Research Report', label: 'Research', icon: FileText },
+  { id: 'Mutual Funds', label: 'MF', icon: PiggyBank },
+  { id: 'Crypto', label: 'Crypto', icon: Bitcoin },
+  { id: 'Global', label: 'Global', icon: Globe },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
