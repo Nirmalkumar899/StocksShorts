@@ -118,6 +118,7 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 - June 25, 2025: Added Contact page with message form functionality
 - June 25, 2025: Built Profile page with Google authentication and sign-in/out features
 - June 25, 2025: Enhanced text readability with stronger overlays and improved contrast
+- June 25, 2025: Improved category icons with gradient backgrounds, better shadows, and enhanced hover effects
 
 ## User Preferences
 
