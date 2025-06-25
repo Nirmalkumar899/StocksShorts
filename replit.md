@@ -100,12 +100,12 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 
 ## Recent Changes
 
+- June 25, 2025: Enhanced text readability with stronger overlays, text shadows, and backdrop blur
+- June 25, 2025: Improved contrast for category tags and sentiment indicators with borders and shadows
+- June 25, 2025: Increased overlay coverage to 60% of screen height for better text visibility
 - June 25, 2025: Implemented priority-based sorting for trending section (High > Medium > Low priority)
 - June 25, 2025: Replaced text-based sentiment with color-only indicators (Green=Positive, Red=Negative, Gray=Neutral)
-- June 25, 2025: Removed priority and sentiment text labels for cleaner interface
-- June 25, 2025: Enhanced content display to show full article text and source information without cutoff
-- June 25, 2025: Implemented intelligent image selection based on article content and type
-- June 25, 2025: Connected to Google Sheets with proper column mapping and contextual images
+- June 25, 2025: Connected to Google Sheets with intelligent image selection and contextual content
 
 ## User Preferences
 

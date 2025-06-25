@@ -56,15 +56,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         />
       </div>
       
-      {/* Content Overlay - Larger area for full content */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-black/20 p-4 text-white min-h-[55%] flex flex-col justify-end">
+      {/* Content Overlay - Enhanced readability */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/90 to-black/60 p-4 text-white min-h-[60%] flex flex-col justify-end backdrop-blur-sm">
         <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-500/30 text-blue-300">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-sm drop-shadow-lg">
               {article.type.toUpperCase()}
             </span>
-            {/* Sentiment color indicator without text */}
-            <div className={`w-3 h-3 rounded-full ${
+            {/* Sentiment color indicator with better contrast */}
+            <div className={`w-3 h-3 rounded-full border-2 border-white/50 drop-shadow-lg ${
               article.sentiment.toLowerCase() === 'positive' ? 'bg-green-400' :
               article.sentiment.toLowerCase() === 'negative' ? 'bg-red-400' :
               'bg-gray-400'
@@ -80,15 +80,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </Button>
         </div>
         
-        <h2 className="text-lg font-bold text-white leading-tight mb-2 flex-shrink-0">
+        <h2 className="text-lg font-bold text-white leading-tight mb-2 flex-shrink-0 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           {article.title}
         </h2>
         
-        <div className="text-white/95 text-sm leading-relaxed mb-4 flex-1 overflow-y-auto">
+        <div className="text-white text-sm leading-relaxed mb-4 flex-1 overflow-y-auto drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
           {article.content}
         </div>
         
-        <div className="flex flex-col space-y-2 text-white/80 text-xs flex-shrink-0">
+        <div className="flex flex-col space-y-2 text-white text-xs flex-shrink-0 drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="font-medium">{formatTimeAgo(article.time)}</span>
@@ -96,8 +96,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <span className="font-medium truncate max-w-[150px]">{article.source}</span>
             </div>
             <div className="flex items-center space-x-2">
-              {/* Small sentiment color indicator */}
-              <div className={`w-2 h-2 rounded-full ${
+              {/* Small sentiment color indicator with better visibility */}
+              <div className={`w-3 h-3 rounded-full border-2 border-white/50 ${
                 article.sentiment.toLowerCase() === 'positive' ? 'bg-green-400' :
                 article.sentiment.toLowerCase() === 'negative' ? 'bg-red-400' :
                 'bg-gray-400'
