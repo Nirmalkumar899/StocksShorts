@@ -123,19 +123,16 @@ export class GoogleSheetsService {
       const articleType = article.type.toLowerCase().trim();
       const categoryId = category.toLowerCase();
       
-      // Direct matches
-      if (articleType === categoryId) return true;
-      
-      // Category mapping based on exact Google Sheets values
+      // Category mapping based on exact Google Sheets article types
       switch (categoryId) {
         case 'index':
-          return articleType === 'index';
+          return articleType === 'index' || articleType === 'nifty' || articleType === 'sensex';
         case 'warrants':
           return articleType === 'warrants';
         case 'stocksshorts-special':
-          return articleType === 'stocksshorts special' || articleType === 'special';
+          return articleType === 'stocksshorts special';
         case 'breakout-stocks':
-          return articleType === 'breakout stocks' || articleType === 'breakout';
+          return articleType === 'breakout stocks';
         case 'educational':
           return articleType === 'educational';
         case 'ipo':
@@ -143,11 +140,13 @@ export class GoogleSheetsService {
         case 'global':
           return articleType === 'global';
         case 'most-active':
-          return articleType === 'most active' || articleType === 'active';
+          return articleType === 'most active';
         case 'order-win':
-          return articleType === 'order win' || articleType === 'orders';
+          return articleType === 'order win';
+        case 'research-report':
+          return articleType === 'research report';
         default:
-          return false;
+          return articleType === categoryId;
       }
     });
   }

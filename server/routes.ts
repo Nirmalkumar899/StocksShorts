@@ -10,13 +10,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/articles", async (req, res) => {
     try {
       const category = req.query.category as string;
+      console.log('Requested category:', category);
       
       if (category && category !== 'all') {
         const articles = await googleSheetsService.getArticlesByCategory(category);
+        console.log(`Found ${articles.length} articles for category: ${category}`);
+        console.log('Article types found:', articles.map(a => a.type));
         res.json(articles);
       } else {
         const articles = await googleSheetsService.fetchArticles();
-        res.json(articles);
+        console.log(`Total articles: ${articles.length}`);
+        // Log unique article types for debugging
+        const typeSet = new Set(articles.map(a => a.type));
+        const uniqueTypes: string[] = [];
+        typeSet.forEach(type => uniqueTypes.push(type));
+        console.log('All article types in sheets:', uniqueTypes);
+        
+        // Sort by priority for trending view
+        const sortedArticles = articles.sort((a, b) => {
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+          return bPriority - aPriority;
+        });
+        
+        res.json(sortedArticles);
       }
     } catch (error) {
       console.error('Error fetching articles:', error);
