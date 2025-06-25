@@ -24,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const typeSet = new Set(articles.map(a => a.type));
         const uniqueTypes: string[] = [];
         typeSet.forEach(type => uniqueTypes.push(type));
-        console.log('All article types in sheets:', uniqueTypes);
+        console.log('All article categories in sheets:', uniqueTypes);
         
         // Sort by priority for trending view
         const sortedArticles = articles.sort((a, b) => {

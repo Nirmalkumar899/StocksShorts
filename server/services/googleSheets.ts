@@ -35,7 +35,7 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sheet1!A2:H', // ID, Title, Content, Type, TimeAgo, Source, Sentiment, ImageURL
+        range: 'Sheet1!A2:I', // ID, Title, Content, Type, TimeAgo, Source, Sentiment, Priority, Category
       });
 
       const rows: string[][] = response.data.values || [];
@@ -43,7 +43,7 @@ export class GoogleSheetsService {
       const articles: Article[] = rows
         .filter(row => row.length >= 6) // At least ID, Title, Content, Type, TimeAgo, Source
         .map((row, index) => {
-          // Google Sheets structure: ID, Title, Content, Type, TimeAgo, Source, Sentiment (Positive/Negative)
+          // Google Sheets structure: ID, Title, Content, Type, TimeAgo, Source, Sentiment, Priority, Category
           const timeStr = row[4] || '1 hour ago';
           let parsedTime: Date;
           
@@ -67,20 +67,20 @@ export class GoogleSheetsService {
           const sentiment = sentimentValue.toLowerCase().includes('positive') ? 'Positive' :
                            sentimentValue.toLowerCase().includes('negative') ? 'Negative' : 'Neutral';
 
-          // Handle imageUrl - check if it's a proper URL or just text
-          const imageUrlValue = row[7] || '';
-          const imageUrl = imageUrlValue.startsWith('http') ? imageUrlValue : null;
+          // Get priority from column 7 and category from column 8
+          const priority = row[7] || 'Medium';
+          const category = row[8] || row[3] || 'Index'; // Use category column first, fallback to type
 
           return {
             id: parseInt(row[0]) || index + 1,
             title: row[1] || 'Untitled',
             content,
-            type: row[3] || 'Index',
+            type: category, // Use category instead of type for better mapping
             time: parsedTime,
             source: row[5] || 'Unknown Source',
             sentiment,
-            priority: imageUrlValue || 'Medium', // Use imageUrl column value as priority if not a URL
-            imageUrl,
+            priority,
+            imageUrl: null, // Set to null for now since using priority column
             createdAt: new Date(),
           };
         });
@@ -123,16 +123,18 @@ export class GoogleSheetsService {
       const articleType = article.type.toLowerCase().trim();
       const categoryId = category.toLowerCase();
       
-      // Category mapping based on exact Google Sheets article types
+      // Category mapping based on Google Sheets category column
       switch (categoryId) {
+        case 'all':
+          return true; // Show all articles for trending
         case 'index':
           return articleType === 'index' || articleType === 'nifty' || articleType === 'sensex';
         case 'warrants':
           return articleType === 'warrants';
         case 'stocksshorts-special':
-          return articleType === 'stocksshorts special';
+          return articleType === 'stocksshorts special' || articleType === 'special';
         case 'breakout-stocks':
-          return articleType === 'breakout stocks' || articleType === 'breakout stock';
+          return articleType === 'breakout stocks' || articleType === 'breakout stock' || articleType === 'breakout';
         case 'educational':
           return articleType === 'educational';
         case 'ipo':
@@ -140,13 +142,14 @@ export class GoogleSheetsService {
         case 'global':
           return articleType === 'global';
         case 'most-active':
-          return articleType === 'most active';
+          return articleType === 'most active' || articleType === 'active';
         case 'order-win':
-          return articleType === 'order win';
+          return articleType === 'order win' || articleType === 'orders';
         case 'research-report':
-          return articleType === 'research report';
+          return articleType === 'research report' || articleType === 'research';
         default:
-          return articleType === categoryId;
+          // Try direct match with the category value from sheets
+          return articleType.toLowerCase().includes(categoryId.replace('-', ' '));
       }
     });
   }

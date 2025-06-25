@@ -47,4 +47,5 @@ export interface GoogleSheetsRow {
   Sentiment: string;
   Priority: string;
   ImageURL: string;
+  Category: string;
 }
