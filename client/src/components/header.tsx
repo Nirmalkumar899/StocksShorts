@@ -25,7 +25,7 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
                 <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm5-18v4h3V3h-3z"/>
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-neutral-800 dark:text-white">StockShorts</h1>
+            <h1 className="text-xl font-bold text-neutral-800 dark:text-white">StocksShorts</h1>
           </div>
           <div className="flex items-center space-x-2">
             <Button
