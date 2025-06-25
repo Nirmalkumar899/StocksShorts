@@ -1,8 +1,8 @@
-# StockShorts - Indian Stock Market News Platform
+# StocksShorts - Indian Stock Market News Platform
 
 ## Overview
 
-StockShorts is a news aggregation platform that provides concise Indian stock market news in an "Inshorts" style format. The application fetches financial news from Google Sheets and presents it in a mobile-first, user-friendly interface with real-time updates and category-based filtering.
+StocksShorts is a news aggregation platform that provides concise Indian stock market news in an "Inshorts" style format. The application fetches financial news from Google Sheets and presents it in a mobile-first, user-friendly interface with real-time updates and category-based filtering.
 
 ## System Architecture
 
@@ -118,7 +118,8 @@ StockShorts is a news aggregation platform that provides concise Indian stock ma
 - June 25, 2025: Added Contact page with message form functionality
 - June 25, 2025: Built Profile page with Google authentication and sign-in/out features
 - June 25, 2025: Enhanced text readability with stronger overlays and improved contrast
-- June 25, 2025: Improved category icons with gradient backgrounds, better shadows, and enhanced hover effects
+- June 25, 2025: Enhanced category icons with premium gradients, shimmer effects, ring animations, and refined hover states
+- June 25, 2025: Renamed application from "StockShorts" to "StocksShorts" across all components
 
 ## User Preferences
 
