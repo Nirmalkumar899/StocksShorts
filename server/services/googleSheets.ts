@@ -112,17 +112,36 @@ export class GoogleSheetsService {
       return allArticles;
     }
     
-    return allArticles.filter(article => 
-      article.type.toLowerCase() === category.toLowerCase() ||
-      (category === 'index' && article.type.toLowerCase().includes('index')) ||
-      (category === 'warrants' && article.type.toLowerCase().includes('warrant')) ||
-      (category === 'stocksshorts-special' && article.type.toLowerCase().includes('special')) ||
-      (category === 'breakout-stocks' && article.type.toLowerCase().includes('breakout')) ||
-      (category === 'educational' && article.type.toLowerCase().includes('educational')) ||
-      (category === 'ipo' && article.type.toLowerCase().includes('ipo')) ||
-      (category === 'global' && article.type.toLowerCase().includes('global')) ||
-      (category === 'most-active' && article.type.toLowerCase().includes('active')) ||
-      (category === 'order-win' && article.type.toLowerCase().includes('order'))
-    );
+    return allArticles.filter(article => {
+      const articleType = article.type.toLowerCase().trim();
+      const categoryId = category.toLowerCase();
+      
+      // Direct matches
+      if (articleType === categoryId) return true;
+      
+      // Category mapping based on exact Google Sheets values
+      switch (categoryId) {
+        case 'index':
+          return articleType === 'index';
+        case 'warrants':
+          return articleType === 'warrants';
+        case 'stocksshorts-special':
+          return articleType === 'stocksshorts special' || articleType === 'special';
+        case 'breakout-stocks':
+          return articleType === 'breakout stocks' || articleType === 'breakout';
+        case 'educational':
+          return articleType === 'educational';
+        case 'ipo':
+          return articleType === 'ipo';
+        case 'global':
+          return articleType === 'global';
+        case 'most-active':
+          return articleType === 'most active' || articleType === 'active';
+        case 'order-win':
+          return articleType === 'order win' || articleType === 'orders';
+        default:
+          return false;
+      }
+    });
   }
 }
