@@ -132,7 +132,7 @@ export class GoogleSheetsService {
         case 'stocksshorts-special':
           return articleType === 'stocksshorts special';
         case 'breakout-stocks':
-          return articleType === 'breakout stocks';
+          return articleType === 'breakout stocks' || articleType === 'breakout stock';
         case 'educational':
           return articleType === 'educational';
         case 'ipo':

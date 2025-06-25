@@ -1,6 +1,6 @@
-import { RefreshCw, Moon, Sun } from "lucide-react";
+import { RefreshCw, Moon, Sun, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   onRefresh: () => void;
@@ -18,10 +18,34 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
+  useEffect(() => {
+    // Show install button if app is not installed (not in standalone mode)
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(true);
+    }
+  }, []);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleInstallClick = () => {
+    // For iOS Safari or when PWA prompt is not available
+    if (navigator.share) {
+      navigator.share({
+        title: 'StocksShorts',
+        text: 'Install StocksShorts app for quick market updates',
+        url: window.location.href,
+      }).catch(() => {
+        // User cancelled sharing
+      });
+    } else {
+      // Show instructions or copy URL
+      navigator.clipboard?.writeText(window.location.href);
+    }
   };
 
   return (
@@ -37,6 +61,17 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
             <h1 className="text-xl font-bold text-neutral-800 dark:text-white">StocksShorts</h1>
           </div>
           <div className="flex items-center space-x-2">
+            {showInstallButton && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleInstallClick}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                title="Install StocksShorts app"
+              >
+                <Download className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
