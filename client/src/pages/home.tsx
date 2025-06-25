@@ -190,7 +190,7 @@ export default function Home() {
 
       {/* Fixed Bottom Navigation */}
       <div className="flex-shrink-0">
-        <BottomNavigation activeTab="home" onTabChange={() => {}} />
+        <BottomNavigation activeTab="home" onTabChange={handleTabChange} />
       </div>
     </div>
   );

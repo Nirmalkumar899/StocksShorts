@@ -61,7 +61,7 @@ export default function Contact({ onBack }: ContactProps) {
           </Button>
           <div className="flex items-center space-x-2">
             <MessageCircle className="h-5 w-5 text-blue-600" />
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Chat with Us</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">AskQuery</h1>
           </div>
         </div>
       </div>
@@ -72,9 +72,9 @@ export default function Contact({ onBack }: ContactProps) {
             <div className="mx-auto mb-4 p-3 bg-blue-100 dark:bg-blue-900 rounded-full w-fit">
               <MessageCircle className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <CardTitle className="text-xl">Chat with Us</CardTitle>
+            <CardTitle className="text-xl">AskQuery</CardTitle>
             <CardDescription>
-              Send a quick message - we'll get back to you fast
+              Send us your questions - we'll get back to you fast
             </CardDescription>
           </CardHeader>
           <CardContent>

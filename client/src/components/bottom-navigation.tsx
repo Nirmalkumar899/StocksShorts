@@ -9,7 +9,7 @@ interface BottomNavigationProps {
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'sebi-ria', label: 'Connect SEBI RIA', icon: ShieldCheck },
-  { id: 'contact', label: 'Chat', icon: MessageCircle },
+  { id: 'contact', label: 'AskQuery', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
 

@@ -137,6 +137,6 @@ Preferred communication style: Simple, everyday language.
 11. Research Report
 
 ### Navigation Requirements
-- Connect (SEBI RIA): Clean "Coming Soon" message for investment advisor connections, uses "Connect" label for clarity
-- Chat (Contact): One-click messaging via mailto link (opens user's email app)
+- Connect (SEBI RIA): Clean "Coming Soon" message for investment advisor connections, uses "Connect SEBI RIA" label for clarity
+- AskQuery (Contact): One-click messaging via mailto link (opens user's email app)
 - Profile: Gmail-only authentication with no additional forms or information required
