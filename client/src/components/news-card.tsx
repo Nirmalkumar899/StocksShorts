@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Share2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
+import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
 
 interface NewsCardProps {
