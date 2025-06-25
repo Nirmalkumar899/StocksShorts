@@ -8,8 +8,8 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'sebi-ria', label: 'SEBI RIA', icon: ShieldCheck },
-  { id: 'contact', label: 'Contact', icon: MessageCircle },
+  { id: 'sebi-ria', label: 'Connect', icon: ShieldCheck },
+  { id: 'contact', label: 'Chat', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
 ];
 

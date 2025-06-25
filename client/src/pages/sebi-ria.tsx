@@ -21,7 +21,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
           </Button>
           <div className="flex items-center space-x-2">
             <ShieldCheck className="h-5 w-5 text-blue-600" />
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">SEBI RIA</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Connect with SEBI RIA</h1>
           </div>
         </div>
       </div>
@@ -32,9 +32,9 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
             <div className="mx-auto mb-4 p-3 bg-blue-100 dark:bg-blue-900 rounded-full w-fit">
               <ShieldCheck className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <CardTitle className="text-xl">SEBI Registered Investment Advisor</CardTitle>
+            <CardTitle className="text-xl">Connect with SEBI RIA</CardTitle>
             <CardDescription>
-              Connect with certified investment advisors registered with SEBI
+              Connect with certified SEBI Registered Investment Advisors
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

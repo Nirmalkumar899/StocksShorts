@@ -99,6 +99,19 @@ export default function Home() {
     }
   };
 
+  const handleTabChange = (tab: string) => {
+    if (tab === 'home') {
+      // Already on home, do nothing
+      return;
+    } else if (tab === 'sebi-ria') {
+      window.location.href = '/sebi-ria';
+    } else if (tab === 'contact') {
+      window.location.href = '/contact';
+    } else if (tab === 'profile') {
+      window.location.href = '/profile';
+    }
+  };
+
   // Debug log
   console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
