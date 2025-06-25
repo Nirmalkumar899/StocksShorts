@@ -5,7 +5,12 @@ import {
   TrendingUp, 
   Rocket, 
   PiggyBank, 
-  Bitcoin 
+  Bitcoin,
+  FileText,
+  Zap,
+  Award,
+  BookOpen,
+  Target
 } from "lucide-react";
 
 interface CategoryFilterProps {
@@ -15,11 +20,15 @@ interface CategoryFilterProps {
 
 const categories = [
   { id: 'all', label: 'All', icon: Globe },
-  { id: 'nifty', label: 'Nifty', icon: BarChart3 },
-  { id: 'sensex', label: 'Sensex', icon: TrendingUp },
-  { id: 'ipos', label: 'IPOs', icon: Rocket },
-  { id: 'mutual-funds', label: 'Mutual Funds', icon: PiggyBank },
-  { id: 'crypto', label: 'Crypto', icon: Bitcoin },
+  { id: 'index', label: 'Index', icon: BarChart3 },
+  { id: 'warrants', label: 'Warrants', icon: FileText },
+  { id: 'stocksshorts-special', label: 'StocksShorts Special', icon: Award },
+  { id: 'breakout-stocks', label: 'Breakout Stocks', icon: TrendingUp },
+  { id: 'educational', label: 'Educational', icon: BookOpen },
+  { id: 'ipo', label: 'IPO', icon: Rocket },
+  { id: 'global', label: 'Global', icon: Globe },
+  { id: 'most-active', label: 'Most Active', icon: Zap },
+  { id: 'order-win', label: 'Order Win', icon: Target },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {

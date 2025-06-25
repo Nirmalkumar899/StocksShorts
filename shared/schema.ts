@@ -12,11 +12,12 @@ export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  type: text("type").notNull(), // NIFTY, SENSEX, IPO, MARKET, CRYPTO, etc.
+  type: text("type").notNull(), // Index, Warrants, StocksShorts Special, Breakout Stocks, Educational, IPO, Global, Most Active, Order Win
   time: timestamp("time").notNull(),
   source: text("source").notNull(),
   sentiment: text("sentiment").notNull(), // Positive, Negative, Neutral
   priority: text("priority").notNull(), // High, Medium, Low
+  imageUrl: text("image_url"), // URL for article image
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -45,4 +46,5 @@ export interface GoogleSheetsRow {
   Source: string;
   Sentiment: string;
   Priority: string;
+  ImageURL: string;
 }

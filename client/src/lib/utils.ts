@@ -50,18 +50,28 @@ export function getSentimentColor(sentiment: string): string {
 
 export function getTypeColor(type: string): string {
   switch (type.toLowerCase()) {
-    case 'nifty':
+    case 'index':
       return 'success';
-    case 'sensex':
-      return 'success';
-    case 'ipo':
-    case 'ipos':
+    case 'warrants':
+      return 'warning';
+    case 'stocksshorts special':
+    case 'stocksshorts-special':
       return 'primary';
-    case 'crypto':
-      return 'orange-500';
-    case 'mutual':
-    case 'mutual-funds':
+    case 'breakout stocks':
+    case 'breakout-stocks':
+      return 'success';
+    case 'educational':
+      return 'info';
+    case 'ipo':
+      return 'primary';
+    case 'global':
       return 'purple-500';
+    case 'most active':
+    case 'most-active':
+      return 'orange-500';
+    case 'order win':
+    case 'order-win':
+      return 'success';
     default:
       return 'primary';
   }

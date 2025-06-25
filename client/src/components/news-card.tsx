@@ -38,9 +38,24 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   return (
     <Card 
-      className={`bg-white dark:bg-neutral-900 shadow-sm border-l-4 ${getBorderColor()} hover:shadow-md transition-all duration-200 cursor-pointer`}
+      className={`bg-white dark:bg-neutral-900 shadow-sm border-l-4 ${getBorderColor()} hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden`}
       onClick={onClick}
     >
+      {/* Article Image */}
+      {article.imageUrl && (
+        <div className="w-full h-48 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
+          <img 
+            src={article.imageUrl} 
+            alt={article.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+      
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-2">
