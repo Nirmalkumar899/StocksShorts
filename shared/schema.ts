@@ -40,15 +40,15 @@ export type Article = typeof articles.$inferSelect;
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  company: text("company"),
-  designation: text("designation"),
+  company: text("company").default(''),
+  designation: text("designation").default(''),
   phone: text("phone").notNull(),
   email: text("email").notNull(),
-  website: text("website"),
-  specialization: text("specialization"),
-  experience: text("experience"),
-  location: text("location"),
-  rating: text("rating"),
+  website: text("website").default(''),
+  specialization: text("specialization").default(''),
+  experience: text("experience").default(''),
+  location: text("location").default(''),
+  rating: text("rating").default('4.0'),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

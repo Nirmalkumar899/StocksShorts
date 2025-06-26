@@ -115,6 +115,10 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 26, 2025: Transformed SEBI RIA section into professional Investment Advisory directory with search functionality
+- June 26, 2025: Added Investment Advisor data model and Google Sheets "IA" tab integration
+- June 26, 2025: Created Practo-style advisor profiles with contact details, specialization, and ratings
+- June 26, 2025: Implemented search functionality for advisor directory by name, company, specialization, and location
 - June 26, 2025: Added PWA features with download icon for home screen installation
 - June 26, 2025: Created special visual effects for "Special" category with golden gradient and shimmer animation
 - June 26, 2025: Fixed Google Sheets integration to properly use category column for article filtering

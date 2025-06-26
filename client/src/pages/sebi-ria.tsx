@@ -14,16 +14,16 @@ interface SebiRiaProps {
 export default function SebiRia({ onBack }: SebiRiaProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: advisors = [], isLoading, error } = useQuery({
+  const { data: advisors = [], isLoading, error } = useQuery<InvestmentAdvisor[]>({
     queryKey: ["/api/investment-advisors"],
     retry: false,
   });
 
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
     advisor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    advisor.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    advisor.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    advisor.location.toLowerCase().includes(searchTerm.toLowerCase())
+    (advisor.company || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (advisor.specialization || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (advisor.location || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCall = (phone: string) => {
@@ -34,7 +34,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     window.open(`mailto:${email}`, '_self');
   };
 
-  const handleWebsite = (website: string) => {
+  const handleWebsite = (website: string | null) => {
     if (website) {
       const url = website.startsWith('http') ? website : `https://${website}`;
       window.open(url, '_blank');
