@@ -44,8 +44,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     >
       {/* Inshorts-style layout: Image top, content bottom */}
       
-      {/* Article Image - Top half */}
-      <div className="h-1/2 bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
+      {/* Article Image - Reduced height for more content space */}
+      <div className="h-2/5 bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
         <img 
           src={article.imageUrl || getContextualImage(article)} 
           alt={article.title}
@@ -74,8 +74,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </Button>
       </div>
       
-      {/* Article Content - Bottom half */}
-      <div className="h-1/2 bg-white dark:bg-gray-900 p-4 flex flex-col">
+      {/* Article Content - Expanded for better readability */}
+      <div className="h-3/5 bg-white dark:bg-gray-900 p-4 flex flex-col">
         {/* Header with sentiment and source */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
