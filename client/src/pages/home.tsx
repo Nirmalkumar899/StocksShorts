@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
@@ -10,11 +10,31 @@ import Header from '@/components/header';
 import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
+import SebiRia from '@/pages/sebi-ria';
+import Contact from '@/pages/contact';
+import Profile from '@/pages/profile';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeSection, setActiveSection] = useState('home');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Preload investment advisors data for faster navigation
+  useQuery({
+    queryKey: ["/api/investment-advisors"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false,
+  });
+
+  // Fast section switching handler
+  const handleSectionChange = useCallback((section: string) => {
+    console.log('Tab clicked:', section);
+    setActiveSection(section);
+    if (section === 'sebi-ria') {
+      console.log('Navigating to SEBI RIA');
+    }
+  }, []);
 
   // Fetch articles based on selected category
   const {
@@ -112,28 +132,30 @@ export default function Home() {
     }
   };
 
+  // Fast client-side navigation - no page reloads
   const handleTabChange = (tab: string) => {
-    console.log('Tab clicked:', tab);
-    if (tab === 'home') {
-      // Already on home, do nothing
-      return;
-    } else if (tab === 'sebi-ria') {
-      console.log('Navigating to SEBI RIA');
-      window.location.href = '/sebi-ria';
-    } else if (tab === 'contact') {
-      console.log('Navigating to Contact');
-      window.location.href = '/contact';
-    } else if (tab === 'profile') {
-      console.log('Navigating to Profile');
-      window.location.href = '/profile';
-    }
+    handleSectionChange(tab);
   };
 
   // Debug log
   console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
-  return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+  // Render different sections based on activeSection
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'sebi-ria':
+        return <SebiRia onBack={() => setActiveSection('home')} />;
+      case 'contact':
+        return <Contact onBack={() => setActiveSection('home')} />;
+      case 'profile':
+        return <Profile onBack={() => setActiveSection('home')} />;
+      default:
+        return renderHomeContent();
+    }
+  };
+
+  const renderHomeContent = () => (
+    <>
       {/* Fixed Header */}
       <div className="flex-shrink-0">
         <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
@@ -201,10 +223,16 @@ export default function Home() {
           </div>
         )}
       </div>
+    </>
+  );
 
+  return (
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+      {renderSection()}
+      
       {/* Fixed Bottom Navigation */}
       <div className="flex-shrink-0">
-        <BottomNavigation activeTab="home" onTabChange={handleTabChange} />
+        <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
       </div>
     </div>
   );
