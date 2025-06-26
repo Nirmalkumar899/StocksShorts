@@ -10,7 +10,15 @@ import {
   Zap,
   Award,
   BookOpen,
-  Target
+  Target,
+  Crown,
+  Activity,
+  Building2,
+  ScrollText,
+  Briefcase,
+  Users,
+  DollarSign,
+  Star
 } from "lucide-react";
 
 interface CategoryFilterProps {
@@ -19,17 +27,17 @@ interface CategoryFilterProps {
 }
 
 const categories = [
-  { id: 'all', label: 'Trending', icon: TrendingUp },
-  { id: 'stocksshorts-special', label: 'Special', icon: Award, special: true },
-  { id: 'breakout-stocks', label: 'Breakout', icon: TrendingUp },
-  { id: 'index', label: 'Index', icon: BarChart3 },
-  { id: 'warrants', label: 'Warrants', icon: FileText },
-  { id: 'educational', label: 'Educational', icon: BookOpen },
-  { id: 'ipo', label: 'IPO', icon: Rocket },
-  { id: 'global', label: 'Global', icon: Globe },
-  { id: 'most-active', label: 'Active', icon: Zap },
-  { id: 'order-win', label: 'Orders', icon: Target },
-  { id: 'research-report', label: 'Research', icon: FileText },
+  { id: 'all', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500' },
+  { id: 'stocksshorts-special', label: 'Special', icon: Crown, special: true, gradient: 'from-amber-500 to-orange-500' },
+  { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500' },
+  { id: 'index', label: 'Index', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500' },
+  { id: 'warrants', label: 'Warrants', icon: ScrollText, gradient: 'from-purple-500 to-violet-500' },
+  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500' },
+  { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500' },
+  { id: 'global', label: 'Global', icon: Globe, gradient: 'from-teal-500 to-cyan-500' },
+  { id: 'most-active', label: 'Active', icon: Zap, gradient: 'from-yellow-500 to-amber-500' },
+  { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500' },
+  { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500' },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
@@ -44,27 +52,61 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
           return (
             <Button
               key={category.id}
-              variant={isSelected ? "default" : "outline"}
+              variant="ghost"
               size="sm"
               onClick={() => onCategoryChange(category.id)}
               className={`
-                relative flex flex-col items-center justify-center p-1.5 h-12 text-xs font-medium transition-all duration-200 overflow-hidden
+                group relative flex flex-col items-center justify-center p-2 h-14 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
                 ${isSelected
                   ? isSpecial
-                    ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white shadow-xl border-0 transform scale-105 ring-2 ring-amber-300 animate-pulse'
-                    : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg border-0 transform scale-105'
+                    ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white shadow-2xl transform scale-110 ring-4 ring-amber-200 dark:ring-amber-800'
+                    : `bg-gradient-to-br ${category.gradient} text-white shadow-xl transform scale-105 ring-2 ring-white/30`
                   : isSpecial
-                  ? 'bg-gradient-to-br from-amber-100 via-orange-100 to-red-100 dark:from-amber-900/30 dark:via-orange-900/30 dark:to-red-900/30 text-amber-700 dark:text-amber-400 border-2 border-amber-300 dark:border-amber-600 hover:shadow-lg hover:scale-105 special-shimmer'
-                  : 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 hover:border-blue-200 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 hover:shadow-md hover:scale-102'
+                  ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-950/50 dark:via-orange-950/50 dark:to-red-950/50 text-amber-600 dark:text-amber-300 border-2 border-amber-200 dark:border-amber-700 hover:shadow-lg hover:scale-105 hover:border-amber-300 dark:hover:border-amber-600'
+                  : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 hover:shadow-lg hover:scale-105 hover:border-gray-300 dark:hover:border-gray-600 backdrop-blur-sm'
                 }
               `}
             >
-              <Icon className={`h-3 w-3 mb-0.5 ${isSpecial && !isSelected ? 'text-amber-600 dark:text-amber-300' : ''}`} />
-              <span className="text-[9px] leading-tight text-center break-words">
+              {/* Icon with enhanced styling */}
+              <div className={`
+                relative flex items-center justify-center w-6 h-6 mb-1 rounded-lg transition-all duration-300
+                ${isSelected
+                  ? 'bg-white/20 backdrop-blur-sm'
+                  : isSpecial
+                  ? 'bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40'
+                  : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
+                }
+              `}>
+                <Icon className={`h-3.5 w-3.5 transition-all duration-300 ${
+                  isSelected 
+                    ? 'text-white drop-shadow-sm' 
+                    : isSpecial 
+                    ? 'text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300' 
+                    : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                }`} />
+              </div>
+              
+              {/* Label with improved typography */}
+              <span className={`text-[8px] leading-none text-center break-words font-bold tracking-wide ${
+                isSelected 
+                  ? 'text-white drop-shadow-sm' 
+                  : isSpecial 
+                  ? 'text-amber-700 dark:text-amber-300' 
+                  : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+              }`}>
                 {category.label}
               </span>
+              
+              {/* Special indicator dot */}
               {isSpecial && !isSelected && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full animate-ping"></div>
+                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+              )}
+              
+              {/* Hover gradient overlay */}
+              {!isSelected && !isSpecial && (
+                <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-xl`}></div>
               )}
             </Button>
           );
