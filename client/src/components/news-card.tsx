@@ -56,8 +56,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         />
       </div>
       
-      {/* Content Overlay - Reduced size for better image visibility */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/90 to-transparent p-3 text-white min-h-[40%] flex flex-col justify-end backdrop-blur-sm">
+      {/* Content Overlay - Optimized for readability */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/95 to-transparent p-3 text-white max-h-[45%] flex flex-col backdrop-blur-sm">
         <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-sm drop-shadow-lg">
@@ -80,12 +80,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </Button>
         </div>
         
-        <h2 className="text-base font-bold text-white leading-tight mb-1.5 flex-shrink-0 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <h2 className="text-sm font-bold text-white leading-tight mb-1.5 flex-shrink-0 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
           {article.title}
         </h2>
         
-        <div className="text-white text-xs leading-relaxed mb-2 flex-1 overflow-y-auto drop-shadow-md line-clamp-3" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-          {article.content.length > 120 ? `${article.content.substring(0, 120)}...` : article.content}
+        <div className="text-white text-xs leading-[1.4] flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/30 drop-shadow-md pr-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+          {article.content}
         </div>
         
         <div className="flex flex-col space-y-2 text-white text-xs flex-shrink-0 drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
