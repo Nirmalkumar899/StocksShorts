@@ -39,7 +39,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   return (
     <div 
-      className="h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden"
+      className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
+        article.sentiment.toLowerCase() === 'positive' ? 'border-l-green-500' :
+        article.sentiment.toLowerCase() === 'negative' ? 'border-l-red-500' :
+        'border-l-gray-400'
+      }`}
       onClick={onClick}
     >
       {/* Inshorts-style layout: Image top, content bottom */}
@@ -76,18 +80,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       
       {/* Article Content - Expanded for better readability */}
       <div className="h-3/5 bg-white dark:bg-gray-900 p-4 flex flex-col">
-        {/* Header with sentiment and source */}
+        {/* Header with source and time */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500' :
-              article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500' :
-              'bg-gray-400'
-            }`}></div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {article.source}
-            </span>
-          </div>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {article.source}
+          </span>
           <span className="text-xs text-gray-400 dark:text-gray-500">
             {formatTimeAgo(article.time)}
           </span>
