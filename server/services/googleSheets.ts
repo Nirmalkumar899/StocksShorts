@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import type { GoogleSheetsRow, Article } from '@shared/schema';
+import type { GoogleSheetsRow, Article, InvestmentAdvisorRow, InvestmentAdvisor } from '@shared/schema';
 import { sampleArticles } from '../sampleData';
 
 export class GoogleSheetsService {
@@ -152,5 +152,46 @@ export class GoogleSheetsService {
           return articleType.toLowerCase().includes(categoryId.replace('-', ' '));
       }
     });
+  }
+
+  async fetchInvestmentAdvisors(): Promise<InvestmentAdvisor[]> {
+    // If Google Sheets credentials are not configured, return empty array
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
+      console.log('Google Sheets credentials not configured for Investment Advisors');
+      return [];
+    }
+
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'IA!A2:J', // Name, Company, Designation, Phone, Email, Website, Specialization, Experience, Location, Rating
+      });
+
+      const rows: string[][] = response.data.values || [];
+      
+      const advisors: InvestmentAdvisor[] = rows
+        .filter(row => row.length >= 5) // At least Name, Company, Designation, Phone, Email
+        .map((row, index) => {
+          return {
+            id: index + 1,
+            name: row[0] || 'Unknown',
+            company: row[1] || '',
+            designation: row[2] || '',
+            phone: row[3] || '',
+            email: row[4] || '',
+            website: row[5] || '',
+            specialization: row[6] || '',
+            experience: row[7] || '',
+            location: row[8] || '',
+            rating: row[9] || '4.0',
+            createdAt: new Date(),
+          };
+        });
+
+      return advisors;
+    } catch (error) {
+      console.error('Error fetching Investment Advisors from Google Sheets:', error);
+      return [];
+    }
   }
 }

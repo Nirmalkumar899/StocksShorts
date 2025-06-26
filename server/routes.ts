@@ -81,6 +81,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get Investment Advisors
+  app.get("/api/investment-advisors", async (req, res) => {
+    try {
+      const advisors = await googleSheetsService.fetchInvestmentAdvisors();
+      res.json(advisors);
+    } catch (error) {
+      console.error('Error fetching investment advisors:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

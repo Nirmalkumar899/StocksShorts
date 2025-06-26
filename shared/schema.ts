@@ -36,6 +36,30 @@ export type User = typeof users.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
+// Investment Advisor table
+export const investmentAdvisors = pgTable("investment_advisors", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  company: text("company"),
+  designation: text("designation"),
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  website: text("website"),
+  specialization: text("specialization"),
+  experience: text("experience"),
+  location: text("location"),
+  rating: text("rating"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdvisors).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertInvestmentAdvisor = z.infer<typeof insertInvestmentAdvisorSchema>;
+export type InvestmentAdvisor = typeof investmentAdvisors.$inferSelect;
+
 // Google Sheets row structure
 export interface GoogleSheetsRow {
   ID: string;
@@ -48,4 +72,18 @@ export interface GoogleSheetsRow {
   Priority: string;
   ImageURL: string;
   Category: string;
+}
+
+// Investment Advisor Google Sheets row structure
+export interface InvestmentAdvisorRow {
+  Name: string;
+  Company: string;
+  Designation: string;
+  Phone: string;
+  Email: string;
+  Website: string;
+  Specialization: string;
+  Experience: string;
+  Location: string;
+  Rating: string;
 }
