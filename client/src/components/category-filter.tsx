@@ -35,7 +35,7 @@ const categories = [
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="grid grid-cols-6 gap-2 p-3">
+      <div className="grid grid-cols-6 gap-1.5 px-2 py-2">
         {categories.map((category) => {
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
@@ -48,7 +48,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               size="sm"
               onClick={() => onCategoryChange(category.id)}
               className={`
-                relative flex flex-col items-center justify-center p-2 h-14 text-xs font-medium transition-all duration-200 overflow-hidden
+                relative flex flex-col items-center justify-center p-1.5 h-12 text-xs font-medium transition-all duration-200 overflow-hidden
                 ${isSelected
                   ? isSpecial
                     ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 text-white shadow-xl border-0 transform scale-105 ring-2 ring-amber-300 animate-pulse'
@@ -59,8 +59,8 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
                 }
               `}
             >
-              <Icon className={`h-3.5 w-3.5 mb-1 ${isSpecial && !isSelected ? 'text-amber-600 dark:text-amber-300' : ''}`} />
-              <span className="text-[10px] leading-tight text-center break-words">
+              <Icon className={`h-3 w-3 mb-0.5 ${isSpecial && !isSelected ? 'text-amber-600 dark:text-amber-300' : ''}`} />
+              <span className="text-[9px] leading-tight text-center break-words">
                 {category.label}
               </span>
               {isSpecial && !isSelected && (
