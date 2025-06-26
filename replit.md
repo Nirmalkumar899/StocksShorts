@@ -126,6 +126,9 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 - June 26, 2025: Created special visual effects for "Special" category with golden gradient and shimmer animation
 - June 26, 2025: Fixed Google Sheets integration to properly use category column for article filtering
 - June 26, 2025: Enhanced category filtering system to match exact Google Sheets structure
+- June 26, 2025: Enhanced sentiment indicators from dots to colored left borders (green/red/gray) for better visual prominence
+- June 26, 2025: Removed static rating display from SEBI RIA section and added interactive user rating system
+- June 26, 2025: Enhanced SEBI RIA visual design with gradient effects, modern cards, and premium styling
 - June 25, 2025: Restored all original categories in proper order: Trending, Special, Breakout, Index, Warrants, Educational, IPO, Global, Active, Orders, Research
 - June 25, 2025: Arranged categories in 2-row grid layout with 6 columns (11 total categories)
 - June 25, 2025: Updated bottom navigation with SEBI RIA, Contact, and Profile sections
