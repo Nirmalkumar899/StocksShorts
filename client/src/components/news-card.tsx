@@ -39,52 +39,67 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   return (
     <div 
-      className="h-full snap-start flex flex-col bg-white dark:bg-neutral-900 relative overflow-hidden cursor-pointer"
+      className="h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden"
       onClick={onClick}
     >
-      {/* Article Image - Takes most of the space */}
-      <div className="flex-1 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
+      {/* Inshorts-style layout: Image top, content bottom */}
+      
+      {/* Article Image - Top half */}
+      <div className="h-1/2 bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
         <img 
           src={article.imageUrl || getContextualImage(article)} 
           alt={article.title}
           className="w-full h-full object-cover"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            // Fallback to contextual image if original fails
             target.src = getContextualImage(article);
           }}
         />
-      </div>
-      
-      {/* Content Overlay - Optimized for readability */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/95 to-transparent p-3 text-white max-h-[45%] flex flex-col backdrop-blur-sm">
-        <div className="flex items-center justify-between mb-2 flex-shrink-0">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white border border-white/20 backdrop-blur-sm drop-shadow-lg">
-              {article.type.toUpperCase()}
-            </span>
-            {/* Sentiment color indicator with better contrast */}
-            <div className={`w-3 h-3 rounded-full border-2 border-white/50 drop-shadow-lg ${
-              article.sentiment.toLowerCase() === 'positive' ? 'bg-green-400' :
-              article.sentiment.toLowerCase() === 'negative' ? 'bg-red-400' :
-              'bg-gray-400'
-            }`}></div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onShare}
-            className="text-white/80 hover:text-white transition-colors p-1"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
+        
+        {/* Category badge on image */}
+        <div className="absolute top-3 left-3">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/70 text-white border border-white/30 backdrop-blur-sm">
+            {article.type.toUpperCase()}
+          </span>
         </div>
         
-        <h2 className="text-sm font-bold text-white leading-tight mb-1.5 flex-shrink-0 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        {/* Share button on image */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onShare}
+          className="absolute top-3 right-3 text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      {/* Article Content - Bottom half */}
+      <div className="h-1/2 bg-white dark:bg-gray-900 p-4 flex flex-col">
+        {/* Header with sentiment and source */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${
+              article.sentiment.toLowerCase() === 'positive' ? 'bg-green-500' :
+              article.sentiment.toLowerCase() === 'negative' ? 'bg-red-500' :
+              'bg-gray-400'
+            }`}></div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {article.source}
+            </span>
+          </div>
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            {formatTimeAgo(article.time)}
+          </span>
+        </div>
+        
+        {/* Title */}
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-3">
           {article.title}
         </h2>
         
-        <div className="text-white text-xs leading-[1.4] flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/30 drop-shadow-md pr-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+        {/* Content */}
+        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto">
           {article.content}
         </div>
         

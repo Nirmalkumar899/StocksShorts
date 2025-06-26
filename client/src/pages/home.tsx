@@ -188,14 +188,15 @@ export default function Home() {
           </div>
         ) : (
           // News Cards - Inshorts style full-screen layout
-          <div className="h-full overflow-y-auto snap-y snap-mandatory">
+          <div className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
             {articles.map((article) => (
-              <NewsCard
-                key={article.id}
-                article={article}
-                onClick={() => handleArticleClick(article)}
-                onShare={(e) => handleShare(e, article)}
-              />
+              <div key={article.id} className="h-full snap-start">
+                <NewsCard
+                  article={article}
+                  onClick={() => handleArticleClick(article)}
+                  onShare={(e) => handleShare(e, article)}
+                />
+              </div>
             ))}
           </div>
         )}
