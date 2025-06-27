@@ -9,17 +9,17 @@ interface DisclaimerProps {
 
 export default function Disclaimer({ onBack }: DisclaimerProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-10">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center space-x-3 max-w-4xl mx-auto">
-          <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-gray-100 dark:hover:bg-gray-800">
+          <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-gray-100 dark:hover:bg-gray-700">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center space-x-2">
             <Shield className="h-5 w-5 text-blue-600" />
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Terms & Disclaimer
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Disclaimer
             </h1>
           </div>
         </div>
@@ -27,23 +27,23 @@ export default function Disclaimer({ onBack }: DisclaimerProps) {
 
       {/* Content */}
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Main Disclaimer Card */}
-          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <CardContent className="p-8">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <CardContent className="p-6">
               <div className="flex items-start space-x-4 mb-6">
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Important Notice
                   </h2>
                   <Badge variant="destructive" className="mb-4">
                     Not Investment Advice
                   </Badge>
-                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300 leading-relaxed">
-                    This content is for <strong>informational purposes only</strong> and is not investment advice. 
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                    This content is for informational purposes only and is not investment advice. 
                     Please do your own research or consult a qualified financial advisor before making any investment decisions.
                   </p>
                 </div>

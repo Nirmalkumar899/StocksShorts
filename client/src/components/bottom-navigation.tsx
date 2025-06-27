@@ -9,9 +9,9 @@ interface BottomNavigationProps {
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'sebi-ria', label: 'Connect', icon: ShieldCheck },
-  { id: 'contact', label: 'AskQuery', icon: MessageCircle },
+  { id: 'contact', label: 'Feed', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'disclaimer', label: 'Terms', icon: FileText },
+  { id: 'disclaimer', label: 'Disclaimer', icon: FileText },
 ];
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {

@@ -127,17 +127,17 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
       )}
 
       {/* SEBI RIA Directory Overview */}
-      <Card className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
-        <CardContent className="p-6 text-center">
-          <div className="flex items-center justify-center mb-3">
-            <Shield className="h-6 w-6 mr-2" />
-            <h2 className="text-xl font-bold">SEBI RIA Directory</h2>
+      <Card className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6">
+          <div className="flex items-center mb-4">
+            <Shield className="h-5 w-5 mr-2 text-blue-600" />
+            <h2 className="text-lg font-semibold">SEBI RIA Directory</h2>
           </div>
-          <div className="bg-white/20 p-4 rounded-lg">
-            <div className="text-3xl font-bold mb-2">{advisors.length}</div>
-            <p className="text-sm">Registered Investment Advisors</p>
-            <p className="text-xs mt-2 text-blue-100">
-              All advisors are SEBI verified • Use search to find specific advisors
+          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+            <div className="text-2xl font-bold mb-1 text-gray-800 dark:text-white">{advisors.length}</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Registered Investment Advisors</p>
+            <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+              All advisors are SEBI verified. Use search to find specific advisors.
             </p>
           </div>
         </CardContent>
@@ -224,27 +224,27 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         ) : (
           // Show guidance when no search
           <div className="space-y-6">
-            <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <h2 className="text-xl font-bold mb-3">Find Your Investment Advisor</h2>
-                <p className="text-blue-100 mb-4">
+                <h2 className="text-lg font-semibold mb-3">Find Your Investment Advisor</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Search through {advisors.length} SEBI registered advisors to find the right match for your investment needs.
                 </p>
                 <Button 
                   onClick={() => setShowSearch(true)}
-                  className="bg-white text-blue-600 hover:bg-blue-50"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
                 >
                   Start Searching
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4 text-center">How to Choose the Right Advisor</h3>
+                <h3 className="font-semibold text-lg mb-4">How to Choose the Right Advisor</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">Check Credentials</h4>
+                    <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-200">Check Credentials</h4>
                     <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
                       <li>• SEBI registration number</li>
                       <li>• Valid license status</li>
@@ -252,7 +252,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">Understand Fees</h4>
+                    <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-200">Understand Fees</h4>
                     <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
                       <li>• Fee structure transparency</li>
                       <li>• No hidden charges</li>

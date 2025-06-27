@@ -117,6 +117,9 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Transformed "AskQuery" tab into anonymous "Feed" for stock discussions with moderation controls, Q&A format, voting system, and clean styling matching home page
+- June 27, 2025: **MAJOR**: Updated all sections (SEBI RIA, Disclaimer) to use consistent clean styling matching home page - removed colorful gradients for professional appearance
+- June 27, 2025: Renamed "Terms" navigation to "Disclaimer" for clearer user understanding
 - June 27, 2025: **MAJOR**: Enhanced SEBI RIA section with educational content explaining what SEBI RIA is, investor rights, and news bulletin style advisor directory with scrolling ticker
 - June 27, 2025: **MAJOR**: Added IPO/SME updates to AI section with grey market premium analysis, subscription dates, and business details
 - June 27, 2025: **MAJOR**: Updated AI news to focus on breakout stocks, sector index breakouts (Bank Nifty, IT Index, etc.), research reports (small/mid/large cap), and order wins >10% revenue
