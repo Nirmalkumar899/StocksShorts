@@ -28,6 +28,16 @@ export default function Home() {
     retry: false,
   });
 
+  // Preload images for visible articles
+  const preloadImages = useCallback((articleList: Article[]) => {
+    const imagesToPreload = articleList.slice(0, 8); // Preload first 8 images
+    imagesToPreload.forEach(article => {
+      const img = new Image();
+      img.src = article.imageUrl || getContextualImage(article);
+      img.loading = 'eager';
+    });
+  }, []);
+
   // Fast section switching handler
   const handleSectionChange = useCallback((section: string) => {
     console.log('Tab clicked:', section);
