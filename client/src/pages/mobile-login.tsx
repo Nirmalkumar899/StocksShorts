@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useQueryClient } from "@tanstack/react-query";
 import { Smartphone, ArrowLeft } from "lucide-react";
 
 interface MobileLoginProps {
@@ -81,6 +82,9 @@ export default function MobileLogin({ onBack, onLoginSuccess }: MobileLoginProps
         phoneNumber: phoneNumber.replace(/\s/g, ''), 
         otp 
       });
+
+      // Invalidate auth cache to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
 
       toast({
         title: "Login Successful",
