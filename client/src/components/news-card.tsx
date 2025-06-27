@@ -115,16 +115,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </div>
         
         {/* Source and time - moved below content */}
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
+        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <span className="truncate">{article.source}</span>
           <span className="ml-2 flex-shrink-0">{formatTimeAgo(article.time)}</span>
-        </div>
-        
-        {/* Disclaimer - moved to bottom */}
-        <div className="border-t border-gray-100 dark:border-gray-800 pt-2">
-          <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
-            <span className="font-medium">Disclaimer:</span> This content is for informational purposes only and is not investment advice. Please do your own research or consult a financial advisor.
-          </p>
         </div>
         
         <div className="flex flex-col space-y-2 text-white text-xs flex-shrink-0 drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>

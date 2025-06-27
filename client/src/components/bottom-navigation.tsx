@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, ShieldCheck, MessageCircle, User } from "lucide-react";
+import { Home, ShieldCheck, MessageCircle, User, FileText } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -8,9 +8,10 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'sebi-ria', label: 'Connect SEBI RIA', icon: ShieldCheck },
+  { id: 'sebi-ria', label: 'Connect', icon: ShieldCheck },
   { id: 'contact', label: 'AskQuery', icon: MessageCircle },
   { id: 'profile', label: 'Profile', icon: User },
+  { id: 'disclaimer', label: 'Terms', icon: FileText },
 ];
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {

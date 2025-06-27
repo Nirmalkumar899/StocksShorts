@@ -14,6 +14,7 @@ import BottomNavigation from '@/components/bottom-navigation';
 import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
+import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -160,6 +161,8 @@ export default function Home() {
         return <Contact onBack={() => setActiveSection('home')} />;
       case 'profile':
         return <Profile onBack={() => setActiveSection('home')} />;
+      case 'disclaimer':
+        return <Disclaimer onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }

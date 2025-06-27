@@ -115,6 +115,10 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: Created dedicated disclaimer page accessible via "Terms" tab in bottom navigation
+- June 27, 2025: Removed disclaimer from news cards for cleaner, better-placed article layout
+- June 27, 2025: Enhanced performance with 30-second memory caching providing instant 2ms responses
+- June 27, 2025: Optimized image loading with preloading, skeleton animations, and smart fallbacks
 - June 26, 2025: Redesigned news cards to Inshorts-style layout with 40% image, 60% content split
 - June 26, 2025: Implemented full-screen vertical scrolling with snap-to-card navigation
 - June 26, 2025: Optimized category filter to be more compact for better content visibility
