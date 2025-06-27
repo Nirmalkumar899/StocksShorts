@@ -119,6 +119,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 - June 27, 2025: **MAJOR**: Fixed app startup issues and implemented working OTP authentication system with MSG91 integration (₹0.15 per SMS)
 - June 27, 2025: **MAJOR**: OTP verification system fully functional - successfully creating user accounts and managing authentication sessions
+- June 27, 2025: **MAJOR**: Real SMS delivery now working - MSG91 successfully sending OTPs to Indian phone numbers with proper delivery confirmation
 - June 27, 2025: **MAJOR**: Resolved all TypeScript errors, React warnings, and database connectivity issues for production-ready deployment
 - June 27, 2025: **MAJOR**: OTP authentication system now fully operational with real SMS delivery to Indian phone numbers
 - June 27, 2025: **MAJOR**: Transformed "AskQuery" tab into anonymous "Feed" for stock discussions with moderation controls, Q&A format, voting system, and clean styling matching home page
