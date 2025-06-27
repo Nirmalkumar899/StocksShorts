@@ -88,32 +88,54 @@ export class FinancialDataProvider {
     if (!process.env.ALPHA_VANTAGE_API_KEY) return null;
 
     try {
-      const response = await fetch(
-        `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}.BSE&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`
-      );
+      console.log(`Attempting Alpha Vantage for ${symbol}`);
+      
+      // Try multiple symbol formats for Indian stocks
+      const formats = [
+        `${symbol}.BSE`,
+        `${symbol}.NS`, 
+        `${symbol}.NSE`,
+        `${symbol}.BO`,
+        symbol
+      ];
 
-      if (!response.ok) return null;
+      for (const format of formats) {
+        const response = await fetch(
+          `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${format}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`
+        );
 
-      const data = await response.json();
-      if (!data.Symbol || data.Note) return null;
+        if (!response.ok) continue;
 
-      return {
-        symbol,
-        currentPrice: parseFloat(data.Price || '0'),
-        marketCap: parseFloat(data.MarketCapitalization || '0'),
-        pe: parseFloat(data.PERatio || '0'),
-        eps: parseFloat(data.EPS || '0'),
-        roe: parseFloat(data.ReturnOnEquityTTM || '0'),
-        debtToEquity: parseFloat(data.DebtToEquityRatio || '0'),
-        profitMargin: parseFloat(data.ProfitMargin || '0'),
-        bookValue: parseFloat(data.BookValue || '0'),
-        pb: parseFloat(data.PriceToBookRatio || '0'),
-        sector: data.Sector,
-        industry: data.Industry,
-        source: 'Alpha Vantage',
-        lastUpdated: new Date()
-      };
+        const data = await response.json();
+        if (data.Symbol && !data.Note && !data.Information) {
+          console.log(`Alpha Vantage success for ${symbol} using format ${format}`);
+          
+          return {
+            symbol,
+            currentPrice: parseFloat(data.Price || '0') || null,
+            marketCap: parseFloat(data.MarketCapitalization || '0') || null,
+            pe: parseFloat(data.PERatio || '0') || null,
+            eps: parseFloat(data.EPS || '0') || null,
+            roe: parseFloat(data.ReturnOnEquityTTM || '0') || null,
+            debtToEquity: parseFloat(data.DebtToEquityRatio || '0') || null,
+            profitMargin: parseFloat(data.ProfitMargin || '0') || null,
+            bookValue: parseFloat(data.BookValue || '0') || null,
+            pb: parseFloat(data.PriceToBookRatio || '0') || null,
+            sector: data.Sector || null,
+            industry: data.Industry || null,
+            source: 'Alpha Vantage',
+            lastUpdated: new Date()
+          };
+        }
+
+        // Rate limiting between attempts
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      console.log(`Alpha Vantage: No data found for ${symbol} in any format`);
+      return null;
     } catch (error) {
+      console.log(`Alpha Vantage error for ${symbol}:`, error);
       return null;
     }
   }
