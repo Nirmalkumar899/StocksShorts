@@ -104,28 +104,24 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       
       {/* Article Content - Expanded for better readability */}
       <div className="h-3/5 bg-white dark:bg-gray-900 p-4 flex flex-col">
-        {/* Header with source and time */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {article.source}
-          </span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            {formatTimeAgo(article.time)}
-          </span>
-        </div>
-        
         {/* Title */}
         <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-3">
           {article.title}
         </h2>
         
-        {/* Content */}
-        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto">
+        {/* Content - More space for article text */}
+        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto mb-3">
           {article.content}
         </div>
         
-        {/* Disclaimer */}
-        <div className="mt-2 pt-1">
+        {/* Source and time - moved below content */}
+        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <span className="truncate">{article.source}</span>
+          <span className="ml-2 flex-shrink-0">{formatTimeAgo(article.time)}</span>
+        </div>
+        
+        {/* Disclaimer - moved to bottom */}
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-2">
           <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
             <span className="font-medium">Disclaimer:</span> This content is for informational purposes only and is not investment advice. Please do your own research or consult a financial advisor.
           </p>
