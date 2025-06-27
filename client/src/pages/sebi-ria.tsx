@@ -19,16 +19,6 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     queryKey: ['/api/investment-advisors'],
   });
 
-  // Debug log to verify data is loaded
-  React.useEffect(() => {
-    if (advisors.length > 0) {
-      console.log(`✅ Directory loaded: ${advisors.length} advisors found`);
-      console.log('First 3 advisors:', advisors.slice(0, 3).map(a => a.name));
-    } else if (!isLoading) {
-      console.log('❌ Directory empty - no advisors loaded');
-    }
-  }, [advisors, isLoading]);
-
 
 
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
@@ -136,111 +126,144 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         </div>
       )}
 
-      {/* Continuous Train-Style News Ticker */}
-      <Card className="mb-6 bg-gradient-to-r from-red-800 to-red-900 text-white border-0 overflow-hidden">
-        <CardContent className="p-0">
-          <div className="bg-red-600 px-4 py-2 flex items-center justify-between">
-            <div className="flex items-center">
-              <ScrollText className="h-4 w-4 mr-2" />
-              <span className="font-bold text-sm">SEBI RIA DIRECTORY</span>
-            </div>
-            <Badge className="bg-white text-red-600 text-xs font-bold px-2 py-1 animate-pulse">
-              LIVE
-            </Badge>
+      {/* SEBI RIA Directory Overview */}
+      <Card className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+        <CardContent className="p-6 text-center">
+          <div className="flex items-center justify-center mb-3">
+            <Shield className="h-6 w-6 mr-2" />
+            <h2 className="text-xl font-bold">SEBI RIA Directory</h2>
           </div>
-          <div className="bg-black text-yellow-400 py-3 overflow-hidden relative">
-            <div className="ticker-wrapper">
-              <div className="ticker-content">
-                {/* First set - alphabetically sorted */}
-                {[...advisors]
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((advisor, index) => (
-                    <span key={`first-${advisor.id}`} className="inline-block mr-16 text-sm">
-                      <span className="text-white font-bold">{advisor.name || 'Unknown'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-yellow-400">{advisor.company || 'Unknown Company'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-blue-300">{advisor.specialization || 'General Advisory'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-green-300">{advisor.location || 'India'}</span>
-                    </span>
-                  ))}
-                
-                {/* Second set for seamless loop */}
-                {[...advisors]
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((advisor, index) => (
-                    <span key={`second-${advisor.id}`} className="inline-block mr-16 text-sm">
-                      <span className="text-white font-bold">{advisor.name || 'Unknown'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-yellow-400">{advisor.company || 'Unknown Company'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-blue-300">{advisor.specialization || 'General Advisory'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-green-300">{advisor.location || 'India'}</span>
-                    </span>
-                  ))}
-
-                {/* Third set for continuous flow */}
-                {[...advisors]
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((advisor, index) => (
-                    <span key={`third-${advisor.id}`} className="inline-block mr-16 text-sm">
-                      <span className="text-white font-bold">{advisor.name || 'Unknown'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-yellow-400">{advisor.company || 'Unknown Company'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-blue-300">{advisor.specialization || 'General Advisory'}</span>
-                      <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-green-300">{advisor.location || 'India'}</span>
-                    </span>
-                  ))}
-              </div>
-            </div>
+          <div className="bg-white/20 p-4 rounded-lg">
+            <div className="text-3xl font-bold mb-2">{advisors.length}</div>
+            <p className="text-sm">Registered Investment Advisors</p>
+            <p className="text-xs mt-2 text-blue-100">
+              All advisors are SEBI verified • Use search to find specific advisors
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Contact Information Section */}
+      {/* Advisory Directory */}
       <div className="space-y-6">
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
-          <CardContent className="p-6 text-center">
-            <h2 className="text-xl font-bold mb-3">Connect with SEBI Registered Advisors</h2>
-            <p className="text-blue-100 mb-4">
-              All advisors listed in the ticker above are SEBI registered and verified. 
-              Use the search function to find advisors by name, company, or specialization.
-            </p>
-            <div className="bg-white/20 p-4 rounded-lg">
-              <p className="text-sm">
-                <strong>Important:</strong> Always verify advisor credentials on SEBI website before making investment decisions.
+        {searchQuery && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Found {filteredAdvisors.length} advisor(s) matching "{searchQuery}"
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <CardContent className="p-6">
-            <h3 className="font-bold text-lg mb-4 text-center">How to Choose the Right Advisor</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">Check Credentials</h4>
-                <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
-                  <li>• SEBI registration number</li>
-                  <li>• Valid license status</li>
-                  <li>• Professional qualifications</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">Understand Fees</h4>
-                <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
-                  <li>• Fee structure transparency</li>
-                  <li>• No hidden charges</li>
-                  <li>• Written fee agreement</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {searchQuery ? (
+          // Show search results
+          <div className="space-y-4">
+            {filteredAdvisors.length === 0 ? (
+              <Card className="p-8 text-center">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="text-lg font-semibold mb-2">No advisors found</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Try searching by name, company, location, or specialization
+                </p>
+              </Card>
+            ) : (
+              filteredAdvisors.slice(0, 10).map((advisor: InvestmentAdvisor) => (
+                <Card key={advisor.id} className="hover:shadow-lg transition-shadow border-blue-100 dark:border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-1">
+                          {advisor.name}
+                        </h3>
+                        <p className="text-blue-600 dark:text-blue-400 font-medium">
+                          {advisor.designation} at {advisor.company}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                          {advisor.specialization}
+                        </Badge>
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          {advisor.location}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {advisor.phone && (
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <Phone className="h-4 w-4 mr-2" />
+                            <a href={`tel:${advisor.phone}`} className="hover:text-blue-600 transition-colors">
+                              {advisor.phone}
+                            </a>
+                          </div>
+                        )}
+                        {advisor.email && (
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <Mail className="h-4 w-4 mr-2" />
+                            <a href={`mailto:${advisor.email}`} className="hover:text-blue-600 transition-colors">
+                              {advisor.email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+            {filteredAdvisors.length > 10 && (
+              <Card className="p-4 text-center bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Showing first 10 results. Refine your search for more specific results.
+                </p>
+              </Card>
+            )}
+          </div>
+        ) : (
+          // Show guidance when no search
+          <div className="space-y-6">
+            <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+              <CardContent className="p-6 text-center">
+                <h2 className="text-xl font-bold mb-3">Find Your Investment Advisor</h2>
+                <p className="text-blue-100 mb-4">
+                  Search through {advisors.length} SEBI registered advisors to find the right match for your investment needs.
+                </p>
+                <Button 
+                  onClick={() => setShowSearch(true)}
+                  className="bg-white text-blue-600 hover:bg-blue-50"
+                >
+                  Start Searching
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardContent className="p-6">
+                <h3 className="font-bold text-lg mb-4 text-center">How to Choose the Right Advisor</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">Check Credentials</h4>
+                    <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                      <li>• SEBI registration number</li>
+                      <li>• Valid license status</li>
+                      <li>• Professional qualifications</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">Understand Fees</h4>
+                    <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                      <li>• Fee structure transparency</li>
+                      <li>• No hidden charges</li>
+                      <li>• Written fee agreement</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       <div className="text-center mt-8 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg">

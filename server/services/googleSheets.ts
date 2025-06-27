@@ -214,7 +214,6 @@ export class GoogleSheetsService {
       
       const advisors: InvestmentAdvisor[] = rows
         .filter(row => row.length >= 3 && row[0]?.trim()) // At least Name and some data
-        .slice(0, 15) // Limit to first 15 rows immediately
         .map((row, index) => {
           return {
             id: index + 1,
@@ -232,7 +231,7 @@ export class GoogleSheetsService {
           };
         });
 
-      console.log(`Fetched and limited to ${advisors.length} advisors from Google Sheets`);
+      console.log(`Fetched ${advisors.length} advisors from Google Sheets IA tab`);
       return advisors;
     } catch (error) {
       console.error('Error fetching Investment Advisors from Google Sheets:', error);
