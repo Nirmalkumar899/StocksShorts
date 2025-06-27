@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, ArrowLeft, LogIn, LogOut } from "lucide-react";
+import { User, ArrowLeft, LogOut, Phone, Calendar, Mail } from "lucide-react";
+import MobileLogin from "./mobile-login";
 
 interface ProfileProps {
   onBack: () => void;
@@ -10,6 +12,19 @@ interface ProfileProps {
 
 export default function Profile({ onBack }: ProfileProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [showMobileLogin, setShowMobileLogin] = useState(false);
+
+  if (showMobileLogin) {
+    return (
+      <MobileLogin 
+        onBack={() => setShowMobileLogin(false)}
+        onLoginSuccess={() => {
+          setShowMobileLogin(false);
+          window.location.reload();
+        }}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -92,16 +107,16 @@ export default function Profile({ onBack }: ProfileProps) {
             ) : (
               <>
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>• One-click Google sign-in</p>
-                  <p>• No forms or additional details needed</p>
-                  <p>• Secure authentication via Gmail</p>
+                  <p>• Secure mobile OTP authentication</p>
+                  <p>• No password required</p>
+                  <p>• Quick 2-step verification</p>
                 </div>
                 <Button 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={() => window.location.href = '/api/login'}
+                  className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                  onClick={() => setShowMobileLogin(true)}
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Continue with Gmail
+                  <Phone className="w-4 h-4 mr-2" />
+                  Login with Mobile
                 </Button>
               </>
             )}
