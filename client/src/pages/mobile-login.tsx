@@ -19,6 +19,7 @@ export default function MobileLogin({ onBack, onLoginSuccess }: MobileLoginProps
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digits
