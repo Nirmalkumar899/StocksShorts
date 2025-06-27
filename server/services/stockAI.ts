@@ -241,13 +241,13 @@ export class StockAIService {
 
   private async fetchRealFinancialData(symbol: string): Promise<any> {
     try {
-      // Use the dedicated financial data provider
-      const { financialDataProvider } = await import('./financialDataProvider');
+      // Use the comprehensive financial data provider with GPT-powered extraction
+      const { financialDataProvider } = await import('./financialDataProvider.js');
       
       console.log(`Fetching comprehensive financial data for ${symbol} from multiple sources`);
       const financialData = await financialDataProvider.getFinancialData(symbol);
       
-      if (financialData) {
+      if (financialData && financialData.currentPrice) {
         console.log(`Successfully retrieved authentic data for ${symbol} from ${financialData.source}:`, financialData);
         return financialData;
       }
