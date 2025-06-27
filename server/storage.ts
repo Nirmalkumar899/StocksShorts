@@ -1,4 +1,4 @@
-import { users, otpVerifications, type User, type InsertUser, type OtpVerification, type InsertOtp } from "@shared/schema";
+import { users, otpVerifications, aiQueries, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -12,19 +12,25 @@ export interface IStorage {
   markOtpAsUsed(id: number): Promise<void>;
   verifyUser(phoneNumber: string): Promise<void>;
   upsertUser(user: any): Promise<User>;
+  createAiQuery(query: InsertAiQuery): Promise<AiQuery>;
+  getDailyQueryCount(userId: number): Promise<number>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private otps: Map<number, OtpVerification>;
+  private aiQueries: Map<number, AiQuery>;
   private currentUserId: number;
   private currentOtpId: number;
+  private currentAiQueryId: number;
 
   constructor() {
     this.users = new Map();
     this.otps = new Map();
+    this.aiQueries = new Map();
     this.currentUserId = 1;
     this.currentOtpId = 1;
+    this.currentAiQueryId = 1;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -114,6 +120,31 @@ export class MemStorage implements IStorage {
     
     this.users.set(id, user);
     return user;
+  }
+
+  async createAiQuery(insertAiQuery: InsertAiQuery): Promise<AiQuery> {
+    const id = this.currentAiQueryId++;
+    const aiQuery: AiQuery = {
+      id,
+      userId: insertAiQuery.userId,
+      query: insertAiQuery.query,
+      response: insertAiQuery.response || null,
+      createdAt: new Date(),
+    };
+    
+    this.aiQueries.set(id, aiQuery);
+    return aiQuery;
+  }
+
+  async getDailyQueryCount(userId: number): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const userQueries = Array.from(this.aiQueries.values()).filter(
+      (query) => query.userId === userId && query.createdAt >= today
+    );
+    
+    return userQueries.length;
   }
 }
 

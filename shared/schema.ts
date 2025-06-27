@@ -34,6 +34,15 @@ export const otpVerifications = pgTable("otp_verifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// AI query tracking for daily limits
+export const aiQueries = pgTable("ai_queries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  query: text("query").notNull(),
+  response: text("response"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const articles = pgTable("articles", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -67,6 +76,14 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertOtp = z.infer<typeof insertOtpSchema>;
 export type OtpVerification = typeof otpVerifications.$inferSelect;
+
+export const insertAiQuerySchema = createInsertSchema(aiQueries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAiQuery = z.infer<typeof insertAiQuerySchema>;
+export type AiQuery = typeof aiQueries.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
