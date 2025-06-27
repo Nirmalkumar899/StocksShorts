@@ -79,7 +79,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
               </div>
               <div>
                 <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">
-                  Premium Investment Advisors
+                  Investment Advisors
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                   SEBI Registered • Verified • Trusted
@@ -189,10 +189,10 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                 {filteredAdvisors.map((advisor: InvestmentAdvisor, index) => (
                   <Card 
                     key={advisor.id} 
-                    className="group bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 rounded-3xl overflow-hidden relative animate-fade-in-up"
+                    className="group bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 rounded-3xl relative animate-fade-in-up flex flex-col h-full"
                     style={{ animationDelay: `${index * 150}ms` }}
                   >
-                    {/* Premium Gradient Border */}
+                    {/* Gradient Border */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-30 transition-all duration-500 rounded-3xl p-[2px]">
                       <div className="w-full h-full bg-white/95 dark:bg-gray-800/95 rounded-3xl"></div>
                     </div>
@@ -240,7 +240,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                           <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Your Rating</p>
                           <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
                             <Award className="h-3 w-3" />
-                            <span>Premium Advisor</span>
+                            <span>Expert Advisor</span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
@@ -293,22 +293,22 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                       )}
 
                       {/* Details */}
-                      <div className="space-y-3 mb-6">
+                      <div className="space-y-2 mb-4">
                         {advisor.experience && (
                           <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                            <Briefcase className="h-4 w-4 mr-3 text-blue-500" />
-                            <span className="font-medium">{advisor.experience}</span>
+                            <Briefcase className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+                            <span className="font-medium truncate">{advisor.experience}</span>
                           </div>
                         )}
                         {advisor.location && (
                           <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg">
-                            <MapPin className="h-4 w-4 mr-3 text-green-500" />
-                            <span className="font-medium">{advisor.location}</span>
+                            <MapPin className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+                            <span className="font-medium truncate">{advisor.location}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* Premium Action Buttons */}
+                      {/* Action Buttons */}
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
                           {advisor.phone && (
@@ -350,10 +350,10 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                         {/* Quick Action Chips */}
                         <div className="flex justify-center space-x-2 pt-2">
                           <div className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
-                            💼 Consultation Available
+                            Consultation Available
                           </div>
                           <div className="px-3 py-1 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-full text-xs font-medium text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700">
-                            🏆 Top Rated
+                            Top Rated
                           </div>
                         </div>
                       </div>
