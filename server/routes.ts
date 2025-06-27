@@ -7,6 +7,8 @@ import { aiNewsService } from "./services/aiNewsService";
 import { stockAI } from "./services/stockAI";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
+import { stockTester } from "./services/stockTester";
+import { financialDataProvider } from "./services/financialDataProvider";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -234,6 +236,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', mobileAuth.isAuthenticated, mobileAuth.getCurrentUser);
   app.post('/api/auth/logout', mobileAuth.logout);
   app.put('/api/auth/profile', mobileAuth.isAuthenticated, mobileAuth.updateProfile);
+
+  // Financial Data Testing Endpoints
+  
+  // Test all 20 major Indian stocks with comprehensive metrics
+  app.post("/api/stock-testing/test-all", async (req, res) => {
+    try {
+      console.log('Starting comprehensive 20-stock testing...');
+      const { results, summary } = await stockTester.testAllStocks();
+      
+      res.json({
+        message: 'Comprehensive stock testing completed',
+        summary,
+        results,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Stock testing error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Stock testing failed'
+      });
+    }
+  });
+
+  // Test specific stocks with financial data extraction
+  app.post("/api/stock-testing/test-stocks", async (req, res) => {
+    try {
+      const { symbols } = req.body;
+      
+      if (!symbols || !Array.isArray(symbols)) {
+        return res.status(400).json({ message: 'Symbols array is required' });
+      }
+
+      console.log(`Testing ${symbols.length} specific stocks:`, symbols);
+      const results = await stockTester.testSpecificStocks(symbols);
+      
+      res.json({
+        message: `Testing completed for ${symbols.length} stocks`,
+        results,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Specific stock testing error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Stock testing failed'
+      });
+    }
+  });
+
+  // Validate data quality for a specific stock
+  app.get("/api/stock-testing/validate/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      
+      if (!symbol) {
+        return res.status(400).json({ message: 'Stock symbol is required' });
+      }
+
+      console.log(`Validating data quality for ${symbol}...`);
+      const validation = await stockTester.validateDataQuality(symbol.toUpperCase());
+      
+      res.json({
+        message: `Data quality validation for ${symbol}`,
+        validation,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Data validation error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Data validation failed'
+      });
+    }
+  });
+
+  // Get financial data for any stock using multiple providers
+  app.get("/api/financial-data/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      
+      if (!symbol) {
+        return res.status(400).json({ message: 'Stock symbol is required' });
+      }
+
+      console.log(`Fetching comprehensive financial data for ${symbol}...`);
+      const data = await financialDataProvider.getFinancialData(symbol.toUpperCase());
+      
+      if (data) {
+        res.json({
+          message: `Financial data retrieved for ${symbol}`,
+          data,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(404).json({
+          message: `No financial data available for ${symbol}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Financial data error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Financial data retrieval failed'
+      });
+    }
+  });
 
   // Start AI News Scheduler
   startAINewsScheduler();

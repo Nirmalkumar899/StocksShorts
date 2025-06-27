@@ -1,203 +1,198 @@
 // Comprehensive testing system for 20 major Indian stocks
-// Tests multiple financial data providers and validates authentic data extraction
+// Tests GPT-powered financial data extraction with authentic metrics
 
-interface StockTestResult {
+import { financialDataProvider } from './financialDataProvider.js';
+
+interface TestResult {
   symbol: string;
-  status: 'success' | 'partial' | 'failed';
-  dataProvider: string | null;
-  metricsFound: number;
-  currentPrice: number | null;
-  pe: number | null;
-  marketCap: number | null;
-  hasFinancials: boolean;
+  success: boolean;
+  price?: number;
+  pe?: number;
+  marketCap?: number;
+  roe?: number;
+  sector?: string;
+  source?: string;
   error?: string;
 }
 
 export class StockTester {
-  private testStocks = [
-    'TCS', 'RELIANCE', 'HDFCBANK', 'INFY', 'ICICIBANK',
-    'HINDUNILVR', 'ITC', 'SBIN', 'BAJFINANCE', 'BHARTIARTL',
-    'ASIANPAINT', 'MARUTI', 'KOTAKBANK', 'LT', 'AXISBANK',
-    'NESTLEIND', 'HDFC', 'WIPRO', 'ULTRACEMCO', 'TITAN'
+  // Top 20 Indian stocks by market cap for comprehensive testing
+  private readonly testStocks = [
+    'TCS',      // IT Services
+    'RELIANCE', // Oil & Gas
+    'HDFCBANK', // Banking
+    'INFY',     // IT Services
+    'ICICIBANK',// Banking
+    'HINDUNILVR', // FMCG
+    'ITC',      // FMCG
+    'SBIN',     // Banking
+    'BHARTIARTL', // Telecom
+    'KOTAKBANK', // Banking
+    'LT',       // Engineering
+    'ASIANPAINT', // Paints
+    'HCLTECH',  // IT Services
+    'AXISBANK', // Banking
+    'MARUTI',   // Automobiles
+    'SUNPHARMA', // Pharmaceuticals
+    'TITAN',    // Consumer Discretionary
+    'ULTRACEMCO', // Cement
+    'WIPRO',    // IT Services
+    'NESTLEIND' // FMCG
   ];
 
-  async testAllStocks(): Promise<{ 
-    summary: any; 
-    results: StockTestResult[]; 
-    recommendations: string[] 
-  }> {
-    console.log('Starting comprehensive test of 20 major Indian stocks...');
+  async testAllStocks(): Promise<{ results: TestResult[], summary: any }> {
+    console.log('Starting comprehensive 20-stock testing with GPT-powered financial data extraction...');
     
-    const results: StockTestResult[] = [];
+    const results: TestResult[] = [];
     let successCount = 0;
-    let partialCount = 0;
-    let failureCount = 0;
+    let totalPrice = 0;
+    let totalPE = 0;
+    let peCount = 0;
+    const sectors: { [key: string]: number } = {};
 
     for (const symbol of this.testStocks) {
       try {
-        console.log(`\n=== Testing ${symbol} ===`);
-        const result = await this.testStock(symbol);
-        results.push(result);
-
-        if (result.status === 'success') {
+        console.log(`Testing ${symbol}...`);
+        const data = await financialDataProvider.getFinancialData(symbol);
+        
+        if (data && data.currentPrice) {
+          results.push({
+            symbol,
+            success: true,
+            price: data.currentPrice,
+            pe: data.pe,
+            marketCap: data.marketCap,
+            roe: data.roe,
+            sector: data.sector,
+            source: data.source
+          });
+          
           successCount++;
-          console.log(`✅ ${symbol}: SUCCESS - ${result.dataProvider} (${result.metricsFound} metrics)`);
-        } else if (result.status === 'partial') {
-          partialCount++;
-          console.log(`⚠️ ${symbol}: PARTIAL - ${result.dataProvider} (${result.metricsFound} metrics)`);
+          totalPrice += data.currentPrice;
+          
+          if (data.pe && data.pe > 0) {
+            totalPE += data.pe;
+            peCount++;
+          }
+          
+          if (data.sector) {
+            sectors[data.sector] = (sectors[data.sector] || 0) + 1;
+          }
         } else {
-          failureCount++;
-          console.log(`❌ ${symbol}: FAILED - ${result.error}`);
+          results.push({
+            symbol,
+            success: false,
+            error: 'No financial data available'
+          });
         }
-
-        // Add delay to respect API rate limits
-        await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         results.push({
           symbol,
-          status: 'failed',
-          dataProvider: null,
-          metricsFound: 0,
-          currentPrice: null,
-          pe: null,
-          marketCap: null,
-          hasFinancials: false,
-          error: errorMessage
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
         });
-        failureCount++;
-        console.log(`❌ ${symbol}: ERROR - ${errorMessage}`);
       }
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     const summary = {
       totalStocks: this.testStocks.length,
-      successful: successCount,
-      partial: partialCount,
-      failed: failureCount,
+      successfulTests: successCount,
       successRate: `${((successCount / this.testStocks.length) * 100).toFixed(1)}%`,
-      partialRate: `${((partialCount / this.testStocks.length) * 100).toFixed(1)}%`,
-      totalDataPoints: results.reduce((sum, r) => sum + r.metricsFound, 0),
-      avgMetricsPerStock: results.length > 0 ? (results.reduce((sum, r) => sum + r.metricsFound, 0) / results.length).toFixed(1) : 0
+      averagePrice: totalPrice > 0 ? `₹${(totalPrice / successCount).toFixed(2)}` : 'N/A',
+      averagePE: peCount > 0 ? (totalPE / peCount).toFixed(2) : 'N/A',
+      sectorsFound: Object.keys(sectors).length,
+      sectorBreakdown: sectors
     };
 
-    const recommendations = this.generateRecommendations(results, summary);
+    console.log('20-Stock Testing Complete!');
+    console.log(`Success Rate: ${summary.successRate}`);
+    console.log(`Average Price: ${summary.averagePrice}`);
+    console.log(`Average PE: ${summary.averagePE}`);
+    console.log(`Sectors: ${Object.keys(sectors).join(', ')}`);
 
-    console.log(`\n=== FINAL SUMMARY ===`);
-    console.log(`Total stocks: ${summary.totalStocks}`);
-    console.log(`Success rate: ${summary.successRate}`);
-    console.log(`Average metrics per stock: ${summary.avgMetricsPerStock}`);
-
-    return { summary, results, recommendations };
+    return { results, summary };
   }
 
-  private async testStock(symbol: string): Promise<StockTestResult> {
-    const { financialDataProvider } = await import('./financialDataProvider');
+  async testSpecificStocks(symbols: string[]): Promise<TestResult[]> {
+    const results: TestResult[] = [];
     
+    for (const symbol of symbols) {
+      try {
+        const data = await financialDataProvider.getFinancialData(symbol);
+        
+        if (data) {
+          results.push({
+            symbol,
+            success: true,
+            price: data.currentPrice,
+            pe: data.pe,
+            marketCap: data.marketCap,
+            roe: data.roe,
+            sector: data.sector,
+            source: data.source
+          });
+        } else {
+          results.push({
+            symbol,
+            success: false,
+            error: 'No data available'
+          });
+        }
+      } catch (error) {
+        results.push({
+          symbol,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return results;
+  }
+
+  async validateDataQuality(symbol: string): Promise<{
+    symbol: string;
+    hasPrice: boolean;
+    hasValuation: boolean;
+    hasFinancials: boolean;
+    hasSector: boolean;
+    qualityScore: number;
+    details: any;
+  }> {
     const data = await financialDataProvider.getFinancialData(symbol);
     
     if (!data) {
       return {
         symbol,
-        status: 'failed',
-        dataProvider: null,
-        metricsFound: 0,
-        currentPrice: null,
-        pe: null,
-        marketCap: null,
+        hasPrice: false,
+        hasValuation: false,
         hasFinancials: false,
-        error: 'No data from any provider'
+        hasSector: false,
+        qualityScore: 0,
+        details: null
       };
     }
 
-    const metricsCount = Object.keys(data).filter(key => 
-      key !== 'symbol' && key !== 'source' && key !== 'lastUpdated' && 
-      data[key as keyof typeof data] !== null && data[key as keyof typeof data] !== undefined
-    ).length;
+    const hasPrice = !!data.currentPrice && data.currentPrice > 0;
+    const hasValuation = !!(data.pe && data.pe > 0) || !!(data.pb && data.pb > 0);
+    const hasFinancials = !!(data.roe && data.roe > 0) || !!(data.profitMargin && data.profitMargin > 0);
+    const hasSector = !!data.sector;
 
-    const hasFinancials = !!(data.pe || data.marketCap || data.eps || data.roe);
-    const status = metricsCount >= 5 && hasFinancials ? 'success' : 
-                   metricsCount >= 2 ? 'partial' : 'failed';
+    const qualityScore = [hasPrice, hasValuation, hasFinancials, hasSector]
+      .reduce((score, hasData) => score + (hasData ? 25 : 0), 0);
 
     return {
       symbol,
-      status,
-      dataProvider: data.source,
-      metricsFound: metricsCount,
-      currentPrice: data.currentPrice || null,
-      pe: data.pe || null,
-      marketCap: data.marketCap || null,
+      hasPrice,
+      hasValuation,
       hasFinancials,
+      hasSector,
+      qualityScore,
+      details: data
     };
-  }
-
-  private generateRecommendations(results: StockTestResult[], summary: any): string[] {
-    const recommendations: string[] = [];
-    
-    const providers = results.filter(r => r.dataProvider).map(r => r.dataProvider);
-    const providerCounts = providers.reduce((acc: any, provider) => {
-      acc[provider!] = (acc[provider!] || 0) + 1;
-      return acc;
-    }, {});
-
-    const bestProvider = Object.entries(providerCounts).sort(([,a], [,b]) => (b as number) - (a as number))[0];
-    
-    if (bestProvider) {
-      recommendations.push(`Primary data source: ${bestProvider[0]} (${bestProvider[1]} stocks)`);
-    }
-
-    if (summary.successRate < 50) {
-      recommendations.push('Consider obtaining premium API keys (Alpha Vantage, FMP) for better data coverage');
-    }
-
-    const failedStocks = results.filter(r => r.status === 'failed').map(r => r.symbol);
-    if (failedStocks.length > 0) {
-      recommendations.push(`Manual data entry needed for: ${failedStocks.slice(0, 5).join(', ')}${failedStocks.length > 5 ? '...' : ''}`);
-    }
-
-    if (results.some(r => r.hasFinancials)) {
-      recommendations.push('Financial metrics available - can generate comprehensive investment analysis');
-    } else {
-      recommendations.push('Limited financial data - recommend upgrading to premium data providers');
-    }
-
-    return recommendations;
-  }
-
-  async testConferenceCallData(): Promise<any> {
-    console.log('Testing NSE conference call data extraction...');
-    
-    // Test NSE corporate announcements for a few stocks
-    const testSymbols = ['TCS', 'RELIANCE', 'HDFCBANK'];
-    const results = [];
-
-    for (const symbol of testSymbols) {
-      try {
-        // NSE Corporate Actions API test
-        const response = await fetch(`https://www.nseindia.com/api/corporate-actions?index=equities&symbol=${symbol}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          results.push({ symbol, status: 'success', dataFound: !!data });
-          console.log(`✅ NSE data for ${symbol}: Available`);
-        } else {
-          results.push({ symbol, status: 'failed', error: `HTTP ${response.status}` });
-          console.log(`❌ NSE data for ${symbol}: Failed (${response.status})`);
-        }
-      } catch (error) {
-        results.push({ symbol, status: 'error', error: 'Network error' });
-        console.log(`❌ NSE data for ${symbol}: Network error`);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Rate limiting
-    }
-
-    return results;
   }
 }
 
