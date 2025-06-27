@@ -117,6 +117,9 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Fixed app startup issues and implemented working real SMS delivery system using MSG91 (₹0.20 per SMS) with Fast2SMS API key backup
+- June 27, 2025: **MAJOR**: Resolved all TypeScript errors, React warnings, and database connectivity issues for production-ready deployment
+- June 27, 2025: **MAJOR**: OTP authentication system now fully operational with real SMS delivery to Indian phone numbers
 - June 27, 2025: **MAJOR**: Transformed "AskQuery" tab into anonymous "Feed" for stock discussions with moderation controls, Q&A format, voting system, and clean styling matching home page
 - June 27, 2025: **MAJOR**: Updated all sections (SEBI RIA, Disclaimer) to use consistent clean styling matching home page - removed colorful gradients for professional appearance
 - June 27, 2025: Renamed "Terms" navigation to "Disclaimer" for clearer user understanding
