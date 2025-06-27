@@ -55,22 +55,22 @@ export class FinancialDataProvider {
     }
 
     try {
-      // 1. Try Alpha Vantage (premium source)
-      let data = await this.fetchFromAlphaVantage(symbol);
+      // 1. Try Yahoo Finance first (most reliable for Indian stocks)
+      let data = await this.fetchFromYahooFinance(symbol);
       if (data) {
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
       }
 
-      // 2. Try Yahoo Finance (reliable fallback)
-      data = await this.fetchFromYahooFinance(symbol);
-      if (data) {
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
-      }
-
-      // 3. Try Financial Modeling Prep
+      // 2. Try Financial Modeling Prep
       data = await this.fetchFromFMP(symbol);
+      if (data) {
+        this.cache.set(symbol, { data, timestamp: Date.now() });
+        return data;
+      }
+
+      // 3. Try Alpha Vantage (premium source)
+      data = await this.fetchFromAlphaVantage(symbol);
       if (data) {
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
@@ -121,28 +121,42 @@ export class FinancialDataProvider {
   private async fetchFromYahooFinance(symbol: string): Promise<FinancialData | null> {
     try {
       const yahooSymbol = this.stockMappings[symbol] || `${symbol}.NS`;
+      console.log(`Attempting Yahoo Finance for ${yahooSymbol}`);
       
       const response = await fetch(
-        `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics`,
+        `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics,earnings`,
         {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site'
           }
         }
       );
 
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.log(`Yahoo Finance failed for ${yahooSymbol}: ${response.status}`);
+        return null;
+      }
 
       const data = await response.json();
       const result = data.quoteSummary?.result?.[0];
-      if (!result) return null;
+      if (!result) {
+        console.log(`No data in Yahoo Finance response for ${yahooSymbol}`);
+        return null;
+      }
 
       const summary = result.summaryDetail || {};
       const financial = result.financialData || {};
       const keyStats = result.defaultKeyStatistics || {};
+      const earnings = result.earnings || {};
 
-      return {
+      const extractedData = {
         symbol,
         currentPrice: summary.regularMarketPrice?.raw || summary.previousClose?.raw || 0,
         marketCap: summary.marketCap?.raw,
@@ -154,18 +168,33 @@ export class FinancialDataProvider {
         debtToEquity: financial.debtToEquity?.raw,
         profitMargin: financial.profitMargins?.raw,
         revenueGrowth: financial.revenueGrowth?.raw,
+        sector: summary.sector,
+        industry: summary.industry,
         source: 'Yahoo Finance',
         lastUpdated: new Date()
       };
+
+      // Filter out null/undefined values
+      const cleanData = Object.fromEntries(
+        Object.entries(extractedData).filter(([_, value]) => value !== null && value !== undefined)
+      ) as FinancialData;
+
+      console.log(`Yahoo Finance success for ${symbol}: ${Object.keys(cleanData).length} metrics`);
+      return cleanData;
     } catch (error) {
+      console.log(`Yahoo Finance error for ${symbol}:`, error);
       return null;
     }
   }
+
+
 
   private async fetchFromFMP(symbol: string): Promise<FinancialData | null> {
     if (!process.env.FMP_API_KEY) return null;
 
     try {
+      console.log(`Attempting Financial Modeling Prep for ${symbol}`);
+      
       const response = await fetch(
         `https://financialmodelingprep.com/api/v3/profile/${symbol}.NS?apikey=${process.env.FMP_API_KEY}`
       );
@@ -182,12 +211,14 @@ export class FinancialDataProvider {
         marketCap: profile.mktCap,
         pe: profile.pe,
         eps: profile.eps,
+        pb: profile.pb,
         sector: profile.sector,
         industry: profile.industry,
         source: 'Financial Modeling Prep',
         lastUpdated: new Date()
       };
     } catch (error) {
+      console.log(`FMP error for ${symbol}:`, error);
       return null;
     }
   }
