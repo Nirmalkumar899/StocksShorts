@@ -80,6 +80,7 @@ export const aiArticles = pgTable("ai_articles", {
   sentiment: text("sentiment").default("Neutral"),
   priority: text("priority").default("Medium"),
   imageUrl: text("image_url"),
+  newsDate: timestamp("news_date").notNull(), // Date when the news actually happened
   createdAt: timestamp("created_at").defaultNow(),
 });
 

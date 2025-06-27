@@ -117,7 +117,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         {/* Source and time - moved below content */}
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <span className="truncate">{article.source}</span>
-          <span className="ml-2 flex-shrink-0">{formatTimeAgo(article.time)}</span>
+          <span className="ml-2 flex-shrink-0">
+            {article.type === 'AI News' ? 
+              formatTimeAgo(article.createdAt) : 
+              formatTimeAgo(article.time)
+            }
+          </span>
         </div>
         
         <div className="flex flex-col space-y-2 text-white text-xs flex-shrink-0 drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>

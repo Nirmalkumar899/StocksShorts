@@ -1,6 +1,6 @@
 import { db } from "../db";
 import { aiArticles, type InsertAiArticle, type AiArticle } from "@shared/schema";
-import { desc, count, inArray, gte, lt } from "drizzle-orm";
+import { desc, count, inArray, gte, lt, eq, and, or, ilike } from "drizzle-orm";
 
 interface PerplexityResponse {
   choices: Array<{
@@ -148,18 +148,101 @@ Return only valid JSON array with no extra text.`;
       return [];
     }
 
-    const insertData: InsertAiArticle[] = articles.map(article => ({
+    // Check for duplicates before inserting
+    const uniqueArticles = await this.filterDuplicates(articles);
+    
+    if (uniqueArticles.length === 0) {
+      console.log('All articles were duplicates, skipping insertion');
+      return [];
+    }
+
+    const insertData: InsertAiArticle[] = uniqueArticles.map(article => ({
       title: article.title,
       content: article.content,
       type: "AI News",
       source: "AI Generated - Perplexity",
       sentiment: article.sentiment,
       priority: article.priority,
-      imageUrl: null
+      imageUrl: null,
+      newsDate: new Date() // Current date for when the news is relevant
     }));
 
     const result = await db.insert(aiArticles).values(insertData).returning();
+    console.log(`Stored ${result.length} new AI articles (filtered ${articles.length - uniqueArticles.length} duplicates)`);
     return result;
+  }
+
+  private async filterDuplicates(articles: ParsedArticle[]): Promise<ParsedArticle[]> {
+    const uniqueArticles: ParsedArticle[] = [];
+    
+    for (const article of articles) {
+      // Check for similar titles (80% similarity) or exact content matches
+      const existingArticle = await db
+        .select({ id: aiArticles.id, title: aiArticles.title })
+        .from(aiArticles)
+        .where(
+          or(
+            // Exact title match
+            eq(aiArticles.title, article.title),
+            // Similar content (first 100 characters)
+            ilike(aiArticles.content, `${article.content.substring(0, 100)}%`)
+          )
+        )
+        .limit(1);
+
+      if (existingArticle.length === 0) {
+        // Also check title similarity among new articles being processed
+        const similarInBatch = uniqueArticles.find(existing => 
+          this.calculateSimilarity(existing.title, article.title) > 0.8
+        );
+        
+        if (!similarInBatch) {
+          uniqueArticles.push(article);
+        }
+      }
+    }
+    
+    return uniqueArticles;
+  }
+
+  private calculateSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) {
+      return 1.0;
+    }
+    
+    const editDistance = this.levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+  }
+
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
   }
 
   private async cleanupOldArticles(): Promise<void> {
