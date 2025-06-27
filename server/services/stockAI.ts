@@ -241,40 +241,101 @@ export class StockAIService {
 
   private async fetchRealFinancialData(symbol: string): Promise<any> {
     try {
-      // First try screener.in unofficial JSON API
-      const screenerData = await this.scrapeScreenerData(symbol);
-      if (screenerData) return screenerData;
-
-      // Fallback to Yahoo Finance
-      const yahooSymbol = this.getYahooSymbolMapping(symbol);
-      if (!yahooSymbol) return null;
-
-      const response = await fetch(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics,earnings`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      const result = data.quoteSummary?.result?.[0];
+      // Use the existing real-time stock service for consistent data
+      const { realTimeStockService } = await import('./realTimeStockService');
       
-      if (!result) return null;
+      console.log(`Fetching comprehensive financial data for ${symbol} using real-time service`);
+      const stockData = await realTimeStockService.getStockData(symbol);
+      
+      if (stockData) {
+        console.log(`Successfully retrieved authentic data for ${symbol}:`, stockData);
+        
+        // Extract and format the financial metrics
+        const financialData = {
+          currentPrice: stockData.currentPrice,
+          marketCap: stockData.marketCap,
+          pe: stockData.pe,
+          pb: stockData.pb,
+          roe: stockData.roe,
+          debtToEquity: stockData.debtToEquity,
+          dayHigh: stockData.dayHigh,
+          dayLow: stockData.dayLow,
+          volume: stockData.volume,
+          change: stockData.change,
+          changePercent: stockData.changePercent,
+          sector: stockData.sector,
+          industry: stockData.industry,
+          symbol: symbol,
+          source: 'Real-time Stock Service',
+          lastUpdated: stockData.lastUpdated
+        };
 
-      return {
-        pe: result.summaryDetail?.trailingPE?.raw,
-        marketCap: result.summaryDetail?.marketCap?.raw,
-        profitMargin: result.financialData?.profitMargins?.raw,
-        revenueGrowth: result.financialData?.revenueGrowth?.raw,
-        roe: result.financialData?.returnOnEquity?.raw,
-        debtToEquity: result.financialData?.debtToEquity?.raw,
-        fiftyTwoWeekHigh: result.summaryDetail?.fiftyTwoWeekHigh?.raw,
-        fiftyTwoWeekLow: result.summaryDetail?.fiftyTwoWeekLow?.raw,
-        earningsGrowth: result.defaultKeyStatistics?.earningsQuarterlyGrowth?.raw
-      };
+        // Filter out null/undefined values
+        const cleanData = Object.fromEntries(
+          Object.entries(financialData).filter(([_, value]) => value !== null && value !== undefined)
+        );
+
+        if (Object.keys(cleanData).length > 3) {
+          console.log(`Found ${Object.keys(cleanData).length} authentic financial metrics for ${symbol}`);
+          return cleanData;
+        }
+      }
+
+      // Fallback to Yahoo Finance with better symbol mapping
+      const yahooSymbol = this.getYahooSymbolMapping(symbol);
+      if (yahooSymbol) {
+        console.log(`Attempting Yahoo Finance for ${yahooSymbol}`);
+        
+        const response = await fetch(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const result = data.quoteSummary?.result?.[0];
+          
+          if (result) {
+            const summary = result.summaryDetail || {};
+            const financial = result.financialData || {};
+            const keyStats = result.defaultKeyStatistics || {};
+            
+            const extractedData = {
+              currentPrice: summary.regularMarketPrice?.raw || summary.previousClose?.raw,
+              pe: summary.trailingPE?.raw || summary.forwardPE?.raw,
+              marketCap: summary.marketCap?.raw,
+              profitMargin: financial.profitMargins?.raw,
+              revenueGrowth: financial.revenueGrowth?.raw,
+              roe: financial.returnOnEquity?.raw,
+              debtToEquity: financial.debtToEquity?.raw,
+              fiftyTwoWeekHigh: summary.fiftyTwoWeekHigh?.raw,
+              fiftyTwoWeekLow: summary.fiftyTwoWeekLow?.raw,
+              eps: keyStats.trailingEps?.raw,
+              bookValue: keyStats.bookValue?.raw,
+              priceToBook: keyStats.priceToBook?.raw,
+              beta: keyStats.beta?.raw,
+              symbol: symbol,
+              source: 'Yahoo Finance'
+            };
+
+            const cleanData = Object.fromEntries(
+              Object.entries(extractedData).filter(([_, value]) => value !== null && value !== undefined)
+            );
+
+            if (Object.keys(cleanData).length > 3) {
+              console.log(`Yahoo Finance provided ${Object.keys(cleanData).length} metrics for ${symbol}`);
+              return cleanData;
+            }
+          }
+        }
+      }
+
+      console.log(`No comprehensive financial data available for ${symbol}`);
+      return null;
     } catch (error) {
-      console.log('Failed to fetch financial data:', error);
+      console.log(`Error fetching financial data for ${symbol}:`, error);
       return null;
     }
   }
