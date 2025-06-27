@@ -126,7 +126,7 @@ export const mobileAuth = {
         phoneNumber: normalizedPhone,
         otp,
         expiresAt,
-        isUsed: false
+        isUsed: "false"
       });
 
       // Send SMS
@@ -167,7 +167,7 @@ export const mobileAuth = {
       if (!user) {
         user = await storage.createUser({
           phoneNumber: normalizedPhone,
-          isVerified: true
+          isVerified: "true"
         });
       } else {
         // Verify existing user
