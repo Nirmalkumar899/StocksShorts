@@ -118,7 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 27, 2025: **MAJOR**: Updated all stock prices to current June 2025 market data: TCS ₹4,185, Infosys ₹1,785, HDFC Bank ₹1,885, Reliance ₹3,125, Asian Paints ₹2,885, Zomato ₹285, Nuvama ₹7,385, V2 Retail ₹885 - accurate current pricing for 100+ stocks across all market caps
+- June 27, 2025: **MAJOR**: Implemented real-time stock data system using Yahoo Finance and screener.in APIs to replace static pricing - live market data with 1-minute caching (TCS ₹3,441 live vs ₹4,185 static, providing accurate current prices for investment analysis)
+- June 27, 2025: **MAJOR**: Enhanced data fetching architecture with Yahoo Finance API integration, NSE data sources, and intelligent fallback system for comprehensive stock market coverage
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with comprehensive investment analysis from user's perspective: Investment Case (value drivers, competitive advantages), Risk Analysis (3 specific risks), Catalysts (growth drivers), Quality Metrics (ROE, Debt/Equity ratios), Risk-Reward Assessment with time horizons - institutional-quality analysis thinking "what do investors need to know to make money"
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with mandatory specific numerical metrics: exact PE ratios (25.3x vs 23.1x), quarterly growth percentages (+12.7% revenue), profit margins (21.8%), management targets (+13.0% FY26), and expected returns (7.0%) - eliminating generic statements
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with summary-first structure: Business Model, PE vs Industry, Quarterly Performance, Management Commentary, Technical Analysis - complete responses without truncation
