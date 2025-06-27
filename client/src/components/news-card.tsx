@@ -62,7 +62,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             }`}
             loading="eager"
             decoding="async"
-            fetchPriority="high"
             onLoad={() => setImageLoaded(true)}
             onError={() => {
               setImageError(true);
@@ -123,6 +122,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         {/* Content */}
         <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto">
           {article.content}
+        </div>
+        
+        {/* Disclaimer */}
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
+            <span className="font-medium">Disclaimer:</span> The information provided in this article is for general informational purposes only and does not constitute investment advice. We do not endorse or recommend any specific stocks, and all investment decisions should be made based on your own research or consultation with a qualified financial advisor.
+          </p>
         </div>
         
         <div className="flex flex-col space-y-2 text-white text-xs flex-shrink-0 drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
