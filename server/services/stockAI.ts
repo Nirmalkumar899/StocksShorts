@@ -5,10 +5,24 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export class StockAIService {
   private identifyStock(query: string): { fullName: string; symbol: string; currentPrice: string; category: string } {
-    const queryLower = query.toLowerCase();
+    const queryLower = query.toLowerCase().trim();
     
-    // Stock mapping with current June 2025 prices - includes Large, Mid, Small, and Micro cap stocks
-    const stockMap: { [key: string]: { fullName: string; symbol: string; currentPrice: string; category: string } } = {
+    // First check known mappings for instant recognition
+    const knownStocks = this.getKnownStockMappings();
+    const sortedKeys = Object.keys(knownStocks).sort((a, b) => b.length - a.length);
+    for (const key of sortedKeys) {
+      if (queryLower.includes(key)) {
+        return knownStocks[key];
+      }
+    }
+    
+    // For unknown stocks, extract likely stock symbol/name and let AI handle it
+    const extractedStock = this.extractStockInfo(query);
+    return extractedStock;
+  }
+
+  private getKnownStockMappings(): { [key: string]: { fullName: string; symbol: string; currentPrice: string; category: string } } {
+    return {
       // Large Cap Stocks
       'airtel': { fullName: 'Bharti Airtel Ltd', symbol: 'BHARTIARTL', currentPrice: '₹2,050', category: 'large' },
       'bharti': { fullName: 'Bharti Airtel Ltd', symbol: 'BHARTIARTL', currentPrice: '₹2,050', category: 'large' },
@@ -65,7 +79,7 @@ export class StockAIService {
       'clean science': { fullName: 'Clean Science and Technology Ltd', symbol: 'CLEAN', currentPrice: '₹1,650', category: 'small' },
       'clean': { fullName: 'Clean Science and Technology Ltd', symbol: 'CLEAN', currentPrice: '₹1,650', category: 'small' },
       
-      // Micro Cap / SME Stocks (No price targets)
+      // Micro Cap / SME Stocks
       'anupam rasayan': { fullName: 'Anupam Rasayan India Ltd', symbol: 'ANURAS', currentPrice: '₹680', category: 'micro' },
       'anuras': { fullName: 'Anupam Rasayan India Ltd', symbol: 'ANURAS', currentPrice: '₹680', category: 'micro' },
       'rossari': { fullName: 'Rossari Biotech Ltd', symbol: 'ROSSARI', currentPrice: '₹950', category: 'micro' },
@@ -78,17 +92,20 @@ export class StockAIService {
       'rvnl': { fullName: 'Rail Vikas Nigam Ltd', symbol: 'RVNL', currentPrice: '₹420', category: 'micro' },
       'rail vikas': { fullName: 'Rail Vikas Nigam Ltd', symbol: 'RVNL', currentPrice: '₹420', category: 'micro' }
     };
+  }
+
+  private extractStockInfo(query: string): { fullName: string; symbol: string; currentPrice: string; category: string } {
+    // Clean the query to extract stock name/symbol
+    const cleanQuery = query.replace(/analyze|analysis|stock|share|company/gi, '').trim();
+    const possibleSymbol = cleanQuery.toUpperCase().replace(/\s+/g, '');
     
-    // Check for exact matches first - prioritize longer matches
-    const sortedKeys = Object.keys(stockMap).sort((a, b) => b.length - a.length);
-    for (const key of sortedKeys) {
-      if (queryLower.includes(key)) {
-        return stockMap[key];
-      }
-    }
-    
-    // Default fallback for unrecognized stocks
-    return { fullName: 'Unknown Stock', symbol: 'UNKNOWN', currentPrice: '₹0', category: 'unknown' };
+    // Return dynamic stock info - let AI handle the identification
+    return {
+      fullName: cleanQuery || 'Indian Listed Company',
+      symbol: possibleSymbol || 'NSE_LISTED',
+      currentPrice: 'Current Market Price',
+      category: 'auto' // Auto-detect market cap category
+    };
   }
 
   private calculateTargetPrice(currentPrice: string): string {
@@ -115,16 +132,19 @@ export class StockAIService {
       const stockName = this.identifyStock(query);
       
       const getAnalysisPrompt = () => {
+        const isKnownStock = stockName.category !== 'auto';
         const isMicroCap = stockName.category === 'micro';
-        const marketCapInfo: { [key: string]: string } = {
-          'large': 'Large Cap (₹20,000+ crore market cap)',
-          'mid': 'Mid Cap (₹5,000-20,000 crore market cap)', 
-          'small': 'Small Cap (₹1,000-5,000 crore market cap)',
-          'micro': 'Micro Cap/SME (<₹1,000 crore market cap)',
-          'unknown': 'Unknown Market Cap'
-        };
+        
+        if (isKnownStock) {
+          // Use predefined pricing for known stocks
+          const marketCapInfo: { [key: string]: string } = {
+            'large': 'Large Cap (₹20,000+ crore market cap)',
+            'mid': 'Mid Cap (₹5,000-20,000 crore market cap)', 
+            'small': 'Small Cap (₹1,000-5,000 crore market cap)',
+            'micro': 'Micro Cap/SME (<₹1,000 crore market cap)'
+          };
 
-        return `You are analyzing ${stockName.fullName} (${marketCapInfo[stockName.category] || 'Unknown Cap'}) trading at current price ${stockName.currentPrice} on June 27, 2025.
+          return `You are analyzing ${stockName.fullName} (${marketCapInfo[stockName.category]}) trading at current price ${stockName.currentPrice} on June 27, 2025.
 
 CRITICAL INSTRUCTIONS:
 1. Current market price is ${stockName.currentPrice} - use ONLY this for all calculations
@@ -132,24 +152,84 @@ CRITICAL INSTRUCTIONS:
 ${isMicroCap ? 
 '3. **NO PRICE TARGETS** for micro-cap/SME stocks due to high volatility and liquidity constraints' : 
 '3. Target prices should be 15-25% above current price for large/mid caps, 10-20% for small caps'}
-4. Support/resistance levels should be within 10-15% of ${stockName.currentPrice}
+4. Support/resistance levels should be within 10-15% of ${stockName.currentPrice}`;
+        } else {
+          // For unknown stocks, let AI identify and analyze dynamically
+          return `You are an expert Indian stock analyst. Analyze the stock mentioned in the user query.
 
+CRITICAL INSTRUCTIONS:
+1. FIRST identify the exact company name and NSE/BSE symbol from the user query
+2. Determine the current market price as of June 27, 2025
+3. Classify the market cap category (Large/Mid/Small/Micro cap)
+4. If micro-cap or SME stock, provide NO PRICE TARGETS
+5. Use current 2025 market data only - ignore historical training data
+
+MANDATORY: Start your analysis by stating:
+"Analyzing [Full Company Name] (NSE/BSE: [SYMBOL]) - Current Price: ₹[X] - [Market Cap Category]"`;
+        }
+
+        const commonFormat = `
 Analysis Format:
-**SUMMARY**: ${stockName.fullName} | BUY/HOLD/SELL ${isMicroCap ? '| High Risk - No Target' : '| Target ₹X'} | Key reason
+**SUMMARY**: [Company Name] | BUY/HOLD/SELL | Target ₹X or No Target | Key reason
 
-**BUSINESS**: Core operations and competitive advantages ${isMicroCap ? '(Note: Higher business risk due to size)' : ''}
+**BUSINESS**: Core operations and competitive advantages
 
-**VALUATION**: Current PE vs industry peers, based on ${stockName.currentPrice} ${isMicroCap ? '(Limited peer comparison for micro-caps)' : ''}
+**VALUATION**: Current PE vs industry peers with current market data
 
-**QUARTERLY**: Q4 FY25/Q1 FY26 performance analysis ${isMicroCap ? '(May have irregular reporting)' : ''}
+**QUARTERLY**: Q4 FY25/Q1 FY26 performance analysis
 
 **MANAGEMENT**: Recent guidance and strategic initiatives
 
-**TECHNICAL**: Support/resistance levels relative to current ${stockName.currentPrice} ${isMicroCap ? '(Higher volatility expected)' : ''}
+**TECHNICAL**: Support/resistance levels based on current price
 
-**VERDICT**: Recommendation with timeline ${isMicroCap ? '(Suitable only for high-risk investors)' : '(6-12 months)'}
+**VERDICT**: Recommendation with appropriate timeline
 
-${isMicroCap ? 'IMPORTANT: Micro-cap stocks carry significantly higher risk due to low liquidity, limited institutional coverage, and higher volatility. No price targets provided.' : 'IMPORTANT: All price targets and technical levels calculated from current price.'}`;
+IMPORTANT: For micro-cap/SME stocks, provide risk warnings and no price targets. Use only current 2025 market data.`;
+
+        return isKnownStock ? 
+          `${getKnownStockPrompt()}${commonFormat}` : 
+          `${getUnknownStockPrompt()}${commonFormat}`;
+      };
+
+      const getKnownStockPrompt = () => {
+        const marketCapInfo: { [key: string]: string } = {
+          'large': 'Large Cap (₹20,000+ crore market cap)',
+          'mid': 'Mid Cap (₹5,000-20,000 crore market cap)', 
+          'small': 'Small Cap (₹1,000-5,000 crore market cap)',
+          'micro': 'Micro Cap/SME (<₹1,000 crore market cap)'
+        };
+
+        return `You are analyzing ${stockName.fullName} (${marketCapInfo[stockName.category]}) trading at current price ${stockName.currentPrice} on June 27, 2025.
+
+CRITICAL INSTRUCTIONS:
+1. Current market price is ${stockName.currentPrice} - use ONLY this for all calculations
+2. Technical levels must be realistic relative to ${stockName.currentPrice}
+${stockName.category === 'micro' ? 
+'3. **NO PRICE TARGETS** for micro-cap/SME stocks due to high volatility and liquidity constraints' : 
+'3. Target prices should be 15-25% above current price for large/mid caps, 10-20% for small caps'}
+4. Support/resistance levels should be within 10-15% of ${stockName.currentPrice}`;
+      };
+
+      const getUnknownStockPrompt = () => {
+        return `You are an expert Indian stock analyst with access to ALL NSE and BSE listed companies as of June 27, 2025.
+
+CRITICAL INSTRUCTIONS:
+1. IDENTIFY the stock from the user query (${query}) - it could be any Indian listed company
+2. For common stocks like Zomato (NSE: ZOMATO), Paytm (NSE: PAYTM), PolicyBazaar (NSE: PB), etc., use your knowledge
+3. Determine realistic current market price as of June 27, 2025
+4. Classify accurate market cap category (Large/Mid/Small/Micro cap)
+5. For micro-cap or SME stocks, provide NO PRICE TARGETS with risk warnings
+6. Use logical current 2025 pricing - avoid outdated training data
+
+EXAMPLES of stock identification:
+- "Zomato" → Zomato Ltd (NSE: ZOMATO) - Current Price: ₹180-220 range
+- "Paytm" → One 97 Communications Ltd (NSE: PAYTM) - Current Price: ₹800-1000 range  
+- "PolicyBazaar" → PB Fintech Ltd (NSE: PB) - Current Price: ₹1200-1500 range
+
+MANDATORY: Start your analysis by stating:
+"Analyzing [Full Company Name] (NSE/BSE: [SYMBOL]) - Current Price: ₹[X] - [Market Cap Category]"
+
+Then proceed with complete fundamental analysis using realistic market data.`;
       };
 
       const systemPrompt = getAnalysisPrompt();
@@ -158,7 +238,25 @@ ${isMicroCap ? 'IMPORTANT: Micro-cap stocks carry significantly higher risk due 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const userPrompt = `Analyze ${stockName.fullName} stock fundamentals for investment.
+      const userPrompt = stockName.category === 'auto' ? 
+        `The user wants analysis of: "${query}"
+
+This refers to an Indian stock listed on NSE or BSE. Your task:
+
+1. Identify the EXACT company (e.g., "Zomato" = Zomato Ltd, "Paytm" = One 97 Communications Ltd)
+2. Find the correct NSE/BSE symbol
+3. Determine current market price (June 27, 2025)
+4. Classify market cap category
+5. Provide complete fundamental analysis
+
+Examples of correct identification:
+- "Zomato" → Zomato Ltd (NSE: ZOMATO) - ₹200 approx
+- "Paytm" → One 97 Communications Ltd (NSE: PAYTM) - ₹900 approx
+- "Nykaa" → FSN E-Commerce Ventures Ltd (NSE: NYKAA) - ₹180 approx
+
+Start with: "Analyzing [Company Name] (NSE: [SYMBOL]) - Current Price: ₹[X]"` :
+        
+        `Analyze ${stockName.fullName} stock fundamentals for investment.
 
 CURRENT MARKET DATA (June 27, 2025):
 - Company: ${stockName.fullName} (NSE: ${stockName.symbol})
