@@ -186,9 +186,6 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
               </div>
             </div>
           </div>
-          <div className="bg-red-700 px-4 py-1 text-xs text-center">
-            {advisors.length} SEBI Registered Advisors • Continuous Train Display • No Preference Order
-          </div>
         </CardContent>
       </Card>
 
