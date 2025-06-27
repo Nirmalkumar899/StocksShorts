@@ -133,6 +133,7 @@ Return only a JSON array of 5 articles, no other text.`;
     const insertData: InsertAiArticle[] = articles.map(article => ({
       title: article.title,
       content: article.content,
+      type: "AI News",
       source: "AI Generated - Perplexity",
       sentiment: article.sentiment,
       priority: article.priority,

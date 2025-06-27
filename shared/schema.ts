@@ -75,6 +75,7 @@ export const aiArticles = pgTable("ai_articles", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
+  type: text("type").default("AI News"),
   source: text("source").default("AI Generated"),
   sentiment: text("sentiment").default("Neutral"),
   priority: text("priority").default("Medium"),

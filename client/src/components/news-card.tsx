@@ -16,7 +16,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const sentimentColor = getSentimentColor(article.sentiment);
-  const typeColor = getTypeColor(article.type);
+  const typeColor = getTypeColor(article.type || 'AI News');
   
   const getSentimentIcon = () => {
     switch (article.sentiment.toLowerCase()) {
