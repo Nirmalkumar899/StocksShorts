@@ -9,9 +9,9 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
 import CategoryFilter from '@/components/category-filter';
-import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
 import AskAI from '@/components/ask-ai';
+import SwipeNews from '@/components/swipe-news';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -41,14 +41,9 @@ export default function Home() {
     isLoading,
     error,
     refetch
-  } = useQuery({
+  } = useQuery<Article[]>({
     queryKey: ['/api/articles', selectedCategory === 'all' ? undefined : selectedCategory],
     staleTime: 30 * 1000, // 30 seconds cache
-    onSuccess: (data) => {
-      if (data && data.length > 0) {
-        preloadImages(data);
-      }
-    }
   });
 
   // Refresh articles mutation
@@ -85,9 +80,9 @@ export default function Home() {
 
   // Memoized filtered articles for performance
   const filteredArticles = useMemo(() => {
-    if (!articles || articles.length === 0) return [];
+    if (!articles || !Array.isArray(articles) || articles.length === 0) return [];
 
-    let filtered = articles;
+    let filtered = articles as Article[];
 
     // Filter by category
     if (selectedCategory !== 'all') {
@@ -107,7 +102,7 @@ export default function Home() {
       };
       
       const targetCategories = categoryMap[selectedCategory] || [selectedCategory];
-      filtered = filtered.filter(article => 
+      filtered = filtered.filter((article: Article) => 
         targetCategories.some(cat => 
           article.type?.toLowerCase().includes(cat.toLowerCase())
         )
@@ -115,7 +110,7 @@ export default function Home() {
     }
 
     // Sort by priority and creation date
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: Article, b: Article) => {
       const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
       const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
       const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
@@ -131,10 +126,74 @@ export default function Home() {
   // Debug log
   console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredArticles.length === 0) {
+    return (
+      <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0">
+          <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
+          <div className="px-4">
+            <AskAI isHighlighted={true} />
+          </div>
+          <CategoryFilter 
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+          />
+        </div>
+
+        {/* Empty State */}
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="text-6xl mb-4">📰</div>
+          <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
+            No articles found
+          </h3>
+          <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
+            {selectedCategory === 'all' 
+              ? 'Try refreshing or check back later for new articles'
+              : `No articles available in the ${selectedCategory} category`}
+          </p>
+          <Button 
+            onClick={handleRefresh}
+            disabled={refreshMutation.isPending}
+            className="bg-primary hover:bg-primary/90"
+          >
+            {refreshMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Articles
+              </>
+            )}
+          </Button>
+        </div>
+        
+        {/* Fixed Bottom Navigation */}
+        <div className="flex-shrink-0">
+          <BottomNavigation />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0">
+    <div className="relative">
+      {/* Floating Header - positioned absolutely over swipe content */}
+      <div className="absolute top-0 left-0 right-0 z-50 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm">
         <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
         <div className="px-4">
           <AskAI isHighlighted={true} />
@@ -145,60 +204,11 @@ export default function Home() {
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden">
-        {isLoading ? (
-          // Loading State
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-              <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
-            </div>
-          </div>
-        ) : filteredArticles.length === 0 ? (
-          // Empty State
-          <div className="h-full flex flex-col items-center justify-center px-4">
-            <div className="text-6xl mb-4">📰</div>
-            <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
-              No articles found
-            </h3>
-            <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
-              {selectedCategory === 'all' 
-                ? 'Try refreshing or check back later for new articles'
-                : `No articles available in the ${selectedCategory} category`}
-            </p>
-            <Button 
-              onClick={handleRefresh}
-              disabled={refreshMutation.isPending}
-              className="bg-primary hover:bg-primary/90"
-            >
-              {refreshMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh Articles
-                </>
-              )}
-            </Button>
-          </div>
-        ) : (
-          // Articles List
-          <div className="h-full overflow-y-auto px-4 pb-24">
-            <div className="space-y-6">
-              {filteredArticles.map((article) => (
-                <NewsCard key={article.id} article={article} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Full-screen Inshorts-style Swipe Interface */}
+      <SwipeNews articles={filteredArticles} />
       
       {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
+      <div className="absolute bottom-0 left-0 right-0 z-50">
         <BottomNavigation />
       </div>
     </div>

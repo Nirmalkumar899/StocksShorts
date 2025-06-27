@@ -118,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Implemented Inshorts-style full-screen swipe interface - each article now fits perfectly on one page (45% image, 55% content) with vertical swipe navigation, floating headers, and no scrolling required for individual articles
+- June 27, 2025: **MAJOR**: Fixed URL routing system to show proper subpage names (/sebi-ria, /contact, /profile, /disclaimer) instead of all pages showing same domain
 - June 27, 2025: **MAJOR**: Implemented authentication-required AI analysis with daily limits - users must login via mobile OTP to access AI stock analysis, limited to 5 queries per day, with "Beta Testing" messaging and proper error handling for unauthorized access
 - June 27, 2025: **MAJOR**: Updated conference call service to use Q4 FY25 (latest quarter) data - stock analysis now displays current quarterly results and FY26 management guidance (TCS Q4 revenue up 15%, EBITDA margin 22%, management targets 12-14% FY26 growth, capex ₹600-700 crore) instead of outdated Q3 data
 - June 27, 2025: **MAJOR**: Successfully implemented GPT-3.5-turbo powered financial data extraction system providing 100% authentic metrics for 20 major Indian stocks - TCS (₹3,155.15, PE 38.24, ROE 29.66%), Reliance (₹2,575.45, PE 50.13), HDFC Bank (₹1,465.35, PE 30.94) with comprehensive testing framework and quality validation
