@@ -213,24 +213,26 @@ export class GoogleSheetsService {
       const rows: string[][] = response.data.values || [];
       
       const advisors: InvestmentAdvisor[] = rows
-        .filter(row => row.length >= 5) // At least Name, Company, Designation, Phone, Email
+        .filter(row => row.length >= 3 && row[0]?.trim()) // At least Name and some data
+        .slice(0, 15) // Limit to first 15 rows immediately
         .map((row, index) => {
           return {
             id: index + 1,
-            name: row[0] || 'Unknown',
-            company: row[1] || 'Investment Advisory',
-            designation: row[2] || 'Investment Advisor',
-            phone: row[4] || '', // Fixed: phone was in email field
-            email: row[2] || '', // Fixed: email was in designation field
-            website: row[5] || '',
-            specialization: row[6] || 'Financial Planning',
-            experience: row[7] || '5+ years',
-            location: row[8] || 'India',
-            rating: row[9] || '4.0',
+            name: row[0]?.trim() || 'Unknown',
+            company: row[1]?.trim() || 'Investment Advisory',
+            designation: row[2]?.trim() || 'Investment Advisor',
+            phone: row[3]?.trim() || '',
+            email: row[4]?.trim() || '',
+            website: row[5]?.trim() || '',
+            specialization: row[6]?.trim() || 'Financial Planning',
+            experience: row[7]?.trim() || '5+ years',
+            location: row[8]?.trim() || 'India',
+            rating: row[9]?.trim() || '4.0',
             createdAt: new Date(),
           };
         });
 
+      console.log(`Fetched and limited to ${advisors.length} advisors from Google Sheets`);
       return advisors;
     } catch (error) {
       console.error('Error fetching Investment Advisors from Google Sheets:', error);
