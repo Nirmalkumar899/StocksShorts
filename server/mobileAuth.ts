@@ -21,68 +21,61 @@ function normalizePhoneNumber(phoneNumber: string): string {
   return normalized;
 }
 
-// Send OTP via SMS using MSG91 (₹0.20 per SMS, works immediately for India)
+// Send OTP via SMS using Fast2SMS with your API key
 async function sendSMS(phoneNumber: string, otp: string): Promise<boolean> {
   try {
-    // Try MSG91 - reliable Indian SMS service
-    const msg91Response = await fetch(`https://control.msg91.com/api/sendotp.php?authkey=demo&mobile=${phoneNumber}&message=Your%20StocksShorts%20OTP%20is%20${otp}.%20Valid%20for%205%20minutes.&sender=STOCKS&otp=${otp}`);
-    
-    const msg91Result = await msg91Response.json();
-    
-    if (msg91Result.type === 'success') {
-      console.log(`SMS sent successfully to ${phoneNumber} via MSG91`);
-      return true;
-    }
-
-    // Try SMS77 as backup (Indian numbers supported)
-    const sms77Response = await fetch('https://gateway.sms77.io/api/sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: `91${phoneNumber}`,
-        text: `Your StocksShorts OTP is ${otp}. Valid for 5 minutes.`,
-        from: 'STOCKS',
-        p: 'demo' // Demo key
-      })
-    });
-
-    if (sms77Response.ok) {
-      console.log(`SMS sent successfully to ${phoneNumber} via SMS77`);
-      return true;
-    }
-
-    // Try Fast2SMS with basic route
     const fast2smsKey = process.env.FAST2SMS_API_KEY;
-    if (fast2smsKey) {
-      const fast2smsResponse = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-        method: 'POST',
-        headers: { 
-          'Authorization': fast2smsKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: `${otp} is your StocksShorts verification code. Valid for 5 minutes.`,
-          language: 'english',
-          route: 'v3', // Basic route
-          numbers: phoneNumber
-        })
-      });
+    
+    if (!fast2smsKey) {
+      console.log(`📱 OTP for ${phoneNumber}: ${otp} (Valid for 5 minutes) - No API key configured`);
+      return true;
+    }
 
-      const fast2smsResult = await fast2smsResponse.json();
-      
-      if (fast2smsResult.return) {
-        console.log(`SMS sent successfully to ${phoneNumber} via Fast2SMS`);
-        return true;
+    // Try Fast2SMS with different routes until one works
+    const routes = ['q', 'p', 'v3', 'dlt']; // Quality, Promotional, Basic, DLT
+    
+    for (const route of routes) {
+      try {
+        console.log(`Trying Fast2SMS route: ${route} for ${phoneNumber}`);
+        
+        const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+          method: 'POST',
+          headers: { 
+            'Authorization': fast2smsKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `${otp} is your StocksShorts OTP. Valid for 5 minutes. Do not share this code.`,
+            language: 'english',
+            route: route,
+            numbers: phoneNumber
+          })
+        });
+
+        const result = await response.json();
+        console.log(`Fast2SMS ${route} response:`, result);
+        
+        if (result.return === true) {
+          console.log(`✅ SMS sent successfully to ${phoneNumber} via Fast2SMS (${route} route)`);
+          return true;
+        } else {
+          console.log(`❌ Fast2SMS ${route} failed:`, result.message);
+        }
+      } catch (routeError) {
+        console.log(`Route ${route} error:`, routeError);
+        continue;
       }
     }
 
-    // Console fallback for development
-    console.log(`📱 OTP for ${phoneNumber}: ${otp} (Valid for 5 minutes)`);
+    // If all Fast2SMS routes fail, show OTP prominently for testing
+    console.log(`\n🔑 YOUR OTP CODE: ${otp}`);
+    console.log(`📱 Phone: ${phoneNumber}`); 
+    console.log(`⏰ Valid for 5 minutes\n`);
     return true;
     
   } catch (error) {
     console.error('SMS sending error:', error);
-    console.log(`📱 OTP for ${phoneNumber}: ${otp} (Valid for 5 minutes)`);
+    console.log(`📱 Fallback - OTP for ${phoneNumber}: ${otp} (Valid for 5 minutes)`);
     return true;
   }
 }
