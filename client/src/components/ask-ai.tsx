@@ -56,52 +56,40 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
 
   return (
     <>
-      {/* Compact Ask AI Input */}
-      <div className={`mb-3 ${isHighlighted ? 'ring-1 ring-blue-400 ring-opacity-30 rounded-lg' : ''}`}>
-        <Card className={`${isHighlighted ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800' : ''}`}>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Brain className="h-3 w-3 text-blue-500" />
-              <h3 className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                Ask AI Stock Query
-              </h3>
+      {/* Ultra Compact Ask AI Input */}
+      <div className={`mb-2 ${isHighlighted ? 'ring-1 ring-blue-400 ring-opacity-20 rounded' : ''}`}>
+        <div className={`p-2 rounded ${isHighlighted ? 'bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800'}`}>
+          <form onSubmit={handleSubmit}>
+            <div className="flex items-center gap-2">
+              <Brain className="h-3 w-3 text-blue-500 flex-shrink-0" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask AI about any stock..."
+                className="flex-1 h-7 text-xs border-0 bg-white dark:bg-gray-700 px-2"
+                disabled={queryMutation.isPending}
+              />
+              <Button 
+                type="submit" 
+                size="sm"
+                disabled={queryMutation.isPending || !query.trim()}
+                className="bg-blue-500 hover:bg-blue-600 text-white h-7 px-2"
+              >
+                {queryMutation.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Send className="h-3 w-3" />
+                )}
+              </Button>
               {isHighlighted && (
-                <span className="px-1 py-0.5 bg-blue-500 text-white text-xs font-medium rounded-full">
+                <span className="px-1 py-0.5 bg-blue-500 text-white text-xs rounded-full">
                   NEW
                 </span>
               )}
             </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about any stock (e.g., 'Analyze TCS' or 'Is Reliance good buy?')"
-                  className="flex-1 h-8 text-sm"
-                  disabled={queryMutation.isPending}
-                />
-                <Button 
-                  type="submit" 
-                  size="sm"
-                  disabled={queryMutation.isPending || !query.trim()}
-                  className="bg-blue-500 hover:bg-blue-600 text-white h-8 px-3"
-                >
-                  {queryMutation.isPending ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Send className="h-3 w-3" />
-                  )}
-                </Button>
-              </div>
-            </form>
-
-            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              <span className="font-medium">Focus:</span> Fundamentals first, then technical
-            </div>
-          </CardContent>
-        </Card>
+          </form>
+        </div>
       </div>
 
       {/* Separate Stock Discussion Section */}
