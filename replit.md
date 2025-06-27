@@ -42,12 +42,14 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 - `GET /api/articles/:id` - Get specific article by ID
 - `GET /api/articles/:id/related` - Get related articles for a specific article
 - `POST /api/articles/refresh` - Force refresh from Google Sheets
-- `GET /api/auth/user` - Get authenticated user info
-- `GET /api/login` - Start Google OAuth login flow
-- `GET /api/logout` - Sign out user
-- `POST /api/articles/:id/save` - Save article (requires auth)
-- `DELETE /api/articles/:id/save` - Unsave article (requires auth)
-- `GET /api/saved-articles` - Get user's saved articles (requires auth)
+- `GET /api/investment-advisors` - Get SEBI RIA advisor directory
+
+#### Mobile Authentication Endpoints
+- `POST /api/auth/send-otp` - Send 6-digit OTP to mobile number
+- `POST /api/auth/verify-otp` - Verify OTP and login/register user
+- `GET /api/auth/user` - Get authenticated user info (requires auth)
+- `POST /api/auth/logout` - Sign out user
+- `PUT /api/auth/profile` - Update user profile name (requires auth)
 
 ### UI Components
 - **Header**: Brand logo, refresh button, theme toggle
@@ -115,6 +117,13 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Replaced Google OAuth with mobile number OTP authentication system
+- June 27, 2025: Implemented secure SMS-based login with 6-digit OTP verification (5-minute expiry)
+- June 27, 2025: Created new mobile authentication API endpoints and user profile management
+- June 27, 2025: Updated user schema to support phone numbers instead of email-based authentication
+- June 27, 2025: Added mobile login page with formatted phone input and OTP verification flow
+- June 27, 2025: Enhanced profile page with mobile-first authentication and name editing capabilities
+- June 27, 2025: Fixed authentication database schema and session management for mobile auth
 - June 27, 2025: Created dedicated disclaimer page accessible via "Terms" tab in bottom navigation
 - June 27, 2025: Removed disclaimer from news cards for cleaner, better-placed article layout
 - June 27, 2025: Enhanced performance with 30-second memory caching providing instant 2ms responses
