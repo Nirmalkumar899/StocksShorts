@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
@@ -9,12 +9,17 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
 import CategoryFilter from '@/components/category-filter';
+import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
 import AskAI from '@/components/ask-ai';
-import SwipeNews from '@/components/swipe-news';
+import SebiRia from '@/pages/sebi-ria';
+import Contact from '@/pages/contact';
+import Profile from '@/pages/profile';
+import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeSection, setActiveSection] = useState('home');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -35,6 +40,15 @@ export default function Home() {
     });
   }, []);
 
+  // Fast section switching handler
+  const handleSectionChange = useCallback((section: string) => {
+    console.log('Tab clicked:', section);
+    setActiveSection(section);
+    if (section === 'sebi-ria') {
+      console.log('Navigating to SEBI RIA');
+    }
+  }, []);
+
   // Fetch articles based on selected category
   const {
     data: articles = [],
@@ -42,158 +56,127 @@ export default function Home() {
     error,
     refetch
   } = useQuery<Article[]>({
-    queryKey: ['/api/articles', selectedCategory === 'all' ? undefined : selectedCategory],
-    staleTime: 30 * 1000, // 30 seconds cache
+    queryKey: [selectedCategory === 'ai' ? '/api/ai-articles' : '/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
+    queryFn: async () => {
+      let url = '/api/articles';
+      
+      // Use AI articles API for AI category
+      if (selectedCategory === 'ai') {
+        url = '/api/ai-articles/recent?limit=50';
+      } else if (selectedCategory !== 'all') {
+        url = `/api/articles?category=${selectedCategory}`;
+      }
+      
+      const response = await fetch(url, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Fetch error:', errorText);
+        throw new Error(errorText || 'Failed to fetch articles');
+      }
+      
+      const data = await response.json();
+      console.log('Fetched articles:', data);
+      
+      // Ensure data is an array
+      if (!Array.isArray(data)) {
+        console.error('Expected array but got:', typeof data, data);
+        return [];
+      }
+      
+      // Sort articles by priority when in 'all' (trending) category
+      if (selectedCategory === 'all') {
+        return data.sort((a: Article, b: Article) => {
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+          return bPriority - aPriority; // High priority first
+        });
+      }
+      
+      return data;
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Refresh articles mutation
   const refreshMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/articles/refresh", {});
+      const response = await apiRequest('POST', '/api/articles/refresh');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
       toast({
-        title: "Articles Refreshed",
-        description: "Latest articles have been loaded",
+        title: "Articles refreshed",
+        description: "Latest articles have been loaded from Google Sheets.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
-        title: "Refresh Failed",
-        description: error instanceof Error ? error.message : "Failed to refresh articles",
+        title: "Refresh failed",
+        description: error.message,
         variant: "destructive",
       });
-    }
+    },
   });
 
-  // Enhanced category change handler with preloading
-  const handleCategoryChange = useCallback((category: string) => {
-    setSelectedCategory(category);
-  }, []);
-
-  // Enhanced refresh handler
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = () => {
     refreshMutation.mutate();
-  }, [refreshMutation]);
+  };
 
-  // Memoized filtered articles for performance
-  const filteredArticles = useMemo(() => {
-    if (!articles || !Array.isArray(articles) || articles.length === 0) return [];
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
 
-    let filtered = articles as Article[];
+  const handleArticleClick = (article: Article) => {
+    // Handle article click - could open modal or navigate
+    console.log('Article clicked:', article);
+  };
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      const categoryMap: { [key: string]: string[] } = {
-        'trending': ['Nifty', 'Breakout Stock', 'Most Active'],
-        'special': ['StocksShorts Special'],
-        'breakout': ['Breakout Stock'],
-        'index': ['Nifty'],
-        'warrants': ['Warrants'],
-        'educational': ['Educational'],
-        'ipo': ['IPO'],
-        'global': ['Global'],
-        'active': ['Most Active'],
-        'orders': ['Order Win'],
-        'research': ['Research Report'],
-        'ai-news': ['AI News']
-      };
-      
-      const targetCategories = categoryMap[selectedCategory] || [selectedCategory];
-      filtered = filtered.filter((article: Article) => 
-        targetCategories.some(cat => 
-          article.type?.toLowerCase().includes(cat.toLowerCase())
-        )
-      );
+  const handleShare = (e: React.MouseEvent, article: Article) => {
+    e.stopPropagation();
+    // Handle share functionality
+    if (navigator.share) {
+      navigator.share({
+        title: article.title,
+        text: article.content,
+        url: window.location.href,
+      });
     }
+  };
 
-    // Sort by priority and creation date
-    return filtered.sort((a: Article, b: Article) => {
-      const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
-      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
-      
-      if (aPriority !== bPriority) {
-        return bPriority - aPriority;
-      }
-      
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-    });
-  }, [articles, selectedCategory]);
+  // Fast client-side navigation - no page reloads
+  const handleTabChange = (tab: string) => {
+    handleSectionChange(tab);
+  };
 
   // Debug log
   console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
-  if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-950">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
-        </div>
-      </div>
-    );
-  }
+  // Render different sections based on activeSection
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'sebi-ria':
+        return <SebiRia onBack={() => setActiveSection('home')} />;
+      case 'contact':
+        return <Contact onBack={() => setActiveSection('home')} />;
+      case 'profile':
+        return <Profile onBack={() => setActiveSection('home')} />;
+      case 'disclaimer':
+        return <Disclaimer onBack={() => setActiveSection('home')} />;
+      default:
+        return renderHomeContent();
+    }
+  };
 
-  if (filteredArticles.length === 0) {
-    return (
-      <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
-        {/* Fixed Header */}
-        <div className="flex-shrink-0">
-          <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
-          <div className="px-4">
-            <AskAI isHighlighted={true} />
-          </div>
-          <CategoryFilter 
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-          />
-        </div>
-
-        {/* Empty State */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4">
-          <div className="text-6xl mb-4">📰</div>
-          <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
-            No articles found
-          </h3>
-          <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
-            {selectedCategory === 'all' 
-              ? 'Try refreshing or check back later for new articles'
-              : `No articles available in the ${selectedCategory} category`}
-          </p>
-          <Button 
-            onClick={handleRefresh}
-            disabled={refreshMutation.isPending}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {refreshMutation.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Refreshing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Articles
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {/* Fixed Bottom Navigation */}
-        <div className="flex-shrink-0">
-          <BottomNavigation />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative">
-      {/* Floating Header - positioned absolutely over swipe content */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm">
+  const renderHomeContent = () => (
+    <>
+      {/* Fixed Header */}
+      <div className="flex-shrink-0">
         <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
         <div className="px-4">
           <AskAI isHighlighted={true} />
@@ -204,12 +187,74 @@ export default function Home() {
         />
       </div>
 
-      {/* Full-screen Inshorts-style Swipe Interface */}
-      <SwipeNews articles={filteredArticles} />
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
+        {isLoading ? (
+          // Loading State
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
+            </div>
+          </div>
+        ) : articles.length === 0 ? (
+          // Empty State
+          <div className="h-full flex flex-col items-center justify-center px-4">
+            <div className="text-6xl mb-4">📰</div>
+            <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
+              No articles found
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
+              {selectedCategory === 'all' 
+                ? "There are no articles available at the moment." 
+                : `No articles found in the ${selectedCategory} category.`
+              }
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={handleRefresh}
+                disabled={refreshMutation.isPending}
+                className="min-w-[140px]"
+              >
+                {refreshMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh Articles
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // News Cards - Inshorts style full-screen layout
+          <div className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
+            {articles.map((article) => (
+              <div key={article.id} className="h-full snap-start">
+                <NewsCard
+                  article={article}
+                  onClick={() => handleArticleClick(article)}
+                  onShare={(e) => handleShare(e, article)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+      {renderSection()}
       
       {/* Fixed Bottom Navigation */}
-      <div className="absolute bottom-0 left-0 right-0 z-50">
-        <BottomNavigation />
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
       </div>
     </div>
   );

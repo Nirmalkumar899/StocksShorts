@@ -8,7 +8,6 @@ import NotFound from "@/pages/not-found";
 import SebiRia from "@/pages/sebi-ria";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
-import Disclaimer from "@/pages/disclaimer";
 
 function Router() {
   return (
@@ -22,9 +21,6 @@ function Router() {
       </Route>
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/disclaimer">
-        {() => <Disclaimer onBack={() => window.history.back()} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
