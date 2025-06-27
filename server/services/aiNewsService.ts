@@ -34,29 +34,29 @@ export class AINewsService {
     }
 
     try {
-      const prompt = `Generate ONLY live market alerts for Indian stock markets happening TODAY (27-Jun-2025). DO NOT create fake earnings results or historical events. Focus on technical analysis, market movements, and live trading data.
+      const prompt = `Generate ONLY live market alerts for Indian stock markets happening TODAY (27-Jun-2025). AVOID ALL earnings results, quarterly updates, company announcements. Focus ONLY on technical analysis, price movements, and live trading data.
 
 MANDATORY FORMAT - Generate 5 different alerts focusing on CURRENT market activity:
 
-Alert 1 - LIVE MARKET MOVEMENT:
-Title: "27-Jun-2025: [Stock Name]: Live at ₹[X], up [Y]% on [reason]"
-Content: "27-Jun-2025: [Stock] trading at ₹[current price], up [X]% in today's session on [specific reason like high volumes/sector rotation/FII buying]. Strong momentum visible. Next resistance ₹[level], support ₹[level]. [BUY/HOLD] recommendation."
+Alert 1 - LIVE PRICE MOVEMENT:
+Title: "27-Jun-2025: [Stock Name]: Live at ₹[X], up [Y]% on strong volumes"
+Content: "27-Jun-2025: [Stock] trading at ₹[current price], up [X]% in today's session with strong volumes. Technical momentum visible. Next resistance ₹[level], support ₹[level]. [BUY/HOLD] recommendation for technical play."
 
 Alert 2 - TECHNICAL BREAKOUT:
 Title: "27-Jun-2025: [Stock Name]: Breaks ₹[X] resistance, targets ₹[Y]"
-Content: "27-Jun-2025: [Stock] closed above key resistance of ₹[level] with high volumes today. Technical breakout confirmed. Next targets ₹[target1] and ₹[target2]. Stop loss ₹[SL]. BUY for short-term momentum."
+Content: "27-Jun-2025: [Stock] closed above key resistance of ₹[level] with high volumes today. Technical breakout confirmed. Next targets ₹[target1] and ₹[target2]. Stop loss ₹[SL]. BUY for momentum trading."
 
-Alert 3 - SECTOR ROTATION:
-Title: "27-Jun-2025: [Sector] stocks outperform, [Stock Name] gains [X]%"
-Content: "27-Jun-2025: [Sector] index outperforming benchmark today with [Stock] leading gains at [X]%. Strong sector rotation evident in today's trading. Market participants shifting to [sector] on [fundamental reason]. Continue to ACCUMULATE."
+Alert 3 - SECTOR MOMENTUM:
+Title: "27-Jun-2025: [Sector] stocks rally, [Stock Name] leads with [X]% gain"
+Content: "27-Jun-2025: [Sector] index outperforming benchmark today with [Stock] leading gains at [X]%. Strong sector momentum evident in today's trading. Technical setup supports further upside. Continue to ACCUMULATE on dips."
 
-Alert 4 - VOLUME SPIKE:
-Title: "27-Jun-2025: [Stock Name]: Unusual volume spike, stock up [X]%"
-Content: "27-Jun-2025: [Stock] sees volume spike of [X]% above average with price up [Y]% in today's session. Strong institutional interest visible. Current price ₹[level] offers good risk-reward. BUY on dips."
+Alert 4 - VOLUME ANALYSIS:
+Title: "27-Jun-2025: [Stock Name]: Heavy volumes, price up [X]%"
+Content: "27-Jun-2025: [Stock] sees volume spike of [X]% above average with price up [Y]% in today's session. Strong institutional participation visible. Current price ₹[level] offers good technical setup. BUY on pullbacks."
 
-Alert 5 - INDEX IMPACT:
-Title: "27-Jun-2025: [Stock Name]: Index heavyweight drives market sentiment"
-Content: "27-Jun-2025: [Stock] contributing significantly to index movement today with [X]% gain. Stock trading at ₹[price] with strong momentum. Index inclusion effect visible. Technical setup positive for further upside."
+Alert 5 - MARKET LEADERSHIP:
+Title: "27-Jun-2025: [Stock Name]: Market leader drives index gains"
+Content: "27-Jun-2025: [Stock] contributing significantly to index movement today with [X]% gain. Stock trading at ₹[price] with strong technical momentum. Chart pattern positive for further upside. ACCUMULATE on weakness."
 
 Use live market data ONLY. Focus on: HDFC Bank, ICICI Bank, TCS, Infosys, Reliance Industries, Asian Paints, Maruti Suzuki, Bajaj Finance
 
@@ -217,20 +217,20 @@ Return only valid JSON array with no extra text.`;
     
     return [
       {
-        title: `${dateStr}: Nifty Live at ${niftyLevel}, banking stocks lead rally`,
-        content: `${dateStr} ${timeStr}: Nifty trading at ${niftyLevel} levels with strong momentum in banking sector. HDFC Bank, ICICI Bank leading gains. FII net buying of ₹1,800 crore supporting sentiment. Key resistance ${niftyLevel + 30}, support ${niftyLevel - 50}. Market breadth positive.`,
+        title: `${dateStr}: Nifty Live at ${niftyLevel}, technical momentum strong`,
+        content: `${dateStr} ${timeStr}: Nifty trading at ${niftyLevel} levels with strong technical momentum. Banking sector leading gains with heavy volumes. Key resistance ${niftyLevel + 30}, support ${niftyLevel - 50}. Chart pattern suggests further upside. Market breadth positive.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: HDFC Bank breaks above ₹${hdfcPrice}, volume spike seen`,
-        content: `${dateStr}: HDFC Bank trading at ₹${hdfcPrice}, up 1.2% in today's session with volume 50% above average. Technical breakout above ₹1,750 resistance confirmed. Next targets ₹${hdfcPrice + 50} and ₹${hdfcPrice + 100}. Strong institutional buying visible.`,
+        title: `${dateStr}: HDFC Bank breaks ₹${hdfcPrice} resistance, targets higher`,
+        content: `${dateStr}: HDFC Bank trading at ₹${hdfcPrice}, up 1.2% with volume spike of 60% above average. Technical breakout above key resistance confirmed. Next targets ₹${hdfcPrice + 50} and ₹${hdfcPrice + 100}. Strong momentum for technical trading.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: IT stocks outperform, TCS at ₹${tcsPrice} on sector rotation`,
-        content: `${dateStr}: IT sector outperforming benchmark with TCS trading at ₹${tcsPrice}, up 0.8% today. Sector rotation visible as investors shift to defensive IT names. Strong dollar supportive for IT exports. Technical setup positive for further gains in IT stocks.`,
+        title: `${dateStr}: TCS shows strength at ₹${tcsPrice}, sector rotation evident`,
+        content: `${dateStr}: TCS trading at ₹${tcsPrice}, up 0.8% with strong volumes. IT sector outperforming on technical momentum. Chart pattern supportive for further gains. Sector rotation visible as money flows into defensive IT names.`,
         sentiment: 'Positive',
         priority: 'Medium'
       }
