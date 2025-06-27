@@ -12,14 +12,9 @@ import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
 import AskAI from '@/components/ask-ai';
-import SebiRia from '@/pages/sebi-ria';
-import Contact from '@/pages/contact';
-import Profile from '@/pages/profile';
-import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [activeSection, setActiveSection] = useState('home');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,14 +35,7 @@ export default function Home() {
     });
   }, []);
 
-  // Fast section switching handler
-  const handleSectionChange = useCallback((section: string) => {
-    console.log('Tab clicked:', section);
-    setActiveSection(section);
-    if (section === 'sebi-ria') {
-      console.log('Navigating to SEBI RIA');
-    }
-  }, []);
+
 
   // Fetch articles based on selected category
   const {
@@ -157,23 +145,7 @@ export default function Home() {
   // Debug log
   console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
-  // Render different sections based on activeSection
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'sebi-ria':
-        return <SebiRia onBack={() => setActiveSection('home')} />;
-      case 'contact':
-        return <Contact onBack={() => setActiveSection('home')} />;
-      case 'profile':
-        return <Profile onBack={() => setActiveSection('home')} />;
-      case 'disclaimer':
-        return <Disclaimer onBack={() => setActiveSection('home')} />;
-      default:
-        return renderHomeContent();
-    }
-  };
-
-  const renderHomeContent = () => (
+  return (
     <>
       {/* Fixed Header */}
       <div className="flex-shrink-0">
