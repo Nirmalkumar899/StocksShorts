@@ -202,7 +202,7 @@ Always use CURRENT financial metrics, not historical data from 2021-2023.`;
 
       // Add request timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const stockInfo = this.identifyStock(query);
       
@@ -231,14 +231,43 @@ PRICING VALIDATION:
 
 Provide complete fundamental analysis using these EXACT price levels, not historical data.`;
 
+      // Create focused analysis with pre-calculated values
+      const analysisPrompt = `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) at ${stockInfo.currentPrice}
+
+Current Market Data (June 27, 2025):
+- Price: ${stockInfo.currentPrice}
+- Target: ${this.calculateTargetPrice(stockInfo.currentPrice)}
+- Support: ${this.calculateSupport(stockInfo.currentPrice)}
+- Resistance: ${this.calculateResistance(stockInfo.currentPrice)}
+
+Use format:
+**SUMMARY**: ${stockInfo.fullName} | BUY/HOLD/SELL | Target ${this.calculateTargetPrice(stockInfo.currentPrice)} | [reason]
+
+**BUSINESS**: [operations and advantages]
+
+**VALUATION**: [PE vs industry with numbers]
+
+**QUARTERLY**: [Q4 FY25 and Q1 FY26 outlook]
+
+**MANAGEMENT**: [guidance and initiatives]
+
+**TECHNICAL**: Support ${this.calculateSupport(stockInfo.currentPrice)} | Resistance ${this.calculateResistance(stockInfo.currentPrice)}
+
+**VERDICT**: [6-12 month recommendation]
+
+Use ONLY the prices stated above.`;
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
+          { 
+            role: "system", 
+            content: "Provide Indian stock analysis using only the current prices provided. Never use historical data." 
+          },
+          { role: "user", content: analysisPrompt }
         ],
-        max_tokens: 1200,
-        temperature: 0.3,
+        max_tokens: 600,
+        temperature: 0.1,
       }, {
         signal: controller.signal
       });
