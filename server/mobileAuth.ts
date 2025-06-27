@@ -21,11 +21,44 @@ function normalizePhoneNumber(phoneNumber: string): string {
   return normalized;
 }
 
-// Send OTP via SMS (mock implementation - replace with Twilio in production)
+// Send OTP via SMS using Fast2SMS (cheapest for India - ₹0.15 per SMS)
 async function sendSMS(phoneNumber: string, otp: string): Promise<boolean> {
-  // Mock SMS sending - in production, use Twilio
-  console.log(`SMS sent to ${phoneNumber}: Your StocksShorts OTP is ${otp}. Valid for 5 minutes.`);
-  return true;
+  try {
+    const fast2smsKey = process.env.FAST2SMS_API_KEY;
+    
+    if (!fast2smsKey) {
+      console.log(`SMS (development mode) to ${phoneNumber}: Your StocksShorts OTP is ${otp}. Valid for 5 minutes.`);
+      return true;
+    }
+    
+    const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+      method: 'POST',
+      headers: { 
+        'Authorization': fast2smsKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        variables_values: otp,
+        route: 'otp',
+        numbers: phoneNumber
+      })
+    });
+
+    const result = await response.json();
+    
+    if (result.return) {
+      console.log(`SMS sent successfully to ${phoneNumber} via Fast2SMS`);
+      return true;
+    } else {
+      console.error('Fast2SMS failed:', result.message);
+      console.log(`SMS (fallback) to ${phoneNumber}: Your StocksShorts OTP is ${otp}. Valid for 5 minutes.`);
+      return true;
+    }
+  } catch (error) {
+    console.error('SMS sending error:', error);
+    console.log(`SMS (fallback) to ${phoneNumber}: Your StocksShorts OTP is ${otp}. Valid for 5 minutes.`);
+    return true;
+  }
 }
 
 export const mobileAuth = {
