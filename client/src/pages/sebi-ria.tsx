@@ -202,32 +202,32 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                       <Sparkles className="h-5 w-5 text-yellow-400 animate-spin" />
                     </div>
                     
-                    <CardContent className="p-8 relative z-10">
+                    <CardContent className="p-6 relative z-10 h-full">
                       {/* Enhanced Header with Status Indicator */}
-                      <div className="mb-6">
+                      <div className="mb-4">
                         <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent mb-2">
+                          <div className="flex-1 min-w-0 pr-2">
+                            <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent mb-2 truncate">
                               {advisor.name}
                             </h3>
                             {advisor.company && (
-                              <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1 flex items-center">
-                                <Briefcase className="h-3 w-3 mr-1" />
-                                {advisor.company}
+                              <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-1 flex items-center truncate">
+                                <Briefcase className="h-3 w-3 mr-1 flex-shrink-0" />
+                                <span className="truncate">{advisor.company}</span>
                               </p>
                             )}
                             {advisor.designation && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium truncate">
                                 {advisor.designation}
                               </p>
                             )}
                           </div>
-                          <div className="flex flex-col items-end space-y-1">
+                          <div className="flex flex-col items-end space-y-1 flex-shrink-0">
                             <div className="flex items-center space-x-1 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
                               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                              <span className="text-xs font-medium text-green-700 dark:text-green-400">Active</span>
+                              <span className="text-xs font-medium text-green-700 dark:text-green-400 whitespace-nowrap">Active</span>
                             </div>
-                            <Badge variant="outline" className="text-xs bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-2 py-1">
+                            <Badge variant="outline" className="text-xs bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-2 py-1 whitespace-nowrap">
                               SEBI Registered
                             </Badge>
                           </div>
