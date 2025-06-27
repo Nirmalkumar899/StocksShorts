@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Enhanced AI stock analysis with comprehensive investment analysis from user's perspective: Investment Case (value drivers, competitive advantages), Risk Analysis (3 specific risks), Catalysts (growth drivers), Quality Metrics (ROE, Debt/Equity ratios), Risk-Reward Assessment with time horizons - institutional-quality analysis thinking "what do investors need to know to make money"
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with mandatory specific numerical metrics: exact PE ratios (25.3x vs 23.1x), quarterly growth percentages (+12.7% revenue), profit margins (21.8%), management targets (+13.0% FY26), and expected returns (7.0%) - eliminating generic statements
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with summary-first structure: Business Model, PE vs Industry, Quarterly Performance, Management Commentary, Technical Analysis - complete responses without truncation
 - June 27, 2025: **MAJOR**: Created ultra-compact Ask AI input (single row layout) with dedicated stock discussion modal for AI responses - minimal space usage with full functionality
