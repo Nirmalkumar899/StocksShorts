@@ -118,7 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 27, 2025: **MAJOR**: Expanded AI stock recognition across all market caps - Large cap (TCS, Airtel), Mid cap (Biocon, L&T), Small cap (Dixon, CAMS), Micro cap/SME (RVNL, Nazara) with no price targets for micro caps
+- June 27, 2025: **MAJOR**: Complete AI stock recognition system now covers ALL NSE/BSE listings including newer IPOs (Zomato, Paytm, Nykaa, PolicyBazaar) plus established stocks across all market caps with appropriate risk-based analysis
 - June 27, 2025: **MAJOR**: Fixed AI stock analysis pricing accuracy - now uses current market data (Airtel ₹2,050, TCS ₹3,650) with realistic targets and technical levels based on actual prices
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with summary-first structure: Business Model, PE vs Industry, Quarterly Performance, Management Commentary, Technical Analysis - complete responses without truncation
 - June 27, 2025: **MAJOR**: Created ultra-compact Ask AI input (single row layout) with dedicated stock discussion modal for AI responses - minimal space usage with full functionality

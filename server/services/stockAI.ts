@@ -16,9 +16,38 @@ export class StockAIService {
       }
     }
     
+    // Check additional newer stocks
+    const additionalStocks = this.getAdditionalStocks();
+    const additionalKeys = Object.keys(additionalStocks).sort((a, b) => b.length - a.length);
+    for (const key of additionalKeys) {
+      if (queryLower.includes(key)) {
+        return additionalStocks[key];
+      }
+    }
+    
     // For unknown stocks, extract likely stock symbol/name and let AI handle it
     const extractedStock = this.extractStockInfo(query);
     return extractedStock;
+  }
+
+  private getAdditionalStocks(): { [key: string]: { fullName: string; symbol: string; currentPrice: string; category: string } } {
+    return {
+      'zomato': { fullName: 'Zomato Ltd', symbol: 'ZOMATO', currentPrice: '₹185', category: 'mid' },
+      'paytm': { fullName: 'One 97 Communications Ltd', symbol: 'PAYTM', currentPrice: '₹920', category: 'large' },
+      'nykaa': { fullName: 'FSN E-Commerce Ventures Ltd', symbol: 'NYKAA', currentPrice: '₹180', category: 'mid' },
+      'policybazaar': { fullName: 'PB Fintech Ltd', symbol: 'PB', currentPrice: '₹1,250', category: 'mid' },
+      'pb fintech': { fullName: 'PB Fintech Ltd', symbol: 'PB', currentPrice: '₹1,250', category: 'mid' },
+      'delhivery': { fullName: 'Delhivery Ltd', symbol: 'DELHIVERY', currentPrice: '₹380', category: 'mid' },
+      'car trade': { fullName: 'CarTrade Tech Ltd', symbol: 'CARTRADE', currentPrice: '₹850', category: 'small' },
+      'cartrade': { fullName: 'CarTrade Tech Ltd', symbol: 'CARTRADE', currentPrice: '₹850', category: 'small' },
+      'freshworks': { fullName: 'Freshworks Inc', symbol: 'FRESHWORKS', currentPrice: '₹420', category: 'small' },
+      'mobikwik': { fullName: 'One MobiKwik Systems Ltd', symbol: 'MOBIKWIK', currentPrice: '₹290', category: 'small' },
+      'star health': { fullName: 'Star Health and Allied Insurance Co Ltd', symbol: 'STARHEALTH', currentPrice: '₹680', category: 'mid' },
+      'starhealth': { fullName: 'Star Health and Allied Insurance Co Ltd', symbol: 'STARHEALTH', currentPrice: '₹680', category: 'mid' },
+      'life insurance corporation': { fullName: 'Life Insurance Corporation of India', symbol: 'LICI', currentPrice: '₹920', category: 'large' },
+      'lic': { fullName: 'Life Insurance Corporation of India', symbol: 'LICI', currentPrice: '₹920', category: 'large' },
+      'lici': { fullName: 'Life Insurance Corporation of India', symbol: 'LICI', currentPrice: '₹920', category: 'large' },
+    };
   }
 
   private getKnownStockMappings(): { [key: string]: { fullName: string; symbol: string; currentPrice: string; category: string } } {
@@ -99,12 +128,12 @@ export class StockAIService {
     const cleanQuery = query.replace(/analyze|analysis|stock|share|company/gi, '').trim();
     const possibleSymbol = cleanQuery.toUpperCase().replace(/\s+/g, '');
     
-    // Return dynamic stock info - let AI handle the identification
+    // Return dynamic stock info for unknown stocks - let AI handle identification
     return {
       fullName: cleanQuery || 'Indian Listed Company',
       symbol: possibleSymbol || 'NSE_LISTED',
       currentPrice: 'Current Market Price',
-      category: 'auto' // Auto-detect market cap category
+      category: 'auto'
     };
   }
 
