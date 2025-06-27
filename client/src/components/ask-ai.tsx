@@ -18,12 +18,9 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
 
   const queryMutation = useMutation({
     mutationFn: async (stockQuery: string) => {
-      const response = await apiRequest({
-        url: "/api/stock-ai/query",
-        method: "POST",
-        body: { query: stockQuery }
-      });
-      return response.json();
+      const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
+      const data = await response.json();
+      return data.analysis;
     },
     onSuccess: (data) => {
       setAnalysis(data);

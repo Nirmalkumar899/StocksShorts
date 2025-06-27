@@ -178,6 +178,9 @@ export default function Home() {
       {/* Fixed Header */}
       <div className="flex-shrink-0">
         <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
+        <div className="px-4">
+          <AskAI isHighlighted={true} />
+        </div>
         <CategoryFilter 
           selectedCategory={selectedCategory}
           onCategoryChange={handleCategoryChange}

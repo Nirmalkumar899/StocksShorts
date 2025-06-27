@@ -38,6 +38,7 @@ Keep responses concise (200-300 words) and actionable for retail investors.`;
         ],
         max_tokens: 400,
         temperature: 0.7,
+        timeout: 30000, // 30 seconds timeout
       });
 
       return response.choices[0].message.content || "Unable to analyze the stock at this time.";
