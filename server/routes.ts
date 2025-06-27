@@ -9,6 +9,7 @@ import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
 import { stockTester } from "./services/stockTester";
 import { financialDataProvider } from "./services/financialDataProvider";
+import { conferenceCallService } from "./services/conferenceCallService";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -337,6 +338,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Financial data error:', error);
       res.status(500).json({
         message: error instanceof Error ? error.message : 'Financial data retrieval failed'
+      });
+    }
+  });
+
+  // Conference Call and Management Guidance Endpoints
+  
+  // Get conference call transcripts and management guidance
+  app.get("/api/conference-calls/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      
+      if (!symbol) {
+        return res.status(400).json({ message: 'Stock symbol is required' });
+      }
+
+      console.log(`Fetching conference call data for ${symbol}...`);
+      const data = await conferenceCallService.getConferenceCallData(symbol.toUpperCase());
+      
+      if (data) {
+        res.json({
+          message: `Conference call data retrieved for ${symbol}`,
+          data,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(404).json({
+          message: `No conference call data available for ${symbol}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Conference call data error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Conference call data retrieval failed'
+      });
+    }
+  });
+
+  // Get management guidance and recent news
+  app.get("/api/management-guidance/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      
+      if (!symbol) {
+        return res.status(400).json({ message: 'Stock symbol is required' });
+      }
+
+      console.log(`Fetching management guidance for ${symbol}...`);
+      const conferenceData = await conferenceCallService.getConferenceCallData(symbol.toUpperCase());
+      
+      if (conferenceData) {
+        const guidanceData = {
+          symbol: symbol.toUpperCase(),
+          revenueGrowthTarget: conferenceData.revenueGrowthTarget,
+          marginExpansion: conferenceData.marginExpansion,
+          capexGuidance: conferenceData.capexGuidance,
+          managementOutlook: conferenceData.managementOutlook,
+          industryCommentary: conferenceData.industryCommentary,
+          source: conferenceData.source,
+          lastUpdated: conferenceData.lastUpdated
+        };
+
+        res.json({
+          message: `Management guidance retrieved for ${symbol}`,
+          data: guidanceData,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(404).json({
+          message: `No management guidance available for ${symbol}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Management guidance error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Management guidance retrieval failed'
+      });
+    }
+  });
+
+  // Get recent company news and developments
+  app.get("/api/company-news/:symbol", async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      
+      if (!symbol) {
+        return res.status(400).json({ message: 'Stock symbol is required' });
+      }
+
+      console.log(`Fetching recent company news for ${symbol}...`);
+      const conferenceData = await conferenceCallService.getConferenceCallData(symbol.toUpperCase());
+      
+      if (conferenceData && conferenceData.recentNews) {
+        const newsData = {
+          symbol: symbol.toUpperCase(),
+          recentNews: conferenceData.recentNews,
+          quarterlyHighlights: conferenceData.quarterlyHighlights,
+          source: conferenceData.source,
+          lastUpdated: conferenceData.lastUpdated
+        };
+
+        res.json({
+          message: `Recent company news retrieved for ${symbol}`,
+          data: newsData,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(404).json({
+          message: `No recent company news available for ${symbol}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Company news error:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Company news retrieval failed'
       });
     }
   });
