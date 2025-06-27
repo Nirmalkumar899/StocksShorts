@@ -118,6 +118,11 @@ export class MemStorage implements IStorage {
       phoneNumber: userData.email || `user_${id}@mock.com`,
       firstName: userData.firstName || null,
       lastName: userData.lastName || null,
+      age: userData.age || null,
+      gender: userData.gender || null,
+      city: userData.city || null,
+      occupation: userData.occupation || null,
+      investmentExperience: userData.investmentExperience || null,
       isVerified: "true",
       createdAt: new Date(),
       updatedAt: new Date()
