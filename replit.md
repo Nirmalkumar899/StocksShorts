@@ -118,8 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 27, 2025: **MAJOR**: Created comprehensive user profile system with optional personal details (name, age, gender, city, occupation, investment experience) - nothing compulsory, includes saved articles section and removes Gmail references from login
-- June 27, 2025: **MAJOR**: Fixed login loop issue after OTP verification by properly setting session user object and implementing React Query cache invalidation instead of page reload  
+- June 27, 2025: **MAJOR**: Successfully resolved login loop issue with proper session middleware configuration - authentication now works seamlessly with persistent sessions after OTP verification
+- June 27, 2025: **MAJOR**: Created comprehensive user profile system with optional personal details (name, age, gender, city, occupation, investment experience) - nothing compulsory, includes saved articles section and removes Gmail references from login  
 - June 27, 2025: **MAJOR**: Implemented authentication-required AI analysis with daily limits - users must login via mobile OTP to access AI stock analysis, limited to 5 queries per day, with "Beta Testing" messaging and proper error handling for unauthorized access
 - June 27, 2025: **MAJOR**: Updated conference call service to use Q4 FY25 (latest quarter) data - stock analysis now displays current quarterly results and FY26 management guidance (TCS Q4 revenue up 15%, EBITDA margin 22%, management targets 12-14% FY26 growth, capex ₹600-700 crore) instead of outdated Q3 data
 - June 27, 2025: **MAJOR**: Successfully implemented GPT-3.5-turbo powered financial data extraction system providing 100% authentic metrics for 20 major Indian stocks - TCS (₹3,155.15, PE 38.24, ROE 29.66%), Reliance (₹2,575.45, PE 50.13), HDFC Bank (₹1,465.35, PE 30.94) with comprehensive testing framework and quality validation

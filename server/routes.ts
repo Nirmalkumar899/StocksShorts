@@ -270,24 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/logout', mobileAuth.logout);
   app.put('/api/auth/profile', mobileAuth.isAuthenticated, mobileAuth.updateProfile);
 
-  // Test endpoint to get current OTP for debugging
-  app.get('/api/auth/test-otp/:phone', async (req, res) => {
-    try {
-      const phoneNumber = req.params.phone;
-      const otps = (storage as any).otps;
-      const validOtp = Array.from(otps.values()).find(
-        (otp: any) => otp.phoneNumber === phoneNumber && otp.isUsed === "false" && otp.expiresAt > new Date()
-      );
-      
-      if (validOtp) {
-        res.json({ otp: validOtp.otp, expiresAt: validOtp.expiresAt });
-      } else {
-        res.status(404).json({ message: "No valid OTP found" });
-      }
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching OTP" });
-    }
-  });
+
 
   // Financial Data Testing Endpoints
   
