@@ -18,7 +18,8 @@ import {
   Briefcase,
   Users,
   DollarSign,
-  Star
+  Star,
+  Brain
 } from "lucide-react";
 
 interface CategoryFilterProps {
@@ -28,6 +29,7 @@ interface CategoryFilterProps {
 
 const categories = [
   { id: 'all', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500' },
+  { id: 'ai', label: 'AI News', icon: Brain, ai: true, gradient: 'from-violet-500 to-purple-500' },
   { id: 'stocksshorts-special', label: 'Special', icon: Crown, special: true, gradient: 'from-amber-500 to-orange-500' },
   { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500' },
   { id: 'index', label: 'Index', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500' },
@@ -48,6 +50,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
           const isSpecial = category.special;
+          const isAI = category.ai;
           
           return (
             <Button

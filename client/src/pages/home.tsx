@@ -55,10 +55,14 @@ export default function Home() {
     error,
     refetch
   } = useQuery<Article[]>({
-    queryKey: ['/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
+    queryKey: [selectedCategory === 'ai' ? '/api/ai-articles' : '/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
     queryFn: async () => {
       let url = '/api/articles';
-      if (selectedCategory !== 'all') {
+      
+      // Use AI articles API for AI category
+      if (selectedCategory === 'ai') {
+        url = '/api/ai-articles/recent?limit=50';
+      } else if (selectedCategory !== 'all') {
         url = `/api/articles?category=${selectedCategory}`;
       }
       
