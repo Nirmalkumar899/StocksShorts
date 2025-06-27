@@ -117,6 +117,9 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Added AI-powered news section with real-time Indian stock market updates using Perplexity API
+- June 27, 2025: Implemented automatic news fetching every 15 minutes with 5 articles per batch and auto-cleanup after 100 articles
+- June 27, 2025: Created AI News category with Brain icon and purple gradient styling in category filter
 - June 27, 2025: **MAJOR**: Replaced Google OAuth with mobile number OTP authentication system
 - June 27, 2025: Implemented secure SMS-based login with 6-digit OTP verification (5-minute expiry)
 - June 27, 2025: Created new mobile authentication API endpoints and user profile management
