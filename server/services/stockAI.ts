@@ -262,10 +262,12 @@ AUTHENTIC MARKET DATA:
 - Volume: ${data.volume}`;
       } else {
         marketDataText = `
-LIVE MARKET DATA:
+AVAILABLE MARKET DATA:
 - Current Trading Price: ${stockInfo.currentPrice}
-- Stock Category: ${stockInfo.category} cap
-Note: Detailed financials not available - analysis based on available market data only.`;
+- Market Category: ${stockInfo.category} cap stock
+- Technical levels calculated from current price
+
+Note: Detailed financial statements, quarterly results, PE ratios, and other fundamental metrics are not currently available for this analysis.`;
       }
       
       const response = await openai.chat.completions.create({
@@ -273,7 +275,7 @@ Note: Detailed financials not available - analysis based on available market dat
         messages: [
           { 
             role: "system", 
-            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Write in paragraph format for better readability. Always start with investment disclaimer and use only authentic numbers when available.\n\nMANDATORY STRUCTURE:\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS OVERVIEW**: Write 2-3 sentences about the company's core business model, revenue streams, market position, and competitive advantages in paragraph format.\n\n**FINANCIAL PERFORMANCE**: Analyze recent quarterly results with specific numbers. Include revenue growth (QoQ and YoY), profit margins, ROE, debt levels only if authentic data is available. Write in paragraph format with actual figures.\n\n**VALUATION METRICS**: Discuss current PE ratio compared to industry averages, PB ratio, market cap, and valuation attractiveness. Use only real numbers from the data provided. Write as flowing paragraphs.\n\n**TECHNICAL OUTLOOK**: Analyze current price action, support/resistance levels, trend direction, and momentum indicators. Present in paragraph format with specific price levels.\n\n**INVESTMENT THESIS**: Provide overall investment recommendation with target price, time horizon, and multibagger potential assessment. Explain reasoning in paragraph format.\n\nIMPORTANT RULES:\n- Use ONLY authentic financial data when provided\n- If specific data is not available, skip that section entirely\n- Write in flowing paragraphs, not bullet points\n- Include specific numbers throughout the analysis\n- Focus on actionable insights with concrete data"
+            content: "You are a senior equity research analyst writing an investment analysis in a natural, flowing paragraph style. Always start with disclaimer and use only authentic data provided.\n\nSTRUCTURE (write as flowing paragraphs, NOT bullet points):\n\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS OVERVIEW**: Write naturally flowing paragraphs about the company's business model, competitive position, and market standing. Keep it conversational and readable.\n\n**FINANCIAL PERFORMANCE**: Only include this section if authentic quarterly data is provided. Write flowing paragraphs discussing revenue growth, margins, ROE, and debt levels using the exact numbers provided. Skip entirely if no real data available.\n\n**VALUATION**: Only if authentic PE ratios, market cap, or other valuation metrics are provided, discuss these in natural paragraph format. Compare with industry standards if that data is available.\n\n**TECHNICAL ANALYSIS**: Discuss current price levels, support/resistance, and technical trends in paragraph format using the actual price data provided.\n\n**INVESTMENT CONCLUSION**: Provide investment recommendation, target price, and multibagger assessment in flowing paragraphs. Base conclusions on available authentic data.\n\nCRITICAL RULES:\n- Write in natural, flowing paragraphs - NO bullet points or lists\n- Use ONLY authentic numbers provided in the data\n- Skip entire sections if no real data is available for that topic\n- Write conversationally, like explaining to an investor friend\n- Include specific numbers naturally within the flowing text"
           },
           { 
             role: "user", 
