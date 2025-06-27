@@ -127,12 +127,14 @@ Return only valid JSON array with no extra text.`;
 
       const articles: ParsedArticle[] = JSON.parse(jsonMatch[0]);
       
-      return articles.slice(0, this.articlesPerBatch).map(article => ({
-        title: article.title.substring(0, 200),
-        content: article.content.substring(0, 500),
-        sentiment: ['Positive', 'Negative', 'Neutral'].includes(article.sentiment) ? article.sentiment : 'Neutral',
-        priority: ['High', 'Medium', 'Low'].includes(article.priority) ? article.priority : 'Medium'
-      }));
+      return articles.slice(0, this.articlesPerBatch)
+        .filter(article => article && article.title && article.content)
+        .map(article => ({
+          title: (article.title || '').substring(0, 200),
+          content: (article.content || '').substring(0, 500),
+          sentiment: ['Positive', 'Negative', 'Neutral'].includes(article.sentiment) ? article.sentiment : 'Neutral',
+          priority: ['High', 'Medium', 'Low'].includes(article.priority) ? article.priority : 'Medium'
+        }));
 
     } catch (error) {
       console.error('Error parsing articles:', error);
