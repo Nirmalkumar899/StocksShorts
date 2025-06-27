@@ -3,8 +3,10 @@ import OpenAI from "openai";
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+import { realTimeStockService } from './realTimeStockService';
+
 export class StockAIService {
-  private identifyStock(query: string): { fullName: string; symbol: string; currentPrice: string; category: string } {
+  private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string }> {
     const queryLower = query.toLowerCase().trim();
     
     // First check known mappings for instant recognition
