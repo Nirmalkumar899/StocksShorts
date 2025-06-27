@@ -50,6 +50,11 @@ export class MemStorage implements IStorage {
       phoneNumber: insertUser.phoneNumber,
       firstName: insertUser.firstName || null,
       lastName: insertUser.lastName || null,
+      age: insertUser.age || null,
+      gender: insertUser.gender || null,
+      city: insertUser.city || null,
+      occupation: insertUser.occupation || null,
+      investmentExperience: insertUser.investmentExperience || null,
       isVerified: insertUser.isVerified || "false",
       createdAt: new Date(),
       updatedAt: new Date()

@@ -174,7 +174,14 @@ export const mobileAuth = {
         await storage.verifyUser(normalizedPhone);
       }
 
-      // Set session
+      // Set session with proper user object
+      (req.session as any).user = {
+        id: user.id,
+        phoneNumber: user.phoneNumber,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isVerified: user.isVerified
+      };
       (req.session as any).userId = user.id;
       (req.session as any).phoneNumber = user.phoneNumber;
 
@@ -197,7 +204,7 @@ export const mobileAuth = {
   // Check if user is authenticated
   isAuthenticated: (req: Request, res: Response, next: NextFunction) => {
     const session = req.session as any;
-    if (session && session.userId) {
+    if (session && session.user && session.userId) {
       next();
     } else {
       res.status(401).json({ message: "Unauthorized" });
@@ -222,6 +229,11 @@ export const mobileAuth = {
         phoneNumber: user.phoneNumber,
         firstName: user.firstName,
         lastName: user.lastName,
+        age: user.age,
+        gender: user.gender,
+        city: user.city,
+        occupation: user.occupation,
+        investmentExperience: user.investmentExperience,
         isVerified: user.isVerified
       });
     } catch (error) {
