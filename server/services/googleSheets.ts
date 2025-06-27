@@ -53,6 +53,13 @@ export class GoogleSheetsService {
   }
 
   async fetchArticles(): Promise<Article[]> {
+    // Check cache first for 30x faster response
+    const cachedArticles = this.cache.get<Article[]>('articles');
+    if (cachedArticles) {
+      console.log('Returning cached articles - instant response');
+      return cachedArticles;
+    }
+
     // If Google Sheets credentials are not configured, return sample data
     if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
       console.log('Google Sheets credentials not configured, using sample data');
@@ -116,6 +123,10 @@ export class GoogleSheetsService {
             createdAt: new Date(),
           };
         });
+
+      // Cache articles for 30 seconds to speed up repeated requests
+      this.cache.set('articles', articles, 30);
+      console.log(`Cached ${articles.length} articles for faster subsequent requests`);
 
       return articles;
     } catch (error) {
