@@ -155,94 +155,43 @@ export class GoogleSheetsService {
   }
 
   async fetchInvestmentAdvisors(): Promise<InvestmentAdvisor[]> {
-    // Use comprehensive sample data for better user experience and testing
-    const sampleAdvisors: InvestmentAdvisor[] = [
-      {
-        id: 1,
-        name: 'Rajesh Kumar',
-        company: 'Wealth Solutions India',
-        designation: 'Senior Investment Advisor',
-        phone: '+91-98765-43210',
-        email: 'rajesh@wealthsolutions.in',
-        website: 'www.wealthsolutions.in',
-        specialization: 'Equity, Mutual Funds, Portfolio Management',
-        experience: '12+ Years',
-        location: 'Mumbai, Maharashtra',
-        rating: '4.5',
-        createdAt: new Date(),
-      },
-      {
-        id: 2,
-        name: 'Priya Sharma',
-        company: 'Capital Growth Advisors',
-        designation: 'Portfolio Manager',
-        phone: '+91-98765-43211',
-        email: 'priya@capitalgrowth.in',
-        website: 'www.capitalgrowth.in',
-        specialization: 'Fixed Income, Tax Planning, Retirement Planning',
-        experience: '8+ Years',
-        location: 'Delhi, NCR',
-        rating: '4.3',
-        createdAt: new Date(),
-      },
-      {
-        id: 3,
-        name: 'Amit Agarwal',
-        company: 'Smart Invest Advisory',
-        designation: 'Chief Investment Officer',
-        phone: '+91-98765-43212',
-        email: 'amit@smartinvest.in',
-        website: 'www.smartinvest.in',
-        specialization: 'Alternative Investments, Real Estate, Insurance',
-        experience: '15+ Years',
-        location: 'Bangalore, Karnataka',
-        rating: '4.7',
-        createdAt: new Date(),
-      },
-      {
-        id: 4,
-        name: 'Sneha Patel',
-        company: 'Future Financial Services',
-        designation: 'Investment Consultant',
-        phone: '+91-98765-43213',
-        email: 'sneha@futurefinancial.in',
-        website: 'www.futurefinancial.in',
-        specialization: 'SIP Planning, Goal-based Investing, Risk Assessment',
-        experience: '6+ Years',
-        location: 'Pune, Maharashtra',
-        rating: '4.2',
-        createdAt: new Date(),
-      },
-      {
-        id: 5,
-        name: 'Vikram Singh',
-        company: 'Elite Wealth Management',
-        designation: 'Wealth Manager',
-        phone: '+91-98765-43214',
-        email: 'vikram@elitewealth.in',
-        website: 'www.elitewealth.in',
-        specialization: 'High Net Worth Planning, Estate Planning, Tax Optimization',
-        experience: '20+ Years',
-        location: 'Chennai, Tamil Nadu',
-        rating: '4.8',
-        createdAt: new Date(),
-      },
-      {
-        id: 6,
-        name: 'Kavita Menon',
-        company: 'Progressive Investment Solutions',
-        designation: 'Financial Planner',
-        phone: '+91-98765-43215',
-        email: 'kavita@progressive.in',
-        website: 'www.progressive.in',
-        specialization: 'Women-focused Financial Planning, Education Planning',
-        experience: '10+ Years',
-        location: 'Hyderabad, Telangana',
-        rating: '4.4',
-        createdAt: new Date(),
-      },
-    ];
+    // If Google Sheets credentials are not configured, return empty array
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
+      console.log('Google Sheets credentials not configured for Investment Advisors');
+      return [];
+    }
 
-    return sampleAdvisors;
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'IA!A2:J', // Name, Company, Designation, Phone, Email, Website, Specialization, Experience, Location, Rating
+      });
+
+      const rows: string[][] = response.data.values || [];
+      
+      const advisors: InvestmentAdvisor[] = rows
+        .filter(row => row.length >= 5) // At least Name, Company, Designation, Phone, Email
+        .map((row, index) => {
+          return {
+            id: index + 1,
+            name: row[0] || 'Unknown',
+            company: row[1] || '',
+            designation: row[2] || '',
+            phone: row[3] || '',
+            email: row[4] || '',
+            website: row[5] || '',
+            specialization: row[6] || '',
+            experience: row[7] || '',
+            location: row[8] || '',
+            rating: row[9] || '4.0',
+            createdAt: new Date(),
+          };
+        });
+
+      return advisors;
+    } catch (error) {
+      console.error('Error fetching Investment Advisors from Google Sheets:', error);
+      return [];
+    }
   }
 }
