@@ -124,7 +124,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         </div>
       )}
 
-      {/* News Ticker Style Advisor Directory */}
+      {/* Continuous Train-Style News Ticker */}
       <Card className="mb-6 bg-gradient-to-r from-red-800 to-red-900 text-white border-0 overflow-hidden">
         <CardContent className="p-0">
           <div className="bg-red-600 px-4 py-2 flex items-center justify-between">
@@ -136,33 +136,50 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
               LIVE
             </Badge>
           </div>
-          <div className="bg-black text-yellow-400 py-2 overflow-hidden relative">
+          <div className="bg-black text-yellow-400 py-3 overflow-hidden relative">
             <div className="ticker-wrapper">
               <div className="ticker-content">
+                {/* First set - alphabetically sorted */}
                 {[...advisors]
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((advisor, index) => (
-                    <span key={`${advisor.id}-${index}`} className="inline-block mr-12 text-sm">
+                    <span key={`first-${advisor.id}`} className="inline-block mr-16 text-sm">
                       <span className="text-white font-bold">{advisor.name}</span>
-                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-gray-400 mx-2">•</span>
                       <span className="text-yellow-400">{advisor.company}</span>
-                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-gray-400 mx-2">•</span>
                       <span className="text-blue-300">{advisor.specialization}</span>
-                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-gray-400 mx-2">•</span>
                       <span className="text-green-300">{advisor.location}</span>
                     </span>
                   ))}
-                {/* Duplicate for seamless loop */}
+                
+                {/* Second set for seamless loop */}
                 {[...advisors]
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((advisor, index) => (
-                    <span key={`dup-${advisor.id}-${index}`} className="inline-block mr-12 text-sm">
+                    <span key={`second-${advisor.id}`} className="inline-block mr-16 text-sm">
                       <span className="text-white font-bold">{advisor.name}</span>
-                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-gray-400 mx-2">•</span>
                       <span className="text-yellow-400">{advisor.company}</span>
-                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-gray-400 mx-2">•</span>
                       <span className="text-blue-300">{advisor.specialization}</span>
-                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-gray-400 mx-2">•</span>
+                      <span className="text-green-300">{advisor.location}</span>
+                    </span>
+                  ))}
+
+                {/* Third set for continuous flow */}
+                {[...advisors]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((advisor, index) => (
+                    <span key={`third-${advisor.id}`} className="inline-block mr-16 text-sm">
+                      <span className="text-white font-bold">{advisor.name}</span>
+                      <span className="text-gray-400 mx-2">•</span>
+                      <span className="text-yellow-400">{advisor.company}</span>
+                      <span className="text-gray-400 mx-2">•</span>
+                      <span className="text-blue-300">{advisor.specialization}</span>
+                      <span className="text-gray-400 mx-2">•</span>
                       <span className="text-green-300">{advisor.location}</span>
                     </span>
                   ))}
@@ -170,7 +187,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
             </div>
           </div>
           <div className="bg-red-700 px-4 py-1 text-xs text-center">
-            {advisors.length} SEBI Registered Advisors • Alphabetically Sorted • Live Updates
+            {advisors.length} SEBI Registered Advisors • Continuous Train Display • No Preference Order
           </div>
         </CardContent>
       </Card>
