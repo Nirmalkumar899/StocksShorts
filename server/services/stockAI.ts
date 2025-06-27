@@ -358,18 +358,20 @@ export class StockAIService {
     }
   }
 
-  private extractFinancialDataFromHTML(html: string): any {
+  private async extractFinancialDataFromHTML(html: string): Promise<any> {
     try {
       const data: any = {};
       
-      // Extract current price from multiple patterns
+      // Extract current price with enhanced screener.in patterns
       const pricePatterns = [
         /<span[^>]*class="[^"]*number[^"]*"[^>]*>₹\s*([\d,]+\.?\d*)/,
+        /<div[^>]*class="[^"]*price-box[^"]*"[^>]*>.*?₹\s*([\d,]+\.?\d*)/,
         /₹\s*([\d,]+\.?\d*)\s*<\/span>/,
         /"current_price":\s*([\d.]+)/,
         /data-value="([\d.]+)"/,
         /<h1[^>]*>.*?₹\s*([\d,]+\.?\d*)/,
-        /Current Price[^>]*>\s*₹\s*([\d,]+\.?\d*)/i
+        /Current Price[^>]*>\s*₹\s*([\d,]+\.?\d*)/i,
+        /<td[^>]*>\s*Current Price\s*<\/td>\s*<td[^>]*>\s*₹\s*([\d,]+\.?\d*)/i
       ];
       
       for (const pattern of pricePatterns) {
@@ -380,16 +382,16 @@ export class StockAIService {
         }
       }
       
-      // Extract PE ratio with enhanced patterns
+      // Extract PE ratio with comprehensive patterns targeting screener.in structure
       const pePatterns = [
-        /<td[^>]*>\s*P\/E\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
-        /<span[^>]*>\s*PE:\s*([\d.]+)/i,
-        /PE\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
-        /"pe":\s*([\d.]+)/,
-        /Price to Earning[^>]*>\s*([\d.]+)/i,
-        /PE Ratio[^>]*>\s*([\d.]+)/i,
-        /P\/E.*?<td[^>]*>\s*([\d.]+)/i,
-        /Trailing P\/E[^>]*>\s*([\d.]+)/i
+        /Stock P\/E.*?<span[^>]*class="[^"]*number[^"]*"[^>]*>([\d.]+)<\/span>/i,
+        /<td[^>]*>\s*Stock P\/E\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
+        /P\/E\s*<\/b>\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
+        /<b>P\/E<\/b>.*?<td[^>]*>\s*([\d.]+)/i,
+        /PE.*?<span[^>]*>\s*([\d.]+)\s*<\/span>/i,
+        /"stock_pe":\s*([\d.]+)/,
+        /Price to Earning.*?(\d+\.?\d*)/i,
+        /P\/E Ratio.*?(\d+\.?\d*)/i
       ];
       
       for (const pattern of pePatterns) {
@@ -400,14 +402,15 @@ export class StockAIService {
         }
       }
       
-      // Extract Market Cap with enhanced patterns
+      // Extract Market Cap with screener.in specific patterns
       const mcapPatterns = [
+        /Market Cap.*?<span[^>]*class="[^"]*number[^"]*"[^>]*>₹\s*([\d,]+(?:\.\d+)?)\s*Cr<\/span>/i,
         /<td[^>]*>\s*Market Cap\s*<\/td>\s*<td[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
-        /Market Cap[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
+        /Market Cap<\/b>.*?₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
+        /<b>Market Cap<\/b>.*?<td[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
+        /Market Capitalisation.*?₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
         /"market_cap":\s*([\d.]+)/,
-        /Market Capitalisation[^>]*>\s*₹\s*([\d,]+)/i,
-        /Market Cap.*?₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
-        /Mkt Cap[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i
+        /Mkt\s*Cap.*?₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i
       ];
       
       for (const pattern of mcapPatterns) {
@@ -475,6 +478,44 @@ export class StockAIService {
         if (match) {
           data.profitMargin = parseFloat(match[1]) / 100;
           break;
+        }
+      }
+      
+      console.log(`Extracted financial data for ${data.symbol || 'unknown'}:`, data);
+      
+      // If we have minimal data, try additional extraction methods
+      if (Object.keys(data).length <= 2) {
+        // Try to extract from JSON data embedded in the page
+        const jsonMatches = html.match(/"ratios":\s*{[^}]+}/g);
+        if (jsonMatches) {
+          try {
+            const ratiosData = JSON.parse(`{${jsonMatches[0]}}`);
+            if (ratiosData.ratios) {
+              data.pe = ratiosData.ratios.pe || data.pe;
+              data.roe = ratiosData.ratios.roe || data.roe;
+              data.debtToEquity = ratiosData.ratios.debt_to_equity || data.debtToEquity;
+            }
+          } catch (e) {
+            console.log('Failed to parse embedded JSON data');
+          }
+        }
+        
+        // Try alternate API endpoints if available
+        const companyIdMatch = html.match(/company\/(\d+)\//);
+        if (companyIdMatch) {
+          const companyId = companyIdMatch[1];
+          console.log(`Found company ID: ${companyId}, attempting quarterly data fetch`);
+          try {
+            const quarterlyData = await this.getQuarterlyData(companyId);
+            if (quarterlyData && quarterlyData.length > 0) {
+              const latest = quarterlyData[0];
+              data.quarterlyRevenue = latest.sales;
+              data.quarterlyProfit = latest.profit;
+              data.quarterlyGrowth = latest.sales_growth;
+            }
+          } catch (e) {
+            console.log('Failed to fetch quarterly data');
+          }
         }
       }
       
