@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
+import { aiNewsService } from "./services/aiNewsService";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -112,6 +113,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI News Articles Routes
+  app.get("/api/ai-articles", async (req, res) => {
+    try {
+      const articles = await aiNewsService.getAllAiArticles();
+      res.json(articles);
+    } catch (error) {
+      console.error('Error fetching AI articles:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch AI articles'
+      });
+    }
+  });
+
+  app.get("/api/ai-articles/recent", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      const articles = await aiNewsService.getRecentAiArticles(limit);
+      res.json(articles);
+    } catch (error) {
+      console.error('Error fetching recent AI articles:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch recent AI articles'
+      });
+    }
+  });
+
+  app.post("/api/ai-articles/fetch", async (req, res) => {
+    try {
+      const articles = await aiNewsService.fetchLatestNews();
+      res.json({ 
+        message: 'AI articles fetched successfully', 
+        count: articles.length,
+        articles 
+      });
+    } catch (error) {
+      console.error('Error fetching AI articles:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch AI articles'
+      });
+    }
+  });
+
   // Get Investment Advisors
   app.get("/api/investment-advisors", async (req, res) => {
     try {
@@ -132,6 +175,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/logout', mobileAuth.logout);
   app.put('/api/auth/profile', mobileAuth.isAuthenticated, mobileAuth.updateProfile);
 
+  // Start AI News Scheduler
+  startAINewsScheduler();
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// AI News Scheduler - Fetch news every 15 minutes
+function startAINewsScheduler() {
+  console.log('Starting AI News Scheduler - fetching every 15 minutes');
+  
+  // Initial fetch
+  setTimeout(() => {
+    aiNewsService.fetchLatestNews().catch(console.error);
+  }, 5000); // Wait 5 seconds after server start
+
+  // Schedule regular fetches every 15 minutes
+  setInterval(async () => {
+    try {
+      console.log('Scheduled AI news fetch starting...');
+      await aiNewsService.fetchLatestNews();
+    } catch (error) {
+      console.error('Scheduled AI news fetch failed:', error);
+    }
+  }, 15 * 60 * 1000); // 15 minutes in milliseconds
 }

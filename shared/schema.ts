@@ -70,6 +70,26 @@ export type OtpVerification = typeof otpVerifications.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
+// AI Articles table - separate from Google Sheets articles
+export const aiArticles = pgTable("ai_articles", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  source: text("source").default("AI Generated"),
+  sentiment: text("sentiment").default("Neutral"),
+  priority: text("priority").default("Medium"),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAiArticleSchema = createInsertSchema(aiArticles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAiArticle = z.infer<typeof insertAiArticleSchema>;
+export type AiArticle = typeof aiArticles.$inferSelect;
+
 // Investment Advisor table
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
