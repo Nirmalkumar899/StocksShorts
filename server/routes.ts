@@ -161,17 +161,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stock AI Query endpoint
-  app.post("/api/stock-ai/query", async (req, res) => {
+  // Stock AI Query endpoint - Requires Authentication & Daily Limit
+  app.post("/api/stock-ai/query", async (req: any, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ 
+          error: 'Authentication required',
+          message: 'Please login to use AI stock analysis. This feature is in beta testing with daily limits.'
+        });
+      }
+
       const { query } = req.body;
-      
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: 'Query is required' });
       }
 
+      const userId = req.session.user.id;
+      
+      // Check daily query limit (5 per day)
+      const dailyCount = await storage.getDailyQueryCount(userId);
+      if (dailyCount >= 5) {
+        return res.status(429).json({
+          error: 'Daily limit exceeded',
+          message: 'You have reached your daily limit of 5 AI analysis queries. Please try again tomorrow.',
+          remainingQueries: 0
+        });
+      }
+
       const analysis = await stockAI.analyzeStock(query);
-      res.json({ analysis });
+      
+      // Track the query
+      await storage.createAiQuery({
+        userId,
+        query,
+        response: analysis
+      });
+
+      const remainingQueries = 4 - dailyCount;
+
+      res.json({ 
+        analysis: `**BETA TESTING - AI STOCK ANALYSIS**\n\n${analysis}\n\n---\n*This AI analysis feature is currently in beta testing. Daily limit: 5 queries per user. Remaining today: ${remainingQueries}*`,
+        remainingQueries
+      });
     } catch (error) {
       console.error('Stock AI query error:', error);
       res.status(500).json({ 

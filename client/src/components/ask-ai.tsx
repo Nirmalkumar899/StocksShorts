@@ -20,6 +20,16 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
   const queryMutation = useMutation({
     mutationFn: async (stockQuery: string) => {
       const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
+      
+      if (response.status === 401) {
+        throw new Error("Please login to use AI stock analysis. This feature is in beta testing with daily limits.");
+      }
+      
+      if (response.status === 429) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Daily limit exceeded");
+      }
+      
       const data = await response.json();
       return data.analysis;
     },
@@ -27,16 +37,32 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
       setAnalysis(data);
       setShowDiscussion(true);
       toast({
-        title: "Analysis Complete",
-        description: "AI has analyzed your stock query",
+        title: "Beta Analysis Complete",
+        description: "AI stock analysis completed",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Failed to analyze stock",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Failed to analyze stock";
+      
+      if (errorMessage.includes("login")) {
+        toast({
+          title: "Login Required",
+          description: "Please login to access AI stock analysis (Beta Testing)",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes("limit")) {
+        toast({
+          title: "Daily Limit Reached",
+          description: "You've used all 5 daily AI analysis queries. Try again tomorrow.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Analysis Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -127,7 +153,7 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
                 <div className="flex items-center gap-2 mb-3">
                   <Brain className="h-4 w-4 text-green-500" />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    AI Stock Analysis
+                    AI Stock Analysis (Beta Testing)
                   </span>
                 </div>
                 <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">

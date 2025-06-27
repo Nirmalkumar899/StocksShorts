@@ -141,7 +141,7 @@ export class MemStorage implements IStorage {
     today.setHours(0, 0, 0, 0);
     
     const userQueries = Array.from(this.aiQueries.values()).filter(
-      (query) => query.userId === userId && query.createdAt >= today
+      (query) => query.userId === userId && query.createdAt && query.createdAt >= today
     );
     
     return userQueries.length;
