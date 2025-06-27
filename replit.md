@@ -43,6 +43,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 - `GET /api/articles/:id/related` - Get related articles for a specific article
 - `POST /api/articles/refresh` - Force refresh from Google Sheets
 - `GET /api/investment-advisors` - Get SEBI RIA advisor directory
+- `POST /api/stock-ai/query` - AI stock analysis with fundamentals-first approach
 
 #### Mobile Authentication Endpoints
 - `POST /api/auth/send-otp` - Send 6-digit OTP to mobile number
@@ -117,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Added "Ask AI" feature at top of app for stock queries using OpenAI GPT-4 with fundamentals-first analysis (70% fundamentals, 30% technical)
+- June 27, 2025: **MAJOR**: Created dedicated stock discussion modal that opens for AI responses - compact input section with separate discussion area for stock-specific queries
 - June 27, 2025: **MAJOR**: Fixed app startup issues and implemented working OTP authentication system with MSG91 integration (₹0.15 per SMS)
 - June 27, 2025: **MAJOR**: OTP verification system fully functional - successfully creating user accounts and managing authentication sessions
 - June 27, 2025: **MAJOR**: Real SMS delivery now working - Fast2SMS activated and successfully sending OTPs to Indian phone numbers with confirmed delivery (₹0.15 per SMS)
