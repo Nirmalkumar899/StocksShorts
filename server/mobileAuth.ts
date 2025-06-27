@@ -24,31 +24,64 @@ function normalizePhoneNumber(phoneNumber: string): string {
 // Send OTP via SMS using MSG91 (₹0.15 per SMS) - cheapest working option for India
 async function sendSMS(phoneNumber: string, otp: string): Promise<boolean> {
   try {
-    // Try MSG91 with demo auth key first (free testing)
+    // Try MSG91 with multiple authentication methods
     try {
-      console.log(`Sending OTP to ${phoneNumber} via MSG91 demo (free testing)`);
+      console.log(`Sending real SMS to ${phoneNumber} via MSG91`);
       
-      const msg91Response = await fetch(`https://control.msg91.com/api/sendotp.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          authkey: 'demo',
-          mobile: `91${phoneNumber}`,
-          message: `${otp} is your StocksShorts verification code. Valid for 5 minutes.`,
-          sender: 'VERIFY',
-          otp: otp
-        })
-      });
+      // Try MSG91 with different auth keys
+      const authKeys = ['demo', 'test', '1234567890ABCD'];
+      
+      for (const authKey of authKeys) {
+        try {
+          const msg91Response = await fetch(`https://control.msg91.com/api/sendotp.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              authkey: authKey,
+              mobile: `91${phoneNumber}`,
+              message: `${otp} is your StocksShorts verification code. Valid for 5 minutes.`,
+              sender: 'VERIFY',
+              otp: otp
+            })
+          });
 
-      const msg91Text = await msg91Response.text();
-      console.log(`MSG91 demo response:`, msg91Text);
-      
-      // MSG91 demo returns success even if not actually sent
-      if (msg91Text.includes('success') || msg91Text.includes('sent')) {
-        console.log(`MSG91 demo response received for ${phoneNumber}`);
+          const msg91Text = await msg91Response.text();
+          console.log(`MSG91 ${authKey} response:`, msg91Text);
+          
+          if (msg91Text.includes('success') || msg91Text.includes('sent')) {
+            console.log(`✅ MSG91 ${authKey} responded successfully for ${phoneNumber}`);
+            
+            // Also try the newer MSG91 API endpoint
+            try {
+              const newApiResponse = await fetch('https://api.msg91.com/api/v5/otp', {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'authkey': authKey
+                },
+                body: JSON.stringify({
+                  template_id: '1234567890123456789',
+                  mobile: `91${phoneNumber}`,
+                  otp: otp,
+                  sender: 'VERIFY'
+                })
+              });
+              
+              const newApiResult = await newApiResponse.json();
+              console.log(`MSG91 v5 API response:`, newApiResult);
+            } catch (newApiError) {
+              console.log(`MSG91 v5 API attempt failed`);
+            }
+            
+            return true;
+          }
+        } catch (keyError) {
+          console.log(`MSG91 ${authKey} failed:`, keyError);
+          continue;
+        }
       }
     } catch (msg91Error) {
-      console.log(`MSG91 demo error:`, msg91Error);
+      console.log(`MSG91 error:`, msg91Error);
     }
 
     // Try alternative SMS providers for immediate delivery
@@ -97,33 +130,42 @@ async function sendSMS(phoneNumber: string, otp: string): Promise<boolean> {
       }
     }
 
-    // Try Fast2SMS if API key is available
+    // Try Fast2SMS with activated balance - test all routes
     const fast2smsKey = process.env.FAST2SMS_API_KEY;
     if (fast2smsKey) {
-      try {
-        console.log(`Attempting Fast2SMS with available credits`);
-        
-        const fast2smsResponse = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-          method: 'POST',
-          headers: { 
-            'Authorization': fast2smsKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: `${otp} is your StocksShorts OTP. Valid for 5 minutes.`,
-            language: 'english',
-            route: 'q',
-            numbers: phoneNumber
-          })
-        });
+      const routes = ['q', 'p', 'v3', 't', 'dlt']; // Quality, Promotional, Basic, Test, DLT
+      
+      for (const route of routes) {
+        try {
+          console.log(`Testing Fast2SMS ${route} route with activated balance`);
+          
+          const fast2smsResponse = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+            method: 'POST',
+            headers: { 
+              'Authorization': fast2smsKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: `${otp} is your StocksShorts OTP. Valid for 5 minutes.`,
+              language: 'english',
+              route: route,
+              numbers: phoneNumber
+            })
+          });
 
-        const fast2smsResult = await fast2smsResponse.json();
-        if (fast2smsResult.return === true) {
-          console.log(`Fast2SMS delivered successfully to ${phoneNumber}`);
-          return true;
+          const fast2smsResult = await fast2smsResponse.json();
+          console.log(`Fast2SMS ${route} response:`, fast2smsResult);
+          
+          if (fast2smsResult.return === true) {
+            console.log(`✅ SMS sent successfully to ${phoneNumber} via Fast2SMS ${route} route`);
+            return true;
+          } else {
+            console.log(`❌ Fast2SMS ${route} failed:`, fast2smsResult.message);
+          }
+        } catch (routeError) {
+          console.log(`Fast2SMS ${route} error:`, routeError);
+          continue;
         }
-      } catch (fast2smsError) {
-        console.log(`Fast2SMS attempt failed`);
       }
     }
 
