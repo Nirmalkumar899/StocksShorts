@@ -155,6 +155,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test route to generate sample AI news with deduplication
+  app.post("/api/ai-articles/test", async (req, res) => {
+    try {
+      const testArticles = [
+        {
+          title: "Reliance Industries: Brokers upgrade target to ₹3,200",
+          content: "Reliance Industries received upgrades from multiple brokers today with target prices raised to ₹3,200-3,300 range. Strong Q3 results and petrochemical margin expansion cited as key drivers. Current price ₹2,850 offers 20% upside potential. BUY recommendation across the board.",
+          sentiment: "Positive" as const,
+          priority: "High" as const
+        },
+        {
+          title: "HDFC Bank: Technical breakout signals rally to ₹1,850",
+          content: "HDFC Bank broke above key resistance at ₹1,750 with volumes 2x normal. Next targets at ₹1,850 and ₹1,920. Banking sector rotation gaining momentum as NIM compression concerns fade. Stop loss ₹1,720. BUY for 15% upside.",
+          sentiment: "Positive" as const,
+          priority: "High" as const
+        },
+        {
+          title: "Reliance Industries: Target price increased to ₹3,200", // Similar to first - should be filtered
+          content: "Multiple brokers have raised Reliance target to ₹3,200 citing strong fundamentals.",
+          sentiment: "Positive" as const,
+          priority: "Medium" as const
+        }
+      ];
+
+      const storedArticles = await aiNewsService.storeTestArticles(testArticles);
+      res.json({ 
+        message: 'Test AI articles generated with deduplication', 
+        count: storedArticles.length,
+        articles: storedArticles
+      });
+    } catch (error) {
+      console.error('Error generating test AI articles:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to generate test AI articles'
+      });
+    }
+  });
+
   // Get Investment Advisors
   app.get("/api/investment-advisors", async (req, res) => {
     try {
