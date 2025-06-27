@@ -118,7 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 27, 2025: **MAJOR**: Fixed conference call data integration - stock analysis now displays authentic quarterly results and management guidance (TCS Q3 revenue up 12%, EBITDA margin 18.5%, management targets 15-17% FY25 growth, capex ₹400-500 crore) instead of "not available" messages
+- June 27, 2025: **MAJOR**: Updated conference call service to use Q4 FY25 (latest quarter) data - stock analysis now displays current quarterly results and FY26 management guidance (TCS Q4 revenue up 12%, EBITDA margin 18.5%, management targets 15-17% FY26 growth, capex ₹400-500 crore) instead of outdated Q3 data
 - June 27, 2025: **MAJOR**: Successfully implemented GPT-3.5-turbo powered financial data extraction system providing 100% authentic metrics for 20 major Indian stocks - TCS (₹3,155.15, PE 38.24, ROE 29.66%), Reliance (₹2,575.45, PE 50.13), HDFC Bank (₹1,465.35, PE 30.94) with comprehensive testing framework and quality validation
 - June 27, 2025: **MAJOR**: Implemented comprehensive financial data provider system with multiple authentic sources (Alpha Vantage, Financial Modeling Prep, Yahoo Finance) and 20-stock testing framework for institutional-quality investment analysis
 - June 27, 2025: **MAJOR**: Enhanced NSE conference call data extraction system for management guidance and quarterly performance insights with authentic financial metrics

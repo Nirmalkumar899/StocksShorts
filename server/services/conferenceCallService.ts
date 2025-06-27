@@ -66,15 +66,15 @@ export class ConferenceCallService {
 
       const prompt = `Search for recent conference call transcripts and management guidance for ${symbol} (Indian NSE/BSE stock). Find:
 
-      1. Latest quarterly earnings call key highlights with specific numbers
+      1. Latest Q4 FY25 quarterly earnings call key highlights with specific numbers
       2. Management revenue growth targets (exact percentages like "15-17% growth")
       3. Margin expansion plans (specific targets like "expand EBITDA margin to 22%")
-      4. Capex guidance (specific amounts like "₹500 crore capex for FY25")
-      5. Future outlook statements from CEO/CFO
+      4. Capex guidance (specific amounts like "₹500 crore capex for FY26")
+      5. Future outlook statements from CEO/CFO for FY26
       6. Industry growth commentary from management
       7. Recent management interviews or key announcements
 
-      Focus on authentic, recent data from official sources. Provide exact numbers and quotes where possible.
+      Focus on authentic, recent Q4 FY25 data from official sources. Provide exact numbers and quotes where possible.
 
       Return JSON format:
       {
