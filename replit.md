@@ -117,6 +117,9 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Enhanced AI news to show only TODAY and YESTERDAY content for maximum relevance in fast-moving stock markets
+- June 27, 2025: Increased AI news fetching frequency to every 5 minutes for ultra-fresh market intelligence
+- June 27, 2025: Implemented automatic cleanup of articles older than 2 days to maintain only actionable, time-sensitive content
 - June 27, 2025: **MAJOR**: Enhanced AI news system to prioritize high-impact, actionable investor content over general market commentary
 - June 27, 2025: Implemented intelligent content scoring system that prioritizes stock-specific alerts, earnings beats/misses, analyst upgrades/downgrades, contract wins, technical breakouts, and insider trading activity
 - June 27, 2025: AI news now generates specific buy/sell recommendations with price targets, earnings impact analysis, and clear investor action points

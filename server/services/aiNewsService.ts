@@ -143,6 +143,11 @@ Return only valid JSON array with no extra text.`;
   }
 
   private async storeArticles(articles: ParsedArticle[]): Promise<AiArticle[]> {
+    if (articles.length === 0) {
+      console.log('No valid articles to store');
+      return [];
+    }
+
     const insertData: InsertAiArticle[] = articles.map(article => ({
       title: article.title,
       content: article.content,
