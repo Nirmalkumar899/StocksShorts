@@ -17,6 +17,7 @@ interface FinancialData {
   industry?: string;
   source: string;
   lastUpdated: Date;
+  conferenceCallData?: any; // Conference call and management guidance data
 }
 
 export class FinancialDataProvider {

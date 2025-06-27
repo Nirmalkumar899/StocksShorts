@@ -249,6 +249,19 @@ export class StockAIService {
       
       if (financialData && financialData.currentPrice) {
         console.log(`Successfully retrieved authentic data for ${symbol} from ${financialData.source}:`, financialData);
+        
+        // Also fetch conference call data and merge it
+        try {
+          const { conferenceCallService } = await import('./conferenceCallService.js');
+          const conferenceData = await conferenceCallService.getConferenceCallData(symbol);
+          if (conferenceData) {
+            financialData.conferenceCallData = conferenceData;
+            console.log(`Added conference call data for ${symbol}`);
+          }
+        } catch (error) {
+          console.log(`Could not fetch conference call data for ${symbol}:`, error);
+        }
+        
         return financialData;
       }
 
@@ -643,10 +656,19 @@ AUTHENTIC FINANCIAL DATA (${dataSource}):
 - ROE: ${realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A'}
 - Debt/Equity: ${realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A'}`;
 
-        if (realFinancialData.quarterlyData) {
+        // Add conference call data if available
+        if (realFinancialData.conferenceCallData) {
+          const ccData = realFinancialData.conferenceCallData;
           marketDataText += `
-- Latest Quarter Revenue Growth: Available from quarterly data
-- Management Guidance: Conference call data available`;
+
+AUTHENTIC CONFERENCE CALL DATA:
+- Quarterly Highlights: ${ccData.quarterlyHighlights}
+- Revenue Growth Target: ${ccData.revenueGrowthTarget}
+- Margin Expansion Plan: ${ccData.marginExpansion}
+- Capex Guidance: ${ccData.capexGuidance}
+- Management Outlook: ${ccData.managementOutlook}
+- Industry Commentary: ${ccData.industryCommentary}
+- Recent News: ${ccData.recentNews}`;
         } else {
           marketDataText += `
 - 52-Week High: ₹${realFinancialData.fiftyTwoWeekHigh || 'N/A'}
