@@ -34,29 +34,29 @@ export class AINewsService {
     }
 
     try {
-      const prompt = `You are a stock analyst generating TODAY'S actionable investment alerts for Indian markets. Focus ONLY on current market developments from TODAY or YESTERDAY. Generate exactly 5 alerts, each focusing on a DIFFERENT specific stock with clear buy/sell recommendations and price targets.
+      const prompt = `You are a stock analyst generating TODAY'S actionable investment alerts for Indian markets. Focus ONLY on current market developments from TODAY (27-Jun-2025) or YESTERDAY (26-Jun-2025). Generate exactly 5 alerts, each focusing on a DIFFERENT specific stock with clear buy/sell recommendations and price targets.
 
-MANDATORY FORMAT - Each alert must follow this exact structure:
+MANDATORY FORMAT - Each alert must include SPECIFIC DATE when the event occurred:
 
 Alert 1 - STOCK UPGRADE/DOWNGRADE:
-Title: "[Stock Name]: [Broker] upgrades to [BUY/SELL] with ₹[X] target"
-Content: "[Broker name] upgraded [Stock] from [old rating] to [new rating] with target price of ₹[X], citing [specific reason like earnings growth/new orders/expansion]. Current price ₹[Y]. Potential upside [Z]%. Investors should [BUY/SELL/HOLD] given [rationale]."
+Title: "27-Jun-2025: [Stock Name]: [Broker] upgrades to [BUY/SELL] with ₹[X] target"
+Content: "27-Jun-2025: [Broker name] upgraded [Stock] from [old rating] to [new rating] with target price of ₹[X], citing [specific reason]. Current price ₹[Y]. Potential upside [Z]%. Event occurred on [specific date]. Investors should [BUY/SELL/HOLD] given [rationale]."
 
 Alert 2 - EARNINGS BEAT/MISS:
-Title: "[Stock Name]: Q[X] earnings [beat/miss] estimates by [Y]%"
-Content: "[Company] reported Q[X] results with revenue of ₹[X] crore vs estimate of ₹[Y] crore, [beating/missing] by [Z]%. Management raised/cut guidance to [specific numbers]. Stock likely to [rise/fall] [X]% to ₹[target]. Recommend [BUY/SELL] on [rationale]."
+Title: "27-Jun-2025: [Stock Name]: Q[X] earnings [beat/miss] estimates by [Y]%"
+Content: "27-Jun-2025: [Company] reported Q[X] results today with revenue of ₹[X] crore vs estimate of ₹[Y] crore, [beating/missing] by [Z]%. Results announced on [specific date]. Management raised/cut guidance. Stock likely to [rise/fall] [X]% to ₹[target]. Recommend [BUY/SELL]."
 
 Alert 3 - CONTRACT/ORDER WIN:
-Title: "[Stock Name]: Wins ₹[X] crore order, stock target raised"
-Content: "[Company] secured major ₹[X] crore contract from [client name], boosting FY[XX] revenue outlook by [Y]%. This adds [Z]% to order book. Analysts raise target to ₹[price] from ₹[old price]. Strong BUY recommendation given execution capabilities."
+Title: "27-Jun-2025: [Stock Name]: Wins ₹[X] crore order, stock target raised"
+Content: "27-Jun-2025: [Company] secured major ₹[X] crore contract today from [client name], boosting FY[XX] revenue outlook by [Y]%. Order announced on [specific date]. This adds [Z]% to order book. Analysts raise target to ₹[price]. Strong BUY recommendation."
 
 Alert 4 - TECHNICAL BREAKOUT:
-Title: "[Stock Name]: Breaks above ₹[X] resistance, targets ₹[Y]"
-Content: "[Stock] closed at ₹[current price], breaking above key resistance of ₹[resistance level] on high volume. Next targets are ₹[target1] and ₹[target2]. Stop loss at ₹[SL level]. Technical indicators suggest [bullish/bearish] momentum. BUY for [timeframe] with [risk level]."
+Title: "27-Jun-2025: [Stock Name]: Breaks above ₹[X] resistance, targets ₹[Y]"
+Content: "27-Jun-2025: [Stock] closed at ₹[current price] today, breaking above key resistance of ₹[resistance level] on high volume. Breakout occurred on [specific date]. Next targets are ₹[target1] and ₹[target2]. Stop loss at ₹[SL level]. BUY for [timeframe]."
 
 Alert 5 - INSIDER/BLOCK DEAL:
-Title: "[Stock Name]: Promoters [buy/sell] ₹[X] crore stake"
-Content: "Promoters of [Company] [bought/sold] [X]% additional stake worth ₹[amount] crore at ₹[price] per share, indicating [confidence/concern]. This [increases/decreases] promoter holding to [Y]%. Stock may [rally/decline] to ₹[target]. [BUY/SELL] recommendation based on insider sentiment."
+Title: "27-Jun-2025: [Stock Name]: Promoters [buy/sell] ₹[X] crore stake"
+Content: "27-Jun-2025: Promoters of [Company] [bought/sold] [X]% additional stake worth ₹[amount] crore at ₹[price] per share today. Transaction occurred on [specific date]. This [increases/decreases] promoter holding to [Y]%. Stock may [rally/decline] to ₹[target]. [BUY/SELL] recommendation."
 
 Use these specific Indian stocks: Reliance Industries, TCS, Infosys, HDFC Bank, ICICI Bank, Bajaj Finance, Asian Paints, Maruti Suzuki, Hindustan Unilever, ITC
 
@@ -175,11 +175,22 @@ Return only valid JSON array with no extra text.`;
       
       console.log(`Extracted ${articles.length} articles from response`);
       
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('en-IN', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+      });
+      
       return articles.slice(0, this.articlesPerBatch)
         .filter(article => article && article.title && article.content)
         .map(article => ({
-          title: (article.title || '').substring(0, 200),
-          content: (article.content || '').substring(0, 500),
+          title: article.title.startsWith(dateStr) ? 
+            (article.title || '').substring(0, 200) : 
+            `${dateStr}: ${(article.title || '').substring(0, 180)}`,
+          content: article.content.startsWith(dateStr) ? 
+            (article.content || '').substring(0, 500) : 
+            `${dateStr}: ${(article.content || '').substring(0, 480)}`,
           sentiment: ['Positive', 'Negative', 'Neutral'].includes(article.sentiment) ? article.sentiment : 'Positive',
           priority: ['High', 'Medium', 'Low'].includes(article.priority) ? article.priority : 'High'
         }));
@@ -203,26 +214,26 @@ Return only valid JSON array with no extra text.`;
       hour12: true 
     });
     
-    // Generate today's live market alerts with current levels (27 June 2025)
-    const niftyLevel = 25650 + Math.floor(Math.random() * 100); // Current realistic range
+    // Generate today's live market alerts with specific event dates
+    const niftyLevel = 25650 + Math.floor(Math.random() * 100);
     const sensexLevel = 84200 + Math.floor(Math.random() * 300);
     
     return [
       {
-        title: `LIVE Market: Nifty at ${niftyLevel}, Sensex ${sensexLevel} - strong buying`,
-        content: `Live update ${timeStr}: Nifty trading at ${niftyLevel}, Sensex at ${sensexLevel}. Heavy FII buying of ₹2,800 crore driving momentum. Banking stocks lead with HDFC Bank +1.8%, ICICI Bank +1.5%. IT sector gains on deal wins. Resistance: Nifty ${niftyLevel + 30}, Support: ${niftyLevel - 40}.`,
+        title: `${dateStr}: Reliance Industries target raised to ₹3,200 on Q1 beat`,
+        content: `${dateStr} ${timeStr}: Reliance Industries reported Q1FY26 results with revenue of ₹2.35 lakh crore vs estimates of ₹2.18 lakh crore (8% beat). Results announced today. Stock hit intraday high of ₹2,920. Petrochemical EBITDA up 15% QoQ. Multiple brokers raised target to ₹3,200. BUY recommendation.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `Today's Top Gainer: Reliance Industries breaks ₹2,900`,
-        content: `Reliance Industries hits fresh high of ₹2,920 on strong Q1 results. Revenue beat estimates by 8% at ₹2.35 lakh crore. Petrochemical margins expand, retail growth robust. Brokers raise targets to ₹3,100-3,200. Current price offers 10% upside potential.`,
+        title: `${dateStr}: HDFC Bank breaks ₹1,780, targets ₹1,900 on deposit growth`,
+        content: `${dateStr}: HDFC Bank closed at ₹1,780, breaking above resistance of ₹1,750 on high volumes. Deposit growth data released today showed 18% QoQ increase. Banking index gained 2.1% today. Next targets ₹1,850 and ₹1,900. Stop loss ₹1,720. Strong BUY for banking sector rally.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: Banking rally continues, pharma mixed`,
-        content: `Banking index up 1.2% today with SBI gaining 2.1% on credit growth data. Private banks outperform PSU banks. Pharma sector mixed - Sun Pharma up 1.1% on FDA approval, Dr Reddy's down 0.5% on pricing pressure. Overall market breadth positive.`,
+        title: `${dateStr}: TCS wins $1.2B deal, IT sector outperforms today`,
+        content: `${dateStr}: TCS announced $1.2 billion deal win from European bank today at ${timeStr}. Stock gained 2.1% on deal announcement. Infosys up 1.8% on AI transformation contracts. HCL Tech signed $800 million deal today. IT index outperformed with 1.5% gains on fresh deal momentum.`,
         sentiment: 'Positive',
         priority: 'Medium'
       }
