@@ -179,40 +179,26 @@ export class StockAIService {
     try {
       const stockInfo = this.identifyStock(query);
       
-      // First attempt: Try OpenAI with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { 
+            role: "system", 
+            content: "You are an Indian stock analyst. Provide comprehensive analysis using current June 2025 market data. Format: **SUMMARY**: [Company] | [BUY/HOLD/SELL] | Target ₹[X] | [Key reason]. **BUSINESS**: [Core operations]. **VALUATION**: [PE vs industry]. **QUARTERLY**: [Q4 FY25 results]. **MANAGEMENT**: [Recent guidance]. **TECHNICAL**: [Support/resistance]. **VERDICT**: [6-12 month outlook]." 
+          },
+          { 
+            role: "user", 
+            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}. Calculate Target: ${this.calculateTargetPrice(stockInfo.currentPrice)}. Support: ${this.calculateSupport(stockInfo.currentPrice)}. Resistance: ${this.calculateResistance(stockInfo.currentPrice)}. Use these exact prices in your analysis.` 
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.2
+      });
 
-      try {
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-          messages: [
-            { 
-              role: "system", 
-              content: "Provide Indian stock analysis using current June 2025 market data. Use the exact pricing provided." 
-            },
-            { 
-              role: "user", 
-              content: `Analyze ${stockInfo.fullName} at ${stockInfo.currentPrice}. Target: ${this.calculateTargetPrice(stockInfo.currentPrice)}. Support: ${this.calculateSupport(stockInfo.currentPrice)}. Resistance: ${this.calculateResistance(stockInfo.currentPrice)}. Provide: **SUMMARY**, **BUSINESS**, **VALUATION**, **QUARTERLY**, **MANAGEMENT**, **TECHNICAL**, **VERDICT**` 
-            }
-          ],
-          max_tokens: 600,
-          temperature: 0.1
-        }, {
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-        return response.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
-        
-      } catch (openaiError) {
-        clearTimeout(timeoutId);
-        console.log("OpenAI timeout, using fallback analysis");
-        return this.generateFallbackAnalysis(stockInfo);
-      }
+      return response.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
       
     } catch (error) {
-      console.error("Stock analysis error:", error);
+      console.error("OpenAI API error:", error);
       const fallbackStockInfo = this.identifyStock(query);
       return this.generateFallbackAnalysis(fallbackStockInfo);
     }
@@ -242,7 +228,19 @@ export class StockAIService {
   }
 
   private getSectorAnalysis(category: string) {
-    const analyses = {
+    type AnalysisCategory = 'large' | 'mid' | 'small' | 'micro';
+    
+    const analyses: Record<AnalysisCategory, {
+      recommendation: string;
+      thesis: string;
+      business: string;
+      valuation: string;
+      quarterly: string;
+      outlook: string;
+      management: string;
+      technical: string;
+      verdict: string;
+    }> = {
       'large': {
         recommendation: 'BUY',
         thesis: 'Strong fundamentals and market leadership',
@@ -289,7 +287,7 @@ export class StockAIService {
       }
     };
     
-    return analyses[category] || analyses['large'];
+    return analyses[category as AnalysisCategory] || analyses['large'];
   }
 }
 
