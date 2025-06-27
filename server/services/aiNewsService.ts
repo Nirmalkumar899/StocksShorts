@@ -1,6 +1,6 @@
 import { db } from "../db";
 import { aiArticles, type InsertAiArticle, type AiArticle } from "@shared/schema";
-import { desc, count, inArray } from "drizzle-orm";
+import { desc, count, inArray, gte, lt } from "drizzle-orm";
 
 interface PerplexityResponse {
   choices: Array<{
@@ -34,7 +34,7 @@ export class AINewsService {
     }
 
     try {
-      const prompt = `You are a stock analyst generating actionable investment alerts for Indian markets. Generate exactly 5 alerts, each focusing on a DIFFERENT specific stock with clear buy/sell recommendations and price targets.
+      const prompt = `You are a stock analyst generating TODAY'S actionable investment alerts for Indian markets. Focus ONLY on current market developments from TODAY or YESTERDAY. Generate exactly 5 alerts, each focusing on a DIFFERENT specific stock with clear buy/sell recommendations and price targets.
 
 MANDATORY FORMAT - Each alert must follow this exact structure:
 
@@ -158,26 +158,21 @@ Return only valid JSON array with no extra text.`;
   }
 
   private async cleanupOldArticles(): Promise<void> {
-    const [{ total }] = await db.select({ total: count() }).from(aiArticles);
-    
-    if (total > this.maxArticles) {
-      const articlesToDelete = total - this.maxArticles;
+    try {
+      // Delete articles older than 2 days (keeping only today + yesterday)
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
       
-      // Get oldest articles to delete
-      const oldestArticles = await db
-        .select({ id: aiArticles.id })
-        .from(aiArticles)
-        .orderBy(aiArticles.createdAt)
-        .limit(articlesToDelete);
+      const deletedArticles = await db
+        .delete(aiArticles)
+        .where(lt(aiArticles.createdAt, twoDaysAgo))
+        .returning({ id: aiArticles.id });
 
-      if (oldestArticles.length > 0) {
-        const idsToDelete = oldestArticles.map(a => a.id);
-        await db.delete(aiArticles).where(
-          inArray(aiArticles.id, idsToDelete)
-        );
-        
-        console.log(`Cleaned up ${articlesToDelete} old AI articles`);
+      if (deletedArticles.length > 0) {
+        console.log(`Cleaned up ${deletedArticles.length} old AI articles (older than 2 days)`);
       }
+    } catch (error) {
+      console.error('Error during cleanup:', error);
     }
   }
 
@@ -191,9 +186,14 @@ Return only valid JSON array with no extra text.`;
   }
 
   async getRecentAiArticles(limit: number = 20): Promise<AiArticle[]> {
+    // Only show articles from last 2 days (today + yesterday)
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    
     const articles = await db
       .select()
       .from(aiArticles)
+      .where(gte(aiArticles.createdAt, twoDaysAgo))
       .orderBy(desc(aiArticles.createdAt))
       .limit(limit);
       
