@@ -19,6 +19,16 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     queryKey: ['/api/investment-advisors'],
   });
 
+  // Debug log to verify data is loaded
+  React.useEffect(() => {
+    if (advisors.length > 0) {
+      console.log(`✅ Directory loaded: ${advisors.length} advisors found`);
+      console.log('First 3 advisors:', advisors.slice(0, 3).map(a => a.name));
+    } else if (!isLoading) {
+      console.log('❌ Directory empty - no advisors loaded');
+    }
+  }, [advisors, isLoading]);
+
 
 
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
