@@ -11,6 +11,7 @@ import Header from '@/components/header';
 import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
+import AskAI from '@/components/ask-ai';
 import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';

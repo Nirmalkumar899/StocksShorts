@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
 import { aiNewsService } from "./services/aiNewsService";
+import { stockAI } from "./services/stockAI";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -151,6 +152,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error fetching AI articles:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch AI articles'
+      });
+    }
+  });
+
+  // Stock AI Query endpoint
+  app.post("/api/stock-ai/query", async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: 'Query is required' });
+      }
+
+      const analysis = await stockAI.analyzeStock(query);
+      res.json({ analysis });
+    } catch (error) {
+      console.error('Stock AI query error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to analyze stock'
       });
     }
   });
