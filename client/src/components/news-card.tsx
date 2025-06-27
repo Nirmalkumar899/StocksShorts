@@ -19,7 +19,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const typeColor = getTypeColor(article.type || 'AI News');
   
   const getSentimentIcon = () => {
-    switch (article.sentiment.toLowerCase()) {
+    switch ((article.sentiment || 'neutral').toLowerCase()) {
       case 'positive':
         return <TrendingUp className="text-success h-3 w-3" />;
       case 'negative':
@@ -30,7 +30,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   const getBorderColor = () => {
-    switch (article.sentiment.toLowerCase()) {
+    switch ((article.sentiment || 'neutral').toLowerCase()) {
       case 'positive':
         return 'border-l-success';
       case 'negative':
@@ -43,8 +43,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   return (
     <div 
       className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
-        article.sentiment.toLowerCase() === 'positive' ? 'border-l-green-500' :
-        article.sentiment.toLowerCase() === 'negative' ? 'border-l-red-500' :
+        (article.sentiment || 'neutral').toLowerCase() === 'positive' ? 'border-l-green-500' :
+        (article.sentiment || 'neutral').toLowerCase() === 'negative' ? 'border-l-red-500' :
         'border-l-gray-400'
       }`}
       onClick={onClick}
@@ -62,6 +62,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             }`}
             loading="eager"
             decoding="async"
+            fetchpriority="high"
             onLoad={() => setImageLoaded(true)}
             onError={() => {
               setImageError(true);
@@ -79,7 +80,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         {imageError && (
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
             <div className="text-white text-sm font-semibold opacity-90">
-              {article.type.toUpperCase()}
+              {(article.type || 'NEWS').toUpperCase()}
             </div>
           </div>
         )}
@@ -87,7 +88,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         {/* Category badge on image */}
         <div className="absolute top-3 left-3">
           <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/70 text-white border border-white/30 backdrop-blur-sm">
-            {article.type.toUpperCase()}
+            {(article.type || 'NEWS').toUpperCase()}
           </span>
         </div>
         
