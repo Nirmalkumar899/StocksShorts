@@ -185,7 +185,7 @@ Return only valid JSON array with no extra text.`;
       return articles.slice(0, this.articlesPerBatch)
         .filter(article => article && article.title && article.content)
         .map(article => ({
-          title: article.title.startsWith(dateStr) ? 
+          title: article.title.includes('2025:') ? 
             (article.title || '').substring(0, 200) : 
             `${dateStr}: ${(article.title || '').substring(0, 180)}`,
           content: article.content.startsWith(dateStr) ? 
