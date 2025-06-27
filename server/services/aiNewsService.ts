@@ -42,9 +42,9 @@ Alert 1 - BREAKOUT STOCK:
 Title: "27-Jun-2025: [Stock Name]: Technical breakout above ₹[X], targets ₹[Y]"
 Content: "27-Jun-2025: [Stock] breaks above key resistance of ₹[level] with 2x volume surge. Breakout pattern confirmed on daily charts. Next targets ₹[target1] and ₹[target2]. Stop loss ₹[SL]. Strong BUY for breakout momentum."
 
-Alert 2 - INDEX MOVEMENT:
-Title: "27-Jun-2025: [Index] leads market rally, [Stock Name] contributes [X]%"
-Content: "27-Jun-2025: [Index] up [X]% with [Stock] contributing significantly to gains. Index technical setup positive for further upside. Key resistance [level], support [level]. Index heavyweights driving momentum."
+Alert 2 - INDEX BREAKOUT:
+Title: "27-Jun-2025: [Sector Index] breaks above [X] resistance, targets [Y]"
+Content: "27-Jun-2025: [Sector Index] breaks above key resistance of [level] with strong volumes. Technical breakout confirmed. Next targets [target1] and [target2]. Support at [support level]. [Sector] index showing momentum for further gains."
 
 Alert 3 - RESEARCH REPORT:
 Title: "27-Jun-2025: [Broker] upgrades [Small/Mid/Large Cap Stock] to BUY, target ₹[X]"
@@ -58,7 +58,9 @@ Alert 5 - SMALL/MID CAP FOCUS:
 Title: "27-Jun-2025: [Small/Mid Cap Stock]: Research report highlights [X]% growth potential"
 Content: "27-Jun-2025: Latest research report on [Stock] projects [X]% revenue growth over next 2 years. Key drivers: [specific catalysts]. Current market cap ₹[amount] crore offers value. Target ₹[price] implies [Y]% upside. ACCUMULATE."
 
-Focus on actionable investment themes: breakouts, index drivers, research upgrades, significant order wins
+Focus on actionable investment themes: breakouts, sector index breakouts (Bank Nifty, IT Index, Pharma Index, Auto Index, Metal Index), research upgrades, significant order wins
+
+Use specific sector indices with resistance/support levels. Avoid generic market commentary.
 
 Return only valid JSON array with no extra text.`;
 
@@ -217,8 +219,8 @@ Return only valid JSON array with no extra text.`;
     
     return [
       {
-        title: `${dateStr}: Nifty breaks ${niftyLevel}, index heavyweights drive rally`,
-        content: `${dateStr} ${timeStr}: Nifty breaks above ${niftyLevel} with strong volume support. Index heavyweights contributing significantly to gains. Key resistance ${niftyLevel + 50}, support ${niftyLevel - 30}. Breakout pattern confirmed on charts. Index momentum positive.`,
+        title: `${dateStr}: Bank Nifty breaks above ${niftyLevel + 200} resistance, targets ${niftyLevel + 350}`,
+        content: `${dateStr} ${timeStr}: Bank Nifty breaks above key resistance of ${niftyLevel + 200} with strong volumes. Technical breakout confirmed. Next targets ${niftyLevel + 280} and ${niftyLevel + 350}. Support at ${niftyLevel + 150}. Banking sector index showing momentum for further gains.`,
         sentiment: 'Positive',
         priority: 'High'
       },
