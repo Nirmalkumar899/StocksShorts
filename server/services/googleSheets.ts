@@ -218,14 +218,14 @@ export class GoogleSheetsService {
           return {
             id: index + 1,
             name: row[0] || 'Unknown',
-            company: row[1] || '',
-            designation: row[2] || '',
-            phone: row[3] || '',
-            email: row[4] || '',
+            company: row[1] || 'Investment Advisory',
+            designation: row[2] || 'Investment Advisor',
+            phone: row[4] || '', // Fixed: phone was in email field
+            email: row[2] || '', // Fixed: email was in designation field
             website: row[5] || '',
-            specialization: row[6] || '',
-            experience: row[7] || '',
-            location: row[8] || '',
+            specialization: row[6] || 'Financial Planning',
+            experience: row[7] || '5+ years',
+            location: row[8] || 'India',
             rating: row[9] || '4.0',
             createdAt: new Date(),
           };

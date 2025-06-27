@@ -19,11 +19,14 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     queryKey: ['/api/investment-advisors'],
   });
 
+  // Debug log to check advisor data
+  console.log('Advisors for ticker:', advisors.map(a => a.name));
+
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
     advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    advisor.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    advisor.specialization.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    advisor.location.toLowerCase().includes(searchQuery.toLowerCase())
+    (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.specialization || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.location || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -144,13 +147,13 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((advisor, index) => (
                     <span key={`first-${advisor.id}`} className="inline-block mr-16 text-sm">
-                      <span className="text-white font-bold">{advisor.name}</span>
+                      <span className="text-white font-bold">{advisor.name || 'Unknown'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-yellow-400">{advisor.company}</span>
+                      <span className="text-yellow-400">{advisor.company || 'Unknown Company'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-blue-300">{advisor.specialization}</span>
+                      <span className="text-blue-300">{advisor.specialization || 'General Advisory'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-green-300">{advisor.location}</span>
+                      <span className="text-green-300">{advisor.location || 'India'}</span>
                     </span>
                   ))}
                 
@@ -159,13 +162,13 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((advisor, index) => (
                     <span key={`second-${advisor.id}`} className="inline-block mr-16 text-sm">
-                      <span className="text-white font-bold">{advisor.name}</span>
+                      <span className="text-white font-bold">{advisor.name || 'Unknown'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-yellow-400">{advisor.company}</span>
+                      <span className="text-yellow-400">{advisor.company || 'Unknown Company'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-blue-300">{advisor.specialization}</span>
+                      <span className="text-blue-300">{advisor.specialization || 'General Advisory'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-green-300">{advisor.location}</span>
+                      <span className="text-green-300">{advisor.location || 'India'}</span>
                     </span>
                   ))}
 
@@ -174,13 +177,13 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map((advisor, index) => (
                     <span key={`third-${advisor.id}`} className="inline-block mr-16 text-sm">
-                      <span className="text-white font-bold">{advisor.name}</span>
+                      <span className="text-white font-bold">{advisor.name || 'Unknown'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-yellow-400">{advisor.company}</span>
+                      <span className="text-yellow-400">{advisor.company || 'Unknown Company'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-blue-300">{advisor.specialization}</span>
+                      <span className="text-blue-300">{advisor.specialization || 'General Advisory'}</span>
                       <span className="text-gray-400 mx-2">•</span>
-                      <span className="text-green-300">{advisor.location}</span>
+                      <span className="text-green-300">{advisor.location || 'India'}</span>
                     </span>
                   ))}
               </div>
