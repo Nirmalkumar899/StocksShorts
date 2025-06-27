@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw } from 'lucide-react';
@@ -35,118 +35,104 @@ export default function Home() {
     });
   }, []);
 
-
-
   // Fetch articles based on selected category
   const {
     data: articles = [],
     isLoading,
     error,
     refetch
-  } = useQuery<Article[]>({
-    queryKey: [selectedCategory === 'ai' ? '/api/ai-articles' : '/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
-    queryFn: async () => {
-      let url = '/api/articles';
-      
-      // Use AI articles API for AI category
-      if (selectedCategory === 'ai') {
-        url = '/api/ai-articles/recent?limit=50';
-      } else if (selectedCategory !== 'all') {
-        url = `/api/articles?category=${selectedCategory}`;
+  } = useQuery({
+    queryKey: ['/api/articles', selectedCategory === 'all' ? undefined : selectedCategory],
+    staleTime: 30 * 1000, // 30 seconds cache
+    onSuccess: (data) => {
+      if (data && data.length > 0) {
+        preloadImages(data);
       }
-      
-      const response = await fetch(url, {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Fetch error:', errorText);
-        throw new Error(errorText || 'Failed to fetch articles');
-      }
-      
-      const data = await response.json();
-      console.log('Fetched articles:', data);
-      
-      // Ensure data is an array
-      if (!Array.isArray(data)) {
-        console.error('Expected array but got:', typeof data, data);
-        return [];
-      }
-      
-      // Sort articles by priority when in 'all' (trending) category
-      if (selectedCategory === 'all') {
-        return data.sort((a: Article, b: Article) => {
-          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-          return bPriority - aPriority; // High priority first
-        });
-      }
-      
-      return data;
-    },
-    retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    }
   });
 
   // Refresh articles mutation
   const refreshMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/articles/refresh');
+      const response = await apiRequest("POST", "/api/articles/refresh", {});
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
       toast({
-        title: "Articles refreshed",
-        description: "Latest articles have been loaded from Google Sheets.",
+        title: "Articles Refreshed",
+        description: "Latest articles have been loaded",
       });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
-        title: "Refresh failed",
-        description: error.message,
+        title: "Refresh Failed",
+        description: error instanceof Error ? error.message : "Failed to refresh articles",
         variant: "destructive",
       });
-    },
+    }
   });
 
-  const handleRefresh = () => {
-    refreshMutation.mutate();
-  };
-
-  const handleCategoryChange = (category: string) => {
+  // Enhanced category change handler with preloading
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
-  };
+  }, []);
 
-  const handleArticleClick = (article: Article) => {
-    // Handle article click - could open modal or navigate
-    console.log('Article clicked:', article);
-  };
+  // Enhanced refresh handler
+  const handleRefresh = useCallback(() => {
+    refreshMutation.mutate();
+  }, [refreshMutation]);
 
-  const handleShare = (e: React.MouseEvent, article: Article) => {
-    e.stopPropagation();
-    // Handle share functionality
-    if (navigator.share) {
-      navigator.share({
-        title: article.title,
-        text: article.content,
-        url: window.location.href,
-      });
+  // Memoized filtered articles for performance
+  const filteredArticles = useMemo(() => {
+    if (!articles || articles.length === 0) return [];
+
+    let filtered = articles;
+
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      const categoryMap: { [key: string]: string[] } = {
+        'trending': ['Nifty', 'Breakout Stock', 'Most Active'],
+        'special': ['StocksShorts Special'],
+        'breakout': ['Breakout Stock'],
+        'index': ['Nifty'],
+        'warrants': ['Warrants'],
+        'educational': ['Educational'],
+        'ipo': ['IPO'],
+        'global': ['Global'],
+        'active': ['Most Active'],
+        'orders': ['Order Win'],
+        'research': ['Research Report'],
+        'ai-news': ['AI News']
+      };
+      
+      const targetCategories = categoryMap[selectedCategory] || [selectedCategory];
+      filtered = filtered.filter(article => 
+        targetCategories.some(cat => 
+          article.type?.toLowerCase().includes(cat.toLowerCase())
+        )
+      );
     }
-  };
 
-  // Fast client-side navigation - no page reloads
-  const handleTabChange = (tab: string) => {
-    handleSectionChange(tab);
-  };
+    // Sort by priority and creation date
+    return filtered.sort((a, b) => {
+      const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+      
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+      
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
+  }, [articles, selectedCategory]);
 
   // Debug log
   console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
   return (
-    <>
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
       {/* Fixed Header */}
       <div className="flex-shrink-0">
         <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
@@ -169,7 +155,7 @@ export default function Home() {
               <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
             </div>
           </div>
-        ) : articles.length === 0 ? (
+        ) : filteredArticles.length === 0 ? (
           // Empty State
           <div className="h-full flex flex-col items-center justify-center px-4">
             <div className="text-6xl mb-4">📰</div>
@@ -178,55 +164,42 @@ export default function Home() {
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
               {selectedCategory === 'all' 
-                ? "There are no articles available at the moment." 
-                : `No articles found in the ${selectedCategory} category.`
-              }
+                ? 'Try refreshing or check back later for new articles'
+                : `No articles available in the ${selectedCategory} category`}
             </p>
-            <div className="space-y-3">
-              <Button 
-                onClick={handleRefresh}
-                disabled={refreshMutation.isPending}
-                className="min-w-[140px]"
-              >
-                {refreshMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Refreshing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Refresh Articles
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button 
+              onClick={handleRefresh}
+              disabled={refreshMutation.isPending}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {refreshMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Articles
+                </>
+              )}
+            </Button>
           </div>
         ) : (
-          // News Cards - Inshorts style full-screen layout
-          <div className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
-            {articles.map((article) => (
-              <div key={article.id} className="h-full snap-start">
-                <NewsCard
-                  article={article}
-                  onClick={() => handleArticleClick(article)}
-                  onShare={(e) => handleShare(e, article)}
-                />
-              </div>
-            ))}
+          // Articles List
+          <div className="h-full overflow-y-auto px-4 pb-24">
+            <div className="space-y-6">
+              {filteredArticles.map((article) => (
+                <NewsCard key={article.id} article={article} />
+              ))}
+            </div>
           </div>
         )}
       </div>
-    </>
-  );
-
-  return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
-      {renderSection()}
       
       {/* Fixed Bottom Navigation */}
       <div className="flex-shrink-0">
-        <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
+        <BottomNavigation />
       </div>
     </div>
   );
