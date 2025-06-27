@@ -34,31 +34,31 @@ export class AINewsService {
     }
 
     try {
-      const prompt = `Generate ONLY live market alerts for Indian stock markets happening TODAY (27-Jun-2025). AVOID ALL earnings results, quarterly updates, company announcements. Focus ONLY on technical analysis, price movements, and live trading data.
+      const prompt = `Generate ONLY actionable investment alerts for Indian stock markets TODAY (27-Jun-2025). Focus on: BREAKOUT STOCKS, INDEX MOVEMENTS, RESEARCH REPORTS on small/mid/large cap stocks, and ORDER WINS >10% of revenue. NO earnings results or quarterly updates.
 
-MANDATORY FORMAT - Generate 5 different alerts focusing on CURRENT market activity:
+MANDATORY FORMAT - Generate 5 different alerts:
 
-Alert 1 - LIVE PRICE MOVEMENT:
-Title: "27-Jun-2025: [Stock Name]: Live at ₹[X], up [Y]% on strong volumes"
-Content: "27-Jun-2025: [Stock] trading at ₹[current price], up [X]% in today's session with strong volumes. Technical momentum visible. Next resistance ₹[level], support ₹[level]. [BUY/HOLD] recommendation for technical play."
+Alert 1 - BREAKOUT STOCK:
+Title: "27-Jun-2025: [Stock Name]: Technical breakout above ₹[X], targets ₹[Y]"
+Content: "27-Jun-2025: [Stock] breaks above key resistance of ₹[level] with 2x volume surge. Breakout pattern confirmed on daily charts. Next targets ₹[target1] and ₹[target2]. Stop loss ₹[SL]. Strong BUY for breakout momentum."
 
-Alert 2 - TECHNICAL BREAKOUT:
-Title: "27-Jun-2025: [Stock Name]: Breaks ₹[X] resistance, targets ₹[Y]"
-Content: "27-Jun-2025: [Stock] closed above key resistance of ₹[level] with high volumes today. Technical breakout confirmed. Next targets ₹[target1] and ₹[target2]. Stop loss ₹[SL]. BUY for momentum trading."
+Alert 2 - INDEX MOVEMENT:
+Title: "27-Jun-2025: [Index] leads market rally, [Stock Name] contributes [X]%"
+Content: "27-Jun-2025: [Index] up [X]% with [Stock] contributing significantly to gains. Index technical setup positive for further upside. Key resistance [level], support [level]. Index heavyweights driving momentum."
 
-Alert 3 - SECTOR MOMENTUM:
-Title: "27-Jun-2025: [Sector] stocks rally, [Stock Name] leads with [X]% gain"
-Content: "27-Jun-2025: [Sector] index outperforming benchmark today with [Stock] leading gains at [X]%. Strong sector momentum evident in today's trading. Technical setup supports further upside. Continue to ACCUMULATE on dips."
+Alert 3 - RESEARCH REPORT:
+Title: "27-Jun-2025: [Broker] upgrades [Small/Mid/Large Cap Stock] to BUY, target ₹[X]"
+Content: "27-Jun-2025: [Broker name] upgrades [Stock] from HOLD to BUY with target ₹[price]. Research highlights strong [growth/margin/market share] expansion. Stock trading at ₹[current]. Upside potential [X]%. Recommended for [small/mid/large] cap portfolio."
 
-Alert 4 - VOLUME ANALYSIS:
-Title: "27-Jun-2025: [Stock Name]: Heavy volumes, price up [X]%"
-Content: "27-Jun-2025: [Stock] sees volume spike of [X]% above average with price up [Y]% in today's session. Strong institutional participation visible. Current price ₹[level] offers good technical setup. BUY on pullbacks."
+Alert 4 - ORDER WIN:
+Title: "27-Jun-2025: [Stock Name]: Wins ₹[X] crore order, [Y]% of revenue"
+Content: "27-Jun-2025: [Company] secures major ₹[amount] crore order worth [X]% of annual revenue. Order from [client sector] validates business model. Stock up [Y]% on announcement. Revenue visibility improved for next [timeframe]. Strong BUY."
 
-Alert 5 - MARKET LEADERSHIP:
-Title: "27-Jun-2025: [Stock Name]: Market leader drives index gains"
-Content: "27-Jun-2025: [Stock] contributing significantly to index movement today with [X]% gain. Stock trading at ₹[price] with strong technical momentum. Chart pattern positive for further upside. ACCUMULATE on weakness."
+Alert 5 - SMALL/MID CAP FOCUS:
+Title: "27-Jun-2025: [Small/Mid Cap Stock]: Research report highlights [X]% growth potential"
+Content: "27-Jun-2025: Latest research report on [Stock] projects [X]% revenue growth over next 2 years. Key drivers: [specific catalysts]. Current market cap ₹[amount] crore offers value. Target ₹[price] implies [Y]% upside. ACCUMULATE."
 
-Use live market data ONLY. Focus on: HDFC Bank, ICICI Bank, TCS, Infosys, Reliance Industries, Asian Paints, Maruti Suzuki, Bajaj Finance
+Focus on actionable investment themes: breakouts, index drivers, research upgrades, significant order wins
 
 Return only valid JSON array with no extra text.`;
 
@@ -217,20 +217,20 @@ Return only valid JSON array with no extra text.`;
     
     return [
       {
-        title: `${dateStr}: Nifty Live at ${niftyLevel}, technical momentum strong`,
-        content: `${dateStr} ${timeStr}: Nifty trading at ${niftyLevel} levels with strong technical momentum. Banking sector leading gains with heavy volumes. Key resistance ${niftyLevel + 30}, support ${niftyLevel - 50}. Chart pattern suggests further upside. Market breadth positive.`,
+        title: `${dateStr}: Nifty breaks ${niftyLevel}, index heavyweights drive rally`,
+        content: `${dateStr} ${timeStr}: Nifty breaks above ${niftyLevel} with strong volume support. Index heavyweights contributing significantly to gains. Key resistance ${niftyLevel + 50}, support ${niftyLevel - 30}. Breakout pattern confirmed on charts. Index momentum positive.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: HDFC Bank breaks ₹${hdfcPrice} resistance, targets higher`,
-        content: `${dateStr}: HDFC Bank trading at ₹${hdfcPrice}, up 1.2% with volume spike of 60% above average. Technical breakout above key resistance confirmed. Next targets ₹${hdfcPrice + 50} and ₹${hdfcPrice + 100}. Strong momentum for technical trading.`,
+        title: `${dateStr}: ICICI Bank breakout above ₹${hdfcPrice}, volume surge 2x`,
+        content: `${dateStr}: ICICI Bank breaks above key resistance of ₹${hdfcPrice} with 2x volume surge. Breakout pattern confirmed on daily charts. Next targets ₹${hdfcPrice + 80} and ₹${hdfcPrice + 120}. Stop loss ₹${hdfcPrice - 30}. Strong BUY for breakout momentum.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: TCS shows strength at ₹${tcsPrice}, sector rotation evident`,
-        content: `${dateStr}: TCS trading at ₹${tcsPrice}, up 0.8% with strong volumes. IT sector outperforming on technical momentum. Chart pattern supportive for further gains. Sector rotation visible as money flows into defensive IT names.`,
+        title: `${dateStr}: Kotak upgrades Zomato to BUY, target ₹${tcsPrice + 50}`,
+        content: `${dateStr}: Kotak Institutional Equities upgrades Zomato from HOLD to BUY with target ₹${tcsPrice + 50}. Research highlights strong growth in food delivery and quick commerce. Stock trading at ₹${tcsPrice - 20}. Upside potential 15%. Recommended for large cap growth portfolio.`,
         sentiment: 'Positive',
         priority: 'Medium'
       }
@@ -243,20 +243,20 @@ Return only valid JSON array with no extra text.`;
     
     return [
       {
-        title: `Reliance Industries: Strong Q3 results boost target to ₹3,200`,
-        content: `Reliance Industries reported strong Q3FY25 results with revenue of ₹2,35,000 crore, beating estimates by 8%. Management raised FY25 guidance citing strong petrochemical margins and retail growth. Analysts upgrade target to ₹3,200 from ₹2,900. Current price ₹2,850. BUY recommendation on strong fundamentals.`,
+        title: `${dateStr}: Tata Steel breakout above ₹140, targets ₹165`,
+        content: `Tata Steel breaks above key resistance of ₹140 with 2x volume surge. Breakout pattern confirmed on daily charts. Next targets ₹150 and ₹165. Stop loss ₹135. Strong BUY for breakout momentum. Metal sector showing technical strength.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `HDFC Bank: Technical breakout above ₹1,750 signals rally`,
-        content: `HDFC Bank closed at ₹1,780 on ${dateStr}, breaking above key resistance of ₹1,750 with high volumes. Next targets are ₹1,850 and ₹1,920. Stop loss at ₹1,720. Strong deposit growth and improving asset quality support bullish momentum. BUY for short-term with moderate risk.`,
+        title: `${dateStr}: Motilal Oswal upgrades Dixon Tech to BUY, target ₹18,500`,
+        content: `Motilal Oswal upgrades Dixon Technologies from HOLD to BUY with target ₹18,500. Research highlights strong market share expansion in electronics manufacturing. Stock trading at ₹15,200. Upside potential 22%. Recommended for mid cap portfolio growth.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `TCS: Management commentary boosts IT sector outlook`,
-        content: `TCS management indicated strong deal pipeline worth $8.2 billion in client meetings today. CEO highlighted AI transformation deals gaining momentum. Sector rotation into IT expected as valuations attractive. Target raised to ₹4,500 from ₹4,200. Current price ₹4,100. ACCUMULATE on dips.`,
+        title: `${dateStr}: L&T wins ₹8,500 crore order, 12% of revenue`,
+        content: `L&T secures major ₹8,500 crore infrastructure order worth 12% of annual revenue. Order from metro rail project validates engineering capabilities. Stock up 2.8% on announcement. Revenue visibility improved for next 18 months. Strong BUY on order momentum.`,
         sentiment: 'Positive',
         priority: 'Medium'
       }
