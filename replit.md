@@ -118,7 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 27, 2025: **MAJOR**: Added "Ask AI" feature at top of app for stock queries using OpenAI GPT-4 with fundamentals-first analysis (70% fundamentals, 30% technical)
+- June 27, 2025: **MAJOR**: Enhanced AI stock analysis with structured approach: Business Model (25%), PE vs Industry (25%), Quarterly Performance (25%), Management Commentary (15%), Technical (10%)
 - June 27, 2025: **MAJOR**: Created ultra-compact Ask AI input (single row layout) with dedicated stock discussion modal for AI responses - minimal space usage with full functionality
 - June 27, 2025: **MAJOR**: Fixed app startup issues and implemented working OTP authentication system with MSG91 integration (₹0.15 per SMS)
 - June 27, 2025: **MAJOR**: OTP verification system fully functional - successfully creating user accounts and managing authentication sessions
