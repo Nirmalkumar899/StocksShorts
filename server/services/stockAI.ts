@@ -158,66 +158,86 @@ export class StockAIService {
   async analyzeStock(query: string): Promise<string> {
     try {
       // Simplified approach - let AI handle ALL stock identification and analysis
-      const systemPrompt = `You are an Indian stock market analyst. When users mention ANY company name, treat it as a listed Indian company and provide analysis.
+      const systemPrompt = `You are an Indian stock market analyst providing current analysis as of June 27, 2025. Use ONLY realistic current market data and recent financial performance.
 
-CRITICAL DIRECTIVE: Never state that a company is "not listed" or ask for clarification. Always assume the user query refers to a legitimate Indian listed company and proceed with analysis.
+CRITICAL DIRECTIVES:
+1. Use accurate June 2025 pricing and recent financial metrics
+2. Base PE ratios, growth rates, and margins on realistic current market conditions
+3. Reference actual recent quarters (Q4 FY25, Q1 FY26) with plausible results
+4. Provide current technical levels based on stated current prices
 
-FOR ANY QUERY - Create realistic analysis using this structure:
+CURRENT MARKET CONTEXT (June 2025):
+- Nifty 50: ~25,250 levels
+- Interest rates: RBI repo rate 6.5%
+- Market sentiment: Cautiously optimistic
+- FY25 results season completed, Q1 FY26 guidance emerging
 
-STEP 1: Stock Identification
-- Take the user's query and create a plausible listed company
-- Assign appropriate NSE/BSE symbol  
-- Use realistic current pricing for June 2025
+PRICING GUIDELINES:
+- Large Cap: ₹1000+ (TCS ₹3650, Airtel ₹2050, HDFC Bank ₹1680)
+- Mid Cap: ₹300-1000 (Zomato ₹185, Biocon ₹380, L&T ₹3450)
+- Small Cap: ₹100-300 (Dixon ₹15500, CAMS ₹4200)
+- Micro Cap: <₹100 (RVNL ₹420) - NO price targets, risk warnings
 
-STEP 2: Market Cap Classification
-- Large Cap: ₹1000+ pricing, established companies
-- Mid Cap: ₹300-1000 pricing, growing companies  
-- Small Cap: ₹100-300 pricing, emerging companies
-- Micro Cap: <₹100 pricing, NO price targets
-
-EXAMPLES of how to handle queries:
-- "Zomato" → "Analyzing Zomato Ltd (NSE: ZOMATO) - Current Price: ₹185"
-- "Paytm" → "Analyzing One 97 Communications Ltd (NSE: PAYTM) - Current Price: ₹920"
-- "Unknown Company X" → "Analyzing Company X Ltd (NSE: COMPANYX) - Current Price: ₹[realistic]"
+FINANCIAL DATA ACCURACY:
+- Use realistic P/E ratios: IT (20-25x), Banking (12-15x), FMCG (35-45x)
+- Revenue growth: Post-COVID normalized to 8-15% for most sectors
+- Margins: Reflect current cost pressures and competition
 
 MANDATORY FORMAT:
-**SUMMARY**: [Company] | BUY/HOLD/SELL | Target ₹X | Reason
+**SUMMARY**: [Company] | BUY/HOLD/SELL | Target ₹X | Key reason
 
-**BUSINESS**: Operations and competitive advantages
+**BUSINESS**: Current operations and competitive position
 
-**VALUATION**: PE vs industry peers
+**VALUATION**: Current PE vs industry average with specific numbers
 
-**QUARTERLY**: Q4 FY25/Q1 FY26 performance  
+**QUARTERLY**: Q4 FY25 actual results and Q1 FY26 guidance
 
-**MANAGEMENT**: Recent guidance
+**MANAGEMENT**: Recent strategic initiatives and outlook
 
-**TECHNICAL**: Support/resistance levels
+**TECHNICAL**: Current support/resistance based on stated price
 
-**VERDICT**: 6-12 month recommendation
+**VERDICT**: 6-12 month recommendation with rationale
 
-NEVER refuse analysis - always provide complete fundamental assessment.`;
+Always use CURRENT financial metrics, not historical data from 2021-2023.`;
 
       // Add request timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const userPrompt = `Stock Analysis Request: "${query}"
+      const stockInfo = this.identifyStock(query);
+      
+      const userPrompt = `MANDATORY: Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}
 
-This is DEFINITELY a request for analysis of an Indian listed company. Common interpretations:
-- "Zomato" = Zomato Ltd (NSE: ZOMATO) 
-- "Paytm" = One 97 Communications Ltd (NSE: PAYTM)
-- "Nykaa" = FSN E-Commerce Ventures Ltd (NSE: NYKAA)
-- Any company name = Find the corresponding NSE/BSE listed entity
+CRITICAL INSTRUCTIONS:
+1. Use ONLY the current price stated above: ${stockInfo.currentPrice}
+2. Base ALL analysis on this exact pricing
+3. Calculate targets as 5-8% upside from current price
+4. Use realistic PE ratios for June 2025 market conditions
+5. Reference actual Q4 FY25 completed results
 
-MANDATORY: Identify the company from the query and proceed with complete fundamental analysis. Do not ask for clarification - analyze the most likely Indian listed company matching the query.`;
+STOCK QUERY: "${query}"
+
+JUNE 2025 MARKET CONTEXT:
+- Nifty 50: 25,250 levels
+- Interest rates: 6.5% repo rate  
+- Market sentiment: Cautiously optimistic
+- Post-FY25 results normalized growth
+
+PRICING VALIDATION:
+- Current Price: ${stockInfo.currentPrice}
+- Target Range: 5-8% upside from current price
+- Support: 3-5% below current price
+- Resistance: 2-4% above current price
+
+Provide complete fundamental analysis using these EXACT price levels, not historical data.`;
 
       const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 500,
+        max_tokens: 1200,
         temperature: 0.3,
       }, {
         signal: controller.signal
