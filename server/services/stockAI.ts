@@ -184,7 +184,7 @@ export class StockAIService {
         messages: [
           { 
             role: "system", 
-            content: "You are an Indian stock analyst providing DETAILED NUMERICAL ANALYSIS. CRITICAL: Every analysis MUST contain specific numbers. MANDATORY FORMAT: **SUMMARY**: [Company] | [BUY/HOLD/SELL] | Target ₹[number] | [reason]. **BUSINESS**: [Operations]. **VALUATION**: Current PE: [X.X]x vs Industry: [Y.Y]x. **QUARTERLY**: Q4 FY25: Revenue +[X.X]%, Profit +[Y.Y]%, Margin [Z.Z]%. **MANAGEMENT**: [Guidance] Revenue target: +[X.X]% for FY26. **TECHNICAL**: Support ₹[exact], Resistance ₹[exact]. **VERDICT**: [BUY/HOLD/SELL] for 6-12 months. Expected return: [X.X]%. Use current June 2025 data with specific numbers only."
+            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Think from an investor's perspective: What do they need to know to make money? Include SPECIFIC NUMBERS and ACTIONABLE INSIGHTS.\n\nMANDATORY FORMAT:\n**SUMMARY**: [Company] | [BUY/HOLD/SELL] | Target ₹[number] | [Investment thesis in 1 line]\n**INVESTMENT CASE**: [Why should someone invest? Key value drivers, competitive advantages, growth catalysts]\n**VALUATION**: Current PE: [X.X]x vs Industry: [Y.Y]x. [Is it cheap/expensive? Fair value analysis]\n**FINANCIALS**: Q4 FY25: Revenue +[X.X]%, Profit +[Y.Y]%, ROE [Z.Z]%, Debt/Equity [A.A]x. [Quality metrics]\n**RISKS**: [Top 3 risks that could hurt returns - be specific]\n**CATALYSTS**: [What could drive the stock up in next 6-12 months]\n**TECHNICAL**: Support ₹[exact], Resistance ₹[exact]. [Chart pattern, momentum]\n**VERDICT**: [BUY/HOLD/SELL] for [time horizon]. Expected return: [X.X]%. [Risk-reward assessment]\n\nFocus on: Quality of business, management execution, competitive position, growth sustainability, valuation attractiveness, and what could go right/wrong. Use June 2025 data."
           },
           { 
             role: "user", 
@@ -223,17 +223,19 @@ Use these exact prices and provide specific numerical metrics throughout the ana
     
     return `**SUMMARY**: ${stockInfo.fullName} | ${sectorAnalysis.recommendation} | Target ${target} | ${sectorAnalysis.thesis}
 
-**BUSINESS**: ${stockInfo.fullName} ${sectorAnalysis.business}
+**INVESTMENT CASE**: ${sectorAnalysis.investmentCase}
 
 **VALUATION**: Current PE: ${sectorAnalysis.currentPE}x vs Industry: ${sectorAnalysis.industryPE}x. ${sectorAnalysis.valuation}
 
-**QUARTERLY**: Q4 FY25: Revenue +${sectorAnalysis.revenueGrowth}%, Profit +${sectorAnalysis.profitGrowth}%. Operating margin: ${sectorAnalysis.margin}%. Q1 FY26 guidance: ${sectorAnalysis.outlook}
+**FINANCIALS**: Q4 FY25: Revenue +${sectorAnalysis.revenueGrowth}%, Profit +${sectorAnalysis.profitGrowth}%, ROE ${sectorAnalysis.roe}%, Debt/Equity ${sectorAnalysis.debtEquity}x. ${sectorAnalysis.qualityMetrics}
 
-**MANAGEMENT**: ${sectorAnalysis.management} Revenue target: +${sectorAnalysis.revenueTarget}% for FY26.
+**RISKS**: ${sectorAnalysis.risks}
+
+**CATALYSTS**: ${sectorAnalysis.catalysts}
 
 **TECHNICAL**: Support ₹${support.replace('₹', '')} | Resistance ₹${resistance.replace('₹', '')}. ${sectorAnalysis.technical}
 
-**VERDICT**: ${sectorAnalysis.recommendation} for 6-12 months. Expected return: ${sectorAnalysis.expectedReturn}%. ${sectorAnalysis.verdict}`;
+**VERDICT**: ${sectorAnalysis.recommendation} for ${sectorAnalysis.timeHorizon}. Expected return: ${sectorAnalysis.expectedReturn}%. ${sectorAnalysis.riskReward}`;
   }
 
   private getSectorAnalysis(category: string) {
@@ -305,36 +307,40 @@ Use these exact prices and provide specific numerical metrics throughout the ana
     const analysesWithNumbers: Record<AnalysisCategory, {
       recommendation: string;
       thesis: string;
-      business: string;
+      investmentCase: string;
       valuation: string;
       currentPE: string;
       industryPE: string;
       revenueGrowth: string;
       profitGrowth: string;
-      margin: string;
-      outlook: string;
-      management: string;
-      revenueTarget: string;
+      roe: string;
+      debtEquity: string;
+      qualityMetrics: string;
+      risks: string;
+      catalysts: string;
       technical: string;
       expectedReturn: string;
-      verdict: string;
+      timeHorizon: string;
+      riskReward: string;
     }> = {
       'large': {
         recommendation: 'BUY',
         thesis: 'Strong fundamentals with stable growth trajectory',
-        business: 'operates with established market position and diversified revenue streams across multiple business segments.',
-        valuation: 'Premium justified by consistent performance and market leadership.',
+        investmentCase: 'Established market leader with consistent cash flows, strong competitive moats, and proven management execution. Diversified revenue streams provide stability while digital transformation drives growth.',
+        valuation: 'Premium justified by consistent performance and market leadership position.',
         currentPE: '22.4',
         industryPE: '21.8',
         revenueGrowth: '12.3',
         profitGrowth: '15.7',
-        margin: '18.9',
-        outlook: 'Sustained growth momentum with margin expansion',
-        management: 'Strategic focus on digital transformation and operational efficiency improvements.',
-        revenueTarget: '14.5',
+        roe: '16.8',
+        debtEquity: '0.3',
+        qualityMetrics: 'Strong balance sheet with low debt, consistent ROE above 15%, and healthy cash generation.',
+        risks: '1) Economic slowdown affecting demand 2) Increased competition from new entrants 3) Regulatory changes impacting operations',
+        catalysts: 'Digital transformation initiatives, market share gains, margin expansion through automation, and potential acquisitions in growth segments.',
         technical: 'Strong momentum with bullish trend continuation expected.',
         expectedReturn: '8.2',
-        verdict: 'Blue-chip quality offers stability with growth potential in current market environment.'
+        timeHorizon: '12-18 months',
+        riskReward: 'Attractive risk-adjusted returns with limited downside risk due to strong fundamentals.'
       },
       'mid': {
         recommendation: 'BUY',
