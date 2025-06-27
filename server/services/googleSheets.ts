@@ -2,9 +2,41 @@ import { google } from 'googleapis';
 import type { GoogleSheetsRow, Article, InvestmentAdvisorRow, InvestmentAdvisor } from '@shared/schema';
 import { sampleArticles } from '../sampleData';
 
+// In-memory cache with TTL for faster repeated requests
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+class MemoryCache {
+  private cache = new Map<string, CacheEntry<any>>();
+  
+  set<T>(key: string, data: T, ttlSeconds: number = 30): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl: ttlSeconds * 1000
+    });
+  }
+  
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    
+    if (Date.now() - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return entry.data;
+  }
+}
+
 export class GoogleSheetsService {
   private sheets: any;
   private spreadsheetId: string;
+  private cache = new MemoryCache();
 
   constructor() {
     // Initialize Google Sheets API client

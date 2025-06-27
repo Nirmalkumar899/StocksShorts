@@ -18,6 +18,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Article types found:', articles.map(a => a.type));
         res.json(articles);
       } else {
+        // Set cache headers for better performance
+        res.set({
+          'Cache-Control': 'public, max-age=30, s-maxage=60',
+          'Content-Type': 'application/json; charset=utf-8'
+        });
+        
         const articles = await googleSheetsService.fetchArticles();
         console.log(`Total articles: ${articles.length}`);
         // Log unique article types for debugging
@@ -34,7 +40,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return bPriority - aPriority;
         });
         
-        res.json(sortedArticles);
+        // Optimize response by truncating content for list view
+        const optimizedArticles = sortedArticles.map(article => ({
+          ...article,
+          content: article.content.length > 350 ? article.content.substring(0, 350) + '...' : article.content
+        }));
+        
+        res.json(optimizedArticles);
       }
     } catch (error) {
       console.error('Error fetching articles:', error);

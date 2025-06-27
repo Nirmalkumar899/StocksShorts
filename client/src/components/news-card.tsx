@@ -4,6 +4,7 @@ import { Share2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
+import { useState } from "react";
 
 interface NewsCardProps {
   article: Article;
@@ -12,6 +13,8 @@ interface NewsCardProps {
 }
 
 export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const sentimentColor = getSentimentColor(article.sentiment);
   const typeColor = getTypeColor(article.type);
   
@@ -48,17 +51,39 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     >
       {/* Inshorts-style layout: Image top, content bottom */}
       
-      {/* Article Image - Reduced height for more content space */}
+      {/* Article Image - Optimized loading */}
       <div className="h-2/5 bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
-        <img 
-          src={article.imageUrl || getContextualImage(article)} 
-          alt={article.title}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = getContextualImage(article);
-          }}
-        />
+        {!imageError && (
+          <img 
+            src={article.imageUrl || getContextualImage(article)} 
+            alt={article.title}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              setImageError(true);
+              setImageLoaded(false);
+            }}
+          />
+        )}
+        
+        {/* Loading skeleton */}
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-200 dark:from-gray-700 via-gray-300 dark:via-gray-600 to-gray-200 dark:to-gray-700 animate-pulse"></div>
+        )}
+        
+        {/* Fallback gradient for failed images */}
+        {imageError && (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <div className="text-white text-sm font-semibold opacity-90">
+              {article.type.toUpperCase()}
+            </div>
+          </div>
+        )}
         
         {/* Category badge on image */}
         <div className="absolute top-3 left-3">
