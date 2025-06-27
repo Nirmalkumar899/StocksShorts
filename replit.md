@@ -115,6 +115,13 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: Completely redesigned SEBI RIA section with improved layout and visual design
+- June 27, 2025: Fixed content overflow issues in advisor cards using line-clamp and flex layout
+- June 27, 2025: Added 6 sample SEBI RIA advisors with comprehensive profiles and contact details
+- June 27, 2025: Implemented proper text truncation and responsive design for advisor cards
+- June 27, 2025: Enhanced search functionality across all advisor fields with improved filtering
+- June 27, 2025: Removed "premium" branding terminology for cleaner professional appearance
+- June 27, 2025: Streamlined advisor card design with better content hierarchy and spacing
 - June 26, 2025: Redesigned news cards to Inshorts-style layout with 40% image, 60% content split
 - June 26, 2025: Implemented full-screen vertical scrolling with snap-to-card navigation
 - June 26, 2025: Optimized category filter to be more compact for better content visibility
