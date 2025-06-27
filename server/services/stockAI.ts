@@ -844,7 +844,8 @@ For a comprehensive analysis with specific numbers including revenue growth, pro
         longTermOutlook: 'High growth potential with market expansion opportunities',
         multibaggerPotential: 'Yes',
         multibaggerReasoning: 'strong execution and market expansion could deliver 3-5x returns over 3-5 years',
-        riskReward: 'Very favorable for growth investors'
+        riskReward: 'Very favorable for growth investors',
+        recommendation: 'BUY'
       },
       'small': {
         sector: 'Small Cap',
@@ -874,7 +875,8 @@ For a comprehensive analysis with specific numbers including revenue growth, pro
         longTermOutlook: 'Selective growth opportunities in niche markets',
         multibaggerPotential: 'Maybe',
         multibaggerReasoning: 'niche positioning could deliver 2-4x returns if execution is strong over 4-5 years',
-        riskReward: 'Moderate, suitable for selective investors'
+        riskReward: 'Moderate, suitable for selective investors',
+        recommendation: 'HOLD'
       },
       'micro': {
         sector: 'Micro Cap',
@@ -895,17 +897,17 @@ For a comprehensive analysis with specific numbers including revenue growth, pro
         marketShare: '1.8',
         currentPE: '45.2',
         industryPE: '28.5',
-        revenueGrowth: '38.7',
-        profitGrowth: '42.1',
-        roe: '12.3',
-        debtEquity: '1.2',
-        qualityMetrics: 'High growth but elevated debt levels and volatile profitability patterns.',
-        risks: '1) Execution risk in unproven business model 2) High cash burn and funding requirements 3) Extreme market volatility',
-        catalysts: 'Product validation, strategic partnerships, market adoption, and successful fundraising for growth capital.',
-        technical: 'High volatility with wide trading ranges and momentum-driven moves.',
-        expectedReturn: '15.3',
-        timeHorizon: '24-36 months',
-        riskReward: 'High potential returns but extreme volatility. Only for experienced investors with strong risk appetite.'
+        forwardPE: '38.1',
+        valuation: 'Speculative valuations based on future growth assumptions',
+        technicalTrend: 'Volatile',
+        rsi: '45',
+        rsiInterpretation: 'High volatility momentum',
+        shortTermOutlook: 'High risk',
+        longTermOutlook: 'High growth potential but significant execution risks',
+        multibaggerPotential: 'Maybe',
+        multibaggerReasoning: 'early-stage growth story with 5-10x potential but high execution risk over 5-7 years',
+        riskReward: 'High potential returns but extreme volatility',
+        recommendation: 'HOLD'
       }
     };
     
