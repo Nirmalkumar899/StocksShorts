@@ -125,9 +125,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </div>
         
         {/* Disclaimer */}
-        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-          <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
-            <span className="font-medium">Disclaimer:</span> The information provided in this article is for general informational purposes only and does not constitute investment advice. We do not endorse or recommend any specific stocks, and all investment decisions should be made based on your own research or consultation with a qualified financial advisor.
+        <div className="mt-2 pt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">
+            <span className="font-medium">Disclaimer:</span> This content is for informational purposes only and is not investment advice. Please do your own research or consult a financial advisor.
           </p>
         </div>
         
