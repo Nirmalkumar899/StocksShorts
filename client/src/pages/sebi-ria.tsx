@@ -19,8 +19,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     queryKey: ['/api/investment-advisors'],
   });
 
-  // Debug log to check advisor data
-  console.log('Advisors for ticker:', advisors.map(a => a.name));
+
 
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
     advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -192,101 +191,47 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         </CardContent>
       </Card>
 
-      {/* Advisor Cards */}
-      <div className="space-y-4">
-        {(showSearch ? filteredAdvisors : advisors.slice(0, 5)).length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-lg font-semibold mb-2">No advisors found</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your search terms
+      {/* Contact Information Section */}
+      <div className="space-y-6">
+        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-xl font-bold mb-3">Connect with SEBI Registered Advisors</h2>
+            <p className="text-blue-100 mb-4">
+              All advisors listed in the ticker above are SEBI registered and verified. 
+              Use the search function to find advisors by name, company, or specialization.
             </p>
-          </div>
-        ) : (
-          (showSearch ? filteredAdvisors : advisors.slice(0, 5)).map((advisor: InvestmentAdvisor) => (
-            <Card key={advisor.id} className="overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-blue-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-800 dark:hover:to-gray-700">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-1">
-                      {advisor.name}
-                    </h3>
-                    <p className="text-blue-600 dark:text-blue-400 font-medium">
-                      {advisor.designation} at {advisor.company}
-                    </p>
-                  </div>
-                  {advisor.rating && (
-                    <div className="flex items-center bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded-full">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                      <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-                        {advisor.rating}
-                      </span>
-                    </div>
-                  )}
-                </div>
+            <div className="bg-white/20 p-4 rounded-lg">
+              <p className="text-sm">
+                <strong>Important:</strong> Always verify advisor credentials on SEBI website before making investment decisions.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                      {advisor.specialization}
-                    </Badge>
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {advisor.location}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      <strong>Experience:</strong> {advisor.experience}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {advisor.phone && (
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Phone className="h-4 w-4 mr-2" />
-                        <a href={`tel:${advisor.phone}`} className="hover:text-blue-600 transition-colors">
-                          {advisor.phone}
-                        </a>
-                      </div>
-                    )}
-                    {advisor.email && (
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Mail className="h-4 w-4 mr-2" />
-                        <a href={`mailto:${advisor.email}`} className="hover:text-blue-600 transition-colors">
-                          {advisor.email}
-                        </a>
-                      </div>
-                    )}
-                    {advisor.website && (
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <Globe className="h-4 w-4 mr-2" />
-                        <a 
-                          href={advisor.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="hover:text-blue-600 transition-colors"
-                        >
-                          Visit Website
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+        <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <h3 className="font-bold text-lg mb-4 text-center">How to Choose the Right Advisor</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold mb-2 text-blue-600 dark:text-blue-400">Check Credentials</h4>
+                <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                  <li>• SEBI registration number</li>
+                  <li>• Valid license status</li>
+                  <li>• Professional qualifications</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">Understand Fees</h4>
+                <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                  <li>• Fee structure transparency</li>
+                  <li>• No hidden charges</li>
+                  <li>• Written fee agreement</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {!showSearch && advisors.length > 5 && (
-        <div className="text-center mt-6">
-          <Button 
-            onClick={() => setShowSearch(true)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-          >
-            View All {advisors.length} Advisors
-          </Button>
-        </div>
-      )}
 
       <div className="text-center mt-8 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg">
         <p className="text-sm text-gray-600 dark:text-gray-400">
