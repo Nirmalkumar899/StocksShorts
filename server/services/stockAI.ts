@@ -298,8 +298,7 @@ export class StockAIService {
               'Accept-Language': 'en-US,en;q=0.5',
               'Accept-Encoding': 'gzip, deflate, br',
               'Cache-Control': 'no-cache'
-            },
-            timeout: 10000
+            }
           });
 
           if (companyResponse.ok) {
@@ -314,8 +313,8 @@ export class StockAIService {
               return financialData;
             }
           }
-        } catch (urlError) {
-          console.log(`Failed to fetch ${companyUrl}:`, urlError.message);
+        } catch (urlError: any) {
+          console.log(`Failed to fetch ${companyUrl}:`, urlError?.message || 'Unknown error');
           continue;
         }
       }
@@ -381,12 +380,16 @@ export class StockAIService {
         }
       }
       
-      // Extract PE ratio with multiple patterns
+      // Extract PE ratio with enhanced patterns
       const pePatterns = [
-        /P\/E\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
+        /<td[^>]*>\s*P\/E\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
+        /<span[^>]*>\s*PE:\s*([\d.]+)/i,
+        /PE\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
         /"pe":\s*([\d.]+)/,
         /Price to Earning[^>]*>\s*([\d.]+)/i,
-        /PE Ratio[^>]*>\s*([\d.]+)/i
+        /PE Ratio[^>]*>\s*([\d.]+)/i,
+        /P\/E.*?<td[^>]*>\s*([\d.]+)/i,
+        /Trailing P\/E[^>]*>\s*([\d.]+)/i
       ];
       
       for (const pattern of pePatterns) {
@@ -397,11 +400,14 @@ export class StockAIService {
         }
       }
       
-      // Extract Market Cap
+      // Extract Market Cap with enhanced patterns
       const mcapPatterns = [
+        /<td[^>]*>\s*Market Cap\s*<\/td>\s*<td[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
         /Market Cap[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
         /"market_cap":\s*([\d.]+)/,
-        /Market Capitalisation[^>]*>\s*₹\s*([\d,]+)/i
+        /Market Capitalisation[^>]*>\s*₹\s*([\d,]+)/i,
+        /Market Cap.*?₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
+        /Mkt Cap[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i
       ];
       
       for (const pattern of mcapPatterns) {
