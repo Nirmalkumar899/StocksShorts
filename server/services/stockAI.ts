@@ -241,54 +241,62 @@ export class StockAIService {
 
   private async fetchRealFinancialData(symbol: string): Promise<any> {
     try {
-      // Use the existing real-time stock service for consistent data
-      const { realTimeStockService } = await import('./realTimeStockService');
-      
-      console.log(`Fetching comprehensive financial data for ${symbol} using real-time service`);
-      const stockData = await realTimeStockService.getStockData(symbol);
-      
-      if (stockData) {
-        console.log(`Successfully retrieved authentic data for ${symbol}:`, stockData);
-        
-        // Extract and format the financial metrics
-        const financialData = {
-          currentPrice: stockData.currentPrice,
-          marketCap: stockData.marketCap,
-          pe: stockData.pe,
-          pb: stockData.pb,
-          roe: stockData.roe,
-          debtToEquity: stockData.debtToEquity,
-          dayHigh: stockData.dayHigh,
-          dayLow: stockData.dayLow,
-          volume: stockData.volume,
-          change: stockData.change,
-          changePercent: stockData.changePercent,
-          sector: stockData.sector,
-          industry: stockData.industry,
-          symbol: symbol,
-          source: 'Real-time Stock Service',
-          lastUpdated: stockData.lastUpdated
-        };
-
-        // Filter out null/undefined values
-        const cleanData = Object.fromEntries(
-          Object.entries(financialData).filter(([_, value]) => value !== null && value !== undefined)
-        );
-
-        if (Object.keys(cleanData).length > 3) {
-          console.log(`Found ${Object.keys(cleanData).length} authentic financial metrics for ${symbol}`);
-          return cleanData;
+      // 1. Alpha Vantage - Premium financial data provider (requires API key)
+      if (process.env.ALPHA_VANTAGE_API_KEY) {
+        console.log(`Fetching from Alpha Vantage for ${symbol}`);
+        const alphaResponse = await fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}.BSE&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`);
+        if (alphaResponse.ok) {
+          const alphaData = await alphaResponse.json();
+          if (alphaData.Symbol && !alphaData.Note) {
+            return {
+              currentPrice: parseFloat(alphaData.Price || 0),
+              marketCap: parseFloat(alphaData.MarketCapitalization || 0),
+              pe: parseFloat(alphaData.PERatio || 0),
+              eps: parseFloat(alphaData.EPS || 0),
+              roe: parseFloat(alphaData.ReturnOnEquityTTM || 0),
+              debtToEquity: parseFloat(alphaData.DebtToEquityRatio || 0),
+              profitMargin: parseFloat(alphaData.ProfitMargin || 0),
+              bookValue: parseFloat(alphaData.BookValue || 0),
+              priceToBook: parseFloat(alphaData.PriceToBookRatio || 0),
+              dividendYield: parseFloat(alphaData.DividendYield || 0),
+              symbol: symbol,
+              source: 'Alpha Vantage'
+            };
+          }
         }
       }
 
-      // Fallback to Yahoo Finance with better symbol mapping
+      // 2. Financial Modeling Prep - Alternative provider (requires API key)
+      if (process.env.FMP_API_KEY) {
+        console.log(`Fetching from Financial Modeling Prep for ${symbol}`);
+        const fmpResponse = await fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}.NS?apikey=${process.env.FMP_API_KEY}`);
+        if (fmpResponse.ok) {
+          const fmpData = await fmpResponse.json();
+          if (fmpData[0]) {
+            const profile = fmpData[0];
+            return {
+              currentPrice: profile.price,
+              marketCap: profile.mktCap,
+              pe: profile.pe,
+              eps: profile.eps,
+              beta: profile.beta,
+              sector: profile.sector,
+              industry: profile.industry,
+              symbol: symbol,
+              source: 'Financial Modeling Prep'
+            };
+          }
+        }
+      }
+
+      // 3. Yahoo Finance - Free but less reliable
       const yahooSymbol = this.getYahooSymbolMapping(symbol);
       if (yahooSymbol) {
-        console.log(`Attempting Yahoo Finance for ${yahooSymbol}`);
+        console.log(`Fetching from Yahoo Finance for ${yahooSymbol}`);
         
         const response = await fetch(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics`, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Accept': 'application/json'
           }
         });
@@ -310,8 +318,6 @@ export class StockAIService {
               revenueGrowth: financial.revenueGrowth?.raw,
               roe: financial.returnOnEquity?.raw,
               debtToEquity: financial.debtToEquity?.raw,
-              fiftyTwoWeekHigh: summary.fiftyTwoWeekHigh?.raw,
-              fiftyTwoWeekLow: summary.fiftyTwoWeekLow?.raw,
               eps: keyStats.trailingEps?.raw,
               bookValue: keyStats.bookValue?.raw,
               priceToBook: keyStats.priceToBook?.raw,
@@ -321,7 +327,7 @@ export class StockAIService {
             };
 
             const cleanData = Object.fromEntries(
-              Object.entries(extractedData).filter(([_, value]) => value !== null && value !== undefined)
+              Object.entries(extractedData).filter(([_, value]) => value !== null && value !== undefined && value !== 0)
             );
 
             if (Object.keys(cleanData).length > 3) {
@@ -332,7 +338,94 @@ export class StockAIService {
         }
       }
 
-      console.log(`No comprehensive financial data available for ${symbol}`);
+      // 4. Try polygon.io for Indian stocks (if available)
+      if (process.env.POLYGON_API_KEY) {
+        console.log(`Fetching from Polygon.io for ${symbol}`);
+        const polygonResponse = await fetch(`https://api.polygon.io/v3/reference/tickers/${symbol}.NSE?apikey=${process.env.POLYGON_API_KEY}`);
+        if (polygonResponse.ok) {
+          const polygonData = await polygonResponse.json();
+          if (polygonData.results) {
+            return {
+              currentPrice: polygonData.results.market_cap,
+              marketCap: polygonData.results.market_cap,
+              sector: polygonData.results.sic_description,
+              symbol: symbol,
+              source: 'Polygon.io'
+            };
+          }
+        }
+      }
+
+      // 5. NSE Official API - Use the existing NSE service
+      const { nseService } = await import('./nseService');
+      console.log(`Fetching from NSE official source for ${symbol}`);
+      const nseData = await nseService.getStockQuote(symbol);
+      
+      if (nseData) {
+        console.log(`NSE provided authentic data for ${symbol}:`, nseData);
+        return {
+          currentPrice: nseData.lastPrice,
+          marketCap: nseData.marketCap,
+          pe: nseData.pe,
+          pb: nseData.pb,
+          dayHigh: nseData.dayHigh,
+          dayLow: nseData.dayLow,
+          volume: nseData.totalTradedVolume,
+          change: nseData.change,
+          changePercent: nseData.pChange,
+          industry: nseData.industry,
+          symbol: symbol,
+          source: 'NSE Official'
+        };
+      }
+
+      // 6. Use GPT with live web search for financial data
+      console.log(`Using GPT-3.5-turbo to search for ${symbol} financial data`);
+      const openai = new (await import('openai')).default({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+
+      const prompt = `Search for current financial data for ${symbol} (Indian stock). Provide exact numerical data in JSON format:
+      {
+        "currentPrice": number,
+        "pe": number,
+        "marketCap": number,
+        "roe": number,
+        "debtToEquity": number,
+        "profitMargin": number,
+        "revenueGrowth": number,
+        "eps": number,
+        "bookValue": number,
+        "sector": "string",
+        "industry": "string"
+      }
+      Only provide real, current data from financial websites. If data not available, set to null.`;
+
+      const gptResponse = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        max_tokens: 500
+      });
+
+      if (gptResponse.choices[0].message.content) {
+        try {
+          const gptData = JSON.parse(gptResponse.choices[0].message.content);
+          console.log(`GPT provided financial data for ${symbol}:`, gptData);
+          
+          const cleanData = Object.fromEntries(
+            Object.entries(gptData).filter(([_, value]) => value !== null && value !== undefined && value !== 0)
+          );
+
+          if (Object.keys(cleanData).length > 3) {
+            return { ...cleanData, symbol, source: 'GPT-3.5-turbo with live search' };
+          }
+        } catch (e) {
+          console.log('Failed to parse GPT financial data response');
+        }
+      }
+
+      console.log(`No financial data providers available for ${symbol}`);
       return null;
     } catch (error) {
       console.log(`Error fetching financial data for ${symbol}:`, error);
