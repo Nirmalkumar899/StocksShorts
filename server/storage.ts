@@ -11,6 +11,7 @@ export interface IStorage {
   getValidOtp(phoneNumber: string, otp: string): Promise<OtpVerification | undefined>;
   markOtpAsUsed(id: number): Promise<void>;
   verifyUser(phoneNumber: string): Promise<void>;
+  upsertUser(user: any): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -88,6 +89,31 @@ export class MemStorage implements IStorage {
     if (user) {
       this.users.set(user.id, { ...user, isVerified: "true", updatedAt: new Date() });
     }
+  }
+
+  async upsertUser(userData: any): Promise<User> {
+    // For the legacy Replit auth system - create a mock user
+    const existingUser = Array.from(this.users.values()).find(
+      (user) => user.phoneNumber === userData.email
+    );
+    
+    if (existingUser) {
+      return existingUser;
+    }
+
+    const id = this.currentUserId++;
+    const user: User = {
+      id,
+      phoneNumber: userData.email || `user_${id}@mock.com`,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      isVerified: "true",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.users.set(id, user);
+    return user;
   }
 }
 

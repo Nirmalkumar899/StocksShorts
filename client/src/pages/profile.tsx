@@ -62,18 +62,18 @@ export default function Profile({ onBack }: ProfileProps) {
             {isAuthenticated ? (
               <>
                 <Avatar className="w-20 h-20 mx-auto mb-4">
-                  <AvatarImage src={user?.profileImageUrl} alt={user?.firstName || "User"} />
+                  <AvatarImage src={""} alt={(user as any)?.firstName || "User"} />
                   <AvatarFallback className="text-lg">
-                    {user?.firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+                    {(user as any)?.firstName?.[0]?.toUpperCase() || (user as any)?.phoneNumber?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <CardTitle className="text-xl">
-                  {user?.firstName && user?.lastName 
-                    ? `${user.firstName} ${user.lastName}`
-                    : user?.email || "User"
+                  {(user as any)?.firstName && (user as any)?.lastName 
+                    ? `${(user as any).firstName} ${(user as any).lastName}`
+                    : (user as any)?.phoneNumber || "User"
                   }
                 </CardTitle>
-                <CardDescription>{user?.email}</CardDescription>
+                <CardDescription>{(user as any)?.phoneNumber}</CardDescription>
               </>
             ) : (
               <>

@@ -62,7 +62,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             }`}
             loading="eager"
             decoding="async"
-            fetchpriority="high"
             onLoad={() => setImageLoaded(true)}
             onError={() => {
               setImageError(true);

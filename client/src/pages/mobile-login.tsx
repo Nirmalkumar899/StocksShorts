@@ -47,11 +47,7 @@ export default function MobileLogin({ onBack, onLoginSuccess }: MobileLoginProps
 
     setIsLoading(true);
     try {
-      await apiRequest('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: phoneNumber.replace(/\s/g, '') })
-      });
+      await apiRequest('POST', '/api/auth/send-otp', { phoneNumber: phoneNumber.replace(/\s/g, '') });
 
       toast({
         title: "OTP Sent",
@@ -81,13 +77,9 @@ export default function MobileLogin({ onBack, onLoginSuccess }: MobileLoginProps
 
     setIsLoading(true);
     try {
-      await apiRequest('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phoneNumber: phoneNumber.replace(/\s/g, ''), 
-          otp 
-        })
+      await apiRequest('POST', '/api/auth/verify-otp', { 
+        phoneNumber: phoneNumber.replace(/\s/g, ''), 
+        otp 
       });
 
       toast({
