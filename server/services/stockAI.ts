@@ -239,39 +239,107 @@ export class StockAIService {
     return `₹${resistancePrice.toLocaleString('en-IN')}`;
   }
 
+  private async fetchRealFinancialData(symbol: string): Promise<any> {
+    try {
+      // Map Indian stock symbols to Yahoo Finance format
+      const yahooSymbol = this.getYahooSymbolMapping(symbol);
+      if (!yahooSymbol) return null;
+
+      const response = await fetch(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics,earnings`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      const result = data.quoteSummary?.result?.[0];
+      
+      if (!result) return null;
+
+      return {
+        pe: result.summaryDetail?.trailingPE?.raw,
+        marketCap: result.summaryDetail?.marketCap?.raw,
+        profitMargin: result.financialData?.profitMargins?.raw,
+        revenueGrowth: result.financialData?.revenueGrowth?.raw,
+        roe: result.financialData?.returnOnEquity?.raw,
+        debtToEquity: result.financialData?.debtToEquity?.raw,
+        fiftyTwoWeekHigh: result.summaryDetail?.fiftyTwoWeekHigh?.raw,
+        fiftyTwoWeekLow: result.summaryDetail?.fiftyTwoWeekLow?.raw,
+        earningsGrowth: result.defaultKeyStatistics?.earningsQuarterlyGrowth?.raw
+      };
+    } catch (error) {
+      console.log('Failed to fetch Yahoo Finance data:', error);
+      return null;
+    }
+  }
+
+  private getYahooSymbolMapping(symbol: string): string | null {
+    const mappings: { [key: string]: string } = {
+      'TCS': 'TCS.NS',
+      'RELIANCE': 'RELIANCE.NS',
+      'INFY': 'INFY.NS',
+      'INFOSYS': 'INFY.NS',
+      'HDFCBANK': 'HDFCBANK.NS',
+      'HDFC BANK': 'HDFCBANK.NS',
+      'ICICIBANK': 'ICICIBANK.NS',
+      'ICICI BANK': 'ICICIBANK.NS',
+      'WIPRO': 'WIPRO.NS',
+      'SBIN': 'SBIN.NS',
+      'SBI': 'SBIN.NS',
+      'BHARTIARTL': 'BHARTIARTL.NS',
+      'BHARTI AIRTEL': 'BHARTIARTL.NS',
+      'ITC': 'ITC.NS',
+      'AXISBANK': 'AXISBANK.NS',
+      'AXIS BANK': 'AXISBANK.NS',
+      'KOTAKBANK': 'KOTAKBANK.NS',
+      'KOTAK BANK': 'KOTAKBANK.NS',
+      'LT': 'LT.NS',
+      'L&T': 'LT.NS',
+      'HCLTECH': 'HCLTECH.NS',
+      'HCL': 'HCLTECH.NS',
+      'TECHM': 'TECHM.NS',
+      'TECH MAHINDRA': 'TECHM.NS',
+      'MARUTI': 'MARUTI.NS',
+      'BAJFINANCE': 'BAJFINANCE.NS',
+      'BAJAJ FINANCE': 'BAJFINANCE.NS'
+    };
+    
+    return mappings[symbol.toUpperCase()] || null;
+  }
+
   async analyzeStock(query: string): Promise<string> {
     try {
       const stockInfo = await this.identifyStock(query);
       
-      // Prepare authentic market data for analysis if available
+      // Try to fetch real financial data from Yahoo Finance
       let marketDataText = "";
-      if (stockInfo.screenerData) {
-        const data = stockInfo.screenerData;
+      const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
+      
+      if (realFinancialData) {
         marketDataText = `
-AUTHENTIC MARKET DATA:
-- Current Price: ₹${data.currentPrice}
-- Market Cap: ₹${data.marketCap} cr
-- PE Ratio: ${data.pe}x
-- PB Ratio: ${data.pb}x
-- ROE: ${data.roe}%
-- Debt/Equity: ${data.debtToEquity}x
-- Sector: ${data.sector}
-- Industry: ${data.industry}
-- Day High: ₹${data.dayHigh}
-- Day Low: ₹${data.dayLow}
-- Volume: ${data.volume}`;
+AUTHENTIC FINANCIAL DATA (Yahoo Finance):
+- Current Price: ${stockInfo.currentPrice}
+- PE Ratio: ${realFinancialData.pe || 'N/A'}
+- Market Cap: ₹${realFinancialData.marketCap ? (realFinancialData.marketCap / 10000000).toFixed(0) + ' cr' : 'N/A'}
+- Profit Margin: ${realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A'}
+- Revenue Growth: ${realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A'}
+- ROE: ${realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A'}
+- Debt/Equity: ${realFinancialData.debtToEquity || 'N/A'}
+- 52-Week High: ₹${realFinancialData.fiftyTwoWeekHigh || 'N/A'}
+- 52-Week Low: ₹${realFinancialData.fiftyTwoWeekLow || 'N/A'}`;
       } else {
         marketDataText = `
 AVAILABLE MARKET DATA:
 - Current Trading Price: ${stockInfo.currentPrice}
 - Market Category: ${stockInfo.category} cap stock
-- Technical levels calculated from current price
 
-Note: Detailed financial statements, quarterly results, PE ratios, and other fundamental metrics are not currently available for this analysis.`;
+Note: Detailed financial statements, quarterly results, PE ratios, and other fundamental metrics are not currently available for this analysis. Analysis will focus on business overview and technical aspects based on current price data.`;
       }
       
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-3.5-turbo", // Using GPT-3.5-turbo for faster responses and better number handling
         messages: [
           { 
             role: "system", 
