@@ -54,13 +54,13 @@ Alert 4 - ORDER WIN:
 Title: "27-Jun-2025: [Stock Name]: Wins ₹[X] crore order, [Y]% of revenue"
 Content: "27-Jun-2025: [Company] secures major ₹[amount] crore order worth [X]% of annual revenue. Order from [client sector] validates business model. Stock up [Y]% on announcement. Revenue visibility improved for next [timeframe]. Strong BUY."
 
-Alert 5 - SMALL/MID CAP FOCUS:
-Title: "27-Jun-2025: [Small/Mid Cap Stock]: Research report highlights [X]% growth potential"
-Content: "27-Jun-2025: Latest research report on [Stock] projects [X]% revenue growth over next 2 years. Key drivers: [specific catalysts]. Current market cap ₹[amount] crore offers value. Target ₹[price] implies [Y]% upside. ACCUMULATE."
+Alert 5 - IPO/SME UPDATE:
+Title: "27-Jun-2025: [Company] IPO: Grey market premium at [X]%, listing on [date]"
+Content: "27-Jun-2025: [Company] IPO opens [start date] to [end date] at ₹[price] per share. Grey market premium at [X]% indicates strong demand. Business: [sector/industry]. Size: ₹[amount] crore. Lot size: [shares]. Expected listing: [date]. [BUY/AVOID] based on premium and fundamentals."
 
-Focus on actionable investment themes: breakouts, sector index breakouts (Bank Nifty, IT Index, Pharma Index, Auto Index, Metal Index), research upgrades, significant order wins
+Focus on actionable investment themes: breakouts, sector index breakouts (Bank Nifty, IT Index, Pharma Index, Auto Index, Metal Index), research upgrades, significant order wins, IPO/SME updates with grey market premiums
 
-Use specific sector indices with resistance/support levels. Avoid generic market commentary.
+Include IPO subscription dates, grey market premium analysis, business sector, and listing expectations. Use specific sector indices with resistance/support levels. Avoid generic market commentary.
 
 Return only valid JSON array with no extra text.`;
 
@@ -231,8 +231,8 @@ Return only valid JSON array with no extra text.`;
         priority: 'High'
       },
       {
-        title: `${dateStr}: Kotak upgrades Zomato to BUY, target ₹${tcsPrice + 50}`,
-        content: `${dateStr}: Kotak Institutional Equities upgrades Zomato from HOLD to BUY with target ₹${tcsPrice + 50}. Research highlights strong growth in food delivery and quick commerce. Stock trading at ₹${tcsPrice - 20}. Upside potential 15%. Recommended for large cap growth portfolio.`,
+        title: `${dateStr}: Bajaj Housing Finance IPO: Grey market premium at 8%, opens Sep 9`,
+        content: `${dateStr}: Bajaj Housing Finance IPO opens Sep 9 to Sep 11 at ₹66-70 per share. Grey market premium at 8% indicates moderate demand. Business: Housing finance company. Size: ₹6,560 crore. Lot size: 214 shares. Expected listing: Sep 16. APPLY based on strong financials and housing sector growth.`,
         sentiment: 'Positive',
         priority: 'Medium'
       }
@@ -245,21 +245,21 @@ Return only valid JSON array with no extra text.`;
     
     return [
       {
-        title: `${dateStr}: Tata Steel breakout above ₹140, targets ₹165`,
-        content: `Tata Steel breaks above key resistance of ₹140 with 2x volume surge. Breakout pattern confirmed on daily charts. Next targets ₹150 and ₹165. Stop loss ₹135. Strong BUY for breakout momentum. Metal sector showing technical strength.`,
+        title: `${dateStr}: NTPC Green Energy IPO: Grey market premium at 12%, opens Nov 19`,
+        content: `NTPC Green Energy IPO opens Nov 19 to Nov 22 at ₹102-108 per share. Grey market premium at 12% indicates strong demand. Business: Renewable energy generation. Size: ₹10,000 crore. Lot size: 138 shares. Expected listing: Nov 26. APPLY for green energy exposure and government backing.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: Motilal Oswal upgrades Dixon Tech to BUY, target ₹18,500`,
-        content: `Motilal Oswal upgrades Dixon Technologies from HOLD to BUY with target ₹18,500. Research highlights strong market share expansion in electronics manufacturing. Stock trading at ₹15,200. Upside potential 22%. Recommended for mid cap portfolio growth.`,
+        title: `${dateStr}: SME IPO: Bansal Wire Industries premium at 25%, opens today`,
+        content: `Bansal Wire Industries SME IPO opens today to Dec 2 at ₹243-256 per share. Grey market premium at 25% shows high retail interest. Business: Steel wire manufacturing. Size: ₹745 crore. Lot size: 58 shares. SME platform listing expected Dec 5. APPLY for premium valuation.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: L&T wins ₹8,500 crore order, 12% of revenue`,
-        content: `L&T secures major ₹8,500 crore infrastructure order worth 12% of annual revenue. Order from metro rail project validates engineering capabilities. Stock up 2.8% on announcement. Revenue visibility improved for next 18 months. Strong BUY on order momentum.`,
-        sentiment: 'Positive',
+        title: `${dateStr}: Swiggy IPO subscription update: Grey market flat at 2%`,
+        content: `Swiggy IPO subscription closes today with 3.5x oversubscription. Grey market premium at 2% indicates muted listing expectations. Business: Food delivery and quick commerce. Final price: ₹390 per share. Listing Nov 13. NEUTRAL view on weak premium despite strong subscription.`,
+        sentiment: 'Neutral',
         priority: 'Medium'
       }
     ];
