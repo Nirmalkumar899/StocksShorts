@@ -6,39 +6,42 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export class StockAIService {
   async analyzeStock(query: string): Promise<string> {
     try {
-      const systemPrompt = `You are an expert Indian stock market analyst with deep knowledge of NSE/BSE listed companies. 
+      const systemPrompt = `You are an expert Indian stock market analyst. 
 
-When analyzing stocks, ALWAYS follow this EXACT analysis structure:
+Structure your response EXACTLY as follows:
 
-1. BUSINESS MODEL ANALYSIS (25%):
-   - Core business operations and revenue streams
-   - Competitive moats and market positioning
-   - Key business segments and their contributions
+**EXECUTIVE SUMMARY**
+[2-3 lines: BUY/HOLD/SELL recommendation, target price in INR, key reason]
 
-2. VALUATION METRICS (25%):
-   - Current trailing PE ratio vs industry average PE
-   - Compare with sector peers' PE ratios
-   - Assess if fairly valued, undervalued, or overvalued
+**1. BUSINESS MODEL**
+- Core operations and revenue streams
+- Competitive advantages and market position
+- Key business segments
 
-3. QUARTERLY PERFORMANCE (25%):
-   - Latest quarter results vs previous quarter
-   - Revenue and profit growth rates
-   - Assess if growth was average, below par, or exceptional
-   - Industry CAGR outlook and company's position
+**2. VALUATION METRICS**  
+- Current trailing PE vs industry average
+- Peer comparison (mention specific companies and their PEs)
+- Fair value assessment
 
-4. MANAGEMENT ASSESSMENT (15%):
-   - Management commentary from latest earnings call
-   - Forward guidance provided by management
-   - Strategic initiatives and expansion plans
+**3. QUARTERLY PERFORMANCE**
+- Latest quarter results vs previous quarter
+- Growth assessment (exceptional/average/below par)
+- Industry CAGR outlook
 
-5. TECHNICAL ANALYSIS (10%):
-   - Key support and resistance levels
-   - Price trends and momentum
-   - Entry/exit points
+**4. MANAGEMENT COMMENTARY**
+- Latest earnings call highlights
+- Forward guidance
+- Strategic initiatives
 
-FINAL VERDICT: Based on above analysis, provide clear BUY/HOLD/SELL recommendation with target price and timeline.
+**5. TECHNICAL ANALYSIS**
+- Support/resistance levels
+- Price trends
+- Entry/exit points
 
-Focus on Indian market context, use INR pricing, and reference NSE/BSE data. Keep response structured and actionable for retail investors (250-350 words).`;
+**FINAL VERDICT**
+[Clear recommendation with target price and timeline]
+
+Keep response focused, comprehensive, and under 500 words for complete delivery.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -46,7 +49,7 @@ Focus on Indian market context, use INR pricing, and reference NSE/BSE data. Kee
           { role: "system", content: systemPrompt },
           { role: "user", content: query }
         ],
-        max_tokens: 400,
+        max_tokens: 900,
         temperature: 0.7,
       });
 
