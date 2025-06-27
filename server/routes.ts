@@ -2,13 +2,28 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { mobileAuth } from "./mobileAuth";
+import session from "express-session";
+import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const googleSheetsService = new GoogleSheetsService();
 
-  // Initialize authentication middleware
-  await setupAuth(app);
+  // Initialize session middleware for mobile auth
+  const MemStore = MemoryStore(session);
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+    store: new MemStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+    }
+  }));
 
   // Get all articles or filter by category
   app.get("/api/articles", async (req, res) => {
@@ -110,17 +125,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth routes - User authentication
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Mobile Authentication Routes
+  app.post('/api/auth/send-otp', mobileAuth.sendOTP);
+  app.post('/api/auth/verify-otp', mobileAuth.verifyOTP);
+  app.get('/api/auth/user', mobileAuth.isAuthenticated, mobileAuth.getCurrentUser);
+  app.post('/api/auth/logout', mobileAuth.logout);
+  app.put('/api/auth/profile', mobileAuth.isAuthenticated, mobileAuth.updateProfile);
 
   const httpServer = createServer(app);
   return httpServer;

@@ -1,74 +1,92 @@
-import { users, type User, type InsertUser, type UpsertUser } from "@shared/schema";
+import { users, otpVerifications, type User, type InsertUser, type OtpVerification, type InsertOtp } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByPhone(phoneNumber: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  createOtp(otp: InsertOtp): Promise<OtpVerification>;
+  getValidOtp(phoneNumber: string, otp: string): Promise<OtpVerification | undefined>;
+  markOtpAsUsed(id: number): Promise<void>;
+  verifyUser(phoneNumber: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+  private users: Map<number, User>;
+  private otps: Map<number, OtpVerification>;
+  private currentUserId: number;
+  private currentOtpId: number;
 
   constructor() {
     this.users = new Map();
+    this.otps = new Map();
+    this.currentUserId = 1;
+    this.currentOtpId = 1;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
+  async getUserByPhone(phoneNumber: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
-      (user) => user.email === username,
+      (user) => user.phoneNumber === phoneNumber,
     );
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const id = this.currentUserId++;
     const user: User = { 
-      id: insertUser.id,
-      email: insertUser.email || null,
+      id,
+      phoneNumber: insertUser.phoneNumber,
       firstName: insertUser.firstName || null,
       lastName: insertUser.lastName || null,
-      profileImageUrl: insertUser.profileImageUrl || null,
+      isVerified: insertUser.isVerified || "false",
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    this.users.set(user.id, user);
+    this.users.set(id, user);
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const existingUser = this.users.get(userData.id);
-    
-    if (existingUser) {
-      // Update existing user
-      const updatedUser: User = {
-        ...existingUser,
-        email: userData.email || existingUser.email,
-        firstName: userData.firstName || existingUser.firstName,
-        lastName: userData.lastName || existingUser.lastName,
-        profileImageUrl: userData.profileImageUrl || existingUser.profileImageUrl,
-        updatedAt: new Date(),
-      };
-      this.users.set(userData.id, updatedUser);
-      return updatedUser;
-    } else {
-      // Create new user
-      const newUser: User = {
-        id: userData.id,
-        email: userData.email || null,
-        firstName: userData.firstName || null,
-        lastName: userData.lastName || null,
-        profileImageUrl: userData.profileImageUrl || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      this.users.set(userData.id, newUser);
-      return newUser;
+  async createOtp(insertOtp: InsertOtp): Promise<OtpVerification> {
+    const id = this.currentOtpId++;
+    const otp: OtpVerification = {
+      id,
+      phoneNumber: insertOtp.phoneNumber,
+      otp: insertOtp.otp,
+      expiresAt: insertOtp.expiresAt,
+      isUsed: insertOtp.isUsed || "false",
+      createdAt: new Date()
+    };
+    this.otps.set(id, otp);
+    return otp;
+  }
+
+  async getValidOtp(phoneNumber: string, otpCode: string): Promise<OtpVerification | undefined> {
+    const now = new Date();
+    return Array.from(this.otps.values()).find(
+      (otp) => 
+        otp.phoneNumber === phoneNumber && 
+        otp.otp === otpCode && 
+        otp.isUsed === "false" && 
+        otp.expiresAt > now
+    );
+  }
+
+  async markOtpAsUsed(id: number): Promise<void> {
+    const otp = this.otps.get(id);
+    if (otp) {
+      this.otps.set(id, { ...otp, isUsed: "true" });
+    }
+  }
+
+  async verifyUser(phoneNumber: string): Promise<void> {
+    const user = await this.getUserByPhone(phoneNumber);
+    if (user) {
+      this.users.set(user.id, { ...user, isVerified: "true", updatedAt: new Date() });
     }
   }
 }

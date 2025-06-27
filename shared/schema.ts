@@ -13,15 +13,25 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for authentication
+// User storage table for mobile authentication
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  id: serial("id").primaryKey(),
+  phoneNumber: varchar("phone_number").unique().notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  isVerified: varchar("is_verified").default("false"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// OTP verification table
+export const otpVerifications = pgTable("otp_verifications", {
+  id: serial("id").primaryKey(),
+  phoneNumber: varchar("phone_number").notNull(),
+  otp: varchar("otp").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  isUsed: varchar("is_used").default("false"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const articles = pgTable("articles", {
@@ -37,7 +47,16 @@ export const articles = pgTable("articles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users);
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertOtpSchema = createInsertSchema(otpVerifications).omit({
+  id: true,
+  createdAt: true,
+});
 
 export const insertArticleSchema = createInsertSchema(articles).omit({
   id: true,
@@ -46,7 +65,8 @@ export const insertArticleSchema = createInsertSchema(articles).omit({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type UpsertUser = typeof users.$inferInsert;
+export type InsertOtp = z.infer<typeof insertOtpSchema>;
+export type OtpVerification = typeof otpVerifications.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
