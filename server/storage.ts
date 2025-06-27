@@ -48,10 +48,10 @@ export class MemStorage implements IStorage {
       // Update existing user
       const updatedUser: User = {
         ...existingUser,
-        email: userData.email ?? existingUser.email,
-        firstName: userData.firstName ?? existingUser.firstName,
-        lastName: userData.lastName ?? existingUser.lastName,
-        profileImageUrl: userData.profileImageUrl ?? existingUser.profileImageUrl,
+        email: userData.email || existingUser.email,
+        firstName: userData.firstName || existingUser.firstName,
+        lastName: userData.lastName || existingUser.lastName,
+        profileImageUrl: userData.profileImageUrl || existingUser.profileImageUrl,
         updatedAt: new Date(),
       };
       this.users.set(userData.id, updatedUser);
@@ -60,10 +60,10 @@ export class MemStorage implements IStorage {
       // Create new user
       const newUser: User = {
         id: userData.id,
-        email: userData.email ?? null,
-        firstName: userData.firstName ?? null,
-        lastName: userData.lastName ?? null,
-        profileImageUrl: userData.profileImageUrl ?? null,
+        email: userData.email || null,
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        profileImageUrl: userData.profileImageUrl || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
