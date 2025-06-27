@@ -105,6 +105,27 @@
   animation: scroll 60s linear infinite;
 }
 
+/* News ticker styles for SEBI RIA directory */
+.ticker-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.ticker-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 120s linear infinite;
+}
+
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

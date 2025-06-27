@@ -124,29 +124,54 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         </div>
       )}
 
-      {/* News Bulletin Style Advisor Directory */}
-      <Card className="mb-6 bg-gradient-to-r from-gray-900 to-gray-800 text-white border-0">
-        <CardContent className="p-4">
-          <div className="flex items-center mb-3">
-            <ScrollText className="h-5 w-5 mr-2 text-blue-400" />
-            <h2 className="font-bold text-lg">SEBI Registered Investment Advisors</h2>
-            <Badge className="ml-auto bg-red-600 text-white animate-pulse">LIVE</Badge>
+      {/* News Ticker Style Advisor Directory */}
+      <Card className="mb-6 bg-gradient-to-r from-red-800 to-red-900 text-white border-0 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="bg-red-600 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center">
+              <ScrollText className="h-4 w-4 mr-2" />
+              <span className="font-bold text-sm">SEBI RIA DIRECTORY</span>
+            </div>
+            <Badge className="bg-white text-red-600 text-xs font-bold px-2 py-1 animate-pulse">
+              LIVE
+            </Badge>
           </div>
-          <div className="bg-black/30 p-3 rounded-lg">
-            <div className="overflow-hidden">
-              <div className="animate-scroll whitespace-nowrap text-yellow-400">
-                {advisors.map((advisor, index) => (
-                  <span key={advisor.id} className="inline-block mr-8">
-                    <strong>{advisor.name}</strong> ({advisor.company}) - {advisor.specialization} | {advisor.location}
-                    {index < advisors.length - 1 && <span className="text-white mx-4">•</span>}
-                  </span>
-                ))}
+          <div className="bg-black text-yellow-400 py-2 overflow-hidden relative">
+            <div className="ticker-wrapper">
+              <div className="ticker-content">
+                {[...advisors]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((advisor, index) => (
+                    <span key={`${advisor.id}-${index}`} className="inline-block mr-12 text-sm">
+                      <span className="text-white font-bold">{advisor.name}</span>
+                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-yellow-400">{advisor.company}</span>
+                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-blue-300">{advisor.specialization}</span>
+                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-green-300">{advisor.location}</span>
+                    </span>
+                  ))}
+                {/* Duplicate for seamless loop */}
+                {[...advisors]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((advisor, index) => (
+                    <span key={`dup-${advisor.id}-${index}`} className="inline-block mr-12 text-sm">
+                      <span className="text-white font-bold">{advisor.name}</span>
+                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-yellow-400">{advisor.company}</span>
+                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-blue-300">{advisor.specialization}</span>
+                      <span className="text-gray-300 mx-2">|</span>
+                      <span className="text-green-300">{advisor.location}</span>
+                    </span>
+                  ))}
               </div>
             </div>
           </div>
-          <p className="text-gray-300 text-xs mt-2">
-            {advisors.length} SEBI registered advisors available • Updated live
-          </p>
+          <div className="bg-red-700 px-4 py-1 text-xs text-center">
+            {advisors.length} SEBI Registered Advisors • Alphabetically Sorted • Live Updates
+          </div>
         </CardContent>
       </Card>
 
