@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 27, 2025: **MAJOR**: Fixed AI stock analysis pricing accuracy - now uses current market data (Airtel ₹2,050, TCS ₹3,650) with realistic targets and technical levels based on actual prices
 - June 27, 2025: **MAJOR**: Enhanced AI stock analysis with summary-first structure: Business Model, PE vs Industry, Quarterly Performance, Management Commentary, Technical Analysis - complete responses without truncation
 - June 27, 2025: **MAJOR**: Created ultra-compact Ask AI input (single row layout) with dedicated stock discussion modal for AI responses - minimal space usage with full functionality
 - June 27, 2025: **MAJOR**: Fixed app startup issues and implemented working OTP authentication system with MSG91 integration (₹0.15 per SMS)

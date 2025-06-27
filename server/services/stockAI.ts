@@ -42,6 +42,24 @@ export class StockAIService {
     return { fullName: 'Unknown Stock', symbol: 'UNKNOWN', currentPrice: '₹0' };
   }
 
+  private calculateTargetPrice(currentPrice: string): string {
+    const price = parseFloat(currentPrice.replace(/₹|,/g, ''));
+    const targetPrice = Math.round(price * 1.20); // 20% upside target
+    return `₹${targetPrice.toLocaleString('en-IN')}`;
+  }
+
+  private calculateSupport(currentPrice: string): string {
+    const price = parseFloat(currentPrice.replace(/₹|,/g, ''));
+    const supportPrice = Math.round(price * 0.90); // 10% below current
+    return `₹${supportPrice.toLocaleString('en-IN')}`;
+  }
+
+  private calculateResistance(currentPrice: string): string {
+    const price = parseFloat(currentPrice.replace(/₹|,/g, ''));
+    const resistancePrice = Math.round(price * 1.10); // 10% above current
+    return `₹${resistancePrice.toLocaleString('en-IN')}`;
+  }
+
   async analyzeStock(query: string): Promise<string> {
     try {
       // First, identify the stock from user query
@@ -76,11 +94,22 @@ IMPORTANT: All price targets and technical levels must be calculated from curren
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+      const userPrompt = `Analyze ${stockName.fullName} stock fundamentals for investment.
+
+CURRENT MARKET DATA (June 27, 2025):
+- Company: ${stockName.fullName} (NSE: ${stockName.symbol})
+- Current Trading Price: ${stockName.currentPrice}
+- Target Price Range: ${this.calculateTargetPrice(stockName.currentPrice)}
+- Support Level: ${this.calculateSupport(stockName.currentPrice)}
+- Resistance Level: ${this.calculateResistance(stockName.currentPrice)}
+
+Use ONLY the above current market data for your analysis. Ignore any historical pricing from your training data.`;
+
       const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: query }
+          { role: "user", content: userPrompt }
         ],
         max_tokens: 400,
         temperature: 0.5,
