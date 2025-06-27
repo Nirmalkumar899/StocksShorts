@@ -3,7 +3,7 @@
 
 interface FinancialData {
   symbol: string;
-  currentPrice: number;
+  currentPrice?: number;
   marketCap?: number;
   pe?: number;
   pb?: number;
@@ -55,22 +55,31 @@ export class FinancialDataProvider {
     }
 
     try {
-      // 1. Try Yahoo Finance first (most reliable for Indian stocks)
-      let data = await this.fetchFromYahooFinance(symbol);
+      // 1. Try GPT-powered financial data extraction (most comprehensive)
+      console.log(`Starting financial data extraction for ${symbol}`);
+      let data = await this.fetchFromGPTSearch(symbol);
+      if (data) {
+        console.log(`GPT extraction successful for ${symbol}`);
+        this.cache.set(symbol, { data, timestamp: Date.now() });
+        return data;
+      }
+
+      // 2. Try Yahoo Finance
+      data = await this.fetchFromYahooFinance(symbol);
       if (data) {
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
       }
 
-      // 2. Try Financial Modeling Prep
-      data = await this.fetchFromFMP(symbol);
-      if (data) {
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
-      }
-
-      // 3. Try Alpha Vantage (premium source)
+      // 3. Try Alpha Vantage (for supported stocks)
       data = await this.fetchFromAlphaVantage(symbol);
+      if (data) {
+        this.cache.set(symbol, { data, timestamp: Date.now() });
+        return data;
+      }
+
+      // 4. Try Financial Modeling Prep
+      data = await this.fetchFromFMP(symbol);
       if (data) {
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
@@ -112,17 +121,17 @@ export class FinancialDataProvider {
           
           return {
             symbol,
-            currentPrice: parseFloat(data.Price || '0') || null,
-            marketCap: parseFloat(data.MarketCapitalization || '0') || null,
-            pe: parseFloat(data.PERatio || '0') || null,
-            eps: parseFloat(data.EPS || '0') || null,
-            roe: parseFloat(data.ReturnOnEquityTTM || '0') || null,
-            debtToEquity: parseFloat(data.DebtToEquityRatio || '0') || null,
-            profitMargin: parseFloat(data.ProfitMargin || '0') || null,
-            bookValue: parseFloat(data.BookValue || '0') || null,
-            pb: parseFloat(data.PriceToBookRatio || '0') || null,
-            sector: data.Sector || null,
-            industry: data.Industry || null,
+            currentPrice: parseFloat(data.Price || '0') || undefined,
+            marketCap: parseFloat(data.MarketCapitalization || '0') || undefined,
+            pe: parseFloat(data.PERatio || '0') || undefined,
+            eps: parseFloat(data.EPS || '0') || undefined,
+            roe: parseFloat(data.ReturnOnEquityTTM || '0') || undefined,
+            debtToEquity: parseFloat(data.DebtToEquityRatio || '0') || undefined,
+            profitMargin: parseFloat(data.ProfitMargin || '0') || undefined,
+            bookValue: parseFloat(data.BookValue || '0') || undefined,
+            pb: parseFloat(data.PriceToBookRatio || '0') || undefined,
+            sector: data.Sector || undefined,
+            industry: data.Industry || undefined,
             source: 'Alpha Vantage',
             lastUpdated: new Date()
           };
@@ -210,6 +219,75 @@ export class FinancialDataProvider {
   }
 
 
+
+  private async fetchFromGPTSearch(symbol: string): Promise<FinancialData | null> {
+    if (!process.env.OPENAI_API_KEY) return null;
+
+    try {
+      console.log(`Using GPT-3.5-turbo to extract financial data for ${symbol}`);
+      
+      const openai = new (await import('openai')).default({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+
+      const prompt = `Extract current financial data for ${symbol} (Indian NSE/BSE stock). Provide exact numerical data in JSON format:
+      {
+        "currentPrice": number (in rupees),
+        "pe": number (PE ratio),
+        "marketCap": number (in crores),
+        "roe": number (as decimal, e.g., 0.15 for 15%),
+        "debtToEquity": number,
+        "profitMargin": number (as decimal),
+        "eps": number,
+        "bookValue": number,
+        "pb": number (price to book ratio),
+        "sector": "string",
+        "industry": "string"
+      }
+      Search for authentic data from financial websites. If specific data unavailable, set to null. Focus on current accurate numbers.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        max_tokens: 500
+      });
+
+      if (response.choices[0].message.content) {
+        const data = JSON.parse(response.choices[0].message.content);
+        
+        // Validate that we have meaningful data
+        const hasValidData = data.currentPrice > 0 || data.pe > 0 || data.marketCap > 0;
+        
+        if (hasValidData) {
+          console.log(`GPT extracted financial data for ${symbol}: ${Object.keys(data).length} metrics`);
+          
+          return {
+            symbol,
+            currentPrice: data.currentPrice || undefined,
+            pe: data.pe || undefined,
+            marketCap: data.marketCap || undefined,
+            roe: data.roe || undefined,
+            debtToEquity: data.debtToEquity || undefined,
+            profitMargin: data.profitMargin || undefined,
+            eps: data.eps || undefined,
+            bookValue: data.bookValue || undefined,
+            pb: data.pb || undefined,
+            sector: data.sector || undefined,
+            industry: data.industry || undefined,
+            source: 'GPT-3.5-turbo Financial Search',
+            lastUpdated: new Date()
+          };
+        }
+      }
+
+      console.log(`GPT: No meaningful financial data found for ${symbol}`);
+      return null;
+    } catch (error) {
+      console.log(`GPT search error for ${symbol}:`, error);
+      return null;
+    }
+  }
 
   private async fetchFromFMP(symbol: string): Promise<FinancialData | null> {
     if (!process.env.FMP_API_KEY) return null;
