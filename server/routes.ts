@@ -2,9 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const googleSheetsService = new GoogleSheetsService();
+
+  // Initialize authentication middleware
+  await setupAuth(app);
 
   // Get all articles or filter by category
   app.get("/api/articles", async (req, res) => {
@@ -103,6 +107,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
       });
+    }
+  });
+
+  // Auth routes - User authentication
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
