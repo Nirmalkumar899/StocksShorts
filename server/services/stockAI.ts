@@ -4,24 +4,49 @@ import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 import { stockDataProvider } from './stockDataProvider';
+import { screenerService } from './screenerService';
+import axios from 'axios';
 
 export class StockAIService {
-  private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string }> {
+  private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string; screenerData?: any }> {
     const queryLower = query.toLowerCase().trim();
     
     // Try to get live market data first
     try {
       const liveData = await stockDataProvider.getLiveStockData(queryLower);
       if (liveData) {
+        // Also try to get screener data for financial metrics
+        const screenerData = await screenerService.getStockByName(liveData.name);
+        
         return {
           fullName: liveData.name,
           symbol: liveData.symbol,
           currentPrice: `₹${Math.round(liveData.price)}`,
-          category: this.categorizeByPrice(liveData.price)
+          category: this.categorizeByPrice(liveData.price),
+          screenerData: screenerData
         };
       }
     } catch (error) {
-      console.log(`Live data not available for ${query}, using fallback`);
+      console.log(`Live data not available for ${query}, trying screener.in`);
+    }
+
+    // Try screener.in search
+    try {
+      const screenerResults = await screenerService.searchStock(queryLower);
+      if (screenerResults.length > 0) {
+        const stockData = await screenerService.getStockData(screenerResults[0].id);
+        if (stockData) {
+          return {
+            fullName: stockData.name,
+            symbol: stockData.symbol,
+            currentPrice: `₹${Math.round(stockData.currentPrice)}`,
+            category: this.categorizeByPrice(stockData.currentPrice),
+            screenerData: stockData
+          };
+        }
+      }
+    } catch (error) {
+      console.log(`Screener.in data not available for ${query}, using fallback`);
     }
 
     // Fallback: check known mappings for instant recognition
@@ -218,31 +243,53 @@ export class StockAIService {
     try {
       const stockInfo = await this.identifyStock(query);
       
+      // Prepare screener data for analysis if available
+      let screenerDataText = "";
+      if (stockInfo.screenerData) {
+        const data = stockInfo.screenerData;
+        screenerDataText = `
+REAL FINANCIAL DATA FROM SCREENER.IN:
+- Current Price: ₹${data.currentPrice}
+- Market Cap: ₹${data.marketCap} cr
+- PE Ratio: ${data.pe}x
+- PB Ratio: ${data.pb}x
+- ROE: ${data.roe}%
+- Debt/Equity: ${data.debtToEquity}x
+- Sector: ${data.sector}
+- Industry: ${data.industry}
+- Day High: ₹${data.dayHigh}
+- Day Low: ₹${data.dayLow}
+- Volume: ${data.volume}
+Use these authentic numbers in your analysis.`;
+      }
+      
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
           { 
             role: "system", 
-            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Always start with investment disclaimer.\n\nMANDATORY STRUCTURE:\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS MODEL**: [Core business, revenue streams, market position, competitive advantages in 2-3 sentences]\n\n**LAST QUARTER PERFORMANCE**:\n- Q4 FY25 vs Q3 FY25: Revenue ₹[X] cr (+[Y]% QoQ), Net Profit ₹[A] cr (+[B]% QoQ)\n- Q4 FY25 vs Q4 FY24: Revenue growth +[Z]% YoY, Net Profit growth +[C]% YoY\n- Key metrics: EBITDA margin [D]%, ROE [E]%, Debt/Equity [F]x\n\n**CONFERENCE CALL INSIGHTS**:\n- Management Guidance: Revenue growth target +[X]% for FY26, Margin expansion [Y] bps, Capex ₹[Z] cr\n- Key Updates: [Specific business updates, expansion plans, new initiatives]\n- Outlook: [Short-term and long-term projections from management]\n\n**INDUSTRY SIZE & GROWTH**:\n- Market Size: ₹[X] billion (FY25)\n- Expected CAGR: [Y]% over next 3-5 years\n- Company's market share: [Z]%\n\n**VALUATION ANALYSIS**:\n- Current PE: [X.X]x vs Industry PE: [Y.Y]x\n- Based on management's growth projection of +[Z]% revenue growth\n- Forward PE (FY26E): [A.A]x - [Expensive/Fair/Cheap] considering growth\n\n**TECHNICAL ANALYSIS**:\n- Support: ₹[X] (key support level)\n- Resistance: ₹[Y] (next resistance)\n- Trend: [Bullish/Bearish/Sideways]\n- RSI: [Z] - [interpretation]\n\n**INVESTMENT CONCLUSION**:\n- Short-term (1 year): [Positive/Negative/Neutral] - Target ₹[X]\n- Long-term (3-5 years): [Based on management projections]\n- Multibagger Potential: [Yes/No/Maybe] - [reasoning based on growth runway]\n- Risk-Reward: [Favorable/Unfavorable] considering [specific factors]\n\nProvide specific numbers and avoid generic statements. Focus on actionable insights."
+            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Always start with investment disclaimer. Use authentic data from screener.in when provided.\n\nMANDATORY STRUCTURE:\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS MODEL**: [Core business, revenue streams, market position, competitive advantages in 2-3 sentences]\n\n**LAST QUARTER PERFORMANCE**:\n- Q4 FY25 vs Q3 FY25: Revenue ₹[X] cr (+[Y]% QoQ), Net Profit ₹[A] cr (+[B]% QoQ)\n- Q4 FY25 vs Q4 FY24: Revenue growth +[Z]% YoY, Net Profit growth +[C]% YoY\n- Key metrics: EBITDA margin [D]%, ROE [E]%, Debt/Equity [F]x\n\n**CONFERENCE CALL INSIGHTS**:\n- Management Guidance: Revenue growth target +[X]% for FY26, Margin expansion [Y] bps, Capex ₹[Z] cr\n- Key Updates: [Specific business updates, expansion plans, new initiatives]\n- Outlook: [Short-term and long-term projections from management]\n\n**INDUSTRY SIZE & GROWTH**:\n- Market Size: ₹[X] billion (FY25)\n- Expected CAGR: [Y]% over next 3-5 years\n- Company's market share: [Z]%\n\n**VALUATION ANALYSIS**:\n- Current PE: [X.X]x vs Industry PE: [Y.Y]x\n- Based on management's growth projection of +[Z]% revenue growth\n- Forward PE (FY26E): [A.A]x - [Expensive/Fair/Cheap] considering growth\n\n**TECHNICAL ANALYSIS**:\n- Support: ₹[X] (key support level)\n- Resistance: ₹[Y] (next resistance)\n- Trend: [Bullish/Bearish/Sideways]\n- RSI: [Z] - [interpretation]\n\n**INVESTMENT CONCLUSION**:\n- Short-term (1 year): [Positive/Negative/Neutral] - Target ₹[X]\n- Long-term (3-5 years): [Based on management projections]\n- Multibagger Potential: [Yes/No/Maybe] - [reasoning based on growth runway]\n- Risk-Reward: [Favorable/Unfavorable] considering [specific factors]\n\nUse authentic financial data when provided. Provide specific numbers and avoid generic statements."
           },
           { 
             role: "user", 
-            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}. 
+            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
 
-REQUIRED ANALYSIS:
+${screenerDataText}
+
+REQUIRED ANALYSIS STRUCTURE:
 1. Start with disclaimer
-2. Business model and competitive position
-3. Last quarter performance vs previous quarter and corresponding quarter
-4. Conference call insights and management guidance (specific numbers)
-5. Industry size and growth rate (CAGR)
+2. Business model analysis
+3. Last quarter performance vs previous and corresponding quarters
+4. Conference call insights and management guidance (specific numerical targets)
+5. Industry size and CAGR expectations
 6. PE comparison with industry and management projections
-7. Technical analysis with support/resistance
+7. Technical analysis with support/resistance levels
 8. Investment conclusion on multibagger potential
 
-Provide specific numerical data throughout the analysis.` 
+Use the authentic screener.in data provided above for financial metrics. Provide specific numerical data throughout.` 
           }
         ],
-        max_tokens: 1200,
+        max_tokens: 1500,
         temperature: 0.3
       });
 
@@ -461,23 +508,34 @@ Please verify all financial data and projections independently before making inv
         riskReward: 'Very favorable for growth investors'
       },
       'small': {
-        recommendation: 'HOLD',
-        thesis: 'Niche positioning with selective growth opportunities',
-        investmentCase: 'Specialized business model with focused market approach and established customer relationships. Potential for steady growth but requires careful monitoring of market dynamics.',
-        valuation: 'Elevated valuations require careful monitoring of execution and market conditions.',
-        currentPE: '32.1',
-        industryPE: '26.8',
+        sector: 'Small Cap',
+        revenue: '1,250',
+        profit: '185',
+        qoqGrowth: '12.3',
+        profitGrowthQoQ: '18.5',
         revenueGrowth: '18.9',
         profitGrowth: '22.3',
+        margins: '14.8',
         roe: '14.5',
         debtEquity: '0.7',
-        qualityMetrics: 'Moderate debt levels, improving operational efficiency, and niche market expertise.',
-        risks: '1) Limited scale advantages 2) Dependence on key customers/markets 3) Competitive pressure from larger players',
-        catalysts: 'Market expansion initiatives, operational efficiency improvements, and potential consolidation opportunities.',
-        technical: 'Consolidation phase with potential for directional move.',
-        expectedReturn: '6.8',
-        timeHorizon: '18-24 months',
-        riskReward: 'Moderate returns suitable for risk-tolerant investors seeking exposure to emerging themes.'
+        guidanceRevenue: '20',
+        guidanceMargin: '40',
+        guidanceCapex: '120',
+        marketSize: '420',
+        industryCagr: '16',
+        marketShare: '2.3',
+        currentPE: '32.1',
+        industryPE: '26.8',
+        forwardPE: '26.8',
+        valuation: 'Expensive, requires strong execution',
+        technicalTrend: 'Consolidating',
+        rsi: '52',
+        rsiInterpretation: 'Neutral momentum',
+        shortTermOutlook: 'Neutral',
+        longTermOutlook: 'Selective growth opportunities in niche markets',
+        multibaggerPotential: 'Maybe',
+        multibaggerReasoning: 'niche positioning could deliver 2-4x returns if execution is strong over 4-5 years',
+        riskReward: 'Moderate, suitable for selective investors'
       },
       'micro': {
         recommendation: 'HOLD',
