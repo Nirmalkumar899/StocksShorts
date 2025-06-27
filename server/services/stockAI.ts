@@ -243,12 +243,12 @@ export class StockAIService {
     try {
       const stockInfo = await this.identifyStock(query);
       
-      // Prepare screener data for analysis if available
-      let screenerDataText = "";
+      // Prepare authentic market data for analysis if available
+      let marketDataText = "";
       if (stockInfo.screenerData) {
         const data = stockInfo.screenerData;
-        screenerDataText = `
-REAL FINANCIAL DATA FROM SCREENER.IN:
+        marketDataText = `
+AUTHENTIC MARKET DATA:
 - Current Price: ₹${data.currentPrice}
 - Market Cap: ₹${data.marketCap} cr
 - PE Ratio: ${data.pe}x
@@ -259,8 +259,13 @@ REAL FINANCIAL DATA FROM SCREENER.IN:
 - Industry: ${data.industry}
 - Day High: ₹${data.dayHigh}
 - Day Low: ₹${data.dayLow}
-- Volume: ${data.volume}
-Use these authentic numbers in your analysis.`;
+- Volume: ${data.volume}`;
+      } else {
+        marketDataText = `
+LIVE MARKET DATA:
+- Current Trading Price: ${stockInfo.currentPrice}
+- Stock Category: ${stockInfo.category} cap
+Note: Detailed financials not available - analysis based on available market data only.`;
       }
       
       const response = await openai.chat.completions.create({
@@ -268,25 +273,24 @@ Use these authentic numbers in your analysis.`;
         messages: [
           { 
             role: "system", 
-            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Always start with investment disclaimer. Use authentic data from screener.in when provided.\n\nMANDATORY STRUCTURE:\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS MODEL**: [Core business, revenue streams, market position, competitive advantages in 2-3 sentences]\n\n**LAST QUARTER PERFORMANCE**:\n- Q4 FY25 vs Q3 FY25: Revenue ₹[X] cr (+[Y]% QoQ), Net Profit ₹[A] cr (+[B]% QoQ)\n- Q4 FY25 vs Q4 FY24: Revenue growth +[Z]% YoY, Net Profit growth +[C]% YoY\n- Key metrics: EBITDA margin [D]%, ROE [E]%, Debt/Equity [F]x\n\n**CONFERENCE CALL INSIGHTS**:\n- Management Guidance: Revenue growth target +[X]% for FY26, Margin expansion [Y] bps, Capex ₹[Z] cr\n- Key Updates: [Specific business updates, expansion plans, new initiatives]\n- Outlook: [Short-term and long-term projections from management]\n\n**INDUSTRY SIZE & GROWTH**:\n- Market Size: ₹[X] billion (FY25)\n- Expected CAGR: [Y]% over next 3-5 years\n- Company's market share: [Z]%\n\n**VALUATION ANALYSIS**:\n- Current PE: [X.X]x vs Industry PE: [Y.Y]x\n- Based on management's growth projection of +[Z]% revenue growth\n- Forward PE (FY26E): [A.A]x - [Expensive/Fair/Cheap] considering growth\n\n**TECHNICAL ANALYSIS**:\n- Support: ₹[X] (key support level)\n- Resistance: ₹[Y] (next resistance)\n- Trend: [Bullish/Bearish/Sideways]\n- RSI: [Z] - [interpretation]\n\n**INVESTMENT CONCLUSION**:\n- Short-term (1 year): [Positive/Negative/Neutral] - Target ₹[X]\n- Long-term (3-5 years): [Based on management projections]\n- Multibagger Potential: [Yes/No/Maybe] - [reasoning based on growth runway]\n- Risk-Reward: [Favorable/Unfavorable] considering [specific factors]\n\nUse authentic financial data when provided. Provide specific numbers and avoid generic statements."
+            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Write in paragraph format for better readability. Always start with investment disclaimer and use only authentic numbers when available.\n\nMANDATORY STRUCTURE:\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS OVERVIEW**: Write 2-3 sentences about the company's core business model, revenue streams, market position, and competitive advantages in paragraph format.\n\n**FINANCIAL PERFORMANCE**: Analyze recent quarterly results with specific numbers. Include revenue growth (QoQ and YoY), profit margins, ROE, debt levels only if authentic data is available. Write in paragraph format with actual figures.\n\n**VALUATION METRICS**: Discuss current PE ratio compared to industry averages, PB ratio, market cap, and valuation attractiveness. Use only real numbers from the data provided. Write as flowing paragraphs.\n\n**TECHNICAL OUTLOOK**: Analyze current price action, support/resistance levels, trend direction, and momentum indicators. Present in paragraph format with specific price levels.\n\n**INVESTMENT THESIS**: Provide overall investment recommendation with target price, time horizon, and multibagger potential assessment. Explain reasoning in paragraph format.\n\nIMPORTANT RULES:\n- Use ONLY authentic financial data when provided\n- If specific data is not available, skip that section entirely\n- Write in flowing paragraphs, not bullet points\n- Include specific numbers throughout the analysis\n- Focus on actionable insights with concrete data"
           },
           { 
             role: "user", 
-            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
+            content: `Provide investment analysis for ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
 
-${screenerDataText}
+${marketDataText}
 
-REQUIRED ANALYSIS STRUCTURE:
-1. Start with disclaimer
-2. Business model analysis
-3. Last quarter performance vs previous and corresponding quarters
-4. Conference call insights and management guidance (specific numerical targets)
-5. Industry size and CAGR expectations
-6. PE comparison with industry and management projections
-7. Technical analysis with support/resistance levels
-8. Investment conclusion on multibagger potential
+ANALYSIS REQUIREMENTS:
+- Write in flowing paragraph format for better readability
+- Use ONLY authentic market data provided above - do not add fictional numbers
+- Include specific financial metrics only if authentic data is available
+- Skip sections where real data is not available
+- Focus on business fundamentals, valuation metrics, and investment thesis based on available data
+- Provide target prices based on technical analysis and current market levels
+- Write concise, readable paragraphs with authentic numbers
 
-Use the authentic screener.in data provided above for financial metrics. Provide specific numerical data throughout.` 
+Start with investment disclaimer and create an engaging, paragraph-based analysis.` 
           }
         ],
         max_tokens: 1500,
@@ -307,48 +311,17 @@ Use the authentic screener.in data provided above for financial metrics. Provide
     const support = this.calculateSupport(stockInfo.currentPrice);
     const resistance = this.calculateResistance(stockInfo.currentPrice);
     
-    // Generate sector-specific analysis with specific numbers
-    const sectorAnalysis = this.getSectorAnalysisWithNumbers(stockInfo.category);
-    
     return `**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.
 
 **${stockInfo.fullName.toUpperCase()} - INVESTMENT ANALYSIS**
 
-**BUSINESS MODEL**: ${stockInfo.fullName} operates in the ${sectorAnalysis.sector} sector with established market positioning and competitive advantages through operational efficiency and strategic market presence.
+**BUSINESS OVERVIEW**: ${stockInfo.fullName} operates in the Indian equity markets with its current market price at ${stockInfo.currentPrice}. The company falls under the ${stockInfo.category} cap category based on current valuations. Without access to detailed financial data, a comprehensive fundamental analysis cannot be provided at this time.
 
-**LAST QUARTER PERFORMANCE**:
-- Q4 FY25 vs Q3 FY25: Revenue ₹${sectorAnalysis.revenue} cr (+${sectorAnalysis.qoqGrowth}% QoQ), Net Profit ₹${sectorAnalysis.profit} cr (+${sectorAnalysis.profitGrowthQoQ}% QoQ)
-- Q4 FY25 vs Q4 FY24: Revenue growth +${sectorAnalysis.revenueGrowth}% YoY, Net Profit growth +${sectorAnalysis.profitGrowth}% YoY
-- Key metrics: EBITDA margin ${sectorAnalysis.margins}%, ROE ${sectorAnalysis.roe}%, Debt/Equity ${sectorAnalysis.debtEquity}x
+**TECHNICAL OUTLOOK**: From a technical perspective, the stock is currently trading at ${stockInfo.currentPrice} with immediate support anticipated around ${support} and resistance levels near ${resistance}. These levels are calculated based on standard technical analysis parameters and current price action.
 
-**CONFERENCE CALL INSIGHTS**:
-- Management Guidance: Revenue growth target +${sectorAnalysis.guidanceRevenue}% for FY26, Margin expansion ${sectorAnalysis.guidanceMargin} bps, Capex ₹${sectorAnalysis.guidanceCapex} cr
-- Key Updates: Focus on operational efficiency, market expansion, and strategic investments in growth areas
-- Outlook: Positive medium-term growth trajectory with emphasis on sustainable business expansion
+**INVESTMENT THESIS**: Given the limited availability of authentic financial data including quarterly results, PE ratios, debt levels, and management guidance, a detailed investment recommendation cannot be responsibly provided. Investors should conduct thorough due diligence using verified financial statements and recent quarterly results before making any investment decisions.
 
-**INDUSTRY SIZE & GROWTH**:
-- Market Size: ₹${sectorAnalysis.marketSize} billion (FY25)
-- Expected CAGR: ${sectorAnalysis.industryCagr}% over next 3-5 years
-- Company's market share: ${sectorAnalysis.marketShare}%
-
-**VALUATION ANALYSIS**:
-- Current PE: ${sectorAnalysis.currentPE}x vs Industry PE: ${sectorAnalysis.industryPE}x
-- Based on management's growth projection of +${sectorAnalysis.guidanceRevenue}% revenue growth
-- Forward PE (FY26E): ${sectorAnalysis.forwardPE}x - ${sectorAnalysis.valuation} considering growth prospects
-
-**TECHNICAL ANALYSIS**:
-- Support: ${support} (key support level)
-- Resistance: ${resistance} (next resistance)
-- Trend: ${sectorAnalysis.technicalTrend}
-- RSI: ${sectorAnalysis.rsi} - ${sectorAnalysis.rsiInterpretation}
-
-**INVESTMENT CONCLUSION**:
-- Short-term (1 year): ${sectorAnalysis.shortTermOutlook} - Target ${target}
-- Long-term (3-5 years): ${sectorAnalysis.longTermOutlook} based on industry growth and company positioning
-- Multibagger Potential: ${sectorAnalysis.multibaggerPotential} - ${sectorAnalysis.multibaggerReasoning}
-- Risk-Reward: ${sectorAnalysis.riskReward} considering sector dynamics and company fundamentals
-
-Please verify all financial data and projections independently before making investment decisions.`;
+For a comprehensive analysis with specific numbers including revenue growth, profit margins, ROE, and multibagger potential assessment, please ensure access to authentic financial data from reliable sources such as company filings or verified financial databases.`;
   }
 
   private getSectorAnalysis(category: string) {
