@@ -49,7 +49,7 @@ export class StockDataProvider {
     try {
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
       const response = await axios.get(url, {
-        timeout: 3000,
+        timeout: 5000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
@@ -59,19 +59,26 @@ export class StockDataProvider {
       if (!result?.meta) return null;
 
       const meta = result.meta;
+      
+      // Ensure we have valid price data
+      if (!meta.regularMarketPrice || meta.regularMarketPrice <= 0) {
+        return null;
+      }
+
       return {
         symbol: meta.symbol.replace('.NS', ''),
-        name: meta.longName || meta.displayName || symbol,
-        price: meta.regularMarketPrice || 0,
-        change: meta.regularMarketChange || 0,
-        changePercent: meta.regularMarketChangePercent || 0,
-        high: meta.regularMarketDayHigh || 0,
-        low: meta.regularMarketDayLow || 0,
-        volume: meta.regularMarketVolume || 0,
+        name: meta.longName || meta.displayName || symbol.replace('.NS', ''),
+        price: parseFloat(meta.regularMarketPrice.toFixed(2)),
+        change: parseFloat((meta.regularMarketChange || 0).toFixed(2)),
+        changePercent: parseFloat((meta.regularMarketChangePercent || 0).toFixed(2)),
+        high: parseFloat((meta.regularMarketDayHigh || 0).toFixed(2)),
+        low: parseFloat((meta.regularMarketDayLow || 0).toFixed(2)),
+        volume: parseInt(meta.regularMarketVolume || 0),
         marketCap: meta.marketCap,
         lastUpdated: new Date()
       };
-    } catch (error) {
+    } catch (error: any) {
+      console.log(`Yahoo Finance error for ${symbol}:`, error?.message || 'Unknown error');
       return null;
     }
   }
@@ -79,26 +86,41 @@ export class StockDataProvider {
   private getYahooSymbol(query: string): string | null {
     const mappings: { [key: string]: string } = {
       'tcs': 'TCS.NS',
+      'tata consultancy': 'TCS.NS',
+      'tata consultancy services': 'TCS.NS',
       'infosys': 'INFY.NS',
       'reliance': 'RELIANCE.NS',
+      'reliance industries': 'RELIANCE.NS',
       'hdfc bank': 'HDFCBANK.NS',
       'hdfc': 'HDFCBANK.NS',
       'icici': 'ICICIBANK.NS',
       'icici bank': 'ICICIBANK.NS',
       'sbi': 'SBIN.NS',
+      'state bank': 'SBIN.NS',
+      'state bank of india': 'SBIN.NS',
       'bharti airtel': 'BHARTIARTL.NS',
       'airtel': 'BHARTIARTL.NS',
       'itc': 'ITC.NS',
       'asian paints': 'ASIANPAINT.NS',
       'bajaj finance': 'BAJFINANCE.NS',
       'maruti': 'MARUTI.NS',
+      'maruti suzuki': 'MARUTI.NS',
       'titan': 'TITAN.NS',
+      'titan company': 'TITAN.NS',
       'wipro': 'WIPRO.NS',
       'hul': 'HINDUNILVR.NS',
+      'hindustan unilever': 'HINDUNILVR.NS',
       'nestle': 'NESTLEIND.NS',
+      'nestle india': 'NESTLEIND.NS',
       'zomato': 'ZOMATO.NS',
       'paytm': 'PAYTM.NS',
-      'nykaa': 'NYKAA.NS'
+      'nykaa': 'NYKAA.NS',
+      'policybazaar': 'PB.NS',
+      'pb fintech': 'PB.NS',
+      'delhivery': 'DELHIVERY.NS',
+      'star health': 'STARHEALTH.NS',
+      'lic': 'LICI.NS',
+      'life insurance corporation': 'LICI.NS'
     };
 
     return mappings[query.toLowerCase()] || null;

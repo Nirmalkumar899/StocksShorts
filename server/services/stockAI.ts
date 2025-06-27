@@ -9,19 +9,19 @@ export class StockAIService {
   private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string }> {
     const queryLower = query.toLowerCase().trim();
     
-    // Try to get real-time data first
+    // Try to get live market data first
     try {
-      const realTimeData = await realTimeStockService.getStockData(queryLower);
-      if (realTimeData) {
+      const liveData = await stockDataProvider.getLiveStockData(queryLower);
+      if (liveData) {
         return {
-          fullName: realTimeData.companyName,
-          symbol: realTimeData.symbol.replace('.NS', ''),
-          currentPrice: `₹${realTimeData.currentPrice.toFixed(0)}`,
-          category: this.categorizeByPrice(realTimeData.currentPrice)
+          fullName: liveData.name,
+          symbol: liveData.symbol,
+          currentPrice: `₹${Math.round(liveData.price)}`,
+          category: this.categorizeByPrice(liveData.price)
         };
       }
     } catch (error) {
-      console.log(`Real-time data not available for ${query}, using fallback`);
+      console.log(`Live data not available for ${query}, using fallback`);
     }
 
     // Fallback: check known mappings for instant recognition
