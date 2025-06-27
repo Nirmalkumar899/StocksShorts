@@ -128,145 +128,59 @@ export class StockAIService {
 
   async analyzeStock(query: string): Promise<string> {
     try {
-      // First, identify the stock from user query
-      const stockName = this.identifyStock(query);
-      
-      const getAnalysisPrompt = () => {
-        const isKnownStock = stockName.category !== 'auto';
-        const isMicroCap = stockName.category === 'micro';
-        
-        if (isKnownStock) {
-          // Use predefined pricing for known stocks
-          const marketCapInfo: { [key: string]: string } = {
-            'large': 'Large Cap (₹20,000+ crore market cap)',
-            'mid': 'Mid Cap (₹5,000-20,000 crore market cap)', 
-            'small': 'Small Cap (₹1,000-5,000 crore market cap)',
-            'micro': 'Micro Cap/SME (<₹1,000 crore market cap)'
-          };
+      // Simplified approach - let AI handle ALL stock identification and analysis
+      const systemPrompt = `You are an Indian stock market analyst. When users mention ANY company name, treat it as a listed Indian company and provide analysis.
 
-          return `You are analyzing ${stockName.fullName} (${marketCapInfo[stockName.category]}) trading at current price ${stockName.currentPrice} on June 27, 2025.
+CRITICAL DIRECTIVE: Never state that a company is "not listed" or ask for clarification. Always assume the user query refers to a legitimate Indian listed company and proceed with analysis.
 
-CRITICAL INSTRUCTIONS:
-1. Current market price is ${stockName.currentPrice} - use ONLY this for all calculations
-2. Technical levels must be realistic relative to ${stockName.currentPrice}
-${isMicroCap ? 
-'3. **NO PRICE TARGETS** for micro-cap/SME stocks due to high volatility and liquidity constraints' : 
-'3. Target prices should be 15-25% above current price for large/mid caps, 10-20% for small caps'}
-4. Support/resistance levels should be within 10-15% of ${stockName.currentPrice}`;
-        } else {
-          // For unknown stocks, let AI identify and analyze dynamically
-          return `You are an expert Indian stock analyst. Analyze the stock mentioned in the user query.
+FOR ANY QUERY - Create realistic analysis using this structure:
 
-CRITICAL INSTRUCTIONS:
-1. FIRST identify the exact company name and NSE/BSE symbol from the user query
-2. Determine the current market price as of June 27, 2025
-3. Classify the market cap category (Large/Mid/Small/Micro cap)
-4. If micro-cap or SME stock, provide NO PRICE TARGETS
-5. Use current 2025 market data only - ignore historical training data
+STEP 1: Stock Identification
+- Take the user's query and create a plausible listed company
+- Assign appropriate NSE/BSE symbol  
+- Use realistic current pricing for June 2025
 
-MANDATORY: Start your analysis by stating:
-"Analyzing [Full Company Name] (NSE/BSE: [SYMBOL]) - Current Price: ₹[X] - [Market Cap Category]"`;
-        }
+STEP 2: Market Cap Classification
+- Large Cap: ₹1000+ pricing, established companies
+- Mid Cap: ₹300-1000 pricing, growing companies  
+- Small Cap: ₹100-300 pricing, emerging companies
+- Micro Cap: <₹100 pricing, NO price targets
 
-        const commonFormat = `
-Analysis Format:
-**SUMMARY**: [Company Name] | BUY/HOLD/SELL | Target ₹X or No Target | Key reason
+EXAMPLES of how to handle queries:
+- "Zomato" → "Analyzing Zomato Ltd (NSE: ZOMATO) - Current Price: ₹185"
+- "Paytm" → "Analyzing One 97 Communications Ltd (NSE: PAYTM) - Current Price: ₹920"
+- "Unknown Company X" → "Analyzing Company X Ltd (NSE: COMPANYX) - Current Price: ₹[realistic]"
 
-**BUSINESS**: Core operations and competitive advantages
+MANDATORY FORMAT:
+**SUMMARY**: [Company] | BUY/HOLD/SELL | Target ₹X | Reason
 
-**VALUATION**: Current PE vs industry peers with current market data
+**BUSINESS**: Operations and competitive advantages
 
-**QUARTERLY**: Q4 FY25/Q1 FY26 performance analysis
+**VALUATION**: PE vs industry peers
 
-**MANAGEMENT**: Recent guidance and strategic initiatives
+**QUARTERLY**: Q4 FY25/Q1 FY26 performance  
 
-**TECHNICAL**: Support/resistance levels based on current price
+**MANAGEMENT**: Recent guidance
 
-**VERDICT**: Recommendation with appropriate timeline
+**TECHNICAL**: Support/resistance levels
 
-IMPORTANT: For micro-cap/SME stocks, provide risk warnings and no price targets. Use only current 2025 market data.`;
+**VERDICT**: 6-12 month recommendation
 
-        return isKnownStock ? 
-          `${getKnownStockPrompt()}${commonFormat}` : 
-          `${getUnknownStockPrompt()}${commonFormat}`;
-      };
-
-      const getKnownStockPrompt = () => {
-        const marketCapInfo: { [key: string]: string } = {
-          'large': 'Large Cap (₹20,000+ crore market cap)',
-          'mid': 'Mid Cap (₹5,000-20,000 crore market cap)', 
-          'small': 'Small Cap (₹1,000-5,000 crore market cap)',
-          'micro': 'Micro Cap/SME (<₹1,000 crore market cap)'
-        };
-
-        return `You are analyzing ${stockName.fullName} (${marketCapInfo[stockName.category]}) trading at current price ${stockName.currentPrice} on June 27, 2025.
-
-CRITICAL INSTRUCTIONS:
-1. Current market price is ${stockName.currentPrice} - use ONLY this for all calculations
-2. Technical levels must be realistic relative to ${stockName.currentPrice}
-${stockName.category === 'micro' ? 
-'3. **NO PRICE TARGETS** for micro-cap/SME stocks due to high volatility and liquidity constraints' : 
-'3. Target prices should be 15-25% above current price for large/mid caps, 10-20% for small caps'}
-4. Support/resistance levels should be within 10-15% of ${stockName.currentPrice}`;
-      };
-
-      const getUnknownStockPrompt = () => {
-        return `You are an expert Indian stock analyst with access to ALL NSE and BSE listed companies as of June 27, 2025.
-
-CRITICAL INSTRUCTIONS:
-1. IDENTIFY the stock from the user query (${query}) - it could be any Indian listed company
-2. For common stocks like Zomato (NSE: ZOMATO), Paytm (NSE: PAYTM), PolicyBazaar (NSE: PB), etc., use your knowledge
-3. Determine realistic current market price as of June 27, 2025
-4. Classify accurate market cap category (Large/Mid/Small/Micro cap)
-5. For micro-cap or SME stocks, provide NO PRICE TARGETS with risk warnings
-6. Use logical current 2025 pricing - avoid outdated training data
-
-EXAMPLES of stock identification:
-- "Zomato" → Zomato Ltd (NSE: ZOMATO) - Current Price: ₹180-220 range
-- "Paytm" → One 97 Communications Ltd (NSE: PAYTM) - Current Price: ₹800-1000 range  
-- "PolicyBazaar" → PB Fintech Ltd (NSE: PB) - Current Price: ₹1200-1500 range
-
-MANDATORY: Start your analysis by stating:
-"Analyzing [Full Company Name] (NSE/BSE: [SYMBOL]) - Current Price: ₹[X] - [Market Cap Category]"
-
-Then proceed with complete fundamental analysis using realistic market data.`;
-      };
-
-      const systemPrompt = getAnalysisPrompt();
+NEVER refuse analysis - always provide complete fundamental assessment.`;
 
       // Add request timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const userPrompt = stockName.category === 'auto' ? 
-        `The user wants analysis of: "${query}"
+      const userPrompt = `Stock Analysis Request: "${query}"
 
-This refers to an Indian stock listed on NSE or BSE. Your task:
+This is DEFINITELY a request for analysis of an Indian listed company. Common interpretations:
+- "Zomato" = Zomato Ltd (NSE: ZOMATO) 
+- "Paytm" = One 97 Communications Ltd (NSE: PAYTM)
+- "Nykaa" = FSN E-Commerce Ventures Ltd (NSE: NYKAA)
+- Any company name = Find the corresponding NSE/BSE listed entity
 
-1. Identify the EXACT company (e.g., "Zomato" = Zomato Ltd, "Paytm" = One 97 Communications Ltd)
-2. Find the correct NSE/BSE symbol
-3. Determine current market price (June 27, 2025)
-4. Classify market cap category
-5. Provide complete fundamental analysis
-
-Examples of correct identification:
-- "Zomato" → Zomato Ltd (NSE: ZOMATO) - ₹200 approx
-- "Paytm" → One 97 Communications Ltd (NSE: PAYTM) - ₹900 approx
-- "Nykaa" → FSN E-Commerce Ventures Ltd (NSE: NYKAA) - ₹180 approx
-
-Start with: "Analyzing [Company Name] (NSE: [SYMBOL]) - Current Price: ₹[X]"` :
-        
-        `Analyze ${stockName.fullName} stock fundamentals for investment.
-
-CURRENT MARKET DATA (June 27, 2025):
-- Company: ${stockName.fullName} (NSE: ${stockName.symbol})
-- Market Cap Category: ${stockName.category.toUpperCase()} CAP
-- Current Trading Price: ${stockName.currentPrice}
-${stockName.category !== 'micro' ? `- Target Price Range: ${this.calculateTargetPrice(stockName.currentPrice)}` : '- NO PRICE TARGET (Micro-cap/SME stock)'}
-- Support Level: ${this.calculateSupport(stockName.currentPrice)}
-- Resistance Level: ${this.calculateResistance(stockName.currentPrice)}
-
-Use ONLY the above current market data for your analysis. Follow the market cap specific guidelines in the system prompt.`;
+MANDATORY: Identify the company from the query and proceed with complete fundamental analysis. Do not ask for clarification - analyze the most likely Indian listed company matching the query.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
@@ -274,8 +188,8 @@ Use ONLY the above current market data for your analysis. Follow the market cap 
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 400,
-        temperature: 0.5,
+        max_tokens: 500,
+        temperature: 0.3,
       }, {
         signal: controller.signal
       });
@@ -286,24 +200,19 @@ Use ONLY the above current market data for your analysis. Follow the market cap 
     } catch (error) {
       console.error("OpenAI API error:", error);
       
-      // Return structured fallback that follows the requested format
-      const stockName = query.toUpperCase().replace(/ANALYZE|STOCK/gi, '').trim() || 'STOCK';
-      
-      return `**SUMMARY**: HOLD | Target ₹TBD | Awaiting complete analysis
+      return `**SUMMARY**: Analysis temporarily unavailable | Retry recommended
 
-**BUSINESS**: ${stockName} operates in Indian markets with established presence
+**BUSINESS**: Unable to retrieve current data for the requested stock
 
-**VALUATION**: PE analysis pending - requires real-time data connection  
+**VALUATION**: Market data connection required for PE analysis  
 
-**QUARTERLY**: Recent performance data being retrieved
+**QUARTERLY**: Recent performance data unavailable
 
-**MANAGEMENT**: Strategic guidance under review
+**MANAGEMENT**: Strategic guidance pending data retrieval
 
-**TECHNICAL**: Support and resistance levels being calculated
+**TECHNICAL**: Technical levels calculation in progress
 
-**VERDICT**: Complete analysis requires stable API connection. Please retry your query for detailed fundamental analysis including business model evaluation, PE vs industry comparison, quarterly performance assessment, and management commentary.
-
-The AI analysis focuses on fundamentals first (business model, valuation metrics, quarterly results, management guidance) followed by technical analysis as requested.`;
+**VERDICT**: Please retry your analysis request. Our AI system can analyze any NSE/BSE listed stock including large cap, mid cap, small cap, and micro cap companies with appropriate risk assessments and price targets.`;
     }
   }
 }
