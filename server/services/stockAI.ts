@@ -9,7 +9,22 @@ export class StockAIService {
   private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string }> {
     const queryLower = query.toLowerCase().trim();
     
-    // First check known mappings for instant recognition
+    // Try to get real-time data first
+    try {
+      const realTimeData = await realTimeStockService.getStockData(queryLower);
+      if (realTimeData) {
+        return {
+          fullName: realTimeData.companyName,
+          symbol: realTimeData.symbol.replace('.NS', ''),
+          currentPrice: `₹${realTimeData.currentPrice.toFixed(0)}`,
+          category: this.categorizeByPrice(realTimeData.currentPrice)
+        };
+      }
+    } catch (error) {
+      console.log(`Real-time data not available for ${query}, using fallback`);
+    }
+
+    // Fallback: check known mappings for instant recognition
     const knownStocks = this.getKnownStockMappings();
     const sortedKeys = Object.keys(knownStocks).sort((a, b) => b.length - a.length);
     for (const key of sortedKeys) {
@@ -30,6 +45,12 @@ export class StockAIService {
     // For unknown stocks, extract likely stock symbol/name and let AI handle it
     const extractedStock = this.extractStockInfo(query);
     return extractedStock;
+  }
+
+  private categorizeByPrice(price: number): string {
+    if (price >= 3000) return 'large';
+    if (price >= 1000) return 'mid';
+    return 'small';
   }
 
   private getAdditionalStocks(): { [key: string]: { fullName: string; symbol: string; currentPrice: string; category: string } } {
@@ -195,7 +216,7 @@ export class StockAIService {
 
   async analyzeStock(query: string): Promise<string> {
     try {
-      const stockInfo = this.identifyStock(query);
+      const stockInfo = await this.identifyStock(query);
       
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -226,7 +247,7 @@ Use these exact prices and provide specific numerical metrics throughout the ana
       
     } catch (error) {
       console.error("OpenAI API error:", error);
-      const fallbackStockInfo = this.identifyStock(query);
+      const fallbackStockInfo = await this.identifyStock(query);
       return this.generateFallbackAnalysis(fallbackStockInfo);
     }
   }

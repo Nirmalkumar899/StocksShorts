@@ -27,9 +27,10 @@ interface ScreenerSearchResult {
 export class ScreenerService {
   private baseUrl = 'https://www.screener.in/api';
   private headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     'Accept': 'application/json',
     'Referer': 'https://www.screener.in/',
+    'X-Requested-With': 'XMLHttpRequest',
   };
 
   async searchStock(query: string): Promise<ScreenerSearchResult[]> {

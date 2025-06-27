@@ -5,6 +5,8 @@ import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
 import { aiNewsService } from "./services/aiNewsService";
 import { stockAI } from "./services/stockAI";
+import { realTimeStockService } from "./services/realTimeStockService";
+import { nseService } from "./services/nseService";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
