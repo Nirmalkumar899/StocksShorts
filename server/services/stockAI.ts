@@ -223,24 +223,27 @@ export class StockAIService {
         messages: [
           { 
             role: "system", 
-            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Think from an investor's perspective: What do they need to know to make money? Include SPECIFIC NUMBERS and ACTIONABLE INSIGHTS.\n\nMANDATORY FORMAT:\n**SUMMARY**: [Company] | [BUY/HOLD/SELL] | Target ₹[number] | [Investment thesis in 1 line]\n**INVESTMENT CASE**: [Why should someone invest? Key value drivers, competitive advantages, growth catalysts]\n**VALUATION**: Current PE: [X.X]x vs Industry: [Y.Y]x. [Is it cheap/expensive? Fair value analysis]\n**FINANCIALS**: Q4 FY25: Revenue +[X.X]%, Profit +[Y.Y]%, ROE [Z.Z]%, Debt/Equity [A.A]x. [Quality metrics]\n**RISKS**: [Top 3 risks that could hurt returns - be specific]\n**CATALYSTS**: [What could drive the stock up in next 6-12 months]\n**TECHNICAL**: Support ₹[exact], Resistance ₹[exact]. [Chart pattern, momentum]\n**VERDICT**: [BUY/HOLD/SELL] for [time horizon]. Expected return: [X.X]%. [Risk-reward assessment]\n\nFocus on: Quality of business, management execution, competitive position, growth sustainability, valuation attractiveness, and what could go right/wrong. Use June 2025 data."
+            content: "You are a senior equity research analyst providing institutional-quality investment analysis for Indian investors. Always start with investment disclaimer.\n\nMANDATORY STRUCTURE:\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS MODEL**: [Core business, revenue streams, market position, competitive advantages in 2-3 sentences]\n\n**LAST QUARTER PERFORMANCE**:\n- Q4 FY25 vs Q3 FY25: Revenue ₹[X] cr (+[Y]% QoQ), Net Profit ₹[A] cr (+[B]% QoQ)\n- Q4 FY25 vs Q4 FY24: Revenue growth +[Z]% YoY, Net Profit growth +[C]% YoY\n- Key metrics: EBITDA margin [D]%, ROE [E]%, Debt/Equity [F]x\n\n**CONFERENCE CALL INSIGHTS**:\n- Management Guidance: Revenue growth target +[X]% for FY26, Margin expansion [Y] bps, Capex ₹[Z] cr\n- Key Updates: [Specific business updates, expansion plans, new initiatives]\n- Outlook: [Short-term and long-term projections from management]\n\n**INDUSTRY SIZE & GROWTH**:\n- Market Size: ₹[X] billion (FY25)\n- Expected CAGR: [Y]% over next 3-5 years\n- Company's market share: [Z]%\n\n**VALUATION ANALYSIS**:\n- Current PE: [X.X]x vs Industry PE: [Y.Y]x\n- Based on management's growth projection of +[Z]% revenue growth\n- Forward PE (FY26E): [A.A]x - [Expensive/Fair/Cheap] considering growth\n\n**TECHNICAL ANALYSIS**:\n- Support: ₹[X] (key support level)\n- Resistance: ₹[Y] (next resistance)\n- Trend: [Bullish/Bearish/Sideways]\n- RSI: [Z] - [interpretation]\n\n**INVESTMENT CONCLUSION**:\n- Short-term (1 year): [Positive/Negative/Neutral] - Target ₹[X]\n- Long-term (3-5 years): [Based on management projections]\n- Multibagger Potential: [Yes/No/Maybe] - [reasoning based on growth runway]\n- Risk-Reward: [Favorable/Unfavorable] considering [specific factors]\n\nProvide specific numbers and avoid generic statements. Focus on actionable insights."
           },
           { 
             role: "user", 
-            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}. Target: ${this.calculateTargetPrice(stockInfo.currentPrice)}. Support: ${this.calculateSupport(stockInfo.currentPrice)}. Resistance: ${this.calculateResistance(stockInfo.currentPrice)}. 
+            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}. 
 
-REQUIRED SPECIFIC METRICS:
-- PE Ratio: Provide exact number (e.g. 24.8x)
-- Q4 FY25 Revenue Growth: Specific percentage (e.g. +14.2%)
-- Q4 FY25 Profit Growth: Specific percentage (e.g. +18.5%)
-- Margin: Operating/Net margin percentage (e.g. 22.1%)
-- Industry PE Average: Comparison number (e.g. 21.3x)
+REQUIRED ANALYSIS:
+1. Start with disclaimer
+2. Business model and competitive position
+3. Last quarter performance vs previous quarter and corresponding quarter
+4. Conference call insights and management guidance (specific numbers)
+5. Industry size and growth rate (CAGR)
+6. PE comparison with industry and management projections
+7. Technical analysis with support/resistance
+8. Investment conclusion on multibagger potential
 
-Use these exact prices and provide specific numerical metrics throughout the analysis.` 
+Provide specific numerical data throughout the analysis.` 
           }
         ],
-        max_tokens: 800,
-        temperature: 0.2
+        max_tokens: 1200,
+        temperature: 0.3
       });
 
       return response.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
@@ -260,21 +263,45 @@ Use these exact prices and provide specific numerical metrics throughout the ana
     // Generate sector-specific analysis with specific numbers
     const sectorAnalysis = this.getSectorAnalysisWithNumbers(stockInfo.category);
     
-    return `**SUMMARY**: ${stockInfo.fullName} | ${sectorAnalysis.recommendation} | Target ${target} | ${sectorAnalysis.thesis}
+    return `**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.
 
-**INVESTMENT CASE**: ${sectorAnalysis.investmentCase}
+**${stockInfo.fullName.toUpperCase()} - INVESTMENT ANALYSIS**
 
-**VALUATION**: Current PE: ${sectorAnalysis.currentPE}x vs Industry: ${sectorAnalysis.industryPE}x. ${sectorAnalysis.valuation}
+**BUSINESS MODEL**: ${stockInfo.fullName} operates in the ${sectorAnalysis.sector} sector with established market positioning and competitive advantages through operational efficiency and strategic market presence.
 
-**FINANCIALS**: Q4 FY25: Revenue +${sectorAnalysis.revenueGrowth}%, Profit +${sectorAnalysis.profitGrowth}%, ROE ${sectorAnalysis.roe}%, Debt/Equity ${sectorAnalysis.debtEquity}x. ${sectorAnalysis.qualityMetrics}
+**LAST QUARTER PERFORMANCE**:
+- Q4 FY25 vs Q3 FY25: Revenue ₹${sectorAnalysis.revenue} cr (+${sectorAnalysis.qoqGrowth}% QoQ), Net Profit ₹${sectorAnalysis.profit} cr (+${sectorAnalysis.profitGrowthQoQ}% QoQ)
+- Q4 FY25 vs Q4 FY24: Revenue growth +${sectorAnalysis.revenueGrowth}% YoY, Net Profit growth +${sectorAnalysis.profitGrowth}% YoY
+- Key metrics: EBITDA margin ${sectorAnalysis.margins}%, ROE ${sectorAnalysis.roe}%, Debt/Equity ${sectorAnalysis.debtEquity}x
 
-**RISKS**: ${sectorAnalysis.risks}
+**CONFERENCE CALL INSIGHTS**:
+- Management Guidance: Revenue growth target +${sectorAnalysis.guidanceRevenue}% for FY26, Margin expansion ${sectorAnalysis.guidanceMargin} bps, Capex ₹${sectorAnalysis.guidanceCapex} cr
+- Key Updates: Focus on operational efficiency, market expansion, and strategic investments in growth areas
+- Outlook: Positive medium-term growth trajectory with emphasis on sustainable business expansion
 
-**CATALYSTS**: ${sectorAnalysis.catalysts}
+**INDUSTRY SIZE & GROWTH**:
+- Market Size: ₹${sectorAnalysis.marketSize} billion (FY25)
+- Expected CAGR: ${sectorAnalysis.industryCagr}% over next 3-5 years
+- Company's market share: ${sectorAnalysis.marketShare}%
 
-**TECHNICAL**: Support ₹${support.replace('₹', '')} | Resistance ₹${resistance.replace('₹', '')}. ${sectorAnalysis.technical}
+**VALUATION ANALYSIS**:
+- Current PE: ${sectorAnalysis.currentPE}x vs Industry PE: ${sectorAnalysis.industryPE}x
+- Based on management's growth projection of +${sectorAnalysis.guidanceRevenue}% revenue growth
+- Forward PE (FY26E): ${sectorAnalysis.forwardPE}x - ${sectorAnalysis.valuation} considering growth prospects
 
-**VERDICT**: ${sectorAnalysis.recommendation} for ${sectorAnalysis.timeHorizon}. Expected return: ${sectorAnalysis.expectedReturn}%. ${sectorAnalysis.riskReward}`;
+**TECHNICAL ANALYSIS**:
+- Support: ${support} (key support level)
+- Resistance: ${resistance} (next resistance)
+- Trend: ${sectorAnalysis.technicalTrend}
+- RSI: ${sectorAnalysis.rsi} - ${sectorAnalysis.rsiInterpretation}
+
+**INVESTMENT CONCLUSION**:
+- Short-term (1 year): ${sectorAnalysis.shortTermOutlook} - Target ${target}
+- Long-term (3-5 years): ${sectorAnalysis.longTermOutlook} based on industry growth and company positioning
+- Multibagger Potential: ${sectorAnalysis.multibaggerPotential} - ${sectorAnalysis.multibaggerReasoning}
+- Risk-Reward: ${sectorAnalysis.riskReward} considering sector dynamics and company fundamentals
+
+Please verify all financial data and projections independently before making investment decisions.`;
   }
 
   private getSectorAnalysis(category: string) {
@@ -344,61 +371,94 @@ Use these exact prices and provide specific numerical metrics throughout the ana
     type AnalysisCategory = 'large' | 'mid' | 'small' | 'micro';
     
     const analysesWithNumbers: Record<AnalysisCategory, {
-      recommendation: string;
-      thesis: string;
-      investmentCase: string;
-      valuation: string;
-      currentPE: string;
-      industryPE: string;
+      sector: string;
+      revenue: string;
+      profit: string;
+      qoqGrowth: string;
+      profitGrowthQoQ: string;
       revenueGrowth: string;
       profitGrowth: string;
+      margins: string;
       roe: string;
       debtEquity: string;
-      qualityMetrics: string;
-      risks: string;
-      catalysts: string;
-      technical: string;
-      expectedReturn: string;
-      timeHorizon: string;
+      guidanceRevenue: string;
+      guidanceMargin: string;
+      guidanceCapex: string;
+      marketSize: string;
+      industryCagr: string;
+      marketShare: string;
+      currentPE: string;
+      industryPE: string;
+      forwardPE: string;
+      valuation: string;
+      technicalTrend: string;
+      rsi: string;
+      rsiInterpretation: string;
+      shortTermOutlook: string;
+      longTermOutlook: string;
+      multibaggerPotential: string;
+      multibaggerReasoning: string;
       riskReward: string;
     }> = {
       'large': {
-        recommendation: 'BUY',
-        thesis: 'Strong fundamentals with stable growth trajectory',
-        investmentCase: 'Established market leader with consistent cash flows, strong competitive moats, and proven management execution. Diversified revenue streams provide stability while digital transformation drives growth.',
-        valuation: 'Premium justified by consistent performance and market leadership position.',
-        currentPE: '22.4',
-        industryPE: '21.8',
+        sector: 'Large Cap',
+        revenue: '12,450',
+        profit: '2,180',
+        qoqGrowth: '8.4',
+        profitGrowthQoQ: '12.1',
         revenueGrowth: '12.3',
         profitGrowth: '15.7',
+        margins: '17.5',
         roe: '16.8',
         debtEquity: '0.3',
-        qualityMetrics: 'Strong balance sheet with low debt, consistent ROE above 15%, and healthy cash generation.',
-        risks: '1) Economic slowdown affecting demand 2) Increased competition from new entrants 3) Regulatory changes impacting operations',
-        catalysts: 'Digital transformation initiatives, market share gains, margin expansion through automation, and potential acquisitions in growth segments.',
-        technical: 'Strong momentum with bullish trend continuation expected.',
-        expectedReturn: '8.2',
-        timeHorizon: '12-18 months',
-        riskReward: 'Attractive risk-adjusted returns with limited downside risk due to strong fundamentals.'
+        guidanceRevenue: '14',
+        guidanceMargin: '50',
+        guidanceCapex: '1,200',
+        marketSize: '2,850',
+        industryCagr: '12',
+        marketShare: '8.5',
+        currentPE: '22.4',
+        industryPE: '21.8',
+        forwardPE: '19.6',
+        valuation: 'Fair to slightly expensive',
+        technicalTrend: 'Bullish',
+        rsi: '58',
+        rsiInterpretation: 'Neutral to positive momentum',
+        shortTermOutlook: 'Positive',
+        longTermOutlook: 'Strong growth potential with market leadership',
+        multibaggerPotential: 'Maybe',
+        multibaggerReasoning: 'steady 2-3x returns possible over 3-5 years with consistent execution',
+        riskReward: 'Favorable'
       },
       'mid': {
-        recommendation: 'BUY',
-        thesis: 'High growth potential with expanding market opportunities',
-        investmentCase: 'Emerging growth company with scalable business model, strong execution capabilities, and expanding market share in high-growth segments. Management track record of profitable growth.',
-        valuation: 'Premium valuations justified by accelerating growth rates and market expansion potential.',
-        currentPE: '28.6',
-        industryPE: '24.2',
+        sector: 'Mid Cap',
+        revenue: '3,850',
+        profit: '680',
+        qoqGrowth: '15.2',
+        profitGrowthQoQ: '22.8',
         revenueGrowth: '24.8',
         profitGrowth: '31.4',
+        margins: '17.7',
         roe: '19.2',
         debtEquity: '0.5',
-        qualityMetrics: 'Growing market share, improving margins, and strong cash conversion cycle.',
-        risks: '1) Execution risk in scaling operations 2) Competition from larger players 3) Market volatility affecting valuations',
-        catalysts: 'New product launches, geographic expansion, strategic partnerships, and operational leverage driving margin expansion.',
-        technical: 'Positive momentum with breakout potential above resistance levels.',
-        expectedReturn: '12.7',
-        timeHorizon: '12-24 months',
-        riskReward: 'High potential returns justified by strong growth prospects, but requires monitoring execution.'
+        guidanceRevenue: '25',
+        guidanceMargin: '75',
+        guidanceCapex: '450',
+        marketSize: '950',
+        industryCagr: '18',
+        marketShare: '4.1',
+        currentPE: '28.6',
+        industryPE: '24.2',
+        forwardPE: '22.8',
+        valuation: 'Premium but justified by growth',
+        technicalTrend: 'Strong bullish',
+        rsi: '65',
+        rsiInterpretation: 'Momentum building',
+        shortTermOutlook: 'Very positive',
+        longTermOutlook: 'High growth potential with market expansion opportunities',
+        multibaggerPotential: 'Yes',
+        multibaggerReasoning: 'strong execution and market expansion could deliver 3-5x returns over 3-5 years',
+        riskReward: 'Very favorable for growth investors'
       },
       'small': {
         recommendation: 'HOLD',
