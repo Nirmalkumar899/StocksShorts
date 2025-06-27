@@ -229,8 +229,8 @@ Provide comprehensive analysis using ONLY the current pricing data above. Focus 
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 1000,
-        temperature: 0.3,
+        max_tokens: 800,
+        temperature: 0.2,
       });
 
       return response.choices[0].message.content || "Analysis unavailable.";
@@ -239,18 +239,18 @@ Provide comprehensive analysis using ONLY the current pricing data above. Focus 
       console.error("OpenAI API error:", error);
       
       // Provide fallback analysis with current market data
-      const stockInfo = this.identifyStock(query);
-      return `**SUMMARY**: ${stockInfo.fullName} | HOLD | Target ${this.calculateTargetPrice(stockInfo.currentPrice)} | Market analysis pending
+      const fallbackStockInfo = this.identifyStock(query);
+      return `**SUMMARY**: ${fallbackStockInfo.fullName} | HOLD | Target ${this.calculateTargetPrice(fallbackStockInfo.currentPrice)} | Market analysis pending
 
-**BUSINESS**: ${stockInfo.fullName} operates in the Indian market with established business fundamentals
+**BUSINESS**: ${fallbackStockInfo.fullName} operates in the Indian market with established business fundamentals
 
-**VALUATION**: Current price ${stockInfo.currentPrice} reflects market positioning for ${stockInfo.category} cap stock
+**VALUATION**: Current price ${fallbackStockInfo.currentPrice} reflects market positioning for ${fallbackStockInfo.category} cap stock
 
 **QUARTERLY**: Q4 FY25 results season completed, monitoring Q1 FY26 guidance
 
 **MANAGEMENT**: Strategic initiatives aligned with sector growth trends
 
-**TECHNICAL**: Support ${this.calculateSupport(stockInfo.currentPrice)} | Resistance ${this.calculateResistance(stockInfo.currentPrice)}
+**TECHNICAL**: Support ${this.calculateSupport(fallbackStockInfo.currentPrice)} | Resistance ${this.calculateResistance(fallbackStockInfo.currentPrice)}
 
 **VERDICT**: HOLD recommendation pending detailed analysis refresh. Current levels provide entry opportunity for 6-12 month horizon.`;
     }
