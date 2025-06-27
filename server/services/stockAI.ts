@@ -253,13 +253,16 @@ export class StockAIService {
         // Also fetch conference call data and merge it
         try {
           const { conferenceCallService } = await import('./conferenceCallService.js');
+          console.log(`Fetching conference call data for ${symbol}...`);
           const conferenceData = await conferenceCallService.getConferenceCallData(symbol);
           if (conferenceData) {
             financialData.conferenceCallData = conferenceData;
-            console.log(`Added conference call data for ${symbol}`);
+            console.log(`Successfully added conference call data for ${symbol}:`, conferenceData);
+          } else {
+            console.log(`No conference call data available for ${symbol}`);
           }
         } catch (error) {
-          console.log(`Could not fetch conference call data for ${symbol}:`, error);
+          console.log(`Error fetching conference call data for ${symbol}:`, error);
         }
         
         return financialData;
@@ -688,7 +691,7 @@ Note: Detailed financial statements, quarterly results, PE ratios, and other fun
         messages: [
           { 
             role: "system", 
-            content: "You are a senior equity research analyst providing comprehensive investment analysis. Follow this EXACT structure and use only authentic financial data.\n\nMANDATORY STRUCTURE:\n\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS OVERVIEW**: Start with the company's core business model, revenue streams, market position, and competitive advantages. Write in flowing paragraphs about what the company does and how it makes money.\n\n**QUARTERLY PERFORMANCE**: Compare last quarter vs previous quarter AND corresponding quarter from previous year. Include specific revenue numbers, profit margins, growth percentages using authentic data only. Skip if no real quarterly data available.\n\n**MANAGEMENT GUIDANCE**: Analyze conference call transcripts and management commentary. Include specific numerical guidance for revenue growth targets, margin expansion plans, capex numbers for short-term and long-term. Quote exact management projections. Skip if no conference call data available.\n\n**INDUSTRY ANALYSIS**: Discuss total addressable market size and expected CAGR growth rate for the industry. Include market share of the company. Use authentic industry data only.\n\n**VALUATION ANALYSIS**: Compare current PE ratio with industry PE average. Factor in management's growth projections to assess if valuation is justified. Include forward PE calculations based on management guidance.\n\n**TECHNICAL ANALYSIS**: Analyze current price levels, key support and resistance, trend direction, and momentum indicators using actual price data.\n\n**INVESTMENT CONCLUSION**: Determine if stock is cheap or expensive considering both short-term and long-term management projections. Assess upside potential and multibagger return possibility with specific reasoning.\n\nCRITICAL REQUIREMENTS:\n- Use ONLY authentic numbers from screener.in or similar verified sources\n- Skip entire sections if authentic data not available\n- Include specific numerical data throughout\n- Write in paragraph format, not bullet points\n- Base all conclusions on real financial data"
+            content: "You are a senior equity research analyst providing comprehensive investment analysis. Follow this EXACT structure and use ONLY the authentic financial data provided.\n\nMANDATORY STRUCTURE:\n\n**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.\n\n**[COMPANY NAME] - INVESTMENT ANALYSIS**\n\n**BUSINESS OVERVIEW**: Start with the company's core business model, revenue streams, market position, and competitive advantages. Write in flowing paragraphs about what the company does and how it makes money.\n\n**QUARTERLY PERFORMANCE**: Use ONLY the authentic quarterly data provided in the conference call section. Include specific revenue numbers (₹ crores), growth percentages, and quarter-over-quarter comparisons. If conference call data shows quarterly highlights, use those exact numbers.\n\n**MANAGEMENT GUIDANCE**: Use ONLY the authentic conference call data provided. Quote exact numerical guidance for revenue growth targets, margin expansion plans, capex guidance. Use the specific management outlook and targets provided.\n\n**INDUSTRY ANALYSIS**: Use ONLY the industry commentary provided in the conference call data. Include market size and growth expectations if available in the data.\n\n**VALUATION ANALYSIS**: Compare current PE ratio with industry PE average using provided data. Factor in management's growth projections from conference call data to assess valuation.\n\n**TECHNICAL ANALYSIS**: Analyze current price levels, key support and resistance, trend direction using actual price data provided.\n\n**INVESTMENT CONCLUSION**: Determine if stock is cheap or expensive based on authentic data provided. Assess upside potential using management projections.\n\nCRITICAL REQUIREMENTS:\n- Use ONLY the authentic numbers provided in the input data\n- If conference call data is provided, use those exact quarterly numbers and management targets\n- Quote specific figures from the provided data\n- Write in paragraph format, not bullet points\n- Base all conclusions on the real financial data provided"
           },
           { 
             role: "user", 
@@ -696,24 +699,12 @@ Note: Detailed financial statements, quarterly results, PE ratios, and other fun
 
 ${marketDataText}
 
-FOLLOW THIS EXACT METHODOLOGY:
-1. Start with business overview - what the company does, revenue streams, market position
-2. Quarterly performance - compare last quarter vs previous quarter AND corresponding quarter from previous year with specific numbers
-3. Management guidance from conference calls - include exact numerical targets for revenue growth, margin expansion, capex
-4. Industry size and CAGR growth expectations with company's market share
-5. PE comparison with industry average factoring management projections
-6. Technical analysis with support/resistance levels
-7. Investment conclusion on whether stock is cheap/expensive and multibagger potential
-
-CRITICAL REQUIREMENTS:
-- Use authentic financial data from screener.in whenever possible
-- Include specific numbers: revenue figures, growth percentages, PE ratios, margins
-- Skip sections entirely if authentic data not available
-- Quote exact management guidance numbers from conference calls
-- Write in paragraph format, not bullet points
-- Base valuation assessment on real financial metrics
-
-If detailed financials are not available, acknowledge this limitation and focus analysis on available market data.` 
+INSTRUCTIONS:
+- Use the authentic financial metrics provided above
+- If conference call data is shown, use those exact quarterly numbers and management guidance
+- Quote specific revenue figures, growth percentages, and management targets from the data
+- Follow the exact structure: Business → Quarterly Performance → Management Guidance → Industry → Valuation → Technical → Conclusion
+- Write in flowing paragraphs, not bullet points` 
           }
         ],
         max_tokens: 1500,
