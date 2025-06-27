@@ -1,5 +1,7 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield, AlertTriangle, Info, FileText, Scale, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface DisclaimerProps {
   onBack: () => void;
@@ -7,69 +9,165 @@ interface DisclaimerProps {
 
 export default function Disclaimer({ onBack }: DisclaimerProps) {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="sm" onClick={onBack}>
+      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-10">
+        <div className="flex items-center space-x-3 max-w-4xl mx-auto">
+          <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-gray-100 dark:hover:bg-gray-800">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Disclaimer
-          </h1>
+          <div className="flex items-center space-x-2">
+            <Shield className="h-5 w-5 text-blue-600" />
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              Terms & Disclaimer
+            </h1>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6 max-w-3xl mx-auto">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Investment Disclaimer
-            </h2>
-            <div className="prose dark:prose-invert text-gray-700 dark:text-gray-300 space-y-4">
-              <p>
-                <strong>This content is for informational purposes only and is not investment advice. 
-                Please do your own research or consult a financial advisor.</strong>
-              </p>
-              
-              <p>
-                The information provided on StocksShorts is compiled from various public sources 
-                and is intended for general informational purposes only. We do not provide 
-                personalized investment advice or recommendations.
-              </p>
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="space-y-8">
+          {/* Main Disclaimer Card */}
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Important Notice
+                  </h2>
+                  <Badge variant="destructive" className="mb-4">
+                    Not Investment Advice
+                  </Badge>
+                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300 leading-relaxed">
+                    This content is for <strong>informational purposes only</strong> and is not investment advice. 
+                    Please do your own research or consult a qualified financial advisor before making any investment decisions.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-6 mb-3">
-                Important Considerations:
-              </h3>
-              
-              <ul className="space-y-2 text-sm">
-                <li>• All investments carry risk, including potential loss of principal</li>
-                <li>• Past performance does not guarantee future results</li>
-                <li>• Market conditions can change rapidly and unpredictably</li>
-                <li>• Individual financial situations vary significantly</li>
-                <li>• Professional advice should be sought for significant investment decisions</li>
-              </ul>
+          {/* Risk Factors */}
+          <Card className="border-0 shadow-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <TrendingUp className="h-5 w-5 text-orange-600" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Investment Risk Factors
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      All investments carry risk of loss
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Past performance doesn't predict future results
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Market volatility can affect investments
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Individual situations vary significantly
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Professional advice recommended
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Market conditions change rapidly
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-6 mb-3">
-                Data Sources:
-              </h3>
-              
-              <p className="text-sm">
-                Our content is aggregated from publicly available sources including financial 
-                news outlets, company announcements, and market data providers. While we strive 
-                for accuracy, we cannot guarantee the completeness or timeliness of all information.
-              </p>
+          {/* Data Sources */}
+          <Card className="border-0 shadow-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <Info className="h-5 w-5 text-blue-600" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Data Sources & Accuracy
+                </h3>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-blue-500">
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  Our content is aggregated from publicly available sources including financial news outlets, 
+                  company announcements, and market data providers. While we strive for accuracy, we cannot 
+                  guarantee the completeness, timeliness, or accuracy of all information provided.
+                </p>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Badge variant="outline" className="text-xs">Economic Times</Badge>
+                <Badge variant="outline" className="text-xs">NSE</Badge>
+                <Badge variant="outline" className="text-xs">LiveMint</Badge>
+                <Badge variant="outline" className="text-xs">Company Filings</Badge>
+                <Badge variant="outline" className="text-xs">Market Data Providers</Badge>
+              </div>
+            </CardContent>
+          </Card>
 
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-6 mb-3">
-                No Liability:
-              </h3>
-              
-              <p className="text-sm">
-                StocksShorts and its operators shall not be liable for any investment decisions 
-                made based on the information provided on this platform. Users are solely 
-                responsible for their investment choices.
-              </p>
+          {/* Legal Disclaimer */}
+          <Card className="border-0 shadow-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <Scale className="h-5 w-5 text-purple-600" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Legal Disclaimer
+                </h3>
+              </div>
+              <div className="space-y-4">
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">No Liability</h4>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    StocksShorts and its operators shall not be liable for any investment decisions 
+                    made based on the information provided on this platform. Users are solely 
+                    responsible for their investment choices and outcomes.
+                  </p>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">User Responsibility</h4>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    By using StocksShorts, you acknowledge that you understand the risks involved 
+                    in financial markets and that you are responsible for conducting your own due 
+                    diligence before making any financial decisions.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Footer */}
+          <div className="text-center py-6">
+            <div className="flex items-center justify-center space-x-2 text-gray-500 dark:text-gray-400">
+              <FileText className="h-4 w-4" />
+              <span className="text-sm">
+                Last updated: June 27, 2025 • StocksShorts Platform
+              </span>
             </div>
           </div>
         </div>
