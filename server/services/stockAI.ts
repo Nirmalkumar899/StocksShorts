@@ -241,7 +241,11 @@ export class StockAIService {
 
   private async fetchRealFinancialData(symbol: string): Promise<any> {
     try {
-      // Map Indian stock symbols to Yahoo Finance format
+      // First try screener.in unofficial JSON API
+      const screenerData = await this.scrapeScreenerData(symbol);
+      if (screenerData) return screenerData;
+
+      // Fallback to Yahoo Finance
       const yahooSymbol = this.getYahooSymbolMapping(symbol);
       if (!yahooSymbol) return null;
 
@@ -270,7 +274,230 @@ export class StockAIService {
         earningsGrowth: result.defaultKeyStatistics?.earningsQuarterlyGrowth?.raw
       };
     } catch (error) {
-      console.log('Failed to fetch Yahoo Finance data:', error);
+      console.log('Failed to fetch financial data:', error);
+      return null;
+    }
+  }
+
+  private async scrapeScreenerData(symbol: string): Promise<any> {
+    try {
+      // Direct company URL approach - try common symbol formats
+      const possibleUrls = [
+        `https://www.screener.in/company/${symbol.toUpperCase()}/`,
+        `https://www.screener.in/company/${symbol.toLowerCase()}/`,
+        `https://www.screener.in/company/${symbol}/`
+      ];
+
+      for (const companyUrl of possibleUrls) {
+        try {
+          console.log(`Trying to fetch: ${companyUrl}`);
+          const companyResponse = await fetch(companyUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.5',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Cache-Control': 'no-cache'
+            },
+            timeout: 10000
+          });
+
+          if (companyResponse.ok) {
+            const htmlContent = await companyResponse.text();
+            console.log(`Successfully fetched HTML for ${symbol}, length: ${htmlContent.length}`);
+            
+            // Extract financial data from HTML
+            const financialData = this.extractFinancialDataFromHTML(htmlContent);
+            console.log(`Extracted financial data:`, financialData);
+            
+            if (Object.keys(financialData).length > 0) {
+              return financialData;
+            }
+          }
+        } catch (urlError) {
+          console.log(`Failed to fetch ${companyUrl}:`, urlError.message);
+          continue;
+        }
+      }
+
+      // Fallback: try search API
+      const searchUrl = `https://www.screener.in/api/company/search/?q=${encodeURIComponent(symbol)}`;
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json',
+          'Referer': 'https://www.screener.in/'
+        }
+      });
+
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        if (searchData && searchData.length > 0) {
+          const companyId = searchData[0].id;
+          console.log(`Found company ID: ${companyId} for ${symbol}`);
+          
+          const directUrl = `https://www.screener.in/company/${companyId}/`;
+          const directResponse = await fetch(directUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+          });
+
+          if (directResponse.ok) {
+            const htmlContent = await directResponse.text();
+            const financialData = this.extractFinancialDataFromHTML(htmlContent);
+            return financialData;
+          }
+        }
+      }
+
+      return null;
+
+    } catch (error) {
+      console.log('Screener.in scraping failed:', error);
+      return null;
+    }
+  }
+
+  private extractFinancialDataFromHTML(html: string): any {
+    try {
+      const data: any = {};
+      
+      // Extract current price from multiple patterns
+      const pricePatterns = [
+        /<span[^>]*class="[^"]*number[^"]*"[^>]*>₹\s*([\d,]+\.?\d*)/,
+        /₹\s*([\d,]+\.?\d*)\s*<\/span>/,
+        /"current_price":\s*([\d.]+)/,
+        /data-value="([\d.]+)"/,
+        /<h1[^>]*>.*?₹\s*([\d,]+\.?\d*)/,
+        /Current Price[^>]*>\s*₹\s*([\d,]+\.?\d*)/i
+      ];
+      
+      for (const pattern of pricePatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.currentPrice = parseFloat(match[1].replace(/,/g, ''));
+          break;
+        }
+      }
+      
+      // Extract PE ratio with multiple patterns
+      const pePatterns = [
+        /P\/E\s*<\/td>\s*<td[^>]*>\s*([\d.]+)/i,
+        /"pe":\s*([\d.]+)/,
+        /Price to Earning[^>]*>\s*([\d.]+)/i,
+        /PE Ratio[^>]*>\s*([\d.]+)/i
+      ];
+      
+      for (const pattern of pePatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.pe = parseFloat(match[1]);
+          break;
+        }
+      }
+      
+      // Extract Market Cap
+      const mcapPatterns = [
+        /Market Cap[^>]*>\s*₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i,
+        /"market_cap":\s*([\d.]+)/,
+        /Market Capitalisation[^>]*>\s*₹\s*([\d,]+)/i
+      ];
+      
+      for (const pattern of mcapPatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.marketCap = parseFloat(match[1].replace(/,/g, '')) * 10000000;
+          break;
+        }
+      }
+      
+      // Extract ROE
+      const roePatterns = [
+        /ROE[^>]*>\s*([\d.]+)%/i,
+        /"roe":\s*([\d.]+)/,
+        /Return on Equity[^>]*>\s*([\d.]+)/i
+      ];
+      
+      for (const pattern of roePatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.roe = parseFloat(match[1]) / 100;
+          break;
+        }
+      }
+      
+      // Extract Debt to Equity
+      const debtPatterns = [
+        /Debt to [Ee]quity[^>]*>\s*([\d.]+)/i,
+        /"debt_to_equity":\s*([\d.]+)/,
+        /D\/E[^>]*>\s*([\d.]+)/i
+      ];
+      
+      for (const pattern of debtPatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.debtToEquity = parseFloat(match[1]);
+          break;
+        }
+      }
+      
+      // Extract Revenue Growth
+      const revenueGrowthPatterns = [
+        /Sales Growth[^>]*>\s*([\d.-]+)%/i,
+        /"revenue_growth":\s*([\d.-]+)/,
+        /Revenue Growth[^>]*>\s*([\d.-]+)/i
+      ];
+      
+      for (const pattern of revenueGrowthPatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.revenueGrowth = parseFloat(match[1]) / 100;
+          break;
+        }
+      }
+      
+      // Extract Profit Margins
+      const marginPatterns = [
+        /OPM[^>]*>\s*([\d.]+)%/i,
+        /"profit_margin":\s*([\d.]+)/,
+        /Operating Margin[^>]*>\s*([\d.]+)/i
+      ];
+      
+      for (const pattern of marginPatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          data.profitMargin = parseFloat(match[1]) / 100;
+          break;
+        }
+      }
+      
+      return data;
+    } catch (error) {
+      console.log('Error extracting financial data:', error);
+      return {};
+    }
+  }
+
+  private async getQuarterlyData(companyId: string): Promise<any> {
+    try {
+      // Try to access quarterly results endpoint
+      const quarterlyUrl = `https://www.screener.in/api/company/${companyId}/quarters/`;
+      const response = await fetch(quarterlyUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json',
+          'Referer': `https://www.screener.in/company/${companyId}/`
+        }
+      });
+
+      if (response.ok) {
+        const quarterlyData = await response.json();
+        return quarterlyData;
+      }
+      
+      return null;
+    } catch (error) {
       return null;
     }
   }
@@ -318,17 +545,30 @@ export class StockAIService {
       const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
       
       if (realFinancialData) {
+        let dataSource = "Screener.in";
+        if (!realFinancialData.pe && !realFinancialData.marketCap) {
+          dataSource = "Yahoo Finance";
+        }
+        
         marketDataText = `
-AUTHENTIC FINANCIAL DATA (Yahoo Finance):
+AUTHENTIC FINANCIAL DATA (${dataSource}):
 - Current Price: ${stockInfo.currentPrice}
-- PE Ratio: ${realFinancialData.pe || 'N/A'}
+- PE Ratio: ${realFinancialData.pe ? realFinancialData.pe.toFixed(1) + 'x' : 'N/A'}
 - Market Cap: ₹${realFinancialData.marketCap ? (realFinancialData.marketCap / 10000000).toFixed(0) + ' cr' : 'N/A'}
 - Profit Margin: ${realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A'}
 - Revenue Growth: ${realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A'}
 - ROE: ${realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A'}
-- Debt/Equity: ${realFinancialData.debtToEquity || 'N/A'}
+- Debt/Equity: ${realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A'}`;
+
+        if (realFinancialData.quarterlyData) {
+          marketDataText += `
+- Latest Quarter Revenue Growth: Available from quarterly data
+- Management Guidance: Conference call data available`;
+        } else {
+          marketDataText += `
 - 52-Week High: ₹${realFinancialData.fiftyTwoWeekHigh || 'N/A'}
 - 52-Week Low: ₹${realFinancialData.fiftyTwoWeekLow || 'N/A'}`;
+        }
       } else {
         marketDataText = `
 AVAILABLE MARKET DATA:
