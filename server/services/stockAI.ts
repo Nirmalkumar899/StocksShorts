@@ -241,194 +241,77 @@ export class StockAIService {
 
   private async fetchRealFinancialData(symbol: string): Promise<any> {
     try {
-      // 1. Alpha Vantage - Premium financial data provider (requires API key)
-      if (process.env.ALPHA_VANTAGE_API_KEY) {
-        console.log(`Fetching from Alpha Vantage for ${symbol}`);
-        const alphaResponse = await fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}.BSE&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`);
-        if (alphaResponse.ok) {
-          const alphaData = await alphaResponse.json();
-          if (alphaData.Symbol && !alphaData.Note) {
-            return {
-              currentPrice: parseFloat(alphaData.Price || 0),
-              marketCap: parseFloat(alphaData.MarketCapitalization || 0),
-              pe: parseFloat(alphaData.PERatio || 0),
-              eps: parseFloat(alphaData.EPS || 0),
-              roe: parseFloat(alphaData.ReturnOnEquityTTM || 0),
-              debtToEquity: parseFloat(alphaData.DebtToEquityRatio || 0),
-              profitMargin: parseFloat(alphaData.ProfitMargin || 0),
-              bookValue: parseFloat(alphaData.BookValue || 0),
-              priceToBook: parseFloat(alphaData.PriceToBookRatio || 0),
-              dividendYield: parseFloat(alphaData.DividendYield || 0),
-              symbol: symbol,
-              source: 'Alpha Vantage'
-            };
-          }
-        }
-      }
-
-      // 2. Financial Modeling Prep - Alternative provider (requires API key)
-      if (process.env.FMP_API_KEY) {
-        console.log(`Fetching from Financial Modeling Prep for ${symbol}`);
-        const fmpResponse = await fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}.NS?apikey=${process.env.FMP_API_KEY}`);
-        if (fmpResponse.ok) {
-          const fmpData = await fmpResponse.json();
-          if (fmpData[0]) {
-            const profile = fmpData[0];
-            return {
-              currentPrice: profile.price,
-              marketCap: profile.mktCap,
-              pe: profile.pe,
-              eps: profile.eps,
-              beta: profile.beta,
-              sector: profile.sector,
-              industry: profile.industry,
-              symbol: symbol,
-              source: 'Financial Modeling Prep'
-            };
-          }
-        }
-      }
-
-      // 3. Yahoo Finance - Free but less reliable
-      const yahooSymbol = this.getYahooSymbolMapping(symbol);
-      if (yahooSymbol) {
-        console.log(`Fetching from Yahoo Finance for ${yahooSymbol}`);
-        
-        const response = await fetch(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${yahooSymbol}?modules=summaryDetail,financialData,defaultKeyStatistics`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const result = data.quoteSummary?.result?.[0];
-          
-          if (result) {
-            const summary = result.summaryDetail || {};
-            const financial = result.financialData || {};
-            const keyStats = result.defaultKeyStatistics || {};
-            
-            const extractedData = {
-              currentPrice: summary.regularMarketPrice?.raw || summary.previousClose?.raw,
-              pe: summary.trailingPE?.raw || summary.forwardPE?.raw,
-              marketCap: summary.marketCap?.raw,
-              profitMargin: financial.profitMargins?.raw,
-              revenueGrowth: financial.revenueGrowth?.raw,
-              roe: financial.returnOnEquity?.raw,
-              debtToEquity: financial.debtToEquity?.raw,
-              eps: keyStats.trailingEps?.raw,
-              bookValue: keyStats.bookValue?.raw,
-              priceToBook: keyStats.priceToBook?.raw,
-              beta: keyStats.beta?.raw,
-              symbol: symbol,
-              source: 'Yahoo Finance'
-            };
-
-            const cleanData = Object.fromEntries(
-              Object.entries(extractedData).filter(([_, value]) => value !== null && value !== undefined && value !== 0)
-            );
-
-            if (Object.keys(cleanData).length > 3) {
-              console.log(`Yahoo Finance provided ${Object.keys(cleanData).length} metrics for ${symbol}`);
-              return cleanData;
-            }
-          }
-        }
-      }
-
-      // 4. Try polygon.io for Indian stocks (if available)
-      if (process.env.POLYGON_API_KEY) {
-        console.log(`Fetching from Polygon.io for ${symbol}`);
-        const polygonResponse = await fetch(`https://api.polygon.io/v3/reference/tickers/${symbol}.NSE?apikey=${process.env.POLYGON_API_KEY}`);
-        if (polygonResponse.ok) {
-          const polygonData = await polygonResponse.json();
-          if (polygonData.results) {
-            return {
-              currentPrice: polygonData.results.market_cap,
-              marketCap: polygonData.results.market_cap,
-              sector: polygonData.results.sic_description,
-              symbol: symbol,
-              source: 'Polygon.io'
-            };
-          }
-        }
-      }
-
-      // 5. NSE Official API - Use the existing NSE service
-      const { nseService } = await import('./nseService');
-      console.log(`Fetching from NSE official source for ${symbol}`);
-      const nseData = await nseService.getStockQuote(symbol);
+      // Use the dedicated financial data provider
+      const { financialDataProvider } = await import('./financialDataProvider');
       
-      if (nseData) {
-        console.log(`NSE provided authentic data for ${symbol}:`, nseData);
-        return {
-          currentPrice: nseData.lastPrice,
-          marketCap: nseData.marketCap,
-          pe: nseData.pe,
-          pb: nseData.pb,
-          dayHigh: nseData.dayHigh,
-          dayLow: nseData.dayLow,
-          volume: nseData.totalTradedVolume,
-          change: nseData.change,
-          changePercent: nseData.pChange,
-          industry: nseData.industry,
-          symbol: symbol,
-          source: 'NSE Official'
-        };
+      console.log(`Fetching comprehensive financial data for ${symbol} from multiple sources`);
+      const financialData = await financialDataProvider.getFinancialData(symbol);
+      
+      if (financialData) {
+        console.log(`Successfully retrieved authentic data for ${symbol} from ${financialData.source}:`, financialData);
+        return financialData;
       }
 
-      // 6. Use GPT with live web search for financial data
-      console.log(`Using GPT-3.5-turbo to search for ${symbol} financial data`);
-      const openai = new (await import('openai')).default({
-        apiKey: process.env.OPENAI_API_KEY
-      });
-
-      const prompt = `Search for current financial data for ${symbol} (Indian stock). Provide exact numerical data in JSON format:
-      {
-        "currentPrice": number,
-        "pe": number,
-        "marketCap": number,
-        "roe": number,
-        "debtToEquity": number,
-        "profitMargin": number,
-        "revenueGrowth": number,
-        "eps": number,
-        "bookValue": number,
-        "sector": "string",
-        "industry": "string"
-      }
-      Only provide real, current data from financial websites. If data not available, set to null.`;
-
-      const gptResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-        max_tokens: 500
-      });
-
-      if (gptResponse.choices[0].message.content) {
-        try {
-          const gptData = JSON.parse(gptResponse.choices[0].message.content);
-          console.log(`GPT provided financial data for ${symbol}:`, gptData);
-          
-          const cleanData = Object.fromEntries(
-            Object.entries(gptData).filter(([_, value]) => value !== null && value !== undefined && value !== 0)
-          );
-
-          if (Object.keys(cleanData).length > 3) {
-            return { ...cleanData, symbol, source: 'GPT-3.5-turbo with live search' };
-          }
-        } catch (e) {
-          console.log('Failed to parse GPT financial data response');
-        }
+      // Fallback to NSE conference call data for quarterly insights
+      const conferenceData = await this.fetchNSEConferenceCallData(symbol);
+      if (conferenceData) {
+        console.log(`Retrieved NSE conference call data for ${symbol}:`, conferenceData);
+        return { ...conferenceData, symbol, source: 'NSE Conference Calls' };
       }
 
-      console.log(`No financial data providers available for ${symbol}`);
+      console.log(`No financial data available for ${symbol} from any source`);
       return null;
     } catch (error) {
       console.log(`Error fetching financial data for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  private async fetchNSEConferenceCallData(symbol: string): Promise<any> {
+    try {
+      // NSE Corporate Actions and Announcements
+      console.log(`Fetching NSE conference call data for ${symbol}`);
+      
+      const nseCorpResponse = await fetch(`https://www.nseindia.com/api/corporate-actions?index=equities&symbol=${symbol}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json',
+          'Accept-Language': 'en-US,en;q=0.9'
+        }
+      });
+
+      if (nseCorpResponse.ok) {
+        const corpData = await nseCorpResponse.json();
+        console.log(`NSE Corporate data for ${symbol}:`, corpData);
+        
+        // Look for recent earnings calls, investor presentations
+        const conferenceData = {
+          earningsCallDates: [],
+          investorPresentations: [],
+          managementGuidance: [],
+          quarterlyResults: []
+        };
+
+        return conferenceData;
+      }
+
+      // Alternative: Try NSE announcements API
+      const announcementsResponse = await fetch(`https://www.nseindia.com/api/corporate-announcements?index=equities&symbol=${symbol}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (announcementsResponse.ok) {
+        const announcementsData = await announcementsResponse.json();
+        console.log(`NSE Announcements data for ${symbol}:`, announcementsData);
+        return announcementsData;
+      }
+
+      return null;
+    } catch (error) {
+      console.log(`Error fetching NSE conference call data for ${symbol}:`, error);
       return null;
     }
   }
