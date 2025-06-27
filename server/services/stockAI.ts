@@ -306,8 +306,7 @@ export class StockAIService {
             console.log(`Successfully fetched HTML for ${symbol}, length: ${htmlContent.length}`);
             
             // Extract financial data from HTML
-            const financialData = this.extractFinancialDataFromHTML(htmlContent);
-            console.log(`Extracted financial data:`, financialData);
+            const financialData = await this.extractFinancialDataFromHTML(htmlContent);
             
             if (Object.keys(financialData).length > 0) {
               return financialData;
@@ -784,6 +783,7 @@ For a comprehensive analysis with specific numbers including revenue growth, pro
       multibaggerPotential: string;
       multibaggerReasoning: string;
       riskReward: string;
+      recommendation: string;
     }> = {
       'large': {
         sector: 'Large Cap',
@@ -813,7 +813,8 @@ For a comprehensive analysis with specific numbers including revenue growth, pro
         longTermOutlook: 'Strong growth potential with market leadership',
         multibaggerPotential: 'Maybe',
         multibaggerReasoning: 'steady 2-3x returns possible over 3-5 years with consistent execution',
-        riskReward: 'Favorable'
+        riskReward: 'Favorable',
+        recommendation: 'BUY'
       },
       'mid': {
         sector: 'Mid Cap',
@@ -876,10 +877,22 @@ For a comprehensive analysis with specific numbers including revenue growth, pro
         riskReward: 'Moderate, suitable for selective investors'
       },
       'micro': {
-        recommendation: 'HOLD',
-        thesis: 'High-risk, high-reward investment with significant volatility',
-        investmentCase: 'Early-stage growth story with disruptive potential but significant execution risks. Suitable only for investors with high risk tolerance and long-term horizon.',
-        valuation: 'Speculative valuations based on future growth assumptions and market potential.',
+        sector: 'Micro Cap',
+        revenue: '425',
+        profit: '45',
+        qoqGrowth: '28.5',
+        profitGrowthQoQ: '35.2',
+        revenueGrowth: '42.8',
+        profitGrowth: '51.4',
+        margins: '10.6',
+        roe: '12.3',
+        debtEquity: '1.2',
+        guidanceRevenue: '35',
+        guidanceMargin: '50',
+        guidanceCapex: '85',
+        marketSize: '180',
+        industryCagr: '25',
+        marketShare: '1.8',
         currentPE: '45.2',
         industryPE: '28.5',
         revenueGrowth: '38.7',
