@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
-import { ArticleSchema } from "@/components/article-schema";
 import type { Article } from "@shared/schema";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -81,14 +80,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   return (
-    <>
-      <div 
-        className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
-          (article.sentiment || 'neutral').toLowerCase() === 'positive' ? 'border-l-green-500' :
-          (article.sentiment || 'neutral').toLowerCase() === 'negative' ? 'border-l-red-500' :
-          'border-l-gray-400'
-        }`}
-        onClick={onClick}
+    <div 
+      className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
+        (article.sentiment || 'neutral').toLowerCase() === 'positive' ? 'border-l-green-500' :
+        (article.sentiment || 'neutral').toLowerCase() === 'negative' ? 'border-l-red-500' :
+        'border-l-gray-400'
+      }`}
+      onClick={onClick}
     >
       {/* Inshorts-style layout: Image top, content bottom */}
       
@@ -201,8 +199,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
       </div>
-      {/* Add structured data for SEO */}
-      <ArticleSchema article={article} />
-    </>
+    </div>
   );
 }
