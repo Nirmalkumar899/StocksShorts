@@ -22,8 +22,18 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
   const [showInstallButton, setShowInstallButton] = useState(false);
 
   useEffect(() => {
-    // Show install button if app is not installed (not in standalone mode)
-    if (!window.matchMedia('(display-mode: standalone)').matches) {
+    // Always show install button unless already installed as PWA
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    
+    // Check iOS standalone mode safely
+    let isPWAInstalled = false;
+    try {
+      isPWAInstalled = 'standalone' in window.navigator && (window.navigator as any).standalone === true;
+    } catch (e) {
+      // Fallback for browsers that don't support this property
+    }
+    
+    if (!isStandalone && !isPWAInstalled) {
       setShowInstallButton(true);
     }
   }, []);
@@ -42,7 +52,8 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
       return {
         title: "Add to iPhone Home Screen",
         steps: [
-          "📲 Look for 'Add to Home Screen' in the share options that just appeared",
+          "📱 Tap the Share button (square with arrow) at the bottom of Safari",
+          "📲 Scroll down and tap 'Add to Home Screen'",
           "✅ Tap 'Add' to confirm",
           "🚀 StocksShorts app will appear on your home screen!"
         ]
@@ -72,21 +83,8 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
     const instructions = getMobileInstructions();
     const instructionText = `${instructions.title}\n\n${instructions.steps.join('\n')}\n\nGet instant access to stock market news with faster loading and offline reading!`;
     
-    // Show immediate notification
+    // Always show the notification immediately
     alert(instructionText);
-    
-    // Then trigger share if available (which will show share options automatically)
-    if (navigator.share) {
-      setTimeout(() => {
-        navigator.share({
-          title: 'StocksShorts - Add to Home Screen',
-          text: 'Install StocksShorts for quick access to stock market news',
-          url: window.location.href,
-        }).catch(() => {
-          // Share failed, instructions already shown
-        });
-      }, 100);
-    }
   };
 
   return (
