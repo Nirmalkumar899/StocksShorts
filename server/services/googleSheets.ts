@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import type { GoogleSheetsRow, Article, InvestmentAdvisorRow, InvestmentAdvisor } from '@shared/schema';
 import { sampleArticles } from '../sampleData';
+import { candlestickImageService } from './candlestickImageService';
 
 // In-memory cache with TTL for faster repeated requests
 interface CacheEntry<T> {
@@ -110,16 +111,29 @@ export class GoogleSheetsService {
           const priority = row[7] || 'Medium';
           const category = row[8] || row[3] || 'Index'; // Use category column first, fallback to type
 
+          // Generate candlestick chart for technical analysis articles
+          let imageUrl = null;
+          const title = row[1] || 'Untitled';
+          
+          if (candlestickImageService.shouldGenerateChart(content)) {
+            try {
+              const stockSymbol = candlestickImageService.extractStockSymbol(title, content);
+              imageUrl = candlestickImageService.generateChartDataURL(content, stockSymbol);
+            } catch (error) {
+              console.warn(`Failed to generate chart for article ${title}:`, error);
+            }
+          }
+
           return {
             id: parseInt(row[0]) || index + 1,
-            title: row[1] || 'Untitled',
+            title,
             content,
             type: category, // Use category instead of type for better mapping
             time: parsedTime,
             source: row[5] || 'Unknown Source',
             sentiment,
             priority,
-            imageUrl: null, // Set to null for now since using priority column
+            imageUrl,
             createdAt: new Date(),
           };
         });
