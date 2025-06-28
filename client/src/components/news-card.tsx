@@ -81,13 +81,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   return (
-    <div 
-      className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
-        (article.sentiment || 'neutral').toLowerCase() === 'positive' ? 'border-l-green-500' :
-        (article.sentiment || 'neutral').toLowerCase() === 'negative' ? 'border-l-red-500' :
-        'border-l-gray-400'
-      }`}
-      onClick={onClick}
+    <>
+      <div 
+        className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
+          (article.sentiment || 'neutral').toLowerCase() === 'positive' ? 'border-l-green-500' :
+          (article.sentiment || 'neutral').toLowerCase() === 'negative' ? 'border-l-red-500' :
+          'border-l-gray-400'
+        }`}
+        onClick={onClick}
     >
       {/* Inshorts-style layout: Image top, content bottom */}
       
@@ -200,6 +201,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
       </div>
-    </div>
+      {/* Add structured data for SEO */}
+      <ArticleSchema article={article} />
+    </>
   );
 }
