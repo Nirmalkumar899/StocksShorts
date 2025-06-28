@@ -7,6 +7,15 @@ import { ArrowLeft, ExternalLink, RefreshCw, Share2, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 
+// Error boundary component for article page
+function ArticleErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background">
+      {children}
+    </div>
+  );
+}
+
 interface ArticleWithMeta {
   id: number;
   title: string;
@@ -24,14 +33,17 @@ interface ArticleWithMeta {
   slug: string;
 }
 
-export default function ArticlePage() {
+function ArticlePageContent() {
   const { id } = useParams();
   const { toast } = useToast();
   const [autoRefresh, setAutoRefresh] = useState(false);
 
   const { data: article, isLoading, error, refetch } = useQuery<ArticleWithMeta>({
     queryKey: ['/api/articles', id],
-    refetchInterval: autoRefresh ? 30000 : false, // Auto-refresh every 30 seconds when enabled
+    refetchInterval: autoRefresh ? 30000 : false,
+    enabled: !!id,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Auto-refresh when new articles are added
@@ -99,13 +111,39 @@ export default function ArticlePage() {
     );
   }
 
-  if (error || !article) {
+  if (error) {
+    console.error('Article fetch error:', error);
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Article</h1>
+          <p className="text-muted-foreground mb-6">
+            Failed to load article ID: {id}. Please try refreshing the page.
+          </p>
+          <div className="space-x-4">
+            <Button onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+            <Link href="/">
+              <Button variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!article) {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Article Not Found</h1>
           <p className="text-muted-foreground mb-6">
-            The article you're looking for doesn't exist or may have been removed.
+            Article ID {id} doesn't exist or may have been removed.
           </p>
           <Link href="/">
             <Button>
@@ -233,5 +271,37 @@ export default function ArticlePage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ArticlePage() {
+  const { id } = useParams();
+
+  // Handle missing ID
+  if (!id) {
+    return (
+      <ArticleErrorBoundary>
+        <div className="min-h-screen bg-background p-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Invalid Article Link</h1>
+            <p className="text-muted-foreground mb-6">
+              No article ID provided in the URL.
+            </p>
+            <Link href="/">
+              <Button>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </ArticleErrorBoundary>
+    );
+  }
+
+  return (
+    <ArticleErrorBoundary>
+      <ArticlePageContent />
+    </ArticleErrorBoundary>
   );
 }
