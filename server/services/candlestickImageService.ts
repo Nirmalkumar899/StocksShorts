@@ -31,23 +31,38 @@ export class CandlestickImageService {
     bearishColor: '#ff4444'  // Red for bearish
   };
 
-  // Generate educational candlestick patterns based on content
+  // Generate educational candlestick patterns based on specific article content
   private generateEducationalPattern(content: string): CandlestickData[] {
     const lowerContent = content.toLowerCase();
     
-    // Detect pattern type from content
-    if (lowerContent.includes('doji')) {
-      return this.generateDojiPattern();
-    } else if (lowerContent.includes('hammer')) {
-      return this.generateHammerPattern();
-    } else if (lowerContent.includes('engulfing')) {
-      return this.generateEngulfingPattern();
-    } else if (lowerContent.includes('support') && lowerContent.includes('resistance')) {
-      return this.generateSupportResistancePattern();
-    } else if (lowerContent.includes('trend')) {
-      return this.generateTrendPattern();
+    // Analyze specific educational content for precise pattern generation
+    if (lowerContent.includes('doji') && lowerContent.includes('indecision')) {
+      return this.generateSpecificDojiPattern(content);
+    } else if (lowerContent.includes('hammer') && lowerContent.includes('bottom')) {
+      return this.generateSpecificHammerPattern(content);
+    } else if (lowerContent.includes('shooting star') && lowerContent.includes('topper')) {
+      return this.generateSpecificShootingStarPattern(content);
+    } else if (lowerContent.includes('bullish engulfing')) {
+      return this.generateSpecificBullishEngulfingPattern(content);
+    } else if (lowerContent.includes('bearish engulfing')) {
+      return this.generateSpecificBearishEngulfingPattern(content);
+    } else if (lowerContent.includes('morning star') && lowerContent.includes('bullish')) {
+      return this.generateSpecificMorningStarPattern(content);
+    } else if (lowerContent.includes('evening star') && lowerContent.includes('peak')) {
+      return this.generateSpecificEveningStarPattern(content);
+    } else if (lowerContent.includes('piercing line')) {
+      return this.generateSpecificPiercingLinePattern(content);
+    } else if (lowerContent.includes('dark cloud cover')) {
+      return this.generateSpecificDarkCloudCoverPattern(content);
+    } else if (lowerContent.includes('three white soldiers')) {
+      return this.generateSpecificThreeWhiteSoldiersPattern(content);
+    } else if (lowerContent.includes('volume') && lowerContent.includes('matters')) {
+      return this.generateVolumeAnalysisPattern(content);
+    } else if (lowerContent.includes('fii') && lowerContent.includes('dii')) {
+      return this.generateMarketMovementPattern(content);
     } else {
-      return this.generateGenericPattern();
+      // For general educational content, create a basic trend pattern
+      return this.generateBasicEducationalPattern();
     }
   }
 
@@ -237,8 +252,536 @@ export class CandlestickImageService {
     return data;
   }
 
+  // Specific pattern generators based on educational content analysis
+  private generateSpecificDojiPattern(content: string): CandlestickData[] {
+    // 5 candles: 2 uptrend, 1 doji (indecision), 2 showing reversal/continuation
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < 2) {
+        // Uptrend leading to doji
+        const change = 0.012;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.997,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // DOJI PATTERN - the key educational element
+        data.push({
+          open: price,
+          close: price, // Same open and close = doji
+          high: price * 1.018, // Long upper wick
+          low: price * 0.982,  // Long lower wick
+          volume: 900000 + Math.random() * 200000 // High volume shows indecision
+        });
+      } else {
+        // Post-doji uncertainty
+        const change = (Math.random() - 0.5) * 0.008; // Small random moves
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: Math.max(open, close) * 1.003,
+          low: Math.min(open, close) * 0.997,
+          volume: 500000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificHammerPattern(content: string): CandlestickData[] {
+    // 5 candles: 3 downtrend, 1 hammer (bottom finder), 1 reversal confirmation
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < 3) {
+        // Downtrend leading to hammer
+        const change = -0.015;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: open * 1.003,
+          low: close * 0.995,
+          volume: 500000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 3) {
+        // HAMMER PATTERN - small body, long lower wick
+        const open = price;
+        const close = price * 1.008; // Small bullish body
+        data.push({
+          open, close,
+          high: close * 1.004, // Small upper wick
+          low: price * 0.955,  // Very long lower wick (key hammer feature)
+          volume: 800000 + Math.random() * 200000
+        });
+        price = close;
+      } else {
+        // Bullish reversal confirmation
+        const change = 0.018;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.998,
+          volume: 700000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificShootingStarPattern(content: string): CandlestickData[] {
+    // 5 candles: 3 uptrend, 1 shooting star (market topper), 1 bearish confirmation
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < 3) {
+        // Strong uptrend
+        const change = 0.018;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.997,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 3) {
+        // SHOOTING STAR - small body, long upper wick
+        const open = price;
+        const close = price * 0.995; // Small bearish body
+        data.push({
+          open, close,
+          high: price * 1.045,  // Very long upper wick (key shooting star feature)
+          low: close * 0.998,   // Small lower wick
+          volume: 850000 + Math.random() * 200000
+        });
+        price = close;
+      } else {
+        // Bearish confirmation
+        const change = -0.022;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.995,
+          volume: 700000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificBullishEngulfingPattern(content: string): CandlestickData[] {
+    // 4 candles: 2 downtrend, 2 bullish engulfing pattern
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 4; i++) {
+      if (i < 2) {
+        // Downtrend
+        const change = -0.012;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: open * 1.003,
+          low: close * 0.997,
+          volume: 500000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // Small bearish candle (first part of engulfing)
+        const open = price;
+        const close = price * 0.992;
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.998,
+          volume: 400000 + Math.random() * 100000
+        });
+        price = close;
+      } else {
+        // BULLISH ENGULFING - large green candle that engulfs previous red candle
+        const open = price * 0.988; // Opens below previous close
+        const close = price * 1.025; // Closes well above previous open
+        data.push({
+          open, close,
+          high: close * 1.003,
+          low: open * 0.997,
+          volume: 900000 + Math.random() * 200000 // High volume confirms pattern
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificBearishEngulfingPattern(content: string): CandlestickData[] {
+    // 4 candles: 2 uptrend, 2 bearish engulfing pattern
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 4; i++) {
+      if (i < 2) {
+        // Uptrend
+        const change = 0.015;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.997,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // Small bullish candle
+        const open = price;
+        const close = price * 1.008;
+        data.push({
+          open, close,
+          high: close * 1.002,
+          low: open * 0.998,
+          volume: 400000 + Math.random() * 100000
+        });
+        price = close;
+      } else {
+        // BEARISH ENGULFING - large red candle engulfs previous green
+        const open = price * 1.005; // Opens above previous close
+        const close = price * 0.975; // Closes well below previous open
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.995,
+          volume: 950000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificMorningStarPattern(content: string): CandlestickData[] {
+    // 5 candles: 2 downtrend, 3-candle morning star pattern
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < 2) {
+        // Downtrend
+        const change = -0.018;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.995,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // MORNING STAR - small doji/spinning top (the "star")
+        const open = price * 0.992; // Gap down
+        const close = open * 1.003; // Very small body
+        data.push({
+          open, close,
+          high: Math.max(open, close) * 1.008,
+          low: Math.min(open, close) * 0.992,
+          volume: 300000 + Math.random() * 100000 // Low volume
+        });
+        price = close;
+      } else {
+        // Strong bullish confirmation
+        const change = 0.025;
+        const open = price * 1.005; // Gap up
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.998,
+          volume: 800000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificEveningStarPattern(content: string): CandlestickData[] {
+    // Mirror of morning star but bearish
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < 2) {
+        // Uptrend
+        const change = 0.018;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.998,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // EVENING STAR
+        const open = price * 1.008; // Gap up
+        const close = open * 0.997; // Small body
+        data.push({
+          open, close,
+          high: Math.max(open, close) * 1.008,
+          low: Math.min(open, close) * 0.992,
+          volume: 300000 + Math.random() * 100000
+        });
+        price = close;
+      } else {
+        // Bearish confirmation
+        const change = -0.025;
+        const open = price * 0.995; // Gap down
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.995,
+          volume: 850000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificPiercingLinePattern(content: string): CandlestickData[] {
+    // 4 candles: 2 downtrend, piercing line pattern
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 4; i++) {
+      if (i < 2) {
+        // Downtrend
+        const change = -0.015;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.997,
+          volume: 500000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // Bearish candle before piercing
+        const open = price;
+        const close = price * 0.985;
+        data.push({
+          open, close,
+          high: open * 1.003,
+          low: close * 0.997,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else {
+        // PIERCING LINE - opens below previous close, closes above midpoint
+        const previousOpen = price / 0.985; // Previous candle's open
+        const midpoint = (previousOpen + price) / 2;
+        const open = price * 0.992; // Opens below previous close
+        const close = midpoint * 1.02; // Closes above midpoint (piercing)
+        data.push({
+          open, close,
+          high: close * 1.003,
+          low: open * 0.998,
+          volume: 800000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificDarkCloudCoverPattern(content: string): CandlestickData[] {
+    // Opposite of piercing line
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 4; i++) {
+      if (i < 2) {
+        // Uptrend
+        const change = 0.015;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * 1.005,
+          low: open * 0.998,
+          volume: 600000 + Math.random() * 200000
+        });
+        price = close;
+      } else if (i === 2) {
+        // Bullish candle before dark cloud
+        const open = price;
+        const close = price * 1.018;
+        data.push({
+          open, close,
+          high: close * 1.003,
+          low: open * 0.998,
+          volume: 500000 + Math.random() * 200000
+        });
+        price = close;
+      } else {
+        // DARK CLOUD COVER - opens above previous close, closes below midpoint
+        const previousOpen = price / 1.018;
+        const midpoint = (previousOpen + price) / 2;
+        const open = price * 1.008; // Opens above previous close
+        const close = midpoint * 0.98; // Closes below midpoint
+        data.push({
+          open, close,
+          high: open * 1.002,
+          low: close * 0.997,
+          volume: 850000 + Math.random() * 200000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSpecificThreeWhiteSoldiersPattern(content: string): CandlestickData[] {
+    // 5 candles: 2 base, 3 white soldiers pattern
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < 2) {
+        // Sideways/weak movement
+        const change = (Math.random() - 0.5) * 0.008;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: Math.max(open, close) * 1.003,
+          low: Math.min(open, close) * 0.997,
+          volume: 400000 + Math.random() * 100000
+        });
+        price = close;
+      } else {
+        // THREE WHITE SOLDIERS - three consecutive bullish candles
+        const change = 0.012 + (Math.random() * 0.008); // Consistent gains
+        const open = price > 1000 ? price * 0.998 : price; // Opens near previous close
+        const close = price * (1 + change);
+        data.push({
+          open, close,
+          high: close * (1 + Math.random() * 0.003),
+          low: open * (1 - Math.random() * 0.002),
+          volume: 600000 + Math.random() * 200000 + (i * 50000) // Increasing volume
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateVolumeAnalysisPattern(content: string): CandlestickData[] {
+    // Show volume importance - same price moves with different volumes
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 6; i++) {
+      const change = 0.015; // Same percentage move
+      const open = price;
+      const close = price * (1 + change);
+      
+      // Volume varies dramatically to show its importance
+      let volume;
+      if (i < 3) {
+        volume = 200000 + Math.random() * 100000; // Low volume moves
+      } else {
+        volume = 800000 + Math.random() * 300000; // High volume moves
+      }
+      
+      data.push({
+        open, close,
+        high: close * 1.003,
+        low: open * 0.997,
+        volume
+      });
+      price = close;
+    }
+    return data;
+  }
+
+  private generateMarketMovementPattern(content: string): CandlestickData[] {
+    // FII vs DII pattern - show different market behaviors
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 6; i++) {
+      let change, volume;
+      
+      if (i < 3) {
+        // FII behavior - volatile, momentum-based
+        change = (Math.random() - 0.3) * 0.025; // Biased toward positive but volatile
+        volume = 700000 + Math.random() * 400000; // High, variable volume
+      } else {
+        // DII behavior - stable, value-based
+        change = (Math.random() - 0.45) * 0.012; // More conservative moves
+        volume = 500000 + Math.random() * 200000; // More consistent volume
+      }
+      
+      const open = price;
+      const close = price * (1 + change);
+      data.push({
+        open, close,
+        high: Math.max(open, close) * (1 + Math.random() * 0.005),
+        low: Math.min(open, close) * (1 - Math.random() * 0.005),
+        volume
+      });
+      price = close;
+    }
+    return data;
+  }
+
+  private generateBasicEducationalPattern(): CandlestickData[] {
+    // Generic educational pattern for non-specific content
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 5; i++) {
+      const change = (Math.random() - 0.5) * 0.015;
+      const open = price;
+      const close = price * (1 + change);
+      data.push({
+        open, close,
+        high: Math.max(open, close) * (1 + Math.random() * 0.005),
+        low: Math.min(open, close) * (1 - Math.random() * 0.005),
+        volume: 500000 + Math.random() * 300000
+      });
+      price = close;
+    }
+    return data;
+  }
+
   private generateGenericPattern(): CandlestickData[] {
-    return this.generateSupportResistancePattern(); // Default to support/resistance
+    return this.generateBasicEducationalPattern();
   }
 
   // Generate sample candlestick data based on price movement described in article
