@@ -56,41 +56,31 @@ export class FinancialDataProvider {
     }
 
     try {
-      // 1. Try authentic Indian stock data provider (primary source)
-      const { indianStockDataProvider } = await import('./indianStockDataProvider');
-      let data = await indianStockDataProvider.getStockData(symbol);
-      if (data) {
-        console.log(`Authentic Indian data retrieved for ${symbol}: ₹${data.currentPrice}`);
+      // 1. Try real Indian stock data provider (authentic market data)
+      const { realIndianStockDataProvider } = await import('./realIndianStockData');
+      const realData = await realIndianStockDataProvider.getRealStockData(symbol);
+      if (realData) {
+        console.log(`Real market data retrieved for ${symbol}: ₹${realData.currentPrice}, PE ${realData.pe}, ROE ${realData.roe}% from ${realData.source}`);
         
-        // Convert to FinancialData format
         const financialData: FinancialData = {
-          symbol: data.symbol,
-          currentPrice: data.currentPrice,
-          marketCap: data.marketCap,
-          pe: data.pe,
-          pb: data.pb,
-          roe: data.roe,
-          debtToEquity: data.debtToEquity,
-          eps: data.eps,
-          bookValue: data.bookValue,
-          profitMargin: data.profitMargin,
-          revenueGrowth: data.revenueGrowth,
-          sector: data.sector,
-          industry: data.industry,
-          source: data.source,
-          lastUpdated: data.lastUpdated
+          symbol: realData.symbol,
+          currentPrice: realData.currentPrice,
+          marketCap: realData.marketCap,
+          pe: realData.pe,
+          pb: realData.pb,
+          roe: realData.roe ? realData.roe / 100 : undefined, // Convert percentage to decimal
+          debtToEquity: realData.debtToEquity,
+          eps: realData.eps,
+          bookValue: realData.bookValue,
+          profitMargin: realData.profitMargin,
+          sector: realData.sector,
+          industry: realData.industry,
+          source: realData.source,
+          lastUpdated: realData.lastUpdated
         };
         
         this.cache.set(symbol, { data: financialData, timestamp: Date.now() });
         return financialData;
-      }
-
-      // 2. Try Yahoo Finance with proper error handling
-      data = await this.fetchFromYahooFinance(symbol);
-      if (data) {
-        console.log(`Yahoo Finance data retrieved for ${symbol}`);
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
       }
 
       console.log(`No financial data available for ${symbol}`);
