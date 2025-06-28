@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
+import { ArticleSchema } from "@/components/article-schema";
 import type { Article } from "@shared/schema";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
