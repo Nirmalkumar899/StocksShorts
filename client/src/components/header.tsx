@@ -42,8 +42,7 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
       return {
         title: "Add to iPhone Home Screen",
         steps: [
-          "📱 Tap the Share button at the bottom of Safari",
-          "⬇️ Scroll down and tap 'Add to Home Screen'",
+          "📲 Look for 'Add to Home Screen' in the share options that just appeared",
           "✅ Tap 'Add' to confirm",
           "🚀 StocksShorts app will appear on your home screen!"
         ]
@@ -52,8 +51,7 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
       return {
         title: "Add to Android Home Screen", 
         steps: [
-          "📱 Tap the menu (⋮) in your browser",
-          "📲 Tap 'Add to Home screen' or 'Install app'",
+          "📲 Look for 'Add to Home screen' or 'Install app' option",
           "✅ Tap 'Add' to confirm",
           "🚀 StocksShorts app will appear on your home screen!"
         ]
@@ -62,8 +60,7 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
       return {
         title: "Add to Home Screen",
         steps: [
-          "📱 Open this page in your mobile browser",
-          "📲 Look for 'Add to Home Screen' in the menu",
+          "📲 Look for 'Add to Home Screen' option in your browser",
           "✅ Follow the prompts to install",
           "🚀 Enjoy the native app experience!"
         ]
@@ -73,20 +70,22 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
 
   const handleInstallClick = () => {
     const instructions = getMobileInstructions();
-    
     const instructionText = `${instructions.title}\n\n${instructions.steps.join('\n')}\n\nGet instant access to stock market news with faster loading and offline reading!`;
     
+    // Show immediate notification
+    alert(instructionText);
+    
+    // Then trigger share if available (which will show share options automatically)
     if (navigator.share) {
-      navigator.share({
-        title: 'StocksShorts - Add to Home Screen',
-        text: instructionText,
-        url: window.location.href,
-      }).catch(() => {
-        alert(instructionText);
-      });
-    } else {
-      alert(instructionText);
-      navigator.clipboard?.writeText(window.location.href);
+      setTimeout(() => {
+        navigator.share({
+          title: 'StocksShorts - Add to Home Screen',
+          text: 'Install StocksShorts for quick access to stock market news',
+          url: window.location.href,
+        }).catch(() => {
+          // Share failed, instructions already shown
+        });
+      }, 100);
     }
   };
 
