@@ -56,3 +56,32 @@ export function trackEvent(eventName: string, parameters?: Record<string, any>) 
     (window as any).gtag('event', eventName, parameters);
   }
 }
+
+// Simple visitor counter for immediate feedback
+let sessionVisitors = 0;
+let dailyVisitors = 0;
+
+export function incrementVisitorCount() {
+  sessionVisitors++;
+  
+  // Check if it's a new day for daily count
+  const today = new Date().toDateString();
+  const lastVisitDate = localStorage.getItem('lastVisitDate');
+  
+  if (lastVisitDate !== today) {
+    localStorage.setItem('lastVisitDate', today);
+    dailyVisitors = 1;
+    localStorage.setItem('dailyVisitors', '1');
+  } else {
+    const stored = localStorage.getItem('dailyVisitors');
+    dailyVisitors = stored ? parseInt(stored) + 1 : 1;
+    localStorage.setItem('dailyVisitors', dailyVisitors.toString());
+  }
+}
+
+export function getVisitorCounts() {
+  return {
+    session: sessionVisitors,
+    daily: dailyVisitors || parseInt(localStorage.getItem('dailyVisitors') || '0')
+  };
+}

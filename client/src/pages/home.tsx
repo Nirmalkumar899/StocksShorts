@@ -13,6 +13,7 @@ import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
 import AskAI from '@/components/ask-ai';
+import { VisitorStats } from '@/components/visitor-stats';
 import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
@@ -332,6 +333,9 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
       {renderSection()}
+      
+      {/* Visitor Stats - Only show on home section */}
+      {activeSection === 'home' && <VisitorStats />}
       
       {/* Fixed Bottom Navigation */}
       <div className="flex-shrink-0">
