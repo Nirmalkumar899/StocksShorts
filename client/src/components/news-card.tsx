@@ -29,8 +29,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     },
     onSuccess: () => {
       toast({
-        title: "Thank you for your feedback!",
-        description: "We've removed this article and added fresh news content.",
+        title: "Report submitted successfully!",
+        description: "Thank you for flagging this content. Our team will investigate and take action if needed.",
         variant: "default",
       });
       // Refresh the articles list
@@ -47,7 +47,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   const handleReport = (e: React.MouseEvent) => {
     e.stopPropagation();
-    reportMutation.mutate();
+    
+    const confirmed = window.confirm(
+      "Report this information as incorrect?\n\nThis will flag the article for our team to investigate. We'll review and remove if necessary.\n\nPress OK to confirm."
+    );
+    
+    if (confirmed) {
+      reportMutation.mutate();
+    }
   };
   
   const getSentimentIcon = () => {

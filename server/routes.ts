@@ -169,15 +169,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid article ID' });
       }
 
-      // Remove the reported article
-      await aiNewsService.removeReportedArticle(articleId);
-      
-      // Generate a replacement article
-      const replacementArticles = await aiNewsService.fetchLatestNews();
+      // Flag the reported article for investigation
+      await aiNewsService.flagReportedArticle(articleId);
       
       res.json({ 
-        message: 'Thank you for reporting this content. We have removed the article and added fresh news.',
-        replacementCount: replacementArticles.length
+        message: 'Report received. Our team will investigate this content and take appropriate action.',
+        status: 'flagged_for_review'
       });
     } catch (error) {
       console.error('Error reporting AI article:', error);

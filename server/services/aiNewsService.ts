@@ -468,14 +468,34 @@ Return only valid JSON array with no extra text.`;
     return await this.storeArticles(articles);
   }
 
-  async removeReportedArticle(articleId: number): Promise<void> {
+  async flagReportedArticle(articleId: number): Promise<void> {
     try {
       const { eq } = await import('drizzle-orm');
-      await db.delete(aiArticles).where(eq(aiArticles.id, articleId));
-      console.log(`Removed reported AI article with ID: ${articleId}`);
+      const { aiArticleReports } = await import('@shared/schema');
+      
+      // Check if article exists
+      const article = await db.select().from(aiArticles).where(eq(aiArticles.id, articleId)).limit(1);
+      if (article.length === 0) {
+        throw new Error('Article not found');
+      }
+
+      // Check if already reported
+      const existingReport = await db.select().from(aiArticleReports)
+        .where(eq(aiArticleReports.articleId, articleId)).limit(1);
+      
+      if (existingReport.length === 0) {
+        // Create new report record
+        await db.insert(aiArticleReports).values({
+          articleId: articleId,
+          status: 'pending'
+        });
+        console.log(`Flagged AI article with ID: ${articleId} for investigation`);
+      } else {
+        console.log(`Article ${articleId} already flagged for review`);
+      }
     } catch (error) {
-      console.error('Error removing reported article:', error);
-      throw new Error('Failed to remove reported article');
+      console.error('Error flagging reported article:', error);
+      throw new Error('Failed to flag reported article');
     }
   }
 

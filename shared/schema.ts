@@ -114,6 +114,25 @@ export const insertAiArticleSchema = createInsertSchema(aiArticles).omit({
 export type InsertAiArticle = z.infer<typeof insertAiArticleSchema>;
 export type AiArticle = typeof aiArticles.$inferSelect;
 
+// AI Article Reports table for flagging system
+export const aiArticleReports = pgTable("ai_article_reports", {
+  id: serial("id").primaryKey(),
+  articleId: integer("article_id").notNull().references(() => aiArticles.id),
+  reportedAt: timestamp("reported_at").defaultNow().notNull(),
+  status: varchar("status", { length: 50 }).default("pending").notNull(), // pending, reviewed, dismissed, removed
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: varchar("reviewed_by", { length: 100 }),
+  reviewNotes: text("review_notes"),
+});
+
+export const insertAiArticleReportSchema = createInsertSchema(aiArticleReports).omit({
+  id: true,
+  reportedAt: true,
+});
+
+export type InsertAiArticleReport = z.infer<typeof insertAiArticleReportSchema>;
+export type AiArticleReport = typeof aiArticleReports.$inferSelect;
+
 // Investment Advisor table
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
