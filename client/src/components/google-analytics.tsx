@@ -10,7 +10,7 @@ export function GoogleAnalytics() {
     document.head.appendChild(searchConsoleVerification);
 
     // Add Google Analytics if GA_MEASUREMENT_ID is provided
-    const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+    const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-49YFSGSMQZ';
     if (gaMeasurementId) {
       // Load Google Analytics script
       const script1 = document.createElement('script');
