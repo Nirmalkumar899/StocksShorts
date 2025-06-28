@@ -56,32 +56,26 @@ export class FinancialDataProvider {
     }
 
     try {
-      // 1. Try GPT-powered financial data extraction (most comprehensive)
-      console.log(`Starting financial data extraction for ${symbol}`);
-      let data = await this.fetchFromGPTSearch(symbol);
+      // 1. Try NSE (primary authentic source for Indian stocks)
+      let data = await this.fetchFromNSE(symbol);
       if (data) {
-        console.log(`GPT extraction successful for ${symbol}`);
+        console.log(`NSE data retrieved for ${symbol}`);
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
       }
 
-      // 2. Try Yahoo Finance
+      // 2. Try Screener.in (comprehensive Indian stock fundamentals)
+      data = await this.fetchFromScreener(symbol);
+      if (data) {
+        console.log(`Screener.in data retrieved for ${symbol}`);
+        this.cache.set(symbol, { data, timestamp: Date.now() });
+        return data;
+      }
+
+      // 3. Try Yahoo Finance (fallback for price data)
       data = await this.fetchFromYahooFinance(symbol);
       if (data) {
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
-      }
-
-      // 3. Try Alpha Vantage (for supported stocks)
-      data = await this.fetchFromAlphaVantage(symbol);
-      if (data) {
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
-      }
-
-      // 4. Try Financial Modeling Prep
-      data = await this.fetchFromFMP(symbol);
-      if (data) {
+        console.log(`Yahoo Finance data retrieved for ${symbol}`);
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
       }
@@ -94,58 +88,56 @@ export class FinancialDataProvider {
     }
   }
 
-  private async fetchFromAlphaVantage(symbol: string): Promise<FinancialData | null> {
-    if (!process.env.ALPHA_VANTAGE_API_KEY) return null;
-
+  private async fetchFromNSE(symbol: string): Promise<FinancialData | null> {
     try {
-      console.log(`Attempting Alpha Vantage for ${symbol}`);
+      const { nseService } = await import('./nseService');
+      const nseData = await nseService.getStockQuote(symbol);
       
-      // Try multiple symbol formats for Indian stocks
-      const formats = [
-        `${symbol}.BSE`,
-        `${symbol}.NS`, 
-        `${symbol}.NSE`,
-        `${symbol}.BO`,
-        symbol
-      ];
-
-      for (const format of formats) {
-        const response = await fetch(
-          `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${format}&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`
-        );
-
-        if (!response.ok) continue;
-
-        const data = await response.json();
-        if (data.Symbol && !data.Note && !data.Information) {
-          console.log(`Alpha Vantage success for ${symbol} using format ${format}`);
-          
-          return {
-            symbol,
-            currentPrice: parseFloat(data.Price || '0') || undefined,
-            marketCap: parseFloat(data.MarketCapitalization || '0') || undefined,
-            pe: parseFloat(data.PERatio || '0') || undefined,
-            eps: parseFloat(data.EPS || '0') || undefined,
-            roe: parseFloat(data.ReturnOnEquityTTM || '0') || undefined,
-            debtToEquity: parseFloat(data.DebtToEquityRatio || '0') || undefined,
-            profitMargin: parseFloat(data.ProfitMargin || '0') || undefined,
-            bookValue: parseFloat(data.BookValue || '0') || undefined,
-            pb: parseFloat(data.PriceToBookRatio || '0') || undefined,
-            sector: data.Sector || undefined,
-            industry: data.Industry || undefined,
-            source: 'Alpha Vantage',
-            lastUpdated: new Date()
-          };
-        }
-
-        // Rate limiting between attempts
-        await new Promise(resolve => setTimeout(resolve, 200));
+      if (nseData) {
+        return {
+          symbol,
+          currentPrice: nseData.lastPrice,
+          marketCap: nseData.marketCap,
+          pe: nseData.pe,
+          pb: nseData.pb,
+          sector: undefined,
+          industry: nseData.industry,
+          source: 'NSE India',
+          lastUpdated: new Date()
+        };
       }
-
-      console.log(`Alpha Vantage: No data found for ${symbol} in any format`);
+      
       return null;
     } catch (error) {
-      console.log(`Alpha Vantage error for ${symbol}:`, error);
+      console.log(`NSE error for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  private async fetchFromScreener(symbol: string): Promise<FinancialData | null> {
+    try {
+      const { screenerService } = await import('./screenerService');
+      const screenerData = await screenerService.getStockByName(symbol);
+      
+      if (screenerData) {
+        return {
+          symbol,
+          currentPrice: screenerData.currentPrice,
+          marketCap: screenerData.marketCap,
+          pe: screenerData.pe,
+          pb: screenerData.pb,
+          roe: screenerData.roe / 100, // Convert percentage to decimal
+          debtToEquity: screenerData.debtToEquity,
+          sector: screenerData.sector,
+          industry: screenerData.industry,
+          source: 'Screener.in',
+          lastUpdated: new Date()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.log(`Screener.in error for ${symbol}:`, error);
       return null;
     }
   }
