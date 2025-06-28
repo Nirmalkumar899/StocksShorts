@@ -56,7 +56,7 @@ export class GoogleSheetsService {
   async fetchArticles(): Promise<Article[]> {
     // Check cache first for 30x faster response
     const cachedArticles = this.cache.get<Article[]>('articles');
-    if (cachedArticles) {
+    if (cachedArticles && cachedArticles.length > 0) {
       console.log('Returning cached articles - instant response');
       return cachedArticles;
     }
@@ -184,7 +184,7 @@ export class GoogleSheetsService {
       const articleType = article.type.toLowerCase().trim();
       const categoryId = category.toLowerCase();
       
-      // Category mapping based on Google Sheets category column
+      // Enhanced category mapping to match Google Sheets categories exactly
       switch (categoryId) {
         case 'all':
           return true; // Show all articles for trending
@@ -208,9 +208,39 @@ export class GoogleSheetsService {
           return articleType === 'order win' || articleType === 'orders';
         case 'research-report':
           return articleType === 'research report' || articleType === 'research';
+        case 'ai':
+          return false; // AI News comes from separate service, not Google Sheets
         default:
-          // Try direct match with the category value from sheets
-          return articleType.toLowerCase().includes(categoryId.replace('-', ' '));
+          // Enhanced direct matching with flexible pattern matching
+          const normalizedCategory = categoryId.replace('-', ' ').toLowerCase();
+          const normalizedArticleType = articleType.toLowerCase();
+          
+          // Direct exact match
+          if (normalizedArticleType === normalizedCategory) {
+            return true;
+          }
+          
+          // Partial match (contains)
+          if (normalizedArticleType.includes(normalizedCategory) || normalizedCategory.includes(normalizedArticleType)) {
+            return true;
+          }
+          
+          // Handle common variations
+          const categoryVariations: { [key: string]: string[] } = {
+            'orders': ['order win', 'order wins', 'orders'],
+            'research': ['research report', 'research reports', 'research'],
+            'special': ['stocksshorts special', 'special'],
+            'breakout': ['breakout stock', 'breakout stocks', 'breakout'],
+            'index': ['kalkabazaar', 'nifty', 'sensex', 'index']
+          };
+          
+          for (const [key, variations] of Object.entries(categoryVariations)) {
+            if (normalizedCategory.includes(key) && variations.some(v => normalizedArticleType.includes(v))) {
+              return true;
+            }
+          }
+          
+          return false;
       }
     });
   }
@@ -328,6 +358,12 @@ export class GoogleSheetsService {
         }
       ];
     }
+  }
+
+  // Public method to clear cache for forced refresh
+  clearCache(): void {
+    this.cache = new MemoryCache();
+    console.log('Google Sheets cache cleared');
   }
 
   private getFallbackAdvisorData(): InvestmentAdvisor[] {

@@ -93,10 +93,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Refresh articles (force fetch from Google Sheets)
   app.post("/api/articles/refresh", async (req, res) => {
     try {
+      // Clear cache first to force fresh fetch
+      googleSheetsService.clearCache();
+      console.log('Cache cleared - forcing fresh fetch from Google Sheets');
+      
       const articles = await googleSheetsService.fetchArticles();
+      const uniqueCategories = Array.from(new Set(articles.map(a => a.type)));
+      
       res.json({ 
         message: 'Articles refreshed successfully', 
         count: articles.length,
+        categories: uniqueCategories,
         articles 
       });
     } catch (error) {
