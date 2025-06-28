@@ -25,7 +25,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   const reportMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest(`/api/ai-articles/${article.id}/report`, 'POST');
+      await apiRequest('POST', `/api/ai-articles/${article.id}/report`);
     },
     onSuccess: () => {
       toast({

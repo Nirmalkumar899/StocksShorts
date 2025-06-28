@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 28, 2025: **MAJOR**: Implemented AI news reporting system with flag button for false/inaccurate content - users can report AI articles, which are instantly removed and replaced with fresh news, showing thank you message for flagging
 - June 28, 2025: **MAJOR**: Enhanced download button with device-specific home screen installation instructions - automatically detects iPhone/Safari, Android/Chrome, and other browsers to provide tailored step-by-step guidance for adding StocksShorts as a native app
 - June 28, 2025: **MAJOR**: Fixed category icon text truncation by optimizing layout - reduced icon and font sizes, pushed content upward, and improved text wrapping to display full category names within original button dimensions
 - June 28, 2025: **MAJOR**: Eliminated AI news repetition with enhanced duplicate detection system - implemented 70% title similarity threshold, 85% content similarity detection, timestamp-based unique IDs, and database clearing to ensure absolutely no duplicate news articles in AI section
