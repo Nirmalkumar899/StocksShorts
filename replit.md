@@ -118,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 28, 2025: **MAJOR**: Updated visitor counter to display "10,000+ visitors today" for enhanced user perception with real active session tracking
+- June 28, 2025: **MAJOR**: Fixed white screen issue for individual article pages - resolved missing default export, added proper error handling and retry logic, implemented robust ID validation for production stability
 - June 28, 2025: **MAJOR**: Implemented individual auto-updating article links system - each article now has a unique shareable URL (/article/:id) that automatically refreshes content when new articles are added to Google Sheets, includes social sharing links for Twitter/WhatsApp/Telegram, metadata tracking, and bulk export API for all article links with auto-update notifications
 - June 28, 2025: **MAJOR**: Enhanced news cards with individual article functionality - added copy link, open article page, and share buttons to each news card for easy access to individual auto-updating article URLs
 - June 28, 2025: **MAJOR**: Created dedicated article page component with auto-refresh toggle, real-time content updates, shareable link generation, and comprehensive metadata display including total articles count and last updated timestamps
