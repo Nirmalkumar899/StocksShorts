@@ -89,6 +89,20 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
 
   return (
     <>
+      {/* Thinking notification with moving dots - positioned above highlighted input */}
+      {queryMutation.isPending && isHighlighted && (
+        <div className="mb-1 flex justify-center">
+          <div className="bg-blue-500 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1">
+            <span>Thinking</span>
+            <div className="flex gap-0.5">
+              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Ultra Compact Ask AI Input */}
       <div className={`mb-2 ${isHighlighted ? 'ring-1 ring-blue-400 ring-opacity-20 rounded' : ''}`}>
         <div className={`p-2 rounded ${isHighlighted ? 'bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800'}`}>
