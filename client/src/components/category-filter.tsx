@@ -38,9 +38,9 @@ const categories = [
   { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational' },
   { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500', url: '/ipo' },
   { id: 'global', label: 'Global', icon: Globe, gradient: 'from-teal-500 to-cyan-500', url: '/global' },
-  { id: 'others', label: 'Others', icon: Zap, gradient: 'from-yellow-500 to-amber-500', url: '/others' },
   { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500', url: '/orders' },
   { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500', url: '/research' },
+  { id: 'others', label: 'Others', icon: Zap, gradient: 'from-yellow-500 to-amber-500', url: '/others' },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
