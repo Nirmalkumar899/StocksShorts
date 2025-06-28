@@ -17,6 +17,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/home" component={Home} />
       <Route path="/trending" component={Home} />
       <Route path="/special" component={Home} />
       <Route path="/breakout" component={Home} />

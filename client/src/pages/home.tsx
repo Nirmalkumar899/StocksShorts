@@ -46,6 +46,7 @@ export default function Home() {
   // Map URLs to categories for subpage support
   const urlToCategoryMap: { [key: string]: string } = {
     '/': 'all',
+    '/home': 'all',
     '/trending': 'all',
     '/ai-news': 'ai',
     '/special': 'stocksshorts-special',
