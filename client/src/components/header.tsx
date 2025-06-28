@@ -32,50 +32,48 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
     document.documentElement.classList.toggle('dark');
   };
 
-  const getDeviceInstructions = () => {
+  const getMobileInstructions = () => {
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
     const isAndroid = /android/.test(userAgent);
-    const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
-    const isChrome = /chrome/.test(userAgent);
 
-    if (isIOS && isSafari) {
+    if (isIOS) {
       return {
         title: "Add to iPhone Home Screen",
         steps: [
-          "1. Tap the Share button (square with arrow) at the bottom",
-          "2. Scroll down and tap 'Add to Home Screen'",
-          "3. Tap 'Add' to confirm",
-          "4. The StocksShorts app will appear on your home screen"
+          "📱 Tap the Share button at the bottom of Safari",
+          "⬇️ Scroll down and tap 'Add to Home Screen'",
+          "✅ Tap 'Add' to confirm",
+          "🚀 StocksShorts app will appear on your home screen!"
         ]
       };
-    } else if (isAndroid && isChrome) {
+    } else if (isAndroid) {
       return {
-        title: "Add to Android Home Screen",
+        title: "Add to Android Home Screen", 
         steps: [
-          "1. Tap the menu (3 dots) in the top right corner",
-          "2. Tap 'Add to Home screen' or 'Install app'",
-          "3. Tap 'Add' to confirm",
-          "4. The StocksShorts app will appear on your home screen"
+          "📱 Tap the menu (⋮) in your browser",
+          "📲 Tap 'Add to Home screen' or 'Install app'",
+          "✅ Tap 'Add' to confirm",
+          "🚀 StocksShorts app will appear on your home screen!"
         ]
       };
     } else {
       return {
         title: "Add to Home Screen",
         steps: [
-          "1. Look for 'Add to Home Screen' in your browser menu",
-          "2. Or bookmark this page for quick access",
-          "3. Visit this page directly for the best experience",
-          "4. For mobile browsers, check the share or menu options"
+          "📱 Open this page in your mobile browser",
+          "📲 Look for 'Add to Home Screen' in the menu",
+          "✅ Follow the prompts to install",
+          "🚀 Enjoy the native app experience!"
         ]
       };
     }
   };
 
   const handleInstallClick = () => {
-    const instructions = getDeviceInstructions();
+    const instructions = getMobileInstructions();
     
-    const instructionText = `${instructions.title}\n\n${instructions.steps.join('\n')}\n\nThis will create a native app experience with faster loading and offline access.`;
+    const instructionText = `${instructions.title}\n\n${instructions.steps.join('\n')}\n\nGet instant access to stock market news with faster loading and offline reading!`;
     
     if (navigator.share) {
       navigator.share({
@@ -83,13 +81,10 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
         text: instructionText,
         url: window.location.href,
       }).catch(() => {
-        // If sharing fails, show alert with instructions
         alert(instructionText);
       });
     } else {
-      // Show instructions in alert
       alert(instructionText);
-      // Also copy URL to clipboard for convenience
       navigator.clipboard?.writeText(window.location.href);
     }
   };
