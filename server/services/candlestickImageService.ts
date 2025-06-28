@@ -55,27 +55,29 @@ export class CandlestickImageService {
     const data: CandlestickData[] = [];
     let price = 1000;
     
-    for (let i = 0; i < 15; i++) {
-      const isDojiCandle = i === 12; // Doji at the end
+    // Only 7 candles - 4 before, 1 doji, 2 after
+    for (let i = 0; i < 7; i++) {
+      const isDojiCandle = i === 4; // Doji in the middle for clarity
       
       if (isDojiCandle) {
-        // Doji: open = close, long wicks
+        // Doji: open = close, long wicks - THE PATTERN
         data.push({
           open: price,
           close: price,
-          high: price * 1.015,
-          low: price * 0.985,
+          high: price * 1.02, // Longer upper wick
+          low: price * 0.98,  // Longer lower wick
           volume: Math.random() * 1000000 + 800000
         });
       } else {
-        const change = (Math.random() - 0.5) * 0.02;
+        // Simple trend before and after
+        const change = i < 4 ? 0.008 : -0.008; // Up before doji, down after
         const open = price;
         const close = price * (1 + change);
         data.push({
           open,
           close,
-          high: Math.max(open, close) * (1 + Math.random() * 0.005),
-          low: Math.min(open, close) * (1 - Math.random() * 0.005),
+          high: Math.max(open, close) * (1 + Math.random() * 0.003),
+          low: Math.min(open, close) * (1 - Math.random() * 0.003),
           volume: Math.random() * 1000000 + 500000
         });
         price = close;
@@ -88,30 +90,31 @@ export class CandlestickImageService {
     const data: CandlestickData[] = [];
     let price = 1000;
     
-    for (let i = 0; i < 15; i++) {
-      const isHammerCandle = i === 12;
+    // Only 7 candles - 4 downtrend, 1 hammer, 2 recovery
+    for (let i = 0; i < 7; i++) {
+      const isHammerCandle = i === 4;
       
       if (isHammerCandle) {
-        // Hammer: small body, long lower wick
+        // Hammer: small body, long lower wick - THE PATTERN
         const open = price;
-        const close = price * 1.005; // Small bullish body
+        const close = price * 1.008; // Small bullish body
         data.push({
           open,
           close,
-          high: close * 1.002,
-          low: price * 0.97, // Long lower wick
+          high: close * 1.003,
+          low: price * 0.955, // Very long lower wick for clear visibility
           volume: Math.random() * 1000000 + 800000
         });
         price = close;
       } else {
-        const change = i < 10 ? -Math.random() * 0.015 : (Math.random() - 0.3) * 0.02; // Downtrend then reversal
+        const change = i < 4 ? -0.012 : 0.015; // Clear downtrend then recovery
         const open = price;
         const close = price * (1 + change);
         data.push({
           open,
           close,
-          high: Math.max(open, close) * (1 + Math.random() * 0.005),
-          low: Math.min(open, close) * (1 - Math.random() * 0.005),
+          high: Math.max(open, close) * (1 + Math.random() * 0.003),
+          low: Math.min(open, close) * (1 - Math.random() * 0.003),
           volume: Math.random() * 1000000 + 500000
         });
         price = close;
@@ -124,44 +127,45 @@ export class CandlestickImageService {
     const data: CandlestickData[] = [];
     let price = 1000;
     
-    for (let i = 0; i < 15; i++) {
-      const isEngulfingSequence = i >= 11 && i <= 12;
+    // Only 6 candles - 3 before, 2 engulfing pattern, 1 after
+    for (let i = 0; i < 6; i++) {
+      const isEngulfingSequence = i >= 3 && i <= 4;
       
       if (isEngulfingSequence) {
-        if (i === 11) {
-          // Small bearish candle
+        if (i === 3) {
+          // Small bearish candle - FIRST PATTERN CANDLE
           const open = price;
-          const close = price * 0.995;
+          const close = price * 0.988;
           data.push({
             open,
             close,
-            high: open * 1.002,
-            low: close * 0.998,
+            high: open * 1.003,
+            low: close * 0.997,
             volume: Math.random() * 1000000 + 600000
           });
           price = close;
         } else {
-          // Large bullish engulfing candle
-          const open = price * 0.992; // Open below previous close
-          const close = price * 1.015; // Close above previous open
+          // Large bullish engulfing candle - SECOND PATTERN CANDLE
+          const open = price * 0.985; // Open below previous close
+          const close = price * 1.025; // Close well above previous open
           data.push({
             open,
             close,
-            high: close * 1.002,
-            low: open * 0.998,
+            high: close * 1.003,
+            low: open * 0.996,
             volume: Math.random() * 1000000 + 900000
           });
           price = close;
         }
       } else {
-        const change = (Math.random() - 0.5) * 0.015;
+        const change = i < 3 ? -0.008 : 0.012; // Simple trend before and after
         const open = price;
         const close = price * (1 + change);
         data.push({
           open,
           close,
-          high: Math.max(open, close) * (1 + Math.random() * 0.005),
-          low: Math.min(open, close) * (1 - Math.random() * 0.005),
+          high: Math.max(open, close) * (1 + Math.random() * 0.003),
+          low: Math.min(open, close) * (1 - Math.random() * 0.003),
           volume: Math.random() * 1000000 + 500000
         });
         price = close;
@@ -173,18 +177,26 @@ export class CandlestickImageService {
   private generateSupportResistancePattern(): CandlestickData[] {
     const data: CandlestickData[] = [];
     const basePrice = 1000;
-    const resistance = basePrice * 1.05;
-    const support = basePrice * 0.95;
+    const resistance = basePrice * 1.04;
+    const support = basePrice * 0.96;
     let price = basePrice;
     
-    for (let i = 0; i < 20; i++) {
-      let change = (Math.random() - 0.5) * 0.02;
+    // Only 8 candles showing clear bounces
+    for (let i = 0; i < 8; i++) {
+      let change = 0;
       
-      // Bounce off support/resistance
-      if (price >= resistance * 0.99) {
-        change = -Math.abs(change); // Force downward
-      } else if (price <= support * 1.01) {
-        change = Math.abs(change); // Force upward
+      // Create clear bounces for educational visibility
+      if (i === 1 || i === 5) {
+        // Hit resistance and bounce down
+        price = resistance * 0.999;
+        change = -0.025;
+      } else if (i === 3 || i === 7) {
+        // Hit support and bounce up
+        price = support * 1.001;
+        change = 0.025;
+      } else {
+        // Normal movement between levels
+        change = (Math.random() - 0.5) * 0.015;
       }
       
       const open = price;
@@ -204,11 +216,11 @@ export class CandlestickImageService {
   private generateTrendPattern(): CandlestickData[] {
     const data: CandlestickData[] = [];
     let price = 1000;
-    const trendDirection = Math.random() > 0.5 ? 1 : -1; // 1 for uptrend, -1 for downtrend
     
-    for (let i = 0; i < 20; i++) {
-      const trendStrength = 0.008 * trendDirection;
-      const noise = (Math.random() - 0.5) * 0.015;
+    // Only 8 candles showing clear trend
+    for (let i = 0; i < 8; i++) {
+      const trendStrength = 0.015; // Clear uptrend for educational clarity
+      const noise = (Math.random() - 0.5) * 0.008; // Less noise
       const change = trendStrength + noise;
       
       const open = price;
@@ -216,8 +228,8 @@ export class CandlestickImageService {
       data.push({
         open,
         close,
-        high: Math.max(open, close) * (1 + Math.random() * 0.008),
-        low: Math.min(open, close) * (1 - Math.random() * 0.008),
+        high: Math.max(open, close) * (1 + Math.random() * 0.005),
+        low: Math.min(open, close) * (1 - Math.random() * 0.005),
         volume: Math.random() * 1000000 + 500000
       });
       price = close;
@@ -389,7 +401,7 @@ export class CandlestickImageService {
         
         <!-- Title -->
         <text x="${config.width / 2}" y="25" text-anchor="middle" class="title">
-          ${stockSymbol} - Candlestick Chart
+          ${isEducational ? this.getPatternName(articleContent) : `${stockSymbol} - Candlestick Chart`}
         </text>
     `;
     
