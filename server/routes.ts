@@ -16,6 +16,18 @@ import MemoryStore from "memorystore";
 export async function registerRoutes(app: Express): Promise<Server> {
   const googleSheetsService = new GoogleSheetsService();
 
+  // Serve sitemap.xml with correct content type
+  app.get('/sitemap.xml', (req, res) => {
+    res.type('application/xml');
+    res.sendFile('sitemap.xml', { root: './client/public' });
+  });
+
+  // Serve robots.txt with correct content type
+  app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.sendFile('robots.txt', { root: './client/public' });
+  });
+
   // Initialize session middleware for mobile auth
   const MemStore = MemoryStore(session);
   app.use(session({
