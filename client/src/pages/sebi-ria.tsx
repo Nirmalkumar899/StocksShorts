@@ -48,7 +48,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col p-4">
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" onClick={onBack} className="p-2">
           <ArrowLeft className="h-5 w-5" />
@@ -66,8 +66,9 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
       </div>
 
       {/* SEBI RIA Education Section */}
-      <div className="mb-6 space-y-4">
-        <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
+      <div className="flex-1 overflow-y-auto pb-20">
+        <div className="mb-6 space-y-4">
+          <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
           <CardContent className="p-6">
             <div className="flex items-center mb-3">
               <Shield className="h-6 w-6 mr-3" />
@@ -270,6 +271,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         <p className="text-sm text-gray-600 dark:text-gray-400">
           All advisors are SEBI registered. Always verify credentials before investing.
         </p>
+      </div>
       </div>
     </div>
   );
