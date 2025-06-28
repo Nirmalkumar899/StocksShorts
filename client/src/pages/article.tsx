@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, RefreshCw, Share2, Copy } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
+import type { Article } from "@shared/schema";
+import InfiniteArticleScroll from "@/components/infinite-article-scroll";
 
 // Simplified error boundary
 function ArticleErrorBoundary({ children }: { children: React.ReactNode }) {

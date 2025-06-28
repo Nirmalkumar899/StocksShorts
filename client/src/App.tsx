@@ -10,7 +10,7 @@ import NotFound from "@/pages/not-found";
 import SebiRia from "@/pages/sebi-ria";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
-import ArticlePage from "@/pages/article";
+import ArticlePage from "@/pages/article-new";
 
 function Router() {
   useSEO(); // Enable dynamic SEO
