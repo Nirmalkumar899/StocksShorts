@@ -50,7 +50,7 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
           description: "Go to Profile section to login and access AI stock analysis (Beta Testing)",
           variant: "destructive",
         });
-      } else if (errorMessage.includes("limit")) {
+      } else if (errorMessage.includes("limit") || errorMessage.includes("exceeded")) {
         toast({
           title: "Daily Limit Reached",
           description: "You've used all 5 daily AI analysis queries. Try again tomorrow.",
@@ -58,7 +58,7 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
         });
       } else {
         toast({
-          title: "Analysis Failed",
+          title: "Analysis Failed", 
           description: errorMessage,
           variant: "destructive",
         });
