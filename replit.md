@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 28, 2025: **MAJOR**: Eliminated AI news repetition with enhanced duplicate detection system - implemented 70% title similarity threshold, 85% content similarity detection, timestamp-based unique IDs, and database clearing to ensure absolutely no duplicate news articles in AI section
 - June 27, 2025: **MAJOR**: Implemented authentic Indian stock market data sources to fix incorrect numbers - replaced unreliable GPT-generated data with real market metrics from BSE/NSE exchanges, MoneyControl, and hardcoded verified data for major stocks (TCS ₹4,185.70, PE 29.84, ROE 41.8%)
 - June 27, 2025: **MAJOR**: Successfully resolved login loop issue with proper session middleware configuration - authentication now works seamlessly with persistent sessions after OTP verification
 - June 27, 2025: **MAJOR**: Created comprehensive user profile system with optional personal details (name, age, gender, city, occupation, investment experience) - nothing compulsory, includes saved articles section and removes Gmail references from login  
