@@ -22,7 +22,7 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
       const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
       
       if (response.status === 401) {
-        throw new Error("Please login to use AI stock analysis. This feature is in beta testing with daily limits.");
+        throw new Error("LOGIN_REQUIRED");
       }
       
       if (response.status === 429) {
@@ -44,10 +44,10 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : "Failed to analyze stock";
       
-      if (errorMessage.includes("login")) {
+      if (errorMessage === "LOGIN_REQUIRED") {
         toast({
           title: "Login Required",
-          description: "Please login to access AI stock analysis (Beta Testing)",
+          description: "Go to Profile section to login and access AI stock analysis (Beta Testing)",
           variant: "destructive",
         });
       } else if (errorMessage.includes("limit")) {
