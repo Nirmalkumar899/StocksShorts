@@ -283,10 +283,13 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
-      {renderSection()}
+      {/* Main Content Area - Constrained to leave space for bottom navigation */}
+      <div className="flex-1 overflow-hidden">
+        {renderSection()}
+      </div>
       
-      {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
+      {/* Fixed Bottom Navigation - Always Visible */}
+      <div className="flex-shrink-0 z-50">
         <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
       </div>
     </div>
