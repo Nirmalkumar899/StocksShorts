@@ -194,16 +194,6 @@ export default function Home() {
     console.log(`Auto-switching from ${selectedCategory} to ${nextCategory}`);
     setSelectedCategory(nextCategory);
     
-    // Show toast notification
-    const categoryDisplayName = nextCategory === 'all' ? 'trending' : 
-      nextCategory.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-    
-    toast({
-      title: "Loading next category",
-      description: `Now showing ${categoryDisplayName} news`,
-      duration: 2000,
-    });
-    
     // Reset switching flag after shorter delay for smoother experience
     setTimeout(() => {
       switchingRef.current = false;
