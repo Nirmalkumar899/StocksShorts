@@ -98,8 +98,8 @@ export class GoogleSheetsService {
             parsedTime = new Date();
           }
 
-          // Ensure content is within 350 character limit
-          const content = row[2] && row[2].length > 350 ? row[2].substring(0, 347) + '...' : row[2] || '';
+          // Get full content without truncation
+          const content = row[2] || '';
 
           // Map sentiment column (Positive/Negative) to our format
           const sentimentValue = row[6] || 'Neutral';

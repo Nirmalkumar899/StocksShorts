@@ -78,13 +78,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return bPriority - aPriority;
         });
         
-        // Optimize response by truncating content for list view
-        const optimizedArticles = sortedArticles.map(article => ({
-          ...article,
-          content: article.content.length > 350 ? article.content.substring(0, 350) + '...' : article.content
-        }));
-        
-        res.json(optimizedArticles);
+        // Return full articles without truncation
+        res.json(sortedArticles);
       }
     } catch (error) {
       console.error('Error fetching articles:', error);
