@@ -24,7 +24,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-30">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-[9999]">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
