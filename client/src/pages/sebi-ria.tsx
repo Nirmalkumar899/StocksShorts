@@ -30,7 +30,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col p-4">
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={onBack} className="p-2">
             <ArrowLeft className="h-5 w-5" />
