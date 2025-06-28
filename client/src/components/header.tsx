@@ -32,18 +32,64 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
     document.documentElement.classList.toggle('dark');
   };
 
+  const getDeviceInstructions = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
+    const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+    const isChrome = /chrome/.test(userAgent);
+
+    if (isIOS && isSafari) {
+      return {
+        title: "Add to iPhone Home Screen",
+        steps: [
+          "1. Tap the Share button (square with arrow) at the bottom",
+          "2. Scroll down and tap 'Add to Home Screen'",
+          "3. Tap 'Add' to confirm",
+          "4. The StocksShorts app will appear on your home screen"
+        ]
+      };
+    } else if (isAndroid && isChrome) {
+      return {
+        title: "Add to Android Home Screen",
+        steps: [
+          "1. Tap the menu (3 dots) in the top right corner",
+          "2. Tap 'Add to Home screen' or 'Install app'",
+          "3. Tap 'Add' to confirm",
+          "4. The StocksShorts app will appear on your home screen"
+        ]
+      };
+    } else {
+      return {
+        title: "Add to Home Screen",
+        steps: [
+          "1. Look for 'Add to Home Screen' in your browser menu",
+          "2. Or bookmark this page for quick access",
+          "3. Visit this page directly for the best experience",
+          "4. For mobile browsers, check the share or menu options"
+        ]
+      };
+    }
+  };
+
   const handleInstallClick = () => {
-    // For iOS Safari or when PWA prompt is not available
+    const instructions = getDeviceInstructions();
+    
+    const instructionText = `${instructions.title}\n\n${instructions.steps.join('\n')}\n\nThis will create a native app experience with faster loading and offline access.`;
+    
     if (navigator.share) {
       navigator.share({
-        title: 'StocksShorts',
-        text: 'Install StocksShorts app for quick market updates',
+        title: 'StocksShorts - Add to Home Screen',
+        text: instructionText,
         url: window.location.href,
       }).catch(() => {
-        // User cancelled sharing
+        // If sharing fails, show alert with instructions
+        alert(instructionText);
       });
     } else {
-      // Show instructions or copy URL
+      // Show instructions in alert
+      alert(instructionText);
+      // Also copy URL to clipboard for convenience
       navigator.clipboard?.writeText(window.location.href);
     }
   };
