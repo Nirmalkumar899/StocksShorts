@@ -204,10 +204,10 @@ export default function Home() {
       duration: 2000,
     });
     
-    // Reset switching flag after delay
+    // Reset switching flag after shorter delay for smoother experience
     setTimeout(() => {
       switchingRef.current = false;
-    }, 3000);
+    }, 1500);
   }, [selectedCategory, categoryOrder, toast]);
 
   const handleArticleClick = (article: Article) => {
@@ -314,29 +314,23 @@ export default function Home() {
             className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
             onScroll={(e) => {
               const element = e.target as HTMLElement;
-              const isAtEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 50;
+              const isAtEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 20;
               
               // Auto-switch to next category when reaching end
               if (isAtEnd && articles.length > 0 && !switchingRef.current) {
                 setTimeout(() => {
                   switchToNextCategory();
-                }, 1000); // Delay for smooth transition
+                }, 300); // Reduced delay for smoother experience
               }
             }}
           >
-            {articles.map((article, index) => (
+            {articles.map((article) => (
               <div key={article.id} className="h-full snap-start">
                 <NewsCard
                   article={article}
                   onClick={() => handleArticleClick(article)}
                   onShare={(e) => handleShare(e, article)}
                 />
-                {/* Show transition message on last article */}
-                {index === articles.length - 1 && (
-                  <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm">
-                    Scroll down for more news...
-                  </div>
-                )}
               </div>
             ))}
           </div>
