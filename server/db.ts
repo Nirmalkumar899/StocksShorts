@@ -3,12 +3,15 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
-// Only configure WebSocket in production/serverless environment
-if (process.env.NODE_ENV === 'production' || process.env.NEON_SERVERLESS) {
+// Configure WebSocket for Neon with better error handling
+try {
   neonConfig.webSocketConstructor = ws;
   neonConfig.useSecureWebSocket = true;
   neonConfig.pipelineTLS = false;
   neonConfig.pipelineConnect = false;
+  neonConfig.poolQueryViaFetch = true;
+} catch (error) {
+  console.warn('WebSocket configuration failed, will use fallback mode:', error);
 }
 
 if (!process.env.DATABASE_URL) {
@@ -18,37 +21,27 @@ if (!process.env.DATABASE_URL) {
 let pool: Pool | null = null;
 let db: any = null;
 
-// Initialize database connection with error handling
+// Initialize database connection with fallback handling
 if (process.env.DATABASE_URL) {
   try {
     pool = new Pool({ 
       connectionString: process.env.DATABASE_URL,
-      max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      max: 3,
+      idleTimeoutMillis: 20000,
+      connectionTimeoutMillis: 3000,
     });
 
     db = drizzle({ client: pool, schema });
 
-    // Handle pool errors gracefully
+    // Handle pool errors gracefully without crashing
     pool.on('error', (err) => {
-      console.error('Database pool error:', err);
+      console.warn('Database pool warning:', err.message);
     });
 
-    // Test connection after a delay to avoid blocking startup
-    setTimeout(async () => {
-      try {
-        if (pool) {
-          const client = await pool.connect();
-          console.log('Database connected successfully');
-          client.release();
-        }
-      } catch (err) {
-        console.error('Database connection test failed:', err);
-      }
-    }, 3000);
+    console.log('Database pool initialized');
   } catch (err) {
     console.error('Database initialization failed:', err);
+    // Continue without database for non-critical features
   }
 }
 

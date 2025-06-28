@@ -170,8 +170,8 @@ export class GoogleSheetsService {
       switch (categoryId) {
         case 'all':
           return true; // Show all articles for trending
-        case 'index':
-          return articleType === 'index' || articleType === 'nifty' || articleType === 'sensex';
+        case 'kalkabazaar':
+          return articleType === 'kalkabazaar' || articleType === 'nifty' || articleType === 'index' || articleType === 'sensex';
         case 'warrants':
           return articleType === 'warrants';
         case 'stocksshorts-special':
@@ -184,8 +184,8 @@ export class GoogleSheetsService {
           return articleType === 'ipo';
         case 'global':
           return articleType === 'global';
-        case 'most-active':
-          return articleType === 'most active' || articleType === 'active';
+        case 'others':
+          return articleType === 'most active' || articleType === 'active' || articleType === 'other' || articleType === 'others';
         case 'order-win':
           return articleType === 'order win' || articleType === 'orders';
         case 'research-report':

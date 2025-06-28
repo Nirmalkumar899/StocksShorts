@@ -224,12 +224,12 @@ Preferred communication style: Simple, everyday language.
 1. Trending (priority-based sorting: High > Medium > Low)
 2. StocksShorts Special  
 3. Breakout Stocks
-4. Index
+4. Kalkabazaar (renamed from Index)
 5. Warrants
 6. Educational
 7. IPO
 8. Global
-9. Most Active
+9. Others (renamed from Most Active)
 10. Order Win
 11. Research Report
 
