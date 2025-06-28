@@ -56,23 +56,36 @@ export class FinancialDataProvider {
     }
 
     try {
-      // 1. Try NSE (primary authentic source for Indian stocks)
-      let data = await this.fetchFromNSE(symbol);
+      // 1. Try authentic Indian stock data provider (primary source)
+      const { indianStockDataProvider } = await import('./indianStockDataProvider');
+      let data = await indianStockDataProvider.getStockData(symbol);
       if (data) {
-        console.log(`NSE data retrieved for ${symbol}`);
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
+        console.log(`Authentic Indian data retrieved for ${symbol}: ₹${data.currentPrice}`);
+        
+        // Convert to FinancialData format
+        const financialData: FinancialData = {
+          symbol: data.symbol,
+          currentPrice: data.currentPrice,
+          marketCap: data.marketCap,
+          pe: data.pe,
+          pb: data.pb,
+          roe: data.roe,
+          debtToEquity: data.debtToEquity,
+          eps: data.eps,
+          bookValue: data.bookValue,
+          profitMargin: data.profitMargin,
+          revenueGrowth: data.revenueGrowth,
+          sector: data.sector,
+          industry: data.industry,
+          source: data.source,
+          lastUpdated: data.lastUpdated
+        };
+        
+        this.cache.set(symbol, { data: financialData, timestamp: Date.now() });
+        return financialData;
       }
 
-      // 2. Try Screener.in (comprehensive Indian stock fundamentals)
-      data = await this.fetchFromScreener(symbol);
-      if (data) {
-        console.log(`Screener.in data retrieved for ${symbol}`);
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
-      }
-
-      // 3. Try Yahoo Finance (fallback for price data)
+      // 2. Try Yahoo Finance with proper error handling
       data = await this.fetchFromYahooFinance(symbol);
       if (data) {
         console.log(`Yahoo Finance data retrieved for ${symbol}`);
