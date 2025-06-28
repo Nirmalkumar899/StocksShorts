@@ -21,12 +21,12 @@ function Router() {
       <Route path="/trending" component={Home} />
       <Route path="/special" component={Home} />
       <Route path="/breakout" component={Home} />
-      <Route path="/index" component={Home} />
+      <Route path="/kalkabazaar" component={Home} />
       <Route path="/warrants" component={Home} />
       <Route path="/educational" component={Home} />
       <Route path="/ipo" component={Home} />
       <Route path="/global" component={Home} />
-      <Route path="/active" component={Home} />
+      <Route path="/others" component={Home} />
       <Route path="/orders" component={Home} />
       <Route path="/research" component={Home} />
       <Route path="/ai-news" component={Home} />
