@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 28, 2025: **MAJOR**: Successfully renamed "Index" to "Kalkabazaar" category with proper article mapping, replaced "Most Active" with "Others" category, and fixed database connection issues for AI news storage - all Google Sheets articles now properly categorized and displayed in correct sections
 - June 28, 2025: **MAJOR**: Implemented comprehensive visitor tracking system with real-time counter display and Google Analytics integration - ready to monitor daily visitors, traffic sources, and user behavior analytics
 - June 28, 2025: **MAJOR**: Implemented Google Search Console integration with verification meta tags, analytics tracking, and comprehensive setup guide - ready to track search rankings and performance for Indian stock market keywords
 - June 28, 2025: **MAJOR**: Implemented comprehensive SEO optimization with dynamic page titles, structured data, sitemap.xml, robots.txt, Open Graph tags, Twitter Cards, and performance optimizations - complete enterprise-level SEO for maximum search engine visibility targeting Indian stock market queries
