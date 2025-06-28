@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,23 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState('home');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const switchingRef = useRef(false);
+
+  // Category order for auto-switching
+  const categoryOrder = [
+    'all',
+    'ai',
+    'stocksshorts-special', 
+    'breakout-stocks',
+    'index',
+    'warrants',
+    'educational',
+    'ipo',
+    'global',
+    'most-active',
+    'order-win',
+    'research-report'
+  ];
 
   // Map URLs to categories for subpage support
   const urlToCategoryMap: { [key: string]: string } = {
@@ -165,6 +182,23 @@ export default function Home() {
     setSelectedCategory(category);
   };
 
+  // Auto-switch to next category when current one ends
+  const switchToNextCategory = useCallback(() => {
+    const currentIndex = categoryOrder.indexOf(selectedCategory);
+    const nextIndex = (currentIndex + 1) % categoryOrder.length;
+    const nextCategory = categoryOrder[nextIndex];
+    
+    console.log(`Auto-switching from ${selectedCategory} to ${nextCategory}`);
+    setSelectedCategory(nextCategory);
+    
+    // Show toast notification
+    toast({
+      title: "Auto-switched category",
+      description: `Now showing ${nextCategory === 'all' ? 'trending' : nextCategory.replace('-', ' ')} news`,
+      duration: 2000,
+    });
+  }, [selectedCategory, categoryOrder, toast]);
+
   const handleArticleClick = (article: Article) => {
     // Handle article click - could open modal or navigate
     console.log('Article clicked:', article);
@@ -265,14 +299,33 @@ export default function Home() {
           </div>
         ) : (
           // News Cards - Inshorts style full-screen layout
-          <div className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
-            {articles.map((article) => (
+          <div 
+            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+            onScroll={(e) => {
+              const element = e.target as HTMLElement;
+              const isAtEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 10;
+              
+              // Auto-switch to next category when reaching end
+              if (isAtEnd && articles.length > 0) {
+                setTimeout(() => {
+                  switchToNextCategory();
+                }, 500); // Small delay for better UX
+              }
+            }}
+          >
+            {articles.map((article, index) => (
               <div key={article.id} className="h-full snap-start">
                 <NewsCard
                   article={article}
                   onClick={() => handleArticleClick(article)}
                   onShare={(e) => handleShare(e, article)}
                 />
+                {/* Show transition message on last article */}
+                {index === articles.length - 1 && (
+                  <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm">
+                    Scroll down for more news...
+                  </div>
+                )}
               </div>
             ))}
           </div>
