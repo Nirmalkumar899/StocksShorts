@@ -59,7 +59,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               size="sm"
               onClick={() => onCategoryChange(category.id)}
               className={`
-                group relative flex flex-col items-center justify-center p-2 h-14 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
+                group relative flex flex-col items-center justify-center p-1.5 h-16 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
                 ${isSelected
                   ? isSpecial
                     ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white shadow-2xl transform scale-110 ring-4 ring-amber-200 dark:ring-amber-800'
@@ -72,7 +72,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
             >
               {/* Icon with enhanced styling */}
               <div className={`
-                relative flex items-center justify-center w-6 h-6 mb-1 rounded-lg transition-all duration-300
+                relative flex items-center justify-center w-6 h-6 mb-0.5 rounded-lg transition-all duration-300
                 ${isSelected
                   ? 'bg-white/20 backdrop-blur-sm'
                   : isSpecial
@@ -89,16 +89,18 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
                 }`} />
               </div>
               
-              {/* Label with improved typography */}
-              <span className={`text-[8px] leading-none text-center break-words font-bold tracking-wide ${
+              {/* Label with word wrapping for full visibility */}
+              <div className={`text-[9px] leading-tight text-center font-semibold tracking-tight w-full px-0.5 ${
                 isSelected 
                   ? 'text-white drop-shadow-sm' 
                   : isSpecial 
                   ? 'text-amber-700 dark:text-amber-300' 
                   : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
               }`}>
-                {category.label}
-              </span>
+                <span className="break-words hyphens-auto">
+                  {category.label}
+                </span>
+              </div>
               
               {/* Special indicator dot */}
               {isSpecial && !isSelected && (
