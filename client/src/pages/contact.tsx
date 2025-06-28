@@ -110,7 +110,7 @@ export default function Contact({ onBack }: ContactProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
@@ -137,7 +137,7 @@ export default function Contact({ onBack }: ContactProps) {
       </div>
 
       {/* Content */}
-      <div className="p-4 max-w-2xl mx-auto pb-20">
+      <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto pb-20">
         {/* Moderation Notice */}
         <Card className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
           <CardContent className="p-4">

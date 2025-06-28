@@ -8,7 +8,7 @@ interface DisclaimerProps {
 
 export default function Disclaimer({ onBack }: DisclaimerProps) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center space-x-3 max-w-4xl mx-auto">
@@ -25,7 +25,7 @@ export default function Disclaimer({ onBack }: DisclaimerProps) {
       </div>
 
       {/* Content */}
-      <div className="p-6 max-w-4xl mx-auto pb-20">
+      <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto pb-20">
         <div className="space-y-6">
           {/* Main Disclaimer */}
           <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">

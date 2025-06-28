@@ -100,7 +100,7 @@ export default function Profile({ onBack }: ProfileProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
         <div className="flex items-center space-x-3">
           <Button
@@ -118,7 +118,7 @@ export default function Profile({ onBack }: ProfileProps) {
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-20">
         <Card className="max-w-md mx-auto">
           <CardHeader className="text-center">
             {isAuthenticated ? (
