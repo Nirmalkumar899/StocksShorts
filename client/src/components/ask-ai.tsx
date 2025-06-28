@@ -30,11 +30,11 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
         throw new Error(errorData.message || "Daily limit exceeded");
       }
       
-      // Show thinking notification only after authentication passes
+      // Show compact thinking notification only after authentication passes
       toast({
-        title: "Thinking...",
-        description: "AI is analyzing the stock data. This may take a moment.",
-        duration: 8000, // Longer duration for thinking state
+        title: "🧠 Thinking...",
+        description: "Analyzing stock data",
+        duration: 6000, // Compact notification duration
       });
       
       const data = await response.json();
