@@ -59,7 +59,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               size="sm"
               onClick={() => onCategoryChange(category.id)}
               className={`
-                group relative flex flex-col items-center justify-center p-1.5 h-16 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
+                group relative flex flex-col items-center justify-start p-1 h-14 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
                 ${isSelected
                   ? isSpecial
                     ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white shadow-2xl transform scale-110 ring-4 ring-amber-200 dark:ring-amber-800'
@@ -72,7 +72,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
             >
               {/* Icon with enhanced styling */}
               <div className={`
-                relative flex items-center justify-center w-6 h-6 mb-0.5 rounded-lg transition-all duration-300
+                relative flex items-center justify-center w-5 h-5 mb-0.5 rounded-lg transition-all duration-300
                 ${isSelected
                   ? 'bg-white/20 backdrop-blur-sm'
                   : isSpecial
@@ -80,7 +80,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
                   : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
                 }
               `}>
-                <Icon className={`h-3.5 w-3.5 transition-all duration-300 ${
+                <Icon className={`h-3 w-3 transition-all duration-300 ${
                   isSelected 
                     ? 'text-white drop-shadow-sm' 
                     : isSpecial 
@@ -90,7 +90,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               </div>
               
               {/* Label with word wrapping for full visibility */}
-              <div className={`text-[9px] leading-tight text-center font-semibold tracking-tight w-full px-0.5 ${
+              <div className={`text-[7px] leading-tight text-center font-medium tracking-tight w-full px-0.5 ${
                 isSelected 
                   ? 'text-white drop-shadow-sm' 
                   : isSpecial 
