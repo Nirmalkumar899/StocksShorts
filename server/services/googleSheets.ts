@@ -111,14 +111,15 @@ export class GoogleSheetsService {
           const priority = row[7] || 'Medium';
           const category = row[8] || row[3] || 'Index'; // Use category column first, fallback to type
 
-          // Generate candlestick chart for technical analysis articles
+          // Generate candlestick chart for educational articles
           let imageUrl = null;
           const title = row[1] || 'Untitled';
           
-          if (candlestickImageService.shouldGenerateChart(content)) {
+          if (candlestickImageService.shouldGenerateChart(content, category)) {
             try {
               const stockSymbol = candlestickImageService.extractStockSymbol(title, content);
               imageUrl = candlestickImageService.generateChartDataURL(content, stockSymbol);
+              console.log(`Generated candlestick chart for ${category} article: ${title}`);
             } catch (error) {
               console.warn(`Failed to generate chart for article ${title}:`, error);
             }

@@ -31,6 +31,204 @@ export class CandlestickImageService {
     bearishColor: '#ff4444'  // Red for bearish
   };
 
+  // Generate educational candlestick patterns based on content
+  private generateEducationalPattern(content: string): CandlestickData[] {
+    const lowerContent = content.toLowerCase();
+    
+    // Detect pattern type from content
+    if (lowerContent.includes('doji')) {
+      return this.generateDojiPattern();
+    } else if (lowerContent.includes('hammer')) {
+      return this.generateHammerPattern();
+    } else if (lowerContent.includes('engulfing')) {
+      return this.generateEngulfingPattern();
+    } else if (lowerContent.includes('support') && lowerContent.includes('resistance')) {
+      return this.generateSupportResistancePattern();
+    } else if (lowerContent.includes('trend')) {
+      return this.generateTrendPattern();
+    } else {
+      return this.generateGenericPattern();
+    }
+  }
+
+  private generateDojiPattern(): CandlestickData[] {
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 15; i++) {
+      const isDojiCandle = i === 12; // Doji at the end
+      
+      if (isDojiCandle) {
+        // Doji: open = close, long wicks
+        data.push({
+          open: price,
+          close: price,
+          high: price * 1.015,
+          low: price * 0.985,
+          volume: Math.random() * 1000000 + 800000
+        });
+      } else {
+        const change = (Math.random() - 0.5) * 0.02;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open,
+          close,
+          high: Math.max(open, close) * (1 + Math.random() * 0.005),
+          low: Math.min(open, close) * (1 - Math.random() * 0.005),
+          volume: Math.random() * 1000000 + 500000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateHammerPattern(): CandlestickData[] {
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 15; i++) {
+      const isHammerCandle = i === 12;
+      
+      if (isHammerCandle) {
+        // Hammer: small body, long lower wick
+        const open = price;
+        const close = price * 1.005; // Small bullish body
+        data.push({
+          open,
+          close,
+          high: close * 1.002,
+          low: price * 0.97, // Long lower wick
+          volume: Math.random() * 1000000 + 800000
+        });
+        price = close;
+      } else {
+        const change = i < 10 ? -Math.random() * 0.015 : (Math.random() - 0.3) * 0.02; // Downtrend then reversal
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open,
+          close,
+          high: Math.max(open, close) * (1 + Math.random() * 0.005),
+          low: Math.min(open, close) * (1 - Math.random() * 0.005),
+          volume: Math.random() * 1000000 + 500000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateEngulfingPattern(): CandlestickData[] {
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    
+    for (let i = 0; i < 15; i++) {
+      const isEngulfingSequence = i >= 11 && i <= 12;
+      
+      if (isEngulfingSequence) {
+        if (i === 11) {
+          // Small bearish candle
+          const open = price;
+          const close = price * 0.995;
+          data.push({
+            open,
+            close,
+            high: open * 1.002,
+            low: close * 0.998,
+            volume: Math.random() * 1000000 + 600000
+          });
+          price = close;
+        } else {
+          // Large bullish engulfing candle
+          const open = price * 0.992; // Open below previous close
+          const close = price * 1.015; // Close above previous open
+          data.push({
+            open,
+            close,
+            high: close * 1.002,
+            low: open * 0.998,
+            volume: Math.random() * 1000000 + 900000
+          });
+          price = close;
+        }
+      } else {
+        const change = (Math.random() - 0.5) * 0.015;
+        const open = price;
+        const close = price * (1 + change);
+        data.push({
+          open,
+          close,
+          high: Math.max(open, close) * (1 + Math.random() * 0.005),
+          low: Math.min(open, close) * (1 - Math.random() * 0.005),
+          volume: Math.random() * 1000000 + 500000
+        });
+        price = close;
+      }
+    }
+    return data;
+  }
+
+  private generateSupportResistancePattern(): CandlestickData[] {
+    const data: CandlestickData[] = [];
+    const basePrice = 1000;
+    const resistance = basePrice * 1.05;
+    const support = basePrice * 0.95;
+    let price = basePrice;
+    
+    for (let i = 0; i < 20; i++) {
+      let change = (Math.random() - 0.5) * 0.02;
+      
+      // Bounce off support/resistance
+      if (price >= resistance * 0.99) {
+        change = -Math.abs(change); // Force downward
+      } else if (price <= support * 1.01) {
+        change = Math.abs(change); // Force upward
+      }
+      
+      const open = price;
+      const close = price * (1 + change);
+      data.push({
+        open,
+        close,
+        high: Math.max(open, close) * (1 + Math.random() * 0.005),
+        low: Math.min(open, close) * (1 - Math.random() * 0.005),
+        volume: Math.random() * 1000000 + 500000
+      });
+      price = close;
+    }
+    return data;
+  }
+
+  private generateTrendPattern(): CandlestickData[] {
+    const data: CandlestickData[] = [];
+    let price = 1000;
+    const trendDirection = Math.random() > 0.5 ? 1 : -1; // 1 for uptrend, -1 for downtrend
+    
+    for (let i = 0; i < 20; i++) {
+      const trendStrength = 0.008 * trendDirection;
+      const noise = (Math.random() - 0.5) * 0.015;
+      const change = trendStrength + noise;
+      
+      const open = price;
+      const close = price * (1 + change);
+      data.push({
+        open,
+        close,
+        high: Math.max(open, close) * (1 + Math.random() * 0.008),
+        low: Math.min(open, close) * (1 - Math.random() * 0.008),
+        volume: Math.random() * 1000000 + 500000
+      });
+      price = close;
+    }
+    return data;
+  }
+
+  private generateGenericPattern(): CandlestickData[] {
+    return this.generateSupportResistancePattern(); // Default to support/resistance
+  }
+
   // Generate sample candlestick data based on price movement described in article
   private generateCandlestickData(
     currentPrice: number,
@@ -130,21 +328,30 @@ export class CandlestickImageService {
   // Create candlestick chart as SVG
   generateCandlestickSVG(
     articleContent: string,
-    stockSymbol: string = 'STOCK'
+    stockSymbol: string = 'STOCK',
+    articleType?: string
   ): string {
-    const priceInfo = this.extractPriceInfo(articleContent);
+    let candleData: CandlestickData[];
+    const isEducational = articleType?.toLowerCase().includes('educational');
     
-    // Use default values if prices not found
-    const currentPrice = priceInfo.currentPrice || 1000;
-    const breakoutPrice = priceInfo.breakoutPrice || currentPrice;
-    const targetPrice = priceInfo.targetPrice || currentPrice * 1.1;
-    
-    const candleData = this.generateCandlestickData(
-      currentPrice,
-      breakoutPrice,
-      targetPrice,
-      priceInfo.isBreakout
-    );
+    // Use educational patterns for educational articles
+    if (isEducational) {
+      candleData = this.generateEducationalPattern(articleContent);
+    } else {
+      const priceInfo = this.extractPriceInfo(articleContent);
+      
+      // Use default values if prices not found
+      const currentPrice = priceInfo.currentPrice || 1000;
+      const breakoutPrice = priceInfo.breakoutPrice || currentPrice;
+      const targetPrice = priceInfo.targetPrice || currentPrice * 1.1;
+      
+      candleData = this.generateCandlestickData(
+        currentPrice,
+        breakoutPrice,
+        targetPrice,
+        priceInfo.isBreakout
+      );
+    }
     
     const config = this.defaultConfig;
     const chartWidth = config.width - 2 * config.padding;
@@ -220,26 +427,31 @@ export class CandlestickImageService {
       `;
     });
     
-    // Breakout line
-    if (priceInfo.breakoutPrice) {
-      const breakoutY = priceToY(priceInfo.breakoutPrice);
-      svg += `
-        <line x1="${config.padding}" y1="${breakoutY}" x2="${config.width - config.padding}" y2="${breakoutY}" class="breakout-line"/>
-        <text x="${config.width - config.padding - 5}" y="${breakoutY - 5}" text-anchor="end" class="text" fill="#FFA500">
-          Breakout: ₹${priceInfo.breakoutPrice.toFixed(0)}
-        </text>
-      `;
-    }
-    
-    // Target line
-    if (priceInfo.targetPrice && priceInfo.targetPrice !== priceInfo.breakoutPrice) {
-      const targetY = priceToY(priceInfo.targetPrice);
-      svg += `
-        <line x1="${config.padding}" y1="${targetY}" x2="${config.width - config.padding}" y2="${targetY}" class="target-line"/>
-        <text x="${config.width - config.padding - 5}" y="${targetY - 5}" text-anchor="end" class="text" fill="#9C27B0">
-          Target: ₹${priceInfo.targetPrice.toFixed(0)}
-        </text>
-      `;
+    // For non-educational articles, add breakout and target lines
+    if (!isEducational) {
+      const priceInfo = this.extractPriceInfo(articleContent);
+      
+      // Breakout line
+      if (priceInfo.breakoutPrice) {
+        const breakoutY = priceToY(priceInfo.breakoutPrice);
+        svg += `
+          <line x1="${config.padding}" y1="${breakoutY}" x2="${config.width - config.padding}" y2="${breakoutY}" class="breakout-line"/>
+          <text x="${config.width - config.padding - 5}" y="${breakoutY - 5}" text-anchor="end" class="text" fill="#FFA500">
+            Breakout: ₹${priceInfo.breakoutPrice.toFixed(0)}
+          </text>
+        `;
+      }
+      
+      // Target line
+      if (priceInfo.targetPrice && priceInfo.targetPrice !== priceInfo.breakoutPrice) {
+        const targetY = priceToY(priceInfo.targetPrice);
+        svg += `
+          <line x1="${config.padding}" y1="${targetY}" x2="${config.width - config.padding}" y2="${targetY}" class="target-line"/>
+          <text x="${config.width - config.padding - 5}" y="${targetY - 5}" text-anchor="end" class="text" fill="#9C27B0">
+            Target: ₹${priceInfo.targetPrice.toFixed(0)}
+          </text>
+        `;
+      }
     }
     
     svg += '</svg>';
@@ -255,14 +467,27 @@ export class CandlestickImageService {
   }
 
   // Check if article content suggests it needs a candlestick chart
-  shouldGenerateChart(articleContent: string): boolean {
+  shouldGenerateChart(articleContent: string, articleType?: string): boolean {
+    const content = articleContent.toLowerCase();
+    
+    // For educational articles, focus on technical analysis concepts
+    if (articleType?.toLowerCase().includes('educational')) {
+      const educationalKeywords = [
+        'candlestick', 'chart', 'pattern', 'technical analysis',
+        'bullish', 'bearish', 'doji', 'hammer', 'engulfing',
+        'support', 'resistance', 'trend', 'volume',
+        'moving average', 'rsi', 'macd'
+      ];
+      return educationalKeywords.some(keyword => content.includes(keyword));
+    }
+    
+    // For other articles, require price information
     const keywords = [
       'breakout', 'resistance', 'support', 'technical', 'candlestick',
       'chart pattern', 'price action', 'target', 'stop loss',
       'breaks above', 'breaks below', 'volume surge'
     ];
     
-    const content = articleContent.toLowerCase();
     return keywords.some(keyword => content.includes(keyword)) &&
            /₹\s*[0-9,]+/.test(articleContent); // Contains price information
   }
