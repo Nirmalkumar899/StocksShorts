@@ -13,6 +13,18 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/trending" component={Home} />
+      <Route path="/special" component={Home} />
+      <Route path="/breakout" component={Home} />
+      <Route path="/index" component={Home} />
+      <Route path="/warrants" component={Home} />
+      <Route path="/educational" component={Home} />
+      <Route path="/ipo" component={Home} />
+      <Route path="/global" component={Home} />
+      <Route path="/active" component={Home} />
+      <Route path="/orders" component={Home} />
+      <Route path="/research" component={Home} />
+      <Route path="/ai-news" component={Home} />
       <Route path="/sebi-ria">
         {() => <SebiRia onBack={() => window.history.back()} />}
       </Route>
@@ -22,6 +34,7 @@ function Router() {
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
       </Route>
+      <Route path="/disclaimer" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );

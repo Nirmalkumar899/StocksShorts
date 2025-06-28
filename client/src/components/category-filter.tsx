@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 import { 
   Globe, 
   BarChart3, 
@@ -28,21 +29,28 @@ interface CategoryFilterProps {
 }
 
 const categories = [
-  { id: 'all', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500' },
-  { id: 'ai', label: 'AI News', icon: Brain, ai: true, gradient: 'from-violet-500 to-purple-500' },
-  { id: 'stocksshorts-special', label: 'Special', icon: Crown, special: true, gradient: 'from-amber-500 to-orange-500' },
-  { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500' },
-  { id: 'index', label: 'Index', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500' },
-  { id: 'warrants', label: 'Warrants', icon: ScrollText, gradient: 'from-purple-500 to-violet-500' },
-  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500' },
-  { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500' },
-  { id: 'global', label: 'Global', icon: Globe, gradient: 'from-teal-500 to-cyan-500' },
-  { id: 'most-active', label: 'Active', icon: Zap, gradient: 'from-yellow-500 to-amber-500' },
-  { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500' },
-  { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500' },
+  { id: 'all', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500', url: '/' },
+  { id: 'ai', label: 'AI News', icon: Brain, ai: true, gradient: 'from-violet-500 to-purple-500', url: '/ai-news' },
+  { id: 'stocksshorts-special', label: 'Special', icon: Crown, special: true, gradient: 'from-amber-500 to-orange-500', url: '/special' },
+  { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500', url: '/breakout' },
+  { id: 'index', label: 'Index', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500', url: '/index' },
+  { id: 'warrants', label: 'Warrants', icon: ScrollText, gradient: 'from-purple-500 to-violet-500', url: '/warrants' },
+  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational' },
+  { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500', url: '/ipo' },
+  { id: 'global', label: 'Global', icon: Globe, gradient: 'from-teal-500 to-cyan-500', url: '/global' },
+  { id: 'most-active', label: 'Active', icon: Zap, gradient: 'from-yellow-500 to-amber-500', url: '/active' },
+  { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500', url: '/orders' },
+  { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500', url: '/research' },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
+  const [, setLocation] = useLocation();
+
+  const handleCategoryClick = (category: any) => {
+    onCategoryChange(category.id);
+    setLocation(category.url);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="grid grid-cols-6 gap-1.5 px-2 py-2">
@@ -57,7 +65,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               key={category.id}
               variant="ghost"
               size="sm"
-              onClick={() => onCategoryChange(category.id)}
+              onClick={() => handleCategoryClick(category)}
               className={`
                 group relative flex flex-col items-center justify-start p-1 h-14 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
                 ${isSelected
