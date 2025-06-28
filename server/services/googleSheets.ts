@@ -118,7 +118,10 @@ export class GoogleSheetsService {
           if (candlestickImageService.shouldGenerateChart(content, category)) {
             try {
               const stockSymbol = candlestickImageService.extractStockSymbol(title, content);
-              imageUrl = candlestickImageService.generateChartDataURL(content, stockSymbol);
+              // Pass category as articleType to generate appropriate chart patterns
+              const svg = candlestickImageService.generateCandlestickSVG(content, stockSymbol, category);
+              const base64 = Buffer.from(svg).toString('base64');
+              imageUrl = `data:image/svg+xml;base64,${base64}`;
               console.log(`Generated candlestick chart for ${category} article: ${title}`);
             } catch (error) {
               console.warn(`Failed to generate chart for article ${title}:`, error);
