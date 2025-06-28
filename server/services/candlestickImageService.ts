@@ -532,6 +532,24 @@ export class CandlestickImageService {
     
     return 'STOCK';
   }
+
+  private getPatternName(content: string): string {
+    const lowerContent = content.toLowerCase();
+    
+    if (lowerContent.includes('doji')) return 'Doji Pattern';
+    if (lowerContent.includes('hammer')) return 'Hammer Pattern';
+    if (lowerContent.includes('engulfing')) return 'Engulfing Pattern';
+    if (lowerContent.includes('shooting star')) return 'Shooting Star Pattern';
+    if (lowerContent.includes('morning star')) return 'Morning Star Pattern';
+    if (lowerContent.includes('evening star')) return 'Evening Star Pattern';
+    if (lowerContent.includes('piercing line')) return 'Piercing Line Pattern';
+    if (lowerContent.includes('dark cloud')) return 'Dark Cloud Cover';
+    if (lowerContent.includes('three white soldiers')) return 'Three White Soldiers';
+    if (lowerContent.includes('support') && lowerContent.includes('resistance')) return 'Support & Resistance';
+    if (lowerContent.includes('trend')) return 'Trend Analysis';
+    
+    return 'Educational Chart';
+  }
 }
 
 export const candlestickImageService = new CandlestickImageService();
