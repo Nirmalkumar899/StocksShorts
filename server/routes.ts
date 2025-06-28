@@ -376,6 +376,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/logout', mobileAuth.logout);
   app.put('/api/auth/profile', mobileAuth.isAuthenticated, mobileAuth.updateProfile);
 
+  // Article Sharing and Export Routes
+  
+  // Generate shareable link with metadata for any article
+  app.get("/api/articles/:id/share", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const articles = await googleSheetsService.fetchArticles();
+      const article = articles.find(a => a.id === id);
+      
+      if (!article) {
+        return res.status(404).json({ message: 'Article not found' });
+      }
+      
+      const shareData = {
+        article,
+        shareableLink: `${req.protocol}://${req.get('host')}/article/${article.id}`,
+        apiLink: `${req.protocol}://${req.get('host')}/api/articles/${article.id}`,
+        socialShare: {
+          twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`${req.protocol}://${req.get('host')}/article/${article.id}`)}`,
+          whatsapp: `https://wa.me/?text=${encodeURIComponent(`${article.title} - ${req.protocol}://${req.get('host')}/article/${article.id}`)}`,
+          telegram: `https://t.me/share/url?url=${encodeURIComponent(`${req.protocol}://${req.get('host')}/article/${article.id}`)}&text=${encodeURIComponent(article.title)}`
+        },
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          totalArticles: articles.length,
+          category: article.type,
+          autoRefresh: true
+        }
+      };
+      
+      res.json(shareData);
+    } catch (error) {
+      console.error('Error generating share data:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to generate share data'
+      });
+    }
+  });
+
+  // Bulk export all article links for easy sharing
+  app.get("/api/articles/export/links", async (req, res) => {
+    try {
+      const articles = await googleSheetsService.fetchArticles();
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      
+      const exportData = {
+        totalArticles: articles.length,
+        generatedAt: new Date().toISOString(),
+        baseUrl,
+        autoUpdateMessage: "All links automatically refresh when new articles are added to Google Sheets",
+        links: articles.map(article => ({
+          id: article.id,
+          title: article.title,
+          category: article.type,
+          priority: article.priority,
+          shareableLink: `${baseUrl}/article/${article.id}`,
+          apiLink: `${baseUrl}/api/articles/${article.id}`,
+          slug: article.title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .trim()
+        }))
+      };
+      
+      res.json(exportData);
+    } catch (error) {
+      console.error('Error exporting article links:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to export article links'
+      });
+    }
+  });
+
 
 
   // Financial Data Testing Endpoints

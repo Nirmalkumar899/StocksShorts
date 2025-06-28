@@ -57,6 +57,30 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       reportMutation.mutate();
     }
   };
+
+  const handleCopyLink = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const articleLink = `${window.location.origin}/article/${article.id}`;
+    
+    try {
+      await navigator.clipboard.writeText(articleLink);
+      toast({
+        title: "Link copied!",
+        description: "Article link copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Please copy the link manually",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleOpenArticle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(`/article/${article.id}`, '_blank');
+  };
   
   const getSentimentIcon = () => {
     switch ((article.sentiment || 'neutral').toLowerCase()) {
@@ -147,15 +171,38 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </Button>
           )}
           
-          {/* Share button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onShare}
-            className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
+          {/* Individual article link buttons */}
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyLink}
+              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+              title="Copy article link"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleOpenArticle}
+              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+              title="Open article page"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onShare}
+              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+              title="Share options"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
       
