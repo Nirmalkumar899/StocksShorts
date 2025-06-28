@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, TrendingUp, TrendingDown, BarChart3, Flag } from "lucide-react";
+import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
@@ -133,9 +133,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               onClick={handleReport}
               disabled={reportMutation.isPending}
               className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-              title="Report as inaccurate"
+              title="Report incorrect information"
             >
-              <Flag className="h-4 w-4" />
+              <AlertTriangle className="h-4 w-4" />
             </Button>
           )}
           
