@@ -47,33 +47,70 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
     const isAndroid = /android/.test(userAgent);
+    const isChrome = /chrome/.test(userAgent) && !/edg/.test(userAgent);
+    const isFirefox = /firefox/.test(userAgent);
+    const isSamsung = /samsungbrowser/.test(userAgent);
 
     if (isIOS) {
       return {
-        title: "Add to iPhone Home Screen",
+        title: "📱 Add to iPhone Home Screen",
         steps: [
-          "📱 Tap the Share button (square with arrow) at the bottom of Safari",
-          "📲 Scroll down and tap 'Add to Home Screen'",
-          "✅ Tap 'Add' to confirm",
-          "🚀 StocksShorts app will appear on your home screen!"
+          "1. Tap the Share button (⬆️) at the bottom of Safari",
+          "2. Scroll down in the share menu", 
+          "3. Tap 'Add to Home Screen' 📲",
+          "4. Tap 'Add' to confirm ✅",
+          "5. Find StocksShorts app on your home screen! 🚀"
         ]
       };
     } else if (isAndroid) {
-      return {
-        title: "Add to Android Home Screen", 
-        steps: [
-          "📲 Look for 'Add to Home screen' or 'Install app' option",
-          "✅ Tap 'Add' to confirm",
-          "🚀 StocksShorts app will appear on your home screen!"
-        ]
-      };
+      if (isChrome) {
+        return {
+          title: "📱 Add to Android Home Screen (Chrome)",
+          steps: [
+            "1. Tap the menu (⋮) at the top right",
+            "2. Tap 'Add to Home screen' 📲", 
+            "3. Tap 'Add' to confirm ✅",
+            "4. Find StocksShorts app on your home screen! 🚀"
+          ]
+        };
+      } else if (isFirefox) {
+        return {
+          title: "📱 Add to Android Home Screen (Firefox)",
+          steps: [
+            "1. Tap the menu (⋮) at the top right",
+            "2. Tap 'Install' or 'Add to Home screen' 📲",
+            "3. Tap 'Add' to confirm ✅", 
+            "4. Find StocksShorts app on your home screen! 🚀"
+          ]
+        };
+      } else if (isSamsung) {
+        return {
+          title: "📱 Add to Android Home Screen (Samsung Browser)",
+          steps: [
+            "1. Tap the menu (☰) at the bottom",
+            "2. Tap 'Add page to' → 'Home screen' 📲",
+            "3. Tap 'Add' to confirm ✅",
+            "4. Find StocksShorts app on your home screen! 🚀"
+          ]
+        };
+      } else {
+        return {
+          title: "📱 Add to Android Home Screen",
+          steps: [
+            "1. Look for menu (⋮) in your browser",
+            "2. Find 'Add to Home screen' or 'Install' option 📲",
+            "3. Tap 'Add' to confirm ✅",
+            "4. Find StocksShorts app on your home screen! 🚀"
+          ]
+        };
+      }
     } else {
       return {
-        title: "Add to Home Screen",
+        title: "💻 Add to Home Screen",
         steps: [
-          "📲 Look for 'Add to Home Screen' option in your browser",
-          "✅ Follow the prompts to install",
-          "🚀 Enjoy the native app experience!"
+          "1. Open this page on your mobile device 📱",
+          "2. Follow the mobile browser instructions",
+          "3. Install for the best app experience! 🚀"
         ]
       };
     }
