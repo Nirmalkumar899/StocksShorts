@@ -118,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 28, 2025: **MAJOR**: Added "thinking" notification for AI stock analysis to prevent user impatience during slower searches - shows "AI is analyzing the stock data. This may take a moment." immediately when query submitted, providing clear feedback during processing delays
+- June 28, 2025: **MAJOR**: Implemented silent automatic category switching for continuous news scrolling - removed all visual notifications/indicators, system automatically switches to next category with 300ms delay and 1.5s throttling for seamless user experience without interruptions
 - June 28, 2025: **MAJOR**: Implemented automatic category switching for continuous news scrolling - when users reach end of articles in current category, system automatically switches to next category in predefined order with toast notification and throttling to prevent rapid switches, ensuring users never stop scrolling
 - June 28, 2025: **MAJOR**: Enhanced bottom navigation with z-[9999] priority to appear above all content while preserving news article layout and image space
 - June 28, 2025: **MAJOR**: Implemented comprehensive AI news reporting system with confirmation dialog and investigation workflow - users see warning triangle to report incorrect information, system flags articles for team review rather than immediate removal, includes proper database tracking for moderation

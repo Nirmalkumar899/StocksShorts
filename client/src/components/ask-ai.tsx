@@ -19,6 +19,13 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
 
   const queryMutation = useMutation({
     mutationFn: async (stockQuery: string) => {
+      // Show thinking notification
+      toast({
+        title: "Thinking...",
+        description: "AI is analyzing the stock data. This may take a moment.",
+        duration: 8000, // Longer duration for thinking state
+      });
+
       const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
       
       if (response.status === 401) {
@@ -37,8 +44,8 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
       setAnalysis(data);
       setShowDiscussion(true);
       toast({
-        title: "Beta Analysis Complete",
-        description: "AI stock analysis completed",
+        title: "Analysis Complete",
+        description: "AI stock analysis finished successfully",
       });
     },
     onError: (error) => {
