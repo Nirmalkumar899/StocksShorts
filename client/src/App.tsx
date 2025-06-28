@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 import SebiRia from "@/pages/sebi-ria";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
+import ArticlePage from "@/pages/article";
 
 function Router() {
   useSEO(); // Enable dynamic SEO
@@ -40,6 +41,7 @@ function Router() {
         {() => <Profile onBack={() => window.history.back()} />}
       </Route>
       <Route path="/disclaimer" component={Home} />
+      <Route path="/article/:id" component={ArticlePage} />
       <Route component={NotFound} />
     </Switch>
   );

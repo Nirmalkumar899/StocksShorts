@@ -114,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get article by ID
+  // Get article by ID with auto-refresh capability
   app.get("/api/articles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -122,12 +122,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const article = articles.find(a => a.id === id);
       
       if (!article) {
-        return res.status(404).json({ message: 'Article not found' });
+        return res.status(404).json({ 
+          message: 'Article not found',
+          totalArticles: articles.length,
+          availableIds: articles.map(a => a.id).slice(0, 10) // Show first 10 IDs for reference
+        });
       }
       
-      res.json(article);
+      // Add metadata for auto-updating and sharing
+      const articleWithMeta = {
+        ...article,
+        lastUpdated: new Date().toISOString(),
+        shareableLink: `${req.protocol}://${req.get('host')}/article/${article.id}`,
+        apiLink: `${req.protocol}://${req.get('host')}/api/articles/${article.id}`,
+        totalArticlesInSheet: articles.length,
+        slug: article.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/--+/g, '-')
+          .trim()
+      };
+      
+      res.json(articleWithMeta);
     } catch (error) {
       console.error('Error fetching article:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch article'
+      });
+    }
+  });
+
+  // Get article by title slug for SEO-friendly URLs
+  app.get("/api/articles/slug/:slug", async (req, res) => {
+    try {
+      const articles = await googleSheetsService.fetchArticles();
+      const slug = req.params.slug.toLowerCase();
+      
+      // Find article by matching title slug
+      const article = articles.find(a => {
+        const titleSlug = a.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/--+/g, '-') // Replace multiple hyphens with single
+          .trim();
+        return titleSlug.includes(slug) || slug.includes(titleSlug);
+      });
+      
+      if (!article) {
+        return res.status(404).json({ 
+          message: 'Article not found',
+          searchedSlug: slug,
+          suggestion: 'Try using the article ID instead'
+        });
+      }
+      
+      // Add metadata for auto-updating
+      const articleWithMeta = {
+        ...article,
+        lastUpdated: new Date().toISOString(),
+        shareableLink: `${req.protocol}://${req.get('host')}/article/${article.id}`,
+        apiLink: `${req.protocol}://${req.get('host')}/api/articles/${article.id}`,
+        slug: article.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/--+/g, '-')
+          .trim(),
+        totalArticlesInSheet: articles.length
+      };
+      
+      res.json(articleWithMeta);
+    } catch (error) {
+      console.error('Error fetching article by slug:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch article'
       });
