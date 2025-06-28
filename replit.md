@@ -118,7 +118,6 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 28, 2025: **MAJOR**: Fixed bottom navigation visibility across all sections with maximum z-index priority (z-[9999]) and improved AI error handling to guide users to Profile section for login instead of showing generic authentication errors
 - June 28, 2025: **MAJOR**: Implemented comprehensive AI news reporting system with confirmation dialog and investigation workflow - users see warning triangle to report incorrect information, system flags articles for team review rather than immediate removal, includes proper database tracking for moderation
 - June 28, 2025: **MAJOR**: Implemented dedicated subpage routing for Google Ads optimization - added URL-based navigation for all sections (/trending, /special, /breakout, /index, /warrants, /educational, /ipo, /global, /active, /orders, /research, /ai-news, /sebi-ria, /contact, /profile, /disclaimer) while maintaining existing functionality through automatic category detection and proper URL mapping
 - June 28, 2025: **MAJOR**: Enhanced download button with device-specific installation instructions - features blue-purple gradient, pulse animation, red notification dot, scale hover effect, and detailed tooltip. Implements comprehensive device detection for iPhone Safari, Android Chrome/Firefox/Samsung Browser, and desktop with step-by-step numbered instructions tailored to each platform's interface and menu locations
