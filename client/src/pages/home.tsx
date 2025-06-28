@@ -162,7 +162,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
       toast({
         title: "Articles refreshed",
-        description: "Latest articles have been loaded from Google Sheets.",
+        description: "Latest articles have been loaded successfully.",
       });
     },
     onError: (error: Error) => {
