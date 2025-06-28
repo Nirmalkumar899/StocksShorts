@@ -19,10 +19,42 @@ import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
+  const [location] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeSection, setActiveSection] = useState('home');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Map URLs to categories for subpage support
+  const urlToCategoryMap: { [key: string]: string } = {
+    '/': 'all',
+    '/trending': 'all',
+    '/ai-news': 'ai',
+    '/special': 'stocksshorts-special',
+    '/breakout': 'breakout-stocks',
+    '/index': 'index',
+    '/warrants': 'warrants',
+    '/educational': 'educational',
+    '/ipo': 'ipo',
+    '/global': 'global',
+    '/active': 'most-active',
+    '/orders': 'order-win',
+    '/research': 'research-report',
+    '/disclaimer': 'all'
+  };
+
+  // Set category based on URL
+  useEffect(() => {
+    const categoryFromUrl = urlToCategoryMap[location] || 'all';
+    setSelectedCategory(categoryFromUrl);
+    
+    // Set active section based on URL
+    if (location === '/disclaimer') {
+      setActiveSection('disclaimer');
+    } else {
+      setActiveSection('home');
+    }
+  }, [location]);
 
   // Preload investment advisors data for faster navigation
   useQuery({
