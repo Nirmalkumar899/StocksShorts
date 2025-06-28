@@ -10,6 +10,7 @@ import { nseService } from "./services/nseService";
 import { stockTester } from "./services/stockTester";
 import { financialDataProvider } from "./services/financialDataProvider";
 import { conferenceCallService } from "./services/conferenceCallService";
+import { candlestickImageService } from "./services/candlestickImageService";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
