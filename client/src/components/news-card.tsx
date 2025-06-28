@@ -1,10 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { Share2, TrendingUp, TrendingDown, BarChart3, Flag } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface NewsCardProps {
   article: Article;
@@ -17,6 +20,35 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageError, setImageError] = useState(false);
   const sentimentColor = getSentimentColor(article.sentiment);
   const typeColor = getTypeColor(article.type || 'AI News');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const reportMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest(`/api/ai-articles/${article.id}/report`, 'POST');
+    },
+    onSuccess: () => {
+      toast({
+        title: "Thank you for your feedback!",
+        description: "We've removed this article and added fresh news content.",
+        variant: "default",
+      });
+      // Refresh the articles list
+      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Report failed",
+        description: error instanceof Error ? error.message : "Unable to report article",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleReport = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    reportMutation.mutate();
+  };
   
   const getSentimentIcon = () => {
     switch ((article.sentiment || 'neutral').toLowerCase()) {
@@ -91,15 +123,32 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </span>
         </div>
         
-        {/* Share button on image */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onShare}
-          className="absolute top-3 right-3 text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-        >
-          <Share2 className="h-4 w-4" />
-        </Button>
+        {/* Action buttons on image */}
+        <div className="absolute top-3 right-3 flex space-x-2">
+          {/* Report button for AI News only */}
+          {article.type === 'AI News' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReport}
+              disabled={reportMutation.isPending}
+              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+              title="Report as inaccurate"
+            >
+              <Flag className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {/* Share button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onShare}
+            className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       
       {/* Article Content - Expanded for better readability */}

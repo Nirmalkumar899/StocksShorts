@@ -468,6 +468,17 @@ Return only valid JSON array with no extra text.`;
     return await this.storeArticles(articles);
   }
 
+  async removeReportedArticle(articleId: number): Promise<void> {
+    try {
+      const { eq } = await import('drizzle-orm');
+      await db.delete(aiArticles).where(eq(aiArticles.id, articleId));
+      console.log(`Removed reported AI article with ID: ${articleId}`);
+    } catch (error) {
+      console.error('Error removing reported article:', error);
+      throw new Error('Failed to remove reported article');
+    }
+  }
+
   private sortByInvestorValue(articles: AiArticle[]): AiArticle[] {
     return articles.sort((a, b) => {
       // Calculate investor value score for each article

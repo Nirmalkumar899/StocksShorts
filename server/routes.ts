@@ -161,6 +161,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/ai-articles/:id/report", async (req, res) => {
+    try {
+      const articleId = parseInt(req.params.id);
+      
+      if (isNaN(articleId)) {
+        return res.status(400).json({ message: 'Invalid article ID' });
+      }
+
+      // Remove the reported article
+      await aiNewsService.removeReportedArticle(articleId);
+      
+      // Generate a replacement article
+      const replacementArticles = await aiNewsService.fetchLatestNews();
+      
+      res.json({ 
+        message: 'Thank you for reporting this content. We have removed the article and added fresh news.',
+        replacementCount: replacementArticles.length
+      });
+    } catch (error) {
+      console.error('Error reporting AI article:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to report article'
+      });
+    }
+  });
+
   // Stock AI Query endpoint - Requires Authentication & Daily Limit
   app.post("/api/stock-ai/query", async (req: any, res) => {
     try {
