@@ -118,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 28, 2025: **MAJOR**: Implemented automatic category switching for continuous news scrolling - when users reach end of articles in current category, system automatically switches to next category in predefined order with toast notification and throttling to prevent rapid switches, ensuring users never stop scrolling
+- June 28, 2025: **MAJOR**: Enhanced bottom navigation with z-[9999] priority to appear above all content while preserving news article layout and image space
 - June 28, 2025: **MAJOR**: Implemented comprehensive AI news reporting system with confirmation dialog and investigation workflow - users see warning triangle to report incorrect information, system flags articles for team review rather than immediate removal, includes proper database tracking for moderation
 - June 28, 2025: **MAJOR**: Implemented dedicated subpage routing for Google Ads optimization - added URL-based navigation for all sections (/trending, /special, /breakout, /index, /warrants, /educational, /ipo, /global, /active, /orders, /research, /ai-news, /sebi-ria, /contact, /profile, /disclaimer) while maintaining existing functionality through automatic category detection and proper URL mapping
 - June 28, 2025: **MAJOR**: Enhanced download button with device-specific installation instructions - features blue-purple gradient, pulse animation, red notification dot, scale hover effect, and detailed tooltip. Implements comprehensive device detection for iPhone Safari, Android Chrome/Firefox/Samsung Browser, and desktop with step-by-step numbered instructions tailored to each platform's interface and menu locations

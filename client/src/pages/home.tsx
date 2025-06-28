@@ -184,6 +184,9 @@ export default function Home() {
 
   // Auto-switch to next category when current one ends
   const switchToNextCategory = useCallback(() => {
+    if (switchingRef.current) return; // Prevent multiple rapid switches
+    
+    switchingRef.current = true;
     const currentIndex = categoryOrder.indexOf(selectedCategory);
     const nextIndex = (currentIndex + 1) % categoryOrder.length;
     const nextCategory = categoryOrder[nextIndex];
@@ -192,11 +195,19 @@ export default function Home() {
     setSelectedCategory(nextCategory);
     
     // Show toast notification
+    const categoryDisplayName = nextCategory === 'all' ? 'trending' : 
+      nextCategory.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
     toast({
-      title: "Auto-switched category",
-      description: `Now showing ${nextCategory === 'all' ? 'trending' : nextCategory.replace('-', ' ')} news`,
+      title: "Loading next category",
+      description: `Now showing ${categoryDisplayName} news`,
       duration: 2000,
     });
+    
+    // Reset switching flag after delay
+    setTimeout(() => {
+      switchingRef.current = false;
+    }, 3000);
   }, [selectedCategory, categoryOrder, toast]);
 
   const handleArticleClick = (article: Article) => {
@@ -303,13 +314,13 @@ export default function Home() {
             className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
             onScroll={(e) => {
               const element = e.target as HTMLElement;
-              const isAtEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 10;
+              const isAtEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 50;
               
               // Auto-switch to next category when reaching end
-              if (isAtEnd && articles.length > 0) {
+              if (isAtEnd && articles.length > 0 && !switchingRef.current) {
                 setTimeout(() => {
                   switchToNextCategory();
-                }, 500); // Small delay for better UX
+                }, 1000); // Delay for smooth transition
               }
             }}
           >
