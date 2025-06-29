@@ -14,6 +14,7 @@ import { conferenceCallService } from "./services/conferenceCallService";
 import { candlestickImageService } from "./services/candlestickImageService";
 import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
 import { verifiedNewsService } from "./services/verifiedNewsService";
+import { directExchangeConnector } from "./services/directExchangeConnector";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -234,15 +235,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      await verifiedNewsService.generate100PercentAccurateNews();
+      await directExchangeConnector.generateVerifiedMarketNews();
       res.json({ 
-        message: '100% accuracy verification active', 
-        description: 'All market data cross-checked against official BSE/NSE sources for complete authenticity'
+        message: 'Direct NSE/BSE connection active', 
+        description: 'Real-time market data fetched directly from official exchange APIs with verified authenticity'
       });
     } catch (error) {
-      console.error('Error in verified news generation:', error);
+      console.error('Error in direct exchange connection:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to generate verified market news'
+        message: error instanceof Error ? error.message : 'Failed to connect to direct exchange APIs'
+      });
+    }
+  });
+
+  // Test direct exchange connections
+  app.get("/api/test-connections", async (req, res) => {
+    try {
+      const connectionStatus = await directExchangeConnector.testConnections();
+      res.json({
+        message: 'Connection test completed',
+        connections: connectionStatus,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Connection test error:', error);
+      res.status(500).json({ 
+        message: 'Connection test failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
