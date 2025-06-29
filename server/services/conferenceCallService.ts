@@ -26,27 +26,22 @@ export class ConferenceCallService {
     }
 
     try {
-      // 1. Try GPT-powered search for authentic data
-      let data = await this.fetchFromGPTSearch(symbol);
+      // 1. Try NSE corporate announcements (authentic data only)
+      let data = await this.fetchFromNSE(symbol);
       if (data) {
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
       }
 
-      // 2. Try NSE corporate announcements
-      data = await this.fetchFromNSE(symbol);
-      if (data) {
-        this.cache.set(symbol, { data, timestamp: Date.now() });
-        return data;
-      }
-
-      // 3. Try financial news aggregation
+      // 2. Try financial news aggregation (authentic data only)
       data = await this.fetchFromFinancialNews(symbol);
       if (data) {
         this.cache.set(symbol, { data, timestamp: Date.now() });
         return data;
       }
 
+      // Disable GPT-generated data to prevent sector-inappropriate information
+      console.log(`No authentic conference call data available for ${symbol}`);
       return null;
     } catch (error) {
       console.error(`Error fetching conference call data for ${symbol}:`, error);

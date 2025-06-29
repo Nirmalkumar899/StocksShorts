@@ -664,9 +664,9 @@ export class StockAIService {
       const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
       
       // Check if we have sufficient verified data to proceed
-      const hasMinimumData = verifiedCount >= 2 || (realFinancialData && Object.keys(realFinancialData).length > 3);
+      const hasMinimumData = verifiedCount >= 2 && realFinancialData && realFinancialData.currentPrice;
       
-      if (hasMinimumData && realFinancialData) {
+      if (hasMinimumData) {
         let dataSource = "Screener.in";
         if (!realFinancialData.pe && !realFinancialData.marketCap) {
           dataSource = "Yahoo Finance";
@@ -722,18 +722,15 @@ DATA VERIFICATION NOTES:
 ✓ = Cross-verified across multiple sources with <5% variance
 Numbers without ✓ are from single source and should be independently verified`;
 
-        // Add conference call data if available
-        if (realFinancialData.conferenceCallData) {
+        // Only add conference call data if verified and sector-appropriate
+        if (realFinancialData.conferenceCallData && this.isSectorAppropriateData(stockInfo.fullName, realFinancialData.conferenceCallData)) {
           const ccData = realFinancialData.conferenceCallData;
           marketDataText += `
 
-AUTHENTIC CONFERENCE CALL DATA:
+RECENT QUARTER PERFORMANCE:
 - Quarterly Highlights: ${ccData.quarterlyHighlights}
 - Revenue Growth Target: ${ccData.revenueGrowthTarget}
-- Margin Expansion Plan: ${ccData.marginExpansion}
-- Capex Guidance: ${ccData.capexGuidance}
 - Management Outlook: ${ccData.managementOutlook}
-- Industry Commentary: ${ccData.industryCommentary}
 - Recent News: ${ccData.recentNews}`;
         } else {
           marketDataText += `
@@ -741,19 +738,7 @@ AUTHENTIC CONFERENCE CALL DATA:
 - 52-Week Low: ₹${realFinancialData.fiftyTwoWeekLow || 'N/A'}`;
         }
       } else {
-        marketDataText = `
-SYSTEM STATUS - TESTING PHASE:
-
-I am still in testing phase and unable to fetch correct numbers for ${stockInfo.fullName} (${stockInfo.symbol}). 
-
-Kindly look for another stock for now. However, I will be able to share verified financial details soon.
-
-Current limitations:
-- Unable to cross-verify financial metrics from multiple sources
-- PE ratios, market cap, and other fundamentals cannot be authenticated
-- Revenue growth and profit margins require verification
-
-Please try analyzing a different stock or check back later when the data verification system is fully operational.`;
+        marketDataText = `I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now.`;
       }
       
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
