@@ -54,12 +54,8 @@ export class OpenAINewsService {
 
   async fetchRealNews(): Promise<NewsArticle[]> {
     const cacheKey = 'real_news';
-    const cached = this.cache.get(cacheKey);
-    
-    if (cached) {
-      console.log('Returning cached OpenAI news');
-      return cached;
-    }
+    // Clear cache to force fresh news generation
+    this.cache.delete(cacheKey);
 
     try {
       const tradingDays = this.getRelevantTradingDays();
@@ -79,25 +75,44 @@ SEARCH DATES: Check these trading days: ${dateStrings.join(', ')}
 
 RULES:
 1. Look for real news from recent trading days when Indian markets were open
-2. Find actual corporate announcements, IPO updates, brokerage reports
-3. Include real companies like TCS, Reliance, HDFC Bank, Infosys, etc.
+2. Focus ONLY on very recent events, NOT old quarterly results or earnings
+3. Avoid mentioning Q1/Q2/Q3/Q4 results as these have specific announcement schedules
 4. Use authentic sources: NSE, BSE, MoneyControl, Economic Times, Business Standard
-5. If you find real news, format it properly with source attribution
-6. Generate 3-5 realistic news items if available
+5. Generate 3-5 realistic news items if available
 
-Search categories:
-- IPO subscription numbers and listing dates
-- Brokerage upgrades/downgrades with target prices  
-- Corporate earnings and quarterly results
-- Regulatory announcements from SEBI/NSE/BSE
-- Major contract wins and business developments
-- Technical breakouts and market movements
+PRIORITY CATEGORIES (in order):
+1. FRAUD alerts and SEBI investigations/penalties
+2. BREAKOUT stocks with technical analysis and volume surge
+3. ORDER WINS - major contract announcements (specify percentage of revenue impact)
+4. IPO subscription updates, listing dates, and grey market premium
+5. Brokerage upgrades/downgrades with specific target prices
+6. Regulatory announcements and policy changes
+
+AVOID:
+- Old quarterly earnings reports (Q1/Q2/Q3/Q4 results)
+- Generic market commentary
+- Events that happened weeks/months ago
 
 Return JSON with "articles" array containing: title, content, source, sentiment, priority`
           },
           {
             role: "user",
-            content: `Find real Indian stock market news from recent trading days: ${dateStrings.join(' or ')}. Look for actual corporate announcements, IPO updates, brokerage reports from major Indian companies. Return realistic news with proper source attribution.`
+            content: `Find real Indian stock market news from recent trading days: ${dateStrings.join(' or ')}. 
+
+PRIORITY FOCUS:
+1. Any fraud alerts or SEBI investigation news
+2. Technical breakout stocks with volume analysis
+3. Major order wins with revenue impact percentage
+4. Live IPO subscription data and listing updates
+5. Fresh brokerage calls with target prices
+
+STRICT RULES:
+- NO quarterly earnings or Q1/Q2/Q3/Q4 results (these are scheduled events)
+- NO old news from weeks ago
+- Focus on breaking developments and market-moving events
+- Include specific numbers, percentages, and target prices
+
+Return realistic news with proper source attribution.`
           }
         ],
         temperature: 0.3, // Slightly higher for more realistic content
@@ -136,9 +151,9 @@ Return JSON with "articles" array containing: title, content, source, sentiment,
 
       console.log(`Found ${articles.length} verified news articles`);
       
-      // Cache the results
+      // Cache the results for shorter time to get fresh news more frequently
       this.cache.set(cacheKey, articles);
-      setTimeout(() => this.cache.delete(cacheKey), this.cacheTimeout);
+      setTimeout(() => this.cache.delete(cacheKey), 30 * 60 * 1000); // 30 minutes cache
       
       return articles;
 
