@@ -232,16 +232,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const { realNewsSearchService } = await import('./services/realNewsSearchService');
-      await realNewsSearchService.generateAndStoreRealNews();
+      const { authenticNewsService } = await import('./services/authenticNewsService');
+      await authenticNewsService.generateAuthenticNews();
       res.json({ 
-        message: 'Real market news searched and summarized successfully', 
-        description: '20 authentic summaries from today and last working day - fraud alerts, breakouts, order wins, analyst reports'
+        message: 'Searched and summarized authentic market news', 
+        description: '20 real news summaries from today and last working day in priority order: fraud, breakouts, order wins, analyst reports'
       });
     } catch (error) {
-      console.error('Error searching real market news:', error);
+      console.error('Error searching authentic market news:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to search real market news'
+        message: error instanceof Error ? error.message : 'Failed to search authentic market news'
       });
     }
   });
