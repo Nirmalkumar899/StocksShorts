@@ -16,6 +16,12 @@ export default function InlineLogin({ onSuccess }: InlineLoginProps) {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const { toast } = useToast();
 
+  // Prevent all event bubbling for login interactions
+  const stopBubbling = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const sendOtpMutation = useMutation({
     mutationFn: async (phone: string) => {
       const response = await apiRequest("POST", "/api/auth/send-otp", { phoneNumber: phone });
@@ -68,7 +74,7 @@ export default function InlineLogin({ onSuccess }: InlineLoginProps) {
   };
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    stopBubbling(e);
     if (phoneNumber.length !== 10) {
       toast({
         title: "Invalid Phone Number",
@@ -81,7 +87,7 @@ export default function InlineLogin({ onSuccess }: InlineLoginProps) {
   };
 
   const handleOtpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    stopBubbling(e);
     if (otp.length !== 6) {
       toast({
         title: "Invalid OTP",
@@ -94,21 +100,27 @@ export default function InlineLogin({ onSuccess }: InlineLoginProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full" onClick={stopBubbling}>
       {step === "phone" ? (
-        <form onSubmit={handlePhoneSubmit}>
+        <form onSubmit={handlePhoneSubmit} onClick={stopBubbling}>
           <div className="flex items-center space-x-2">
             <Phone className="h-3 w-3 text-primary flex-shrink-0" />
             <Input
               type="tel"
               placeholder="Mobile number"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
+              onChange={(e) => {
+                stopBubbling(e);
+                setPhoneNumber(formatPhoneNumber(e.target.value));
+              }}
+              onClick={stopBubbling}
+              onFocus={stopBubbling}
               className="text-center text-xs h-7 flex-1"
               maxLength={10}
             />
             <Button 
               type="submit" 
+              onClick={stopBubbling}
               className="h-7 text-xs px-3 flex-shrink-0" 
               disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
             >
@@ -117,25 +129,31 @@ export default function InlineLogin({ onSuccess }: InlineLoginProps) {
           </div>
         </form>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2" onClick={stopBubbling}>
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
               OTP sent to +91 {phoneNumber}
             </p>
           </div>
-          <form onSubmit={handleOtpSubmit}>
+          <form onSubmit={handleOtpSubmit} onClick={stopBubbling}>
             <div className="flex items-center space-x-2">
               <LogIn className="h-3 w-3 text-primary flex-shrink-0" />
               <Input
                 type="text"
                 placeholder="6-digit OTP"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onChange={(e) => {
+                  stopBubbling(e);
+                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                }}
+                onClick={stopBubbling}
+                onFocus={stopBubbling}
                 className="text-center text-xs h-7 tracking-widest flex-1"
                 maxLength={6}
               />
               <Button 
                 type="submit" 
+                onClick={stopBubbling}
                 className="h-7 text-xs px-3 flex-shrink-0" 
                 disabled={verifyOtpMutation.isPending || otp.length !== 6}
               >
@@ -148,7 +166,10 @@ export default function InlineLogin({ onSuccess }: InlineLoginProps) {
             variant="ghost"
             size="sm"
             className="w-full text-xs h-5"
-            onClick={() => setStep("phone")}
+            onClick={(e) => {
+              stopBubbling(e);
+              setStep("phone");
+            }}
           >
             Change Number
           </Button>
