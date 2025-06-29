@@ -25,9 +25,6 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
   const startTouchY = useRef<number>(0);
   const currentTouchY = useRef<number>(0);
 
-  const isSpecialArticle = articles[currentIndex]?.type === 'StocksShorts Special';
-  const isLocked = isSpecialArticle && !isAuthenticated;
-
   // Find initial article index
   useEffect(() => {
     if (initialArticleId && articles.length > 0) {
@@ -54,50 +51,24 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority?.toLowerCase()) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const copyToClipboard = async (text: string, label: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast({
-        title: "Copied!",
-        description: `${label} copied to clipboard`,
-      });
-    } catch (err) {
-      toast({
-        title: "Copy Failed",
-        description: "Please copy the link manually",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handlePrevious = useCallback(() => {
-    if (currentIndex > 0 && !isScrolling) {
-      setIsScrolling(true);
-      setCurrentIndex(prev => prev - 1);
-      setTimeout(() => setIsScrolling(false), 300);
-    }
-  }, [currentIndex, isScrolling]);
-
-  const handleNext = useCallback(() => {
-    if (currentIndex < articles.length - 1 && !isScrolling) {
-      setIsScrolling(true);
+  const navigateArticle = useCallback((direction: 'next' | 'prev') => {
+    if (isScrolling) return;
+    
+    setIsScrolling(true);
+    
+    if (direction === 'next' && currentIndex < articles.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      setTimeout(() => setIsScrolling(false), 300);
+    } else if (direction === 'prev' && currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
     }
+    
+    setTimeout(() => setIsScrolling(false), 300);
   }, [currentIndex, articles.length, isScrolling]);
 
-  // Touch and scroll handlers
+  // Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     startTouchY.current = e.touches[0].clientY;
+    currentTouchY.current = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -108,24 +79,11 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
     const deltaY = startTouchY.current - currentTouchY.current;
     const threshold = 50;
 
-    if (Math.abs(deltaY) > threshold && !isScrolling) {
+    if (Math.abs(deltaY) > threshold) {
       if (deltaY > 0) {
-        // Swipe up - next article
-        handleNext();
+        navigateArticle('next');
       } else {
-        // Swipe down - previous article
-        handlePrevious();
-      }
-    }
-  };
-
-  const handleWheel = (e: WheelEvent) => {
-    e.preventDefault();
-    if (Math.abs(e.deltaY) > 50 && !isScrolling) {
-      if (e.deltaY > 0) {
-        handleNext();
-      } else {
-        handlePrevious();
+        navigateArticle('prev');
       }
     }
   };
@@ -133,18 +91,28 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault();
-        handleNext();
+        navigateArticle('next');
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        handlePrevious();
+        navigateArticle('prev');
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrevious]);
+  }, [navigateArticle]);
+
+  // Mouse wheel handler
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY > 0) {
+      navigateArticle('next');
+    } else {
+      navigateArticle('prev');
+    }
+  }, [navigateArticle]);
 
   // Wheel event listener
   useEffect(() => {
@@ -155,6 +123,15 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
     }
   }, [handleWheel]);
 
+  const handleLoginPrompt = () => {
+    toast({
+      title: "Login Required",
+      description: "Please login to access StocksShorts Special content. Other articles are free to read.",
+      variant: "default",
+    });
+    setLocation("/profile");
+  };
+
   if (!articles || articles.length === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -163,9 +140,12 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
     );
   }
 
-  if (!currentArticle) return null;
+  const article = articles[currentIndex];
+  if (!article) return null;
 
-  const shareableLink = `${window.location.origin}/article/${currentArticle.id}`;
+  const isSpecialArticle = article.type === 'StocksShorts Special';
+  const isLocked = isSpecialArticle && !isAuthenticated;
+  const shareableLink = `${window.location.origin}/article/${article.id}`;
 
   return (
     <div 
@@ -177,101 +157,111 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
     >
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur border-b z-50">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center justify-between p-4">
           <Button variant="ghost" size="sm" onClick={onBack}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className="text-xs">
               {currentIndex + 1} of {articles.length}
-            </span>
-            
+            </Badge>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => copyToClipboard(shareableLink, "Article link")}
+              onClick={() => navigator.clipboard.writeText(shareableLink)}
             >
-              <Copy className="w-4 h-4 mr-2" />
-              Copy Link
+              <Copy className="w-4 h-4" />
             </Button>
-            
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => window.open(shareableLink, '_blank')}
+              onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareableLink)}`, '_blank')}
             >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Share
+              <Share2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Article Content */}
-      <div className="pt-16 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          <Card 
-            className={`border-l-4 ${getSentimentColor(currentArticle.sentiment)} transition-all duration-300 ${
-              isScrolling ? 'scale-95 opacity-80' : 'scale-100 opacity-100'
-            }`}
-          >
-            <div className="p-6">
-              <div className="flex items-start justify-between gap-4 mb-6">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold mb-4 leading-tight">
-                    {currentArticle.title}
-                  </h1>
-                  
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <Badge variant="secondary">{currentArticle.type}</Badge>
-                    <Badge className={getPriorityBadge(currentArticle.priority || 'medium')}>
-                      {currentArticle.priority || 'Medium'}
-                    </Badge>
-                    <Badge variant="outline">{currentArticle.sentiment}</Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {currentArticle.source} • {new Date(currentArticle.time || currentArticle.createdAt).toLocaleDateString()}
-                    </span>
+      <div className="pt-20 pb-8 px-4 min-h-screen flex flex-col">
+        <Card className={`flex-1 ${getSentimentColor(article.sentiment || 'neutral')} border-l-4`}>
+          <div className="p-6">
+            {/* Article Type Badge */}
+            <div className="flex items-center justify-between mb-4">
+              <Badge variant="outline" className="text-xs">
+                {article.type || 'NEWS'}
+              </Badge>
+              {isSpecialArticle && (
+                <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+                  StocksShorts Special
+                </Badge>
+              )}
+            </div>
+
+            {/* Title */}
+            <h1 className="text-2xl font-bold text-foreground mb-4 leading-tight">
+              {article.title}
+            </h1>
+
+            {/* Content */}
+            <div className="text-foreground/80 leading-relaxed mb-6">
+              {isLocked ? (
+                <div className="space-y-4">
+                  <div className="text-gray-400 dark:text-gray-500">
+                    {article.content.substring(0, 150)}...
+                  </div>
+                  <div className="flex items-center justify-center p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="text-center">
+                      <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400 mx-auto mb-3" />
+                      <p className="text-lg font-medium text-amber-800 dark:text-amber-200 mb-2">
+                        StocksShorts Special Content
+                      </p>
+                      <p className="text-sm text-amber-600 dark:text-amber-400 mb-4">
+                        Login required to read full article. Other articles are free to read.
+                      </p>
+                      <Button
+                        onClick={handleLoginPrompt}
+                        className="bg-amber-600 hover:bg-amber-700 text-white"
+                      >
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Login to Read
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                
-                {currentArticle.imageUrl && (
-                  <img
-                    src={currentArticle.imageUrl}
-                    alt={currentArticle.title}
-                    className="w-32 h-32 object-cover rounded-lg flex-shrink-0"
-                  />
-                )}
-              </div>
-              
-              <div className="prose prose-lg max-w-none mb-8">
-                <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">
-                  {currentArticle.content}
-                </p>
-              </div>
-              
-              {/* Navigation hints */}
-              <div className="text-center text-sm text-muted-foreground space-y-2">
-                <p>↑ Swipe up or scroll for next article</p>
-                <p>↓ Swipe down or scroll for previous article</p>
-                <p className="font-medium">URL: /article/{currentArticle.id}</p>
-              </div>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }} />
+              )}
             </div>
-          </Card>
-        </div>
-      </div>
 
-      {/* Navigation indicators */}
-      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col items-center gap-1">
-        {articles.map((_, index) => (
-          <div
-            key={index}
-            className={`w-2 h-2 rounded-full transition-all duration-200 ${
-              index === currentIndex ? 'bg-blue-500 scale-125' : 'bg-gray-300'
-            }`}
-          />
-        ))}
+            {/* Metadata */}
+            <div className="flex items-center justify-between text-sm text-muted-foreground border-t pt-4">
+              <span>{article.source}</span>
+              <span>
+                {new Date(article.time || article.createdAt).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Navigation hints */}
+        <div className="text-center text-xs text-muted-foreground mt-4 space-y-1">
+          <p>Swipe up/down or use arrow keys to navigate</p>
+          <div className="flex justify-center space-x-4">
+            {currentIndex > 0 && (
+              <span>↑ Previous article</span>
+            )}
+            {currentIndex < articles.length - 1 && (
+              <span>↓ Next article</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
