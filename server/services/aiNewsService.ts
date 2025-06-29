@@ -19,7 +19,7 @@ interface ParsedArticle {
 }
 
 export class AINewsService {
-  private readonly maxArticles = 100;
+  private readonly maxArticles = 20;
   private readonly articlesPerBatch = 5;
   private readonly apiKey: string;
 
@@ -34,6 +34,14 @@ export class AINewsService {
     }
 
     try {
+      // Check if we need to populate the database initially
+      const currentCount = await db.select({ count: count() }).from(aiArticles);
+      const totalArticles = currentCount[0]?.count || 0;
+      
+      if (totalArticles === 0) {
+        console.log('No AI articles found, performing initial population with 20 articles...');
+        return await this.initialPopulation();
+      }
       // Generate unique content variations to prevent repetition
       const sessionId = Date.now() + Math.random().toString(36).substring(2);
       const stockRotation = [
@@ -304,12 +312,29 @@ Return only valid JSON array with no extra text.`;
       return [];
     }
 
-    // FORCE FRESH CONTENT: Clear all existing AI articles before storing new ones
-    await db.delete(aiArticles);
-    console.log('Cleared all existing AI articles to prevent repetition');
+    // Check current article count
+    const currentCount = await db.select({ count: count() }).from(aiArticles);
+    const totalArticles = currentCount[0]?.count || 0;
+    
+    console.log(`Current AI articles count: ${totalArticles}`);
 
-    // Since we cleared the database, all articles are now unique
-    const uniqueArticles = articles;
+    // If we have 20 or more articles, remove the 5 oldest before adding new ones
+    if (totalArticles >= this.maxArticles) {
+      const oldestArticles = await db
+        .select({ id: aiArticles.id })
+        .from(aiArticles)
+        .orderBy(aiArticles.createdAt)
+        .limit(this.articlesPerBatch);
+      
+      if (oldestArticles.length > 0) {
+        const oldestIds = oldestArticles.map(row => row.id);
+        await db.delete(aiArticles).where(inArray(aiArticles.id, oldestIds));
+        console.log(`Removed ${oldestArticles.length} oldest articles to maintain ${this.maxArticles} limit`);
+      }
+    }
+
+    // Filter out duplicates by comparing with existing articles
+    const uniqueArticles = await this.filterDuplicates(articles);
 
     const insertData: InsertAiArticle[] = uniqueArticles.map(article => ({
       title: article.title,

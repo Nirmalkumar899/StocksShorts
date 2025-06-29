@@ -665,20 +665,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // AI News Scheduler - Fetch news every 15 minutes
 function startAINewsScheduler() {
-  console.log('Starting AI News Scheduler - fetching every 5 minutes for fresh content');
+  console.log('Starting AI News Scheduler - maintaining 20 articles with hourly rotation (5 new, 5 removed)');
   
-  // Initial fetch
+  // Initial fetch to populate articles
   setTimeout(() => {
     aiNewsService.fetchLatestNews().catch(console.error);
   }, 5000); // Wait 5 seconds after server start
 
-  // Schedule regular fetches every 5 minutes for fresh stock market content
+  // Schedule hourly rotation: add 5 new articles, remove 5 oldest
   setInterval(async () => {
     try {
-      console.log('Scheduled AI news fetch starting...');
+      console.log('Scheduled hourly AI news rotation starting...');
       await aiNewsService.fetchLatestNews();
     } catch (error) {
-      console.error('Scheduled AI news fetch failed:', error);
+      console.error('Scheduled AI news rotation failed:', error);
     }
-  }, 5 * 60 * 1000); // 5 minutes in milliseconds
+  }, 60 * 60 * 1000); // 1 hour in milliseconds
 }
