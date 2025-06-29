@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { storage } from "../storage";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable is required");
@@ -181,3 +182,50 @@ Return realistic news with proper source attribution using REAL company names.`
 }
 
 export const openaiNewsService = new OpenAINewsService();
+
+// Enhanced 20-article management system with hourly updates
+export class AI20ArticleManager {
+  private intervalId: NodeJS.Timeout | null = null;
+  
+  startHourlyUpdates(): void {
+    console.log('Starting hourly AI article management system - 20 articles max with 5 new articles every hour');
+    
+    // Run immediately on startup
+    this.generateAndMaintainArticles();
+    
+    // Then run every hour (3600000 ms)
+    this.intervalId = setInterval(() => {
+      this.generateAndMaintainArticles();
+    }, 3600000); // 1 hour = 60 * 60 * 1000 ms
+  }
+  
+  private async generateAndMaintainArticles(): Promise<void> {
+    try {
+      console.log('Running hourly AI article update - adding 5 new articles, maintaining 20 total');
+      
+      // Generate 5 new articles
+      const articles = await openaiNewsService.fetchRealNews();
+      
+      if (articles.length > 0) {
+        // Store articles will automatically maintain the 20-article limit
+        const { storage } = await import('../storage');
+        await storage.storeAiArticles(articles);
+        console.log(`Hourly update complete: Added ${articles.length} articles, system maintains 20 total`);
+      } else {
+        console.log('No new articles generated in this hourly cycle');
+      }
+    } catch (error) {
+      console.error('Error in hourly AI article update:', error);
+    }
+  }
+  
+  stopHourlyUpdates(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+      console.log('Stopped hourly AI article updates');
+    }
+  }
+}
+
+export const ai20ArticleManager = new AI20ArticleManager();

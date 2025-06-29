@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
-import { openaiNewsService } from "./services/openaiNewsService";
+import { openaiNewsService, ai20ArticleManager } from "./services/openaiNewsService";
 import { stockAI } from "./services/stockAI";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
@@ -656,45 +656,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Start AI News Scheduler
-  startAINewsScheduler();
+  // Start Enhanced 20-Article Management System
+  ai20ArticleManager.startHourlyUpdates();
 
   const httpServer = createServer(app);
   return httpServer;
 }
 
-// AI News Scheduler - Fetch news every 15 minutes
-function startAINewsScheduler() {
-  console.log('Starting OpenAI News Scheduler - fetching real news from last working day only');
-  
-  // Initial fetch to populate articles with market calendar check
-  setTimeout(async () => {
-    try {
-      const articles = await openaiNewsService.fetchRealNews();
-      if (articles.length > 0) {
-        await storage.storeAiArticles(articles);
-        console.log(`Initial fetch: Stored ${articles.length} real news articles from last working day`);
-      } else {
-        console.log('Initial fetch: No real news found - markets may be closed');
-      }
-    } catch (error) {
-      console.error('Initial AI news fetch failed:', error);
-    }
-  }, 5000); // Wait 5 seconds after server start
 
-  // Schedule every 2 hours - only fetch news from working days
-  setInterval(async () => {
-    try {
-      console.log('Scheduled AI news check starting...');
-      const articles = await openaiNewsService.fetchRealNews();
-      if (articles.length > 0) {
-        await storage.storeAiArticles(articles);
-        console.log(`Scheduled update: Found ${articles.length} real news articles`);
-      } else {
-        console.log('Scheduled update: No new real news found');
-      }
-    } catch (error) {
-      console.error('Scheduled AI news update failed:', error);
-    }
-  }, 2 * 60 * 60 * 1000); // 2 hours in milliseconds
-}
