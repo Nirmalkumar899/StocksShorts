@@ -267,48 +267,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stock AI Query endpoint - Requires Authentication & Daily Limit
+  // Stock AI Query endpoint - No Authentication Required
   app.post("/api/stock-ai/query", async (req: any, res) => {
     try {
-      // Check if user is authenticated
-      if (!req.session || !req.session.user) {
-        return res.status(401).json({ 
-          error: 'Authentication required',
-          message: 'Please login to use AI stock analysis. This feature is in beta testing with daily limits.'
-        });
-      }
-
       const { query } = req.body;
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: 'Query is required' });
       }
 
-      const userId = req.session.user.id;
-      
-      // Check daily query limit (5 per day)
-      const dailyCount = await storage.getDailyQueryCount(userId);
-      if (dailyCount >= 5) {
-        return res.status(429).json({
-          error: 'Daily limit exceeded',
-          message: 'You have reached your daily limit of 5 AI analysis queries. Please try again tomorrow.',
-          remainingQueries: 0
-        });
-      }
-
       const analysis = await stockAI.analyzeStock(query);
       
-      // Track the query
-      await storage.createAiQuery({
-        userId,
-        query,
-        response: analysis
-      });
-
-      const remainingQueries = 4 - dailyCount;
+      // Track the query for analytics (without user association)
+      try {
+        await storage.createAiQuery({
+          userId: 0, // Anonymous user
+          query,
+          response: analysis
+        });
+      } catch (trackingError) {
+        // Continue even if tracking fails
+        console.log('Query tracking failed, continuing with analysis');
+      }
 
       res.json({ 
-        analysis: `**BETA TESTING - AI STOCK ANALYSIS**\n\n${analysis}\n\n---\n*This AI analysis feature is currently in beta testing. Daily limit: 5 queries per user. Remaining today: ${remainingQueries}*`,
-        remainingQueries
+        analysis: `**AI STOCK ANALYSIS**\n\n${analysis}`,
       });
     } catch (error) {
       console.error('Stock AI query error:', error);

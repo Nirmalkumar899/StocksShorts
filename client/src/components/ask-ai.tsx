@@ -19,24 +19,14 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
 
   const queryMutation = useMutation({
     mutationFn: async (stockQuery: string) => {
-      const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
-      
-      if (response.status === 401) {
-        throw new Error("Please login to use AI stock analysis. This feature is in beta testing with daily limits.");
-      }
-      
-      if (response.status === 429) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Daily limit exceeded");
-      }
-      
-      // Show compact thinking notification only after authentication passes
+      // Show thinking notification immediately
       toast({
         title: "🧠 Thinking...",
         description: "Analyzing stock data",
-        duration: 6000, // Compact notification duration
+        duration: 6000,
       });
       
+      const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
       const data = await response.json();
       return data.analysis;
     },
@@ -50,26 +40,11 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : "Failed to analyze stock";
-      
-      if (errorMessage.includes("login")) {
-        toast({
-          title: "Login Required",
-          description: "Please login to access AI stock analysis (Beta Testing)",
-          variant: "destructive",
-        });
-      } else if (errorMessage.includes("limit")) {
-        toast({
-          title: "Daily Limit Reached",
-          description: "You've used all 5 daily AI analysis queries. Try again tomorrow.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Analysis Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Analysis Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   });
 
