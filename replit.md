@@ -118,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 29, 2025: **MAJOR**: Implemented 20-article automatic management system with hourly updates - AI news now maintains exactly 20 articles by adding 5 new articles every hour and automatically removing oldest articles, providing continuous fresh market intelligence while preventing database bloat
+- June 29, 2025: **MAJOR**: Enhanced AI news system with GPT-4o model for superior market analysis - generates authentic news with real Indian companies (SEBI investigations, Suzlon breakouts, TCS contracts, Bajaj IPO updates, Reliance brokerage calls) following proper priority system and market calendar compliance
 - June 29, 2025: **MAJOR**: Upgraded AI news to use OpenAI o3-mini model for superior reasoning capabilities and enhanced financial analysis in market news generation with more detailed context and precise numerical data
 - June 29, 2025: **MAJOR**: Fixed AI news to use real Indian company names - replaced placeholder names (ABC Ltd, XYZ Corp, DEF Industries) with authentic NSE/BSE listed companies (Paytm, Suzlon Energy, Infosys, Bajaj Housing Finance, Reliance Industries) for credible market news generation
 - June 29, 2025: **MAJOR**: Enhanced AI news prioritization system - implemented user-requested priority order focusing on fraud alerts/SEBI investigations first, then breakout stocks with volume analysis, order wins with revenue impact percentage, IPO subscription updates, and brokerage calls with target prices, eliminated old quarterly earnings reports and generic market commentary for more actionable investor alerts
