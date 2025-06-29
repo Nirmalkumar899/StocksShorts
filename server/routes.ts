@@ -12,6 +12,7 @@ import { stockTester } from "./services/stockTester";
 import { financialDataProvider } from "./services/financialDataProvider";
 import { conferenceCallService } from "./services/conferenceCallService";
 import { candlestickImageService } from "./services/candlestickImageService";
+import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -232,16 +233,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const { corporateAnnouncementService } = await import('./services/corporateAnnouncementService');
-      await corporateAnnouncementService.generateRealCorporateNews();
+      await realTimeMarketTracker.generateRealTimeMarketArticles();
       res.json({ 
-        message: 'Found real corporate announcements from NSE/BSE', 
-        description: '20 actual company announcements from June 29 and June 27 - NSE/BSE filings, SEBI actions, brokerage reports'
+        message: 'Tracking live BSE/NSE announcements', 
+        description: 'Real-time monitoring of corporate filings, earnings calls, order wins, SEBI alerts and price movements as they get uploaded today'
       });
     } catch (error) {
-      console.error('Error fetching corporate announcements:', error);
+      console.error('Error tracking real-time market data:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to fetch corporate announcements'
+        message: error instanceof Error ? error.message : 'Failed to track live market announcements'
       });
     }
   });
