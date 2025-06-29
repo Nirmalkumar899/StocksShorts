@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import SimpleLogin from "@/components/simple-login";
 
 interface NewsCardProps {
   article: Article;
@@ -238,24 +239,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 {article.content.substring(0, 100)}...
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent"></div>
-              <div className="mt-4 flex items-center justify-center p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                <div className="text-center">
-                  <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
+              <div className="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="text-center mb-3">
+                  <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
                   <p className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">
                     🔒 LOGIN REQUIRED TO READ
                   </p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
                     StocksShorts Special premium content. Other articles are free!
                   </p>
-                  <Button
-                    size="sm"
-                    onClick={handleLoginPrompt}
-                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-1"
-                  >
-                    <LogIn className="h-3 w-3 mr-1" />
-                    Login to Read
-                  </Button>
                 </div>
+                <SimpleLogin />
               </div>
             </div>
           ) : (
