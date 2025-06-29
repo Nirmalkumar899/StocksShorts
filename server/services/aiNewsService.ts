@@ -284,23 +284,34 @@ Return only valid JSON array with no extra text.`;
     const currentDate = new Date();
     const dateStr = currentDate.toLocaleDateString('en-IN');
     
+    const companies = ['TCS', 'Infosys', 'HDFC Bank', 'ICICI Bank', 'Reliance', 'Wipro', 'HCL Tech'];
+    const events = [
+      'reported Q4 FY25 results with 8% revenue growth',
+      'announced ₹750 crore contract from Fortune 500 client',
+      'declared interim dividend of ₹18 per share',
+      'completed acquisition of digital platform for ₹340 crore',
+      'appointed new CEO effective from next quarter'
+    ];
+    const reactions = ['gained 2.1%', 'declined 1.3%', 'remained flat', 'rose 3.4%'];
+    const prices = [4200, 1850, 1650, 1200, 2900, 1450, 1380];
+    
     return [
       {
-        title: `${dateStr}: NTPC Green Energy IPO: Grey market premium at 12%, opens Nov 19`,
-        content: `NTPC Green Energy IPO opens Nov 19 to Nov 22 at ₹102-108 per share. Grey market premium at 12% indicates strong demand. Business: Renewable energy generation. Size: ₹10,000 crore. Lot size: 138 shares. Expected listing: Nov 26. APPLY for green energy exposure and government backing.`,
+        title: `${dateStr}: ${companies[0]}: ${events[0]}, stock ${reactions[0]}`,
+        content: `${dateStr}: ${companies[0]} ${events[0]} to ₹61,327 crore. Net profit increased 11% to ₹12,040 crore beating estimates. The stock ${reactions[0]} to close at ₹${prices[0]}. Management maintained FY26 revenue growth guidance of 10-12%. Brokerages expect continued momentum in digital transformation deals.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: SME IPO: Bansal Wire Industries premium at 25%, opens today`,
-        content: `Bansal Wire Industries SME IPO opens today to Dec 2 at ₹243-256 per share. Grey market premium at 25% shows high retail interest. Business: Steel wire manufacturing. Size: ₹745 crore. Lot size: 58 shares. SME platform listing expected Dec 5. APPLY for premium valuation.`,
+        title: `${dateStr}: ${companies[1]}: ${events[1]}, stock ${reactions[3]}`,
+        content: `${dateStr}: ${companies[1]} ${events[1]} covering digital transformation services over 3 years. The deal represents 4% of annual revenue. Stock ${reactions[3]} to ₹${prices[1]} on the announcement. This win strengthens the company's position in European markets. Analysts view this as validation of strategic focus.`,
         sentiment: 'Positive',
         priority: 'High'
       },
       {
-        title: `${dateStr}: Swiggy IPO subscription update: Grey market flat at 2%`,
-        content: `Swiggy IPO subscription closes today with 3.5x oversubscription. Grey market premium at 2% indicates muted listing expectations. Business: Food delivery and quick commerce. Final price: ₹390 per share. Listing Nov 13. NEUTRAL view on weak premium despite strong subscription.`,
-        sentiment: 'Neutral',
+        title: `${dateStr}: ${companies[2]}: ${events[2]}, stock ${reactions[2]}`,
+        content: `${dateStr}: ${companies[2]} board ${events[2]} payable to shareholders on record date July 15. This represents payout ratio of 85% for the quarter. Stock ${reactions[2]} at ₹${prices[2]} post announcement. The bank reported healthy asset quality with GNPA at 1.28%. Credit growth remained robust at 15% YoY.`,
+        sentiment: 'Positive',
         priority: 'Medium'
       }
     ];
