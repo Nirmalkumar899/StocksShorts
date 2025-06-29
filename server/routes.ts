@@ -16,6 +16,7 @@ import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
 import { verifiedNewsService } from "./services/verifiedNewsService";
 import { directExchangeConnector } from "./services/directExchangeConnector";
 import { authenticDataProvider } from "./services/authenticDataProvider";
+import { realAuthenticNewsService } from "./services/realAuthenticNews";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -236,15 +237,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      await authenticDataProvider.generateAuthenticMarketNews();
+      await realAuthenticNewsService.generate20AuthenticArticles();
       res.json({ 
-        message: 'Authentic market data verification active', 
-        description: 'Real stock prices from Yahoo Finance and Screener.in APIs with 100% accuracy verification'
+        message: 'Real announcements summarized', 
+        description: 'Corporate announcements, conference calls, and analyst reports from today and previous working day summarized with catchy headlines and 350-character articles'
       });
     } catch (error) {
-      console.error('Error in authentic data generation:', error);
+      console.error('Error summarizing real announcements:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to generate authentic market data'
+        message: error instanceof Error ? error.message : 'Failed to summarize real announcements'
       });
     }
   });
