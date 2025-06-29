@@ -130,6 +130,31 @@ export class DatabaseStorage implements IStorage {
         console.error('Error storing AI article:', error);
       }
     }
+    
+    // Maintain maximum 20 AI articles
+    await this.maintainAiArticleLimit();
+  }
+
+  async maintainAiArticleLimit(): Promise<void> {
+    try {
+      // Count current articles
+      const count = await db.select({ count: sql`count(*)` }).from(aiArticles);
+      const currentCount = Number(count[0].count);
+      
+      if (currentCount > 20) {
+        // Delete oldest articles to maintain 20
+        const articlesToDelete = currentCount - 20;
+        await db.delete(aiArticles)
+          .where(sql`id IN (
+            SELECT id FROM ai_articles 
+            ORDER BY created_at ASC 
+            LIMIT ${articlesToDelete}
+          )`);
+        console.log(`Removed ${articlesToDelete} old AI articles. Now maintaining 20 articles.`);
+      }
+    } catch (error) {
+      console.error('Error maintaining AI article limit:', error);
+    }
   }
 }
 

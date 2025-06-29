@@ -63,9 +63,9 @@ export class OpenAINewsService {
       
       console.log(`Fetching real news for trading days: ${dateStrings.join(', ')}`);
 
-      // Updated to use the latest o3-mini model for enhanced reasoning capabilities
+      // Using GPT-4o model for enhanced financial news generation
       const response = await openai.chat.completions.create({
-        model: "o3-mini",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -86,7 +86,7 @@ RULES:
 2. Focus ONLY on very recent events, NOT old quarterly results or earnings
 3. Avoid mentioning Q1/Q2/Q3/Q4 results as these have specific announcement schedules
 4. Use authentic sources: NSE, BSE, MoneyControl, Economic Times, Business Standard
-5. Generate 3-5 realistic news items if available
+5. Generate 5-8 realistic news items if available
 
 PRIORITY CATEGORIES (in order):
 1. FRAUD alerts and SEBI investigations/penalties
@@ -128,7 +128,6 @@ STRICT RULES:
 Return realistic news with proper source attribution using REAL company names.`
           }
         ],
-        temperature: 0.3, // Slightly higher for more realistic content
         response_format: { type: "json_object" }
       });
 
