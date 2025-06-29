@@ -647,6 +647,28 @@ export class StockAIService {
           dataSource = "Yahoo Finance";
         }
         
+        // Calculate intelligent PE ratios based on sector-specific logic
+        let peAnalysis = '';
+        if (realFinancialData.marketCap) {
+          const peMetrics = await peRatioCalculator.calculatePE({
+            marketCap: realFinancialData.marketCap,
+            netProfit: realFinancialData.netProfit,
+            lastQuarterProfit: realFinancialData.lastQuarterProfit,
+            yearOverYearGrowth: realFinancialData.revenueGrowth,
+            sector: realFinancialData.sector || 'default',
+            symbol: stockInfo.symbol
+          });
+          
+          const sectorInsights = peRatioCalculator.getSectorInsights(realFinancialData.sector || 'default');
+          
+          peAnalysis = `
+INTELLIGENT PE ANALYSIS:
+- Current PE: ${peMetrics.currentPE}x (${peMetrics.calculationMethod})
+- Projected PE: ${peMetrics.projectedPE}x (Based on growth projections)
+- Calculation Period: ${peMetrics.basedOnPeriod}
+- Sector Context: ${sectorInsights}`;
+        }
+
         marketDataText = `
 AUTHENTIC FINANCIAL DATA (${dataSource}):
 - Current Price: ${stockInfo.currentPrice}
@@ -655,7 +677,7 @@ AUTHENTIC FINANCIAL DATA (${dataSource}):
 - Profit Margin: ${realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A'}
 - Revenue Growth: ${realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A'}
 - ROE: ${realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A'}
-- Debt/Equity: ${realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A'}`;
+- Debt/Equity: ${realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A'}${peAnalysis}`;
 
         // Add conference call data if available
         if (realFinancialData.conferenceCallData) {
