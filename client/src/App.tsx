@@ -12,6 +12,7 @@ import SebiRia from "@/pages/sebi-ria-new";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
+import GmailConnect from "@/pages/GmailConnect";
 
 function Router() {
   useSEO(); // Enable dynamic SEO
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
       </Route>
+      <Route path="/gmail-connect" component={GmailConnect} />
       <Route path="/disclaimer" component={Home} />
       <Route path="/article/:id" component={ArticlePage} />
       <Route component={NotFound} />

@@ -272,7 +272,7 @@ export class DatabaseStorage implements IStorage {
         .offset(20);
       
       if (articlesToDelete.length > 0) {
-        const idsToDelete = articlesToDelete.map(a => a.id);
+        const idsToDelete = articlesToDelete.map((a: any) => a.id);
         await db.delete(personalizedArticles)
           .where(sql`${personalizedArticles.id} = ANY(${idsToDelete})`);
       }

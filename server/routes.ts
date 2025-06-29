@@ -713,6 +713,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start Enhanced 20-Article Management System
   ai20ArticleManager.startHourlyUpdates();
 
+  // Gmail integration endpoints
+  app.get("/api/gmail/auth-url", async (req, res) => {
+    try {
+      const authUrl = await gmailTracker.getAuthUrl();
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Error generating Gmail auth URL:", error);
+      res.status(500).json({ message: "Failed to generate auth URL" });
+    }
+  });
+
+  app.post("/api/gmail/callback", async (req, res) => {
+    try {
+      const { code, userId } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ message: "Authorization code required" });
+      }
+
+      // Exchange code for tokens
+      const tokens = await gmailTracker.exchangeCodeForTokens(code);
+      
+      // Store credentials
+      await storage.storeGmailCredentials({
+        userId: userId || 1, // Default to user 1 for now
+        accessToken: tokens.access_token!,
+        refreshToken: tokens.refresh_token || null,
+        expiryDate: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+        isActive: true,
+      });
+
+      // Initialize Gmail tracker
+      await gmailTracker.initialize(tokens);
+      
+      res.json({ success: true, message: "Gmail connected successfully" });
+    } catch (error) {
+      console.error("Error handling Gmail callback:", error);
+      res.status(500).json({ message: "Failed to connect Gmail" });
+    }
+  });
+
+  app.post("/api/gmail/scan", async (req, res) => {
+    try {
+      // Get user credentials
+      const credentials = await storage.getGmailCredentials(1); // Default user 1
+      
+      if (!credentials) {
+        return res.status(400).json({ message: "Gmail not connected. Please connect your Gmail first." });
+      }
+
+      // Initialize and scan emails
+      await gmailTracker.initialize({
+        access_token: credentials.accessToken,
+        refresh_token: credentials.refreshToken,
+        expiry_date: credentials.expiryDate?.getTime(),
+      });
+
+      await gmailTracker.processEmailTracking();
+      
+      res.json({ success: true, message: "Email scanning completed" });
+    } catch (error) {
+      console.error("Error scanning emails:", error);
+      res.status(500).json({ message: "Failed to scan emails" });
+    }
+  });
+
+  app.get("/api/personalized-articles", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const articles = await storage.getPersonalizedArticles(limit);
+      res.json(articles);
+    } catch (error) {
+      console.error("Error fetching personalized articles:", error);
+      res.status(500).json({ message: "Failed to fetch personalized articles" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
