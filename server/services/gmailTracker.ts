@@ -273,8 +273,12 @@ export class GmailTracker {
       console.log(`Generated ${personalizedArticles.length} personalized articles`);
       
       if (personalizedArticles.length > 0) {
-        // Store personalized articles
-        await storage.storePersonalizedArticles(personalizedArticles);
+        // Add userId to each article and store
+        const articlesWithUserId = personalizedArticles.map(article => ({
+          ...article,
+          userId: 1 // Default user ID for now, will be dynamic when user authentication is added
+        }));
+        await storage.storePersonalizedArticles(articlesWithUserId);
         console.log('Personalized articles stored successfully');
       }
     } catch (error) {

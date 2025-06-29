@@ -17,6 +17,7 @@ import { verifiedNewsService } from "./services/verifiedNewsService";
 import { directExchangeConnector } from "./services/directExchangeConnector";
 import { authenticDataProvider } from "./services/authenticDataProvider";
 import { realAuthenticNewsService } from "./services/realAuthenticNews";
+import { gmailTracker } from "./services/gmailTracker";
 import session from "express-session";
 import MemoryStore from "memorystore";
 

@@ -222,6 +222,70 @@ export class DatabaseStorage implements IStorage {
       console.error('Error clearing AI articles:', error);
     }
   }
+
+  // Gmail integration methods
+  async storeGmailCredentials(credentials: InsertGmailCredentials): Promise<void> {
+    await db.insert(gmailCredentials).values(credentials)
+      .onConflictDoUpdate({
+        target: gmailCredentials.userId,
+        set: {
+          accessToken: credentials.accessToken,
+          refreshToken: credentials.refreshToken,
+          expiryDate: credentials.expiryDate,
+          isActive: credentials.isActive,
+          updatedAt: new Date(),
+        },
+      });
+  }
+
+  async getGmailCredentials(userId: number): Promise<GmailCredentials | undefined> {
+    const [creds] = await db.select().from(gmailCredentials)
+      .where(and(eq(gmailCredentials.userId, userId), eq(gmailCredentials.isActive, true)));
+    return creds;
+  }
+
+  async storeEmailInsights(insights: InsertEmailInsights): Promise<void> {
+    await db.insert(emailInsights).values(insights);
+  }
+
+  async getEmailInsights(userId: number): Promise<EmailInsights | undefined> {
+    const [insights] = await db.select().from(emailInsights)
+      .where(eq(emailInsights.userId, userId))
+      .orderBy(desc(emailInsights.scanDate))
+      .limit(1);
+    return insights;
+  }
+
+  async storePersonalizedArticles(articles: InsertPersonalizedArticle[]): Promise<void> {
+    if (articles.length === 0) return;
+    
+    await db.insert(personalizedArticles).values(articles);
+    
+    // Keep only latest 20 personalized articles
+    const totalCount = await db.select({ count: sql<number>`count(*)` })
+      .from(personalizedArticles);
+    
+    if (totalCount[0].count > 20) {
+      const articlesToDelete = await db.select({ id: personalizedArticles.id })
+        .from(personalizedArticles)
+        .orderBy(desc(personalizedArticles.createdAt))
+        .offset(20);
+      
+      if (articlesToDelete.length > 0) {
+        const idsToDelete = articlesToDelete.map(a => a.id);
+        await db.delete(personalizedArticles)
+          .where(sql`${personalizedArticles.id} = ANY(${idsToDelete})`);
+      }
+    }
+  }
+
+  async getPersonalizedArticles(limit: number = 10): Promise<PersonalizedArticle[]> {
+    const articles = await db.select().from(personalizedArticles)
+      .orderBy(desc(personalizedArticles.createdAt))
+      .limit(limit);
+    
+    return articles;
+  }
 }
 
 export const storage = new DatabaseStorage();
