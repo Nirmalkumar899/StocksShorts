@@ -584,24 +584,26 @@ Return only valid JSON array with no extra text.`;
     
     const prompt = `Generate 5 COMPLETELY UNIQUE Indian stock market alerts for ${new Date().toLocaleDateString('en-IN')} using session ID: ${sessionId}
 
-FOCUS ONLY on these sectors today: ${selectedStocks.join(', ')}
+FOCUS ONLY on these stocks today: ${selectedStocks.join(', ')}
 Current market context: Nifty around ${indexLevel}, focus price around ₹${basePrice}
 
-Create alerts in this EXACT JSON format:
+Create alerts in this EXACT JSON format - ALWAYS include company name in title:
 [
   {
-    "title": "27-Jun-2025: [STOCK]: [ACTION] above ₹[PRICE], targets ₹[TARGET]",
-    "content": "27-Jun-2025: [STOCK] [ACTION] above key [resistance/support] of ₹[PRICE] with [X]x volume surge. [Pattern] pattern confirmed on daily charts. Next targets ₹[TARGET1] and ₹[TARGET2]. Stop loss ₹[STOPLOSS]. [BUY/SELL] for [momentum/reversal]."
+    "title": "27-Jun-2025: [COMPANY NAME]: [Action type] above ₹[PRICE], targets ₹[TARGET]",
+    "content": "27-Jun-2025: [COMPANY NAME] [detailed action] above key [resistance/support] of ₹[PRICE] with [X]x volume surge. [Pattern] pattern confirmed on daily charts. Next targets ₹[TARGET1] and ₹[TARGET2]. Stop loss ₹[STOPLOSS]. [BUY/SELL] for [momentum/reversal]."
   }
 ]
 
-Requirements:
+MANDATORY REQUIREMENTS:
 - Use TODAY'S date: ${new Date().toLocaleDateString('en-IN')}
-- Only stocks from: ${selectedStocks.join(', ')}
+- ALWAYS include full company name in title (TCS, HDFC Bank, Reliance, etc.)
+- Only use stocks from: ${selectedStocks.join(', ')}
 - Price ranges: ₹${basePrice-500} to ₹${basePrice+500}
 - Include specific price targets and stop losses
-- Vary between breakouts, breakdowns, order wins, index moves
-- Each alert must be actionable with clear BUY/SELL recommendations`;
+- Vary between: Technical breakouts, Order wins, Analyst upgrades, Index moves
+- Each alert must be actionable with clear BUY/SELL recommendations
+- NO generic titles - always specify the company name`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
