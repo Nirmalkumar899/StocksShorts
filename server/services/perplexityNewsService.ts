@@ -30,23 +30,19 @@ export class PerplexityNewsService {
   }
 
   async fetchRealNews(): Promise<NewsArticle[]> {
-    const today = this.getTodayDateString();
-    
-    if (this.cache.has(today)) {
-      const cached = this.cache.get(today)!;
-      console.log('Returning cached real-time news for', today);
-      return cached;
-    }
-
     try {
+      // Always generate fresh authentic market news
+      console.log('Generating 20 fresh authentic market articles via Perplexity API');
+      this.cache.clear(); // Clear any stale cache
+      
       const newsArticles = await this.generateCurrentMarketNews();
       
       if (newsArticles.length > 0) {
-        this.cache.set(today, newsArticles);
-        
         // Store in database
         await storage.storeAiArticles(newsArticles);
-        console.log(`Found ${newsArticles.length} verified news articles`);
+        console.log(`Generated and stored ${newsArticles.length} authentic market articles`);
+      } else {
+        console.error('No articles generated - check Perplexity API key and connection');
       }
       
       return newsArticles;
@@ -217,9 +213,14 @@ export class PerplexityNewsService {
     // Remove unwanted patterns from titles
     return title
       .replace(/^\d+\.\s*/, '') // Remove leading numbers
+      .replace(/^#+\s*/, '') // Remove markdown headers
+      .replace(/\*\*/g, '') // Remove bold markdown
+      .replace(/\*/g, '') // Remove italic markdown
       .replace(/[a-z0-9]{10,}/gi, '') // Remove long alphanumeric strings
+      .replace(/[{}[\]"]/g, '') // Remove JSON brackets and quotes
       .replace(/\s+/g, ' ') // Normalize spaces
-      .trim();
+      .trim()
+      .substring(0, 120); // Limit length
   }
 
   private determineSentiment(text: string): 'Positive' | 'Negative' | 'Neutral' {
