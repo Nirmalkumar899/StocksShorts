@@ -245,7 +245,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     🔒 LOGIN TO READ
                   </p>
                 </div>
-                <CompactLogin />
+                <InlineLogin />
               </div>
             </div>
           ) : (
