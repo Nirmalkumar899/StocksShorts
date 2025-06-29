@@ -518,33 +518,29 @@ Return only valid JSON array with no extra text.`;
     const currentDate = new Date().toDateString();
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
     
-    const prompt = `Search NSE India, BSE India, MoneyControl, Economic Times and Business Standard for ACTUAL Indian market events from ${currentDate} and ${yesterday} ONLY.
+    const prompt = `SEARCH ONLY for actual news events from these websites on ${currentDate} and ${yesterday}:
+- nseindia.com: Corporate announcements, filings
+- bseindia.com: Company disclosures, results
+- moneycontrol.com: Earnings, brokerage reports
+- economictimes.indiatimes.com: Market news, IPO updates
+- business-standard.com: Corporate actions, FII/DII data
 
-Find these REAL events with SOURCE verification:
-• IPO subscription updates, GMP, listing schedules, allotment status
-• Major order wins/contracts announced (₹100+ crore value)
-• Quarterly earnings released with actual revenue/profit numbers
-• Dividend/bonus declarations with record dates and amounts
-• SEBI approvals, regulatory filings, compliance actions
-• Management changes, CEO/CFO appointments
-• Brokerage reports with BUY/SELL ratings and specific target prices
-• Corporate fraud alerts, SEBI investigations, penalty announcements
-• FII/DII buying/selling data with sector allocation
-• Nifty/Sensex/Bank Nifty support/resistance levels from technical analysts
-• Option chain analysis with PUT/CALL ratios and max pain levels
-• Block deals, bulk deals with investor names and quantities
+FIND ONLY these REAL events with exact sources:
+• IPO subscription numbers, GMP rates, listing dates
+• Order wins/contracts ₹100+ crore with company names
+• Quarterly results with revenue/profit figures
+• Dividend amounts with record dates
+• Brokerage target price changes with firm names
+• SEBI penalties, fraud investigations
+• FII/DII buy/sell amounts by sector
+• Nifty/Bank Nifty levels from market analysts
+• Option chain max pain, PCR data
 
-MANDATORY: Only return VERIFIED news with actual sources. Include specific numbers, target prices, support/resistance levels.
+CRITICAL: Return ONLY news found on these websites. NO synthetic content.
 
-JSON format with sources:
-[
-  {
-    "title": "29-Jun-2025: [Event]: [Specific details with numbers]",
-    "content": "29-Jun-2025: [Detailed event description with actual figures, target prices, levels]. Source: [NSE/BSE/ET/BS/MC/Brokerage name]"
-  }
-]
+Format: [{"title": "Date: Company: Real event", "content": "Details with numbers. Source: Website"}]
 
-Return [] if no verified news found.`;
+If no real news found: []`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -557,7 +553,7 @@ Return [] if no verified news found.`;
         messages: [
           {
             role: 'system',
-            content: 'You are a financial news researcher. Search NSE, BSE, MoneyControl, Economic Times, and Business Standard for VERIFIED Indian corporate announcements from today and yesterday only. Return actual news with sources, not generated content. Always respond with valid JSON array format.'
+            content: 'You are a financial news SEARCH engine. DO NOT generate any content. Only SEARCH and FIND actual news from NSE India, BSE India, MoneyControl, Economic Times, Business Standard websites for real corporate announcements, earnings, IPO updates, brokerage reports, FII/DII data from today and yesterday only. If no real news found, return empty array [].'
           },
           {
             role: 'user',
