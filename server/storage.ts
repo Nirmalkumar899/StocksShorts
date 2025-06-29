@@ -1,4 +1,4 @@
-import { users, otpVerifications, aiQueries, aiArticles, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery } from "@shared/schema";
+import { users, otpVerifications, aiQueries, aiArticles, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery, type AiArticle } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
 
@@ -144,14 +144,18 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(aiArticles.createdAt))
         .limit(limit);
       
-      return articles.map(article => ({
+      return articles.map((article: AiArticle) => ({
+        id: article.id, // Include ID for React keys
         title: article.title,
         content: article.content,
         source: article.source,
         type: article.type,
         sentiment: article.sentiment,
         priority: article.priority,
-        newsDate: article.newsDate
+        time: article.newsDate, // Map newsDate to time for consistency
+        newsDate: article.newsDate,
+        imageUrl: null, // AI articles don't have images
+        createdAt: article.createdAt
       }));
     } catch (error) {
       console.error('Error fetching stored AI articles:', error);
