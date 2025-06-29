@@ -6,11 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-interface CompactLoginProps {
+interface InlineLoginProps {
   onSuccess?: () => void;
 }
 
-export default function CompactLogin({ onSuccess }: CompactLoginProps) {
+export default function InlineLogin({ onSuccess }: InlineLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
@@ -96,7 +96,7 @@ export default function CompactLogin({ onSuccess }: CompactLoginProps) {
   return (
     <div className="w-full">
       {step === "phone" ? (
-        <form onSubmit={handlePhoneSubmit} className="space-y-2">
+        <form onSubmit={handlePhoneSubmit}>
           <div className="flex items-center space-x-2">
             <Phone className="h-3 w-3 text-primary flex-shrink-0" />
             <Input
@@ -117,30 +117,32 @@ export default function CompactLogin({ onSuccess }: CompactLoginProps) {
           </div>
         </form>
       ) : (
-        <form onSubmit={handleOtpSubmit} className="space-y-2">
-          <div className="text-center mb-2">
+        <div className="space-y-2">
+          <div className="text-center">
             <p className="text-xs text-muted-foreground">
               OTP sent to +91 {phoneNumber}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <LogIn className="h-3 w-3 text-primary flex-shrink-0" />
-            <Input
-              type="text"
-              placeholder="6-digit OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              className="text-center text-xs h-7 tracking-widest flex-1"
-              maxLength={6}
-            />
-            <Button 
-              type="submit" 
-              className="h-7 text-xs px-3 flex-shrink-0" 
-              disabled={verifyOtpMutation.isPending || otp.length !== 6}
-            >
-              {verifyOtpMutation.isPending ? "..." : "Login"}
-            </Button>
-          </div>
+          <form onSubmit={handleOtpSubmit}>
+            <div className="flex items-center space-x-2">
+              <LogIn className="h-3 w-3 text-primary flex-shrink-0" />
+              <Input
+                type="text"
+                placeholder="6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="text-center text-xs h-7 tracking-widest flex-1"
+                maxLength={6}
+              />
+              <Button 
+                type="submit" 
+                className="h-7 text-xs px-3 flex-shrink-0" 
+                disabled={verifyOtpMutation.isPending || otp.length !== 6}
+              >
+                {verifyOtpMutation.isPending ? "..." : "Login"}
+              </Button>
+            </div>
+          </form>
           <Button
             type="button"
             variant="ghost"
@@ -150,7 +152,7 @@ export default function CompactLogin({ onSuccess }: CompactLoginProps) {
           >
             Change Number
           </Button>
-        </form>
+        </div>
       )}
     </div>
   );

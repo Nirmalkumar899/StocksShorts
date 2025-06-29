@@ -10,7 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import CompactLogin from "@/components/compact-login";
+import InlineLogin from "@/components/inline-login";
 
 interface NewsCardProps {
   article: Article;
@@ -234,19 +234,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         {/* Content - More space for article text */}
         <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto mb-3">
           {isLocked ? (
-            <div className="relative">
-              <div className="text-gray-400 dark:text-gray-500 line-clamp-3">
-                {article.content.substring(0, 100)}...
+            <div className="space-y-2">
+              <div className="text-gray-400 dark:text-gray-500 text-sm line-clamp-2">
+                {article.content.substring(0, 80)}...
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent"></div>
-              <div className="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                <div className="text-center mb-3">
-                  <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
-                  <p className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">
-                    🔒 LOGIN REQUIRED TO READ
-                  </p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
-                    StocksShorts Special premium content. Other articles are free!
+              <div className="p-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="flex items-center justify-center mb-2">
+                  <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400 mr-1" />
+                  <p className="text-xs font-bold text-amber-800 dark:text-amber-200">
+                    🔒 LOGIN TO READ
                   </p>
                 </div>
                 <CompactLogin />

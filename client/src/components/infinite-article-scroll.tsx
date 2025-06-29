@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Share2, Copy, ArrowLeft, ExternalLink, Lock, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import CompactLogin from "@/components/compact-login";
+import InlineLogin from "@/components/inline-login";
 import type { Article } from "@shared/schema";
 
 interface InfiniteArticleScrollProps {
@@ -209,21 +209,18 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
             {/* Content */}
             <div className="text-foreground/80 leading-relaxed mb-6">
               {isLocked ? (
-                <div className="space-y-4">
-                  <div className="text-gray-400 dark:text-gray-500">
-                    {article.content.substring(0, 150)}...
+                <div className="space-y-3">
+                  <div className="text-gray-400 dark:text-gray-500 text-sm">
+                    {article.content.substring(0, 120)}...
                   </div>
-                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-4">
-                    <div className="text-center mb-4">
-                      <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
-                      <p className="text-lg font-bold text-amber-800 dark:text-amber-200 mb-1">
-                        🔒 LOGIN REQUIRED TO READ
-                      </p>
-                      <p className="text-sm text-amber-600 dark:text-amber-400">
-                        StocksShorts Special premium content. Other articles are free!
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-3">
+                    <div className="flex items-center justify-center mb-3">
+                      <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2" />
+                      <p className="text-base font-bold text-amber-800 dark:text-amber-200">
+                        🔒 LOGIN TO READ this Special content
                       </p>
                     </div>
-                    <CompactLogin />
+                    <InlineLogin />
                   </div>
                 </div>
               ) : (
