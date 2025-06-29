@@ -161,8 +161,15 @@ LINK: [Source URL for verification]`
   }
 
   private makeCatchyHeadline(title: string, priority: string): string {
-    // Clean title
-    title = title.replace(/^[#*\-\s]+/, '').trim();
+    // Clean title and remove HEADLINE prefix
+    title = title.replace(/^[#*\-\s]+/, '').replace(/^HEADLINE[:\s]*/i, '').trim();
+    
+    // Get today's date in DD MMM format
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short'
+    });
     
     const actionWords = {
       '1': ['Alert', 'Raids', 'Probes', 'Penalizes', 'Investigates'],
@@ -186,7 +193,8 @@ LINK: [Source URL for verification]`
       }
     }
     
-    return title;
+    // Add date prefix to show this is latest news
+    return `${dateStr}: ${title}`;
   }
 
   private create350CharSummary(summary: string, urls: string[]): string {
