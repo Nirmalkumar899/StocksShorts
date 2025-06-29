@@ -327,7 +327,7 @@ Return only valid JSON array with no extra text.`;
         .limit(this.articlesPerBatch);
       
       if (oldestArticles.length > 0) {
-        const oldestIds = oldestArticles.map(row => row.id);
+        const oldestIds = oldestArticles.map((row: any) => row.id);
         await db.delete(aiArticles).where(inArray(aiArticles.id, oldestIds));
         console.log(`Removed ${oldestArticles.length} oldest articles to maintain ${this.maxArticles} limit`);
       }
@@ -538,6 +538,121 @@ Return only valid JSON array with no extra text.`;
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       return bTime - aTime;
     });
+  }
+
+  private async initialPopulation(): Promise<AiArticle[]> {
+    console.log('Starting initial population to fill 20 AI articles...');
+    const allArticles: AiArticle[] = [];
+    
+    // Make 4 API calls to get 20 articles (5 per call)
+    for (let i = 0; i < 4; i++) {
+      try {
+        console.log(`Initial population batch ${i + 1}/4...`);
+        const articles = await this.parseArticlesFromResponse(await this.callPerplexityAPI());
+        const storedArticles = await this.storeArticlesDirectly(articles);
+        allArticles.push(...storedArticles);
+        
+        // Wait 2 seconds between calls to avoid rate limits
+        if (i < 3) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      } catch (error) {
+        console.error(`Initial population batch ${i + 1} failed:`, error);
+        // Use fallback articles for failed batches
+        const fallbackArticles = this.generateFallbackArticles();
+        const storedArticles = await this.storeArticlesDirectly(fallbackArticles);
+        allArticles.push(...storedArticles);
+      }
+    }
+    
+    console.log(`Initial population completed with ${allArticles.length} articles`);
+    return allArticles;
+  }
+
+  private async callPerplexityAPI(): Promise<string> {
+    const sessionId = Date.now() + Math.random().toString(36).substring(2);
+    const stockRotation = [
+      ['TCS', 'Infosys', 'Wipro', 'HCL Tech', 'Tech Mahindra'],
+      ['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank', 'Kotak Bank'],
+      ['Reliance', 'ONGC', 'IOC', 'BPCL', 'GAIL'],
+      ['Maruti', 'Tata Motors', 'Bajaj Auto', 'M&M', 'Eicher Motors'],
+      ['Sun Pharma', 'Dr Reddy', 'Cipla', 'Lupin', 'Biocon']
+    ];
+    const selectedStocks = stockRotation[Math.floor(Math.random() * stockRotation.length)];
+    const basePrice = 1000 + Math.floor(Math.random() * 3000);
+    const indexLevel = 45000 + Math.floor(Math.random() * 15000);
+    
+    const prompt = `Generate 5 COMPLETELY UNIQUE Indian stock market alerts for ${new Date().toLocaleDateString('en-IN')} using session ID: ${sessionId}
+
+FOCUS ONLY on these sectors today: ${selectedStocks.join(', ')}
+Current market context: Nifty around ${indexLevel}, focus price around ₹${basePrice}
+
+Create alerts in this EXACT JSON format:
+[
+  {
+    "title": "27-Jun-2025: [STOCK]: [ACTION] above ₹[PRICE], targets ₹[TARGET]",
+    "content": "27-Jun-2025: [STOCK] [ACTION] above key [resistance/support] of ₹[PRICE] with [X]x volume surge. [Pattern] pattern confirmed on daily charts. Next targets ₹[TARGET1] and ₹[TARGET2]. Stop loss ₹[STOPLOSS]. [BUY/SELL] for [momentum/reversal]."
+  }
+]
+
+Requirements:
+- Use TODAY'S date: ${new Date().toLocaleDateString('en-IN')}
+- Only stocks from: ${selectedStocks.join(', ')}
+- Price ranges: ₹${basePrice-500} to ₹${basePrice+500}
+- Include specific price targets and stop losses
+- Vary between breakouts, breakdowns, order wins, index moves
+- Each alert must be actionable with clear BUY/SELL recommendations`;
+
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-small-128k-online',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a stock market analyst generating precise trading alerts for Indian markets. Always respond with valid JSON array format.'
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens: 2000,
+        temperature: 0.8,
+        top_p: 0.9,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Perplexity API error: ${response.status}`);
+    }
+
+    const data: PerplexityResponse = await response.json();
+    return data.choices[0]?.message?.content || '';
+  }
+
+  private async storeArticlesDirectly(articles: ParsedArticle[]): Promise<AiArticle[]> {
+    if (articles.length === 0) return [];
+
+    const insertData: InsertAiArticle[] = articles.map(article => ({
+      title: article.title,
+      content: article.content,
+      type: "AI News",
+      source: "AI Generated - Perplexity",
+      sentiment: article.sentiment,
+      priority: article.priority,
+      imageUrl: null,
+      newsDate: new Date(),
+    }));
+
+    const storedArticles = await db.insert(aiArticles).values(insertData).returning();
+    console.log(`Stored ${storedArticles.length} articles directly`);
+    return storedArticles;
   }
 
   private calculateInvestorValueScore(article: AiArticle): number {
