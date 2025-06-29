@@ -164,9 +164,9 @@ LINK: [Source URL for verification]`
     // Clean title and remove HEADLINE prefix
     title = title.replace(/^[#*\-\s]+/, '').replace(/^HEADLINE[:\s]*/i, '').trim();
     
-    // Get today's date in DD MMM format
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('en-IN', {
+    // Get the last working day (when Indian markets were open)
+    const lastWorkingDay = this.getLastWorkingDay();
+    const dateStr = lastWorkingDay.toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short'
     });
@@ -195,6 +195,32 @@ LINK: [Source URL for verification]`
     
     // Add date prefix to show this is latest news
     return `${dateStr}: ${title}`;
+  }
+
+  private getLastWorkingDay(): Date {
+    const date = new Date();
+    
+    // If today is Saturday (6) or Sunday (0), go back to Friday
+    if (date.getDay() === 6) { // Saturday
+      date.setDate(date.getDate() - 1); // Go to Friday
+    } else if (date.getDay() === 0) { // Sunday
+      date.setDate(date.getDate() - 2); // Go to Friday
+    }
+    // If it's a weekday, check if it's a known market holiday
+    else {
+      // For weekdays, use previous day if current day might be a holiday
+      // This ensures we don't show "today's" news on holidays
+      date.setDate(date.getDate() - 1);
+      
+      // If the previous day was weekend, go to Friday
+      if (date.getDay() === 6) { // Saturday
+        date.setDate(date.getDate() - 1);
+      } else if (date.getDay() === 0) { // Sunday
+        date.setDate(date.getDate() - 2);
+      }
+    }
+    
+    return date;
   }
 
   private create350CharSummary(summary: string, urls: string[]): string {
