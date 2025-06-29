@@ -34,62 +34,13 @@ export class AINewsService {
     }
 
     try {
-      // Check if we need to populate the database initially
-      const currentCount = await db.select({ count: count() }).from(aiArticles);
-      const totalArticles = currentCount[0]?.count || 0;
-      
-      if (totalArticles === 0) {
-        console.log('No AI articles found, performing initial population with 20 articles...');
-        return await this.initialPopulation();
-      }
-      // Generate unique content variations to prevent repetition
-      const sessionId = Date.now() + Math.random().toString(36).substring(2);
-      const stockRotation = [
-        ['TCS', 'Infosys', 'Wipro', 'HCL Tech', 'Tech Mahindra'],
-        ['HDFC Bank', 'ICICI Bank', 'SBI', 'Axis Bank', 'Kotak Bank'],
-        ['Reliance', 'ONGC', 'IOC', 'BPCL', 'GAIL'],
-        ['Maruti', 'Tata Motors', 'Bajaj Auto', 'M&M', 'Eicher Motors'],
-        ['Sun Pharma', 'Dr Reddy', 'Cipla', 'Lupin', 'Biocon']
-      ];
-      const selectedStocks = stockRotation[Math.floor(Math.random() * stockRotation.length)];
-      const basePrice = 1000 + Math.floor(Math.random() * 3000);
-      const indexLevel = 45000 + Math.floor(Math.random() * 15000);
-      
-      const prompt = `Generate 5 COMPLETELY UNIQUE Indian stock market alerts for ${new Date().toLocaleDateString('en-IN')} using session ID: ${sessionId}
-
-ABSOLUTE UNIQUENESS REQUIREMENTS:
-- Use ONLY these stocks: ${selectedStocks.join(', ')}
-- Use price range: ₹${basePrice}-₹${basePrice + 1000}
-- Include session ID [${sessionId}] in each title
-- Each alert must be DIFFERENT from all previous generations
-
-MANDATORY FORMAT - Generate 5 different alerts:
-
-Alert 1 - BREAKOUT STOCK:
-Title: "27-Jun-2025: [Stock Name]: Technical breakout above ₹[X], targets ₹[Y]"
-Content: "27-Jun-2025: [Stock] breaks above key resistance of ₹[level] with 2x volume surge. Breakout pattern confirmed on daily charts. Next targets ₹[target1] and ₹[target2]. Stop loss ₹[SL]. Strong BUY for breakout momentum."
-
-Alert 2 - INDEX BREAKOUT:
-Title: "27-Jun-2025: [Sector Index] breaks above [X] resistance, targets [Y]"
-Content: "27-Jun-2025: [Sector Index] breaks above key resistance of [level] with strong volumes. Technical breakout confirmed. Next targets [target1] and [target2]. Support at [support level]. [Sector] index showing momentum for further gains."
-
-Alert 3 - RESEARCH REPORT:
-Title: "27-Jun-2025: [Broker] upgrades [Small/Mid/Large Cap Stock] to BUY, target ₹[X]"
-Content: "27-Jun-2025: [Broker name] upgrades [Stock] from HOLD to BUY with target ₹[price]. Research highlights strong [growth/margin/market share] expansion. Stock trading at ₹[current]. Upside potential [X]%. Recommended for [small/mid/large] cap portfolio."
-
-Alert 4 - ORDER WIN:
-Title: "27-Jun-2025: [Stock Name]: Wins ₹[X] crore order, [Y]% of revenue"
-Content: "27-Jun-2025: [Company] secures major ₹[amount] crore order worth [X]% of annual revenue. Order from [client sector] validates business model. Stock up [Y]% on announcement. Revenue visibility improved for next [timeframe]. Strong BUY."
-
-Alert 5 - IPO/SME UPDATE:
-Title: "27-Jun-2025: [Company] IPO: Grey market premium at [X]%, listing on [date]"
-Content: "27-Jun-2025: [Company] IPO opens [start date] to [end date] at ₹[price] per share. Grey market premium at [X]% indicates strong demand. Business: [sector/industry]. Size: ₹[amount] crore. Lot size: [shares]. Expected listing: [date]. [BUY/AVOID] based on premium and fundamentals."
-
-Focus on actionable investment themes: breakouts, sector index breakouts (Bank Nifty, IT Index, Pharma Index, Auto Index, Metal Index), research upgrades, significant order wins, IPO/SME updates with grey market premiums
-
-Include IPO subscription dates, grey market premium analysis, business sector, and listing expectations. Use specific sector indices with resistance/support levels. Avoid generic market commentary.
-
-Return only valid JSON array with no extra text.`;
+      console.log('Searching for verified financial news from authorized sources...');
+      return await this.callPerplexityAPI();
+    } catch (error) {
+      console.error('Error fetching AI news:', error);
+      return [];
+    }
+  }
 
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
@@ -527,29 +478,32 @@ Return only valid JSON array with no extra text.`;
     const currentDate = new Date().toDateString();
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
     
-    const prompt = `SEARCH ONLY for actual news events from these websites on ${currentDate} and ${yesterday}:
-- nseindia.com: Corporate announcements, filings
-- bseindia.com: Company disclosures, results
-- moneycontrol.com: Earnings, brokerage reports
-- economictimes.indiatimes.com: Market news, IPO updates
-- business-standard.com: Corporate actions, FII/DII data
+    const prompt = `You are a financial news SEARCH tool. Search these Indian financial websites for ACTUAL news published on ${currentDate} and ${yesterday}:
 
-FIND ONLY these REAL events with exact sources:
-• IPO subscription numbers, GMP rates, listing dates
-• Order wins/contracts ₹100+ crore with company names
-• Quarterly results with revenue/profit figures
-• Dividend amounts with record dates
-• Brokerage target price changes with firm names
-• SEBI penalties, fraud investigations
-• FII/DII buy/sell amounts by sector
-• Nifty/Bank Nifty levels from market analysts
-• Option chain max pain, PCR data
+SEARCH THESE SOURCES:
+- NSE India (nseindia.com) - Corporate announcements, regulatory filings
+- BSE India (bseindia.com) - Company disclosures, earnings results  
+- MoneyControl (moneycontrol.com) - Brokerage reports, market updates
+- Economic Times (economictimes.indiatimes.com) - Financial news, IPO coverage
+- Business Standard (business-standard.com) - Corporate actions, institutional data
 
-CRITICAL: Return ONLY news found on these websites. NO synthetic content.
+ONLY RETURN NEWS IF YOU FIND:
+1. Real IPO launches with actual subscription data (not fictional companies)
+2. Actual quarterly earnings with verified revenue/profit numbers
+3. Genuine brokerage reports with specific target prices from real firms
+4. Real order wins/contracts ₹100+ crore from verified sources
+5. Actual SEBI actions, penalties, investigations with case numbers
+6. Real FII/DII data with sector-wise flows from exchanges
+7. Verified corporate actions (dividends, splits) with record dates
 
-Format: [{"title": "Date: Company: Real event", "content": "Details with numbers. Source: Website"}]
+STRICT REQUIREMENTS:
+- NEVER create fictional companies, IPOs, or events
+- NEVER generate synthetic price targets or technical analysis
+- ONLY return news you can verify from the specified websites
+- Include exact source (website name) for each news item
+- Return empty array [] if no verified news found
 
-If no real news found: []`;
+Response format: [{"title": "Date: Company: Verified event", "content": "Factual details. Source: Verified website"}]`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -562,7 +516,7 @@ If no real news found: []`;
         messages: [
           {
             role: 'system',
-            content: 'You are a financial news SEARCH engine. DO NOT generate any content. Only SEARCH and FIND actual news from NSE India, BSE India, MoneyControl, Economic Times, Business Standard websites for real corporate announcements, earnings, IPO updates, brokerage reports, FII/DII data from today and yesterday only. If no real news found, return empty array [].'
+            content: 'You are a financial news verification system. ONLY search and return news that you can verify exists on NSE India, BSE India, MoneyControl, Economic Times, or Business Standard websites. DO NOT generate fictional companies, fake IPOs, or synthetic market events. Return empty array if no verified news found.'
           },
           {
             role: 'user',

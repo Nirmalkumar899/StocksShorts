@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
-import { aiNewsService } from "./services/aiNewsService";
+import { realNewsService } from "./services/realNewsService";
 import { stockAI } from "./services/stockAI";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
