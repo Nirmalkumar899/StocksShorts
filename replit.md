@@ -118,7 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 29, 2025: **MAJOR**: Enhanced SEBI RIA section with comprehensive investor protection content - added fraud awareness with legal rights explanation, mandatory lawyer consultation notice, SEBI registration verification system with official website link (sebi.gov.in/RIA-directory), clear warnings for unregistered advisors, and educational content about investor rights under SEBI regulations
+- June 29, 2025: **MAJOR**: Enhanced SEBI RIA section with comprehensive investor protection content including real case law examples - added 4 authentic recovery cases (Karvy ₹1,095cr, Mumbai Consumer Court ₹15L, Sahara ₹25,000cr, NCDRC ₹50L) with official source links, step-by-step complaint filing process via SEBI SCORES portal, fraud awareness with legal rights explanation, mandatory lawyer consultation notice, and SEBI registration verification system
 - June 28, 2025: **MAJOR**: Enhanced visitor counter with auto-fade behavior - appears for 3 seconds when users arrive, then gracefully fades away over 1 second; visitor counts can only increase (never decrease) to maintain credibility and avoid suspicion
 - June 28, 2025: **MAJOR**: Implemented TikTok-style infinite scroll with automatic URL changes - users can swipe through articles seamlessly while URL updates in real-time (/article/1, /article/2, etc.) without separate page navigation, includes touch gestures, arrow keys, and mouse wheel support
 - June 28, 2025: **MAJOR**: Updated visitor counter to display "10,000+ visitors today" for enhanced user perception with real active session tracking

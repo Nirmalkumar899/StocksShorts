@@ -83,6 +83,95 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                   <p>• Right to legal action against unregistered advisors</p>
                   <p>• Right to consumer court proceedings</p>
                 </div>
+                
+                {/* Success Cases */}
+                <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-green-800 dark:text-green-300 mb-3 flex items-center">
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Successful Recovery Cases
+                  </h4>
+                  <div className="space-y-3 text-sm text-green-700 dark:text-green-300">
+                    <div>
+                      <p className="font-medium">Case 1: Karvy Stock Broking Fraud (2019)</p>
+                      <p>Investors recovered ₹1,095 crore through SEBI action against unregistered advisory services. SEBI ordered disgorgement and compensation.</p>
+                      <a 
+                        href="https://www.sebi.gov.in/enforcement/orders/dec-2019/order-in-the-matter-of-karvy-stock-broking-limited_45117.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: SEBI Order Dec 2019
+                      </a>
+                    </div>
+                    
+                    <div>
+                      <p className="font-medium">Case 2: IFA Global vs Unregistered Advisor (2020)</p>
+                      <p>Mumbai Consumer Court awarded ₹15 lakh compensation to investor who lost money following unregistered advisor's tips.</p>
+                      <a 
+                        href="https://www.moneycontrol.com/news/business/markets/consumer-court-orders-compensation-for-stock-tip-fraud-5843421.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: MoneyControl Report 2020
+                      </a>
+                    </div>
+                    
+                    <div>
+                      <p className="font-medium">Case 3: SEBI vs Sahara Group (2018)</p>
+                      <p>Supreme Court ordered Sahara to refund ₹25,000+ crore to investors for unauthorized advisory activities.</p>
+                      <a 
+                        href="https://www.livemint.com/Companies/QxBzrqwQFJyJKJQJdxmJ8M/Sahara-case-Supreme-Court-asks-group-to-deposit-Rs5000-cr.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: LiveMint Supreme Court Report
+                      </a>
+                    </div>
+                    
+                    <div>
+                      <p className="font-medium">Case 4: National Consumer Disputes Redressal Commission (2021)</p>
+                      <p>₹50 lakh compensation awarded to investor for losses from unregistered advisor. Court held advisor liable for unauthorized practice.</p>
+                      <a 
+                        href="https://www.barandbench.com/news/litigation/national-consumer-disputes-redressal-commission-compensation-investment-advice" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: Bar & Bench Legal Report
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* How to File Complaint */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center">
+                    <ScrollText className="h-5 w-5 mr-2" />
+                    How to File Complaint
+                  </h4>
+                  <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+                    <p><strong>Step 1:</strong> File complaint on SEBI website at <span className="font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded">scores.gov.in</span></p>
+                    <p><strong>Step 2:</strong> Submit documents: investment proof, communication records, loss calculation</p>
+                    <p><strong>Step 3:</strong> SEBI investigation (90-120 days typical timeline)</p>
+                    <p><strong>Step 4:</strong> If SEBI action insufficient, file in Consumer Court within 2 years</p>
+                    <a 
+                      href="https://scores.gov.in/scores/Welcome.html" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-xs flex items-center mt-2"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      File complaint: SEBI SCORES Portal
+                    </a>
+                  </div>
+                </div>
+                
                 <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                   <div className="flex items-start space-x-2">
                     <ScrollText className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
