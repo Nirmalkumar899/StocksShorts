@@ -4,8 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Share2, Copy, ArrowLeft, ExternalLink } from "lucide-react";
+import { Share2, Copy, ArrowLeft, ExternalLink, Lock, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { Article } from "@shared/schema";
 
 interface InfiniteArticleScrollProps {
@@ -19,9 +20,13 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
   const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const startTouchY = useRef<number>(0);
   const currentTouchY = useRef<number>(0);
+
+  const isSpecialArticle = articles[currentIndex]?.type === 'StocksShorts Special';
+  const isLocked = isSpecialArticle && !isAuthenticated;
 
   // Find initial article index
   useEffect(() => {
@@ -158,7 +163,6 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
     );
   }
 
-  const currentArticle = articles[currentIndex];
   if (!currentArticle) return null;
 
   const shareableLink = `${window.location.origin}/article/${currentArticle.id}`;

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle, ExternalLink, Copy } from "lucide-react";
+import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle, ExternalLink, Copy, Lock, LogIn } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
@@ -8,7 +8,8 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NewsCardProps {
   article: Article;
@@ -19,10 +20,16 @@ interface NewsCardProps {
 export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [, setLocation] = useLocation();
   const sentimentColor = getSentimentColor(article.sentiment);
   const typeColor = getTypeColor(article.type || 'AI News');
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Check if this is a Special article that requires login
+  const isSpecialArticle = article.type === 'StocksShorts Special';
+  const isLocked = isSpecialArticle && !isAuthenticated;
 
   const reportMutation = useMutation({
     mutationFn: async () => {
@@ -80,6 +87,16 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const handleOpenArticle = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.open(`/article/${article.id}`, '_blank');
+  };
+
+  const handleLoginPrompt = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: "Login Required",
+      description: "Please login to access StocksShorts Special content. Other articles are free to read.",
+      variant: "default",
+    });
+    setLocation("/profile");
   };
   
   const getSentimentIcon = () => {
@@ -215,7 +232,35 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         
         {/* Content - More space for article text */}
         <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto mb-3">
-          {article.content}
+          {isLocked ? (
+            <div className="relative">
+              <div className="text-gray-400 dark:text-gray-500 line-clamp-3">
+                {article.content.substring(0, 100)}...
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent"></div>
+              <div className="mt-4 flex items-center justify-center p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="text-center">
+                  <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                    StocksShorts Special Content
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
+                    Login required to read full article
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={handleLoginPrompt}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-1"
+                  >
+                    <LogIn className="h-3 w-3 mr-1" />
+                    Login to Read
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            article.content
+          )}
         </div>
         
         {/* Source and time - moved below content */}
