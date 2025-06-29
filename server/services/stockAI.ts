@@ -1047,6 +1047,22 @@ Please try analyzing a different stock or check back later when the data verific
     
     return analysesWithNumbers[category as AnalysisCategory] || analysesWithNumbers['large'];
   }
+
+  private isSectorAppropriateData(companyName: string, conferenceData: any): boolean {
+    const name = companyName.toLowerCase();
+    
+    // Asset management companies shouldn't have capex guidance
+    if (name.includes('wealth') || name.includes('asset management') || name.includes('mutual fund') || name.includes('nuvama')) {
+      return !conferenceData.capexGuidance || conferenceData.capexGuidance === '';
+    }
+    
+    // Banks and financial services have different metrics
+    if (name.includes('bank') || name.includes('financial')) {
+      return true;
+    }
+    
+    return true;
+  }
 }
 
 export const stockAI = new StockAIService();
