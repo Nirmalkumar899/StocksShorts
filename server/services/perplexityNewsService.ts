@@ -95,19 +95,42 @@ export class PerplexityNewsService {
 
     const allArticles: NewsArticle[] = [];
 
-    // Process only 5 priority queries for faster response
-    const priorityQueries = [
-      newsQueries[0], // Priority 1: SEBI fraud
-      newsQueries[4], // Priority 2: Breakout stocks  
-      newsQueries[8], // Priority 3: Order wins
-      newsQueries[12], // Priority 4: Quarterly results
-      newsQueries[16] // Priority 5: IPO updates
+    // Generate 20 articles directly with catchy headlines
+    const catchyTemplates = [
+      // Priority 1: SEBI investigations (4 articles)
+      { query: "SEBI fraud investigations Indian companies today", priority: "1", template: "{company} Probes: SEBI {action} Alert" },
+      { query: "SEBI penalties violations Indian stock market today", priority: "1", template: "Alert: SEBI {action} {company} Over {issue}" },
+      { query: "SEBI enforcement actions Indian companies today", priority: "1", template: "{company} Raids: SEBI {action} Enforcement" },
+      { query: "SEBI compliance failures stock violations today", priority: "1", template: "Penalized: {company} Faces SEBI {action}" },
+      
+      // Priority 2: Breakout stocks (4 articles)
+      { query: "Indian stocks breakouts high volume today", priority: "2", template: "{company} Surges: {percentage} Jump on Volume" },
+      { query: "NSE BSE stocks breaking resistance today", priority: "2", template: "{company} Breaks: {price} Resistance Level Hit" },
+      { query: "Indian equity breakouts trading volumes today", priority: "2", template: "{company} Rallies: {percentage} Gain on {volume}" },
+      { query: "Stock breakouts India volume analysis today", priority: "2", template: "{company} Soars: {percentage} with Volume Spike" },
+      
+      // Priority 3: Order wins (4 articles)
+      { query: "Indian companies contract wins today", priority: "3", template: "{company} Wins: ₹{amount} Contract Secured" },
+      { query: "Large contract awards Indian corporations today", priority: "3", template: "{company} Bags: Major ₹{amount} Deal" },
+      { query: "Indian companies order announcements today", priority: "3", template: "{company} Lands: ₹{amount} Order Win" },
+      { query: "Major business contracts Indian companies today", priority: "3", template: "{company} Grabs: Mega ₹{amount} Contract" },
+      
+      // Priority 4: Quarterly results (4 articles)
+      { query: "Indian companies quarterly results growth 20 percent today", priority: "4", template: "{company} Beats: {percentage} Profit Growth" },
+      { query: "Strong quarterly earnings Indian companies today", priority: "4", template: "{company} Reports: {percentage} Revenue Jump" },
+      { query: "Indian corporate quarterly exceeding estimates today", priority: "4", template: "{company} Delivers: {percentage} Above Estimates" },
+      { query: "High growth quarterly results Indian companies today", priority: "4", template: "{company} Achieves: {percentage} Growth Beat" },
+      
+      // Priority 5: IPO and brokerage (4 articles)
+      { query: "Indian IPO subscription updates today", priority: "5", template: "{company} IPO: {times} Oversubscribed" },
+      { query: "Indian stock brokerage upgrades target prices today", priority: "5", template: "{company} Targets: ₹{price} Price Set" },
+      { query: "IPO listing performance Indian market today", priority: "5", template: "{company} Debuts: {percentage} Listing Gains" },
+      { query: "Analyst recommendations Indian stocks today", priority: "5", template: "{company} Upgraded: {target} Target Price" }
     ];
 
-    for (let i = 0; i < priorityQueries.length; i++) {
+    for (let i = 0; i < Math.min(catchyTemplates.length, 20); i++) {
       try {
-        const query = priorityQueries[i];
-        const priority = (i + 1).toString() as '1' | '2' | '3' | '4' | '5';
+        const template = catchyTemplates[i];
         
         const response = await fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
@@ -120,42 +143,38 @@ export class PerplexityNewsService {
             messages: [
               {
                 role: 'system',
-                content: `You are a financial news analyst. Find 4 authentic Indian stock market news items from verified sources. Write each as: TITLE: [clear title] CONTENT: [details with company names and numbers] SOURCE: [website name]. Only report real events from today or yesterday.`
+                content: `Find 1 real Indian stock market news. Write EXACTLY as: TITLE: [Company] [Action]: [Brief Details] CONTENT: [Exactly 350 characters with company name, numbers, percentages] SOURCE: [Website]. Use action words like surges, breaks, wins, reports, targets.`
               },
               {
                 role: 'user',
-                content: query
+                content: template.query
               }
             ],
-            max_tokens: 600,
-            temperature: 0.1,
-            top_p: 0.9,
-            search_domain_filter: ["moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com", "nseindia.com", "bseindia.com", "livemint.com"],
-            return_images: false,
-            return_related_questions: false,
+            max_tokens: 300,
+            temperature: 0.2,
+            search_domain_filter: ["moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com"],
             search_recency_filter: "day",
             stream: false
           })
         });
 
-        if (!response.ok) {
-          console.error(`Perplexity API error for priority ${priority}:`, response.status);
-          continue;
+        if (response.ok) {
+          const data = await response.json();
+          const newsContent = data.choices[0]?.message?.content;
+          
+          if (newsContent) {
+            const article = this.createCatchyArticle(newsContent, template.priority as '1' | '2' | '3' | '4' | '5', today);
+            if (article) {
+              allArticles.push(article);
+              console.log(`Generated catchy article: ${article.title}`);
+            }
+          }
         }
-
-        const data = await response.json();
-        const newsContent = data.choices[0]?.message?.content;
         
-        if (newsContent) {
-          const articles = this.parseMultipleNewsItems(newsContent, priority, today);
-          allArticles.push(...articles);
-          console.log(`Generated ${articles.length} articles for priority ${priority}`);
-        }
-        
-        // Small delay between requests
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Quick delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
-        console.error(`Error fetching news for priority ${i + 1}:`, error);
+        console.error(`Error generating article ${i + 1}:`, error);
       }
     }
 
@@ -258,8 +277,8 @@ export class PerplexityNewsService {
         
         if (title && content && title.length > 10) {
           articles.push({
-            title: this.cleanTitle(title),
-            content: content.substring(0, 400),
+            title: this.makeCatchyTitle(this.cleanTitle(title), priority),
+            content: this.formatContent350(content),
             source: source.substring(0, 50),
             type: "AI News",
             sentiment: this.determineSentiment(title + ' ' + content),
@@ -297,6 +316,163 @@ export class PerplexityNewsService {
       .replace(/\s+/g, ' ') // Normalize spaces
       .trim()
       .substring(0, 120); // Limit length
+  }
+
+  private makeCatchyTitle(title: string, priority: string): string {
+    // Create catchy headlines with action words based on priority
+    const actionWords = {
+      '1': ['Alert', 'Probes', 'Raids', 'Penalizes', 'Investigates'],
+      '2': ['Surges', 'Breaks', 'Jumps', 'Rallies', 'Soars'],
+      '3': ['Wins', 'Bags', 'Secures', 'Lands', 'Grabs'],
+      '4': ['Beats', 'Reports', 'Posts', 'Delivers', 'Achieves'],
+      '5': ['Lists', 'Debuts', 'Opens', 'Launches', 'Targets']
+    };
+
+    const words = actionWords[priority as keyof typeof actionWords] || ['Updates'];
+    const actionWord = words[Math.floor(Math.random() * words.length)];
+    
+    // If title already has action words, keep it clean
+    if (title.match(/\b(surges|breaks|jumps|wins|beats|lists|alert|probes)\b/i)) {
+      return title.substring(0, 80);
+    }
+    
+    // Extract company name if present
+    const companyMatch = title.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/);
+    const company = companyMatch ? companyMatch[1] : '';
+    
+    if (company && company.length < 20) {
+      return `${company} ${actionWord}: ${title.replace(company, '').trim()}`.substring(0, 80);
+    }
+    
+    return `${actionWord}: ${title}`.substring(0, 80);
+  }
+
+  private formatContent350(content: string): string {
+    // Format content to exactly 350 characters
+    let formatted = content
+      .replace(/\*\*/g, '') // Remove bold markdown
+      .replace(/\*/g, '') // Remove italic markdown
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim();
+    
+    // If content is shorter than 350, pad with relevant market context
+    if (formatted.length < 350) {
+      const padding = " Market experts suggest monitoring these developments closely for investment decisions.";
+      formatted = (formatted + padding).substring(0, 350);
+    } else {
+      // Cut at exactly 350 characters, ensuring we don't cut mid-word
+      formatted = formatted.substring(0, 347);
+      const lastSpace = formatted.lastIndexOf(' ');
+      if (lastSpace > 300) {
+        formatted = formatted.substring(0, lastSpace) + '...';
+      } else {
+        formatted = formatted + '...';
+      }
+    }
+    
+    return formatted;
+  }
+
+  private createCatchyArticle(content: string, priority: '1' | '2' | '3' | '4' | '5', date: Date): NewsArticle | null {
+    try {
+      // Extract title between TITLE: and CONTENT:
+      const titleMatch = content.match(/TITLE:\s*([^\n]+)/i);
+      const contentMatch = content.match(/CONTENT:\s*([^S]+?)(?=SOURCE:|$)/i);
+      const sourceMatch = content.match(/SOURCE:\s*([^\n]+)/i);
+      
+      if (!titleMatch || !contentMatch) return null;
+      
+      let title = titleMatch[1].trim();
+      let articleContent = contentMatch[1].trim();
+      const source = sourceMatch ? sourceMatch[1].trim() : 'Market Intelligence';
+      
+      // Clean and enhance title for catchiness
+      title = this.enhanceTitleCatchiness(title, priority);
+      
+      // Format content to exactly 350 characters
+      articleContent = this.formatExactly350Chars(articleContent);
+      
+      return {
+        title: title.substring(0, 80),
+        content: articleContent,
+        source: source.substring(0, 50),
+        type: "AI News",
+        sentiment: this.determineSentiment(title + ' ' + articleContent),
+        priority,
+        newsDate: date
+      };
+    } catch (error) {
+      console.error('Error creating catchy article:', error);
+      return null;
+    }
+  }
+
+  private enhanceTitleCatchiness(title: string, priority: string): string {
+    // Clean existing title
+    title = title
+      .replace(/^#+\s*/, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .trim();
+
+    // Add action words if missing
+    const actionWords = {
+      '1': ['Alert', 'Raids', 'Probes', 'Penalizes'],
+      '2': ['Surges', 'Breaks', 'Rallies', 'Soars'],
+      '3': ['Wins', 'Bags', 'Lands', 'Grabs'],
+      '4': ['Beats', 'Reports', 'Delivers', 'Posts'],
+      '5': ['Debuts', 'Lists', 'Targets', 'Opens']
+    };
+
+    // If title doesn't have action words, enhance it
+    if (!title.match(/\b(surges|breaks|wins|beats|debuts|alert|raids|probes|bags|lands|reports|targets)\b/i)) {
+      const words = actionWords[priority as keyof typeof actionWords] || ['Updates'];
+      const actionWord = words[Math.floor(Math.random() * words.length)];
+      
+      // Extract company name
+      const companyMatch = title.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)\b/);
+      if (companyMatch) {
+        const company = companyMatch[1];
+        const rest = title.replace(company, '').trim();
+        title = `${company} ${actionWord}: ${rest}`;
+      } else {
+        title = `${actionWord}: ${title}`;
+      }
+    }
+
+    return title;
+  }
+
+  private formatExactly350Chars(content: string): string {
+    // Clean content
+    let cleaned = content
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // If content is exactly 350 or close, return as is
+    if (cleaned.length >= 347 && cleaned.length <= 350) {
+      return cleaned;
+    }
+
+    if (cleaned.length > 350) {
+      // Cut at 347 characters and add ellipsis
+      cleaned = cleaned.substring(0, 347);
+      const lastSpace = cleaned.lastIndexOf(' ');
+      if (lastSpace > 320) {
+        cleaned = cleaned.substring(0, lastSpace) + '...';
+      } else {
+        cleaned = cleaned + '...';
+      }
+    } else {
+      // Pad to reach 350 characters
+      const needed = 350 - cleaned.length;
+      const padding = " Analysts suggest monitoring market developments closely for investment opportunities.";
+      cleaned = cleaned + padding.substring(0, needed);
+    }
+
+    return cleaned;
   }
 
   private determineSentiment(text: string): 'Positive' | 'Negative' | 'Neutral' {
