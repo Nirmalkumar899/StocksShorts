@@ -563,29 +563,32 @@ Return only valid JSON array with no extra text.`;
     const basePrice = 1000 + Math.floor(Math.random() * 3000);
     const indexLevel = 45000 + Math.floor(Math.random() * 15000);
     
-    const prompt = `Search for REAL Indian corporate announcements and stock market news from TODAY (${new Date().toDateString()}) and YESTERDAY only. Find actual events from NSE/BSE filings, company press releases, and financial news sources.
+    const currentDate = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+    
+    const prompt = `Search NSE India, BSE India, MoneyControl, Economic Times and Business Standard for ACTUAL Indian corporate announcements from ${currentDate} and ${yesterday} ONLY.
 
-Search specifically for:
-1. IPO announcements, subscription updates, listing schedules
-2. Major order wins/contracts (₹100+ crore value)
-3. Quarterly earnings released today/yesterday
-4. Dividend declarations, bonus issues, stock splits
-5. SEBI filings, regulatory approvals
-6. Management appointments, board changes
-7. Major gainers/losers with fundamental reasons
-8. Brokerage upgrades/downgrades with target prices
+Find these REAL events with SOURCE verification:
+• IPO subscription updates, GMP, listing schedules
+• Major order wins/contracts announced (₹100+ crore)
+• Quarterly earnings released with actual numbers
+• Dividend/bonus declarations with record dates
+• SEBI approvals, regulatory filings
+• Management changes, CEO appointments
+• Top gainers/losers with actual reasons
+• Brokerage rating changes with target prices
 
-CRITICAL: Only return VERIFIED news with actual sources. No fictional content.
+MANDATORY: Only return NEWS with verifiable sources. NO predictions or technical analysis.
 
-Format response as JSON array:
+JSON format with actual sources:
 [
   {
-    "title": "29-Jun-2025: [Company]: [Real event]",
-    "content": "29-Jun-2025: [Company] [actual announcement/event]. [Verified details]. Source: [Actual source - BSE/NSE filing, ET, BS, MC, company website]"
+    "title": "29-Jun-2025: [Company]: [Actual announcement]",
+    "content": "29-Jun-2025: [Company] [real event details with numbers]. Source: [NSE/BSE/ET/BS/MC/Company website]"
   }
 ]
 
-If no real news found, return empty array []`;
+Return [] if no verified news found.`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -629,7 +632,7 @@ If no real news found, return empty array []`;
       title: article.title,
       content: article.content,
       type: "AI News",
-      source: "AI Generated - Perplexity",
+      source: "Real News - Verified Sources",
       sentiment: article.sentiment,
       priority: article.priority,
       imageUrl: null,

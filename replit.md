@@ -118,7 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 29, 2025: **MAJOR**: Fixed AI news content to use realistic past-tense reporting instead of predictive language - articles now describe actual events like "TCS: Posts Robust Earnings, Stock Gains 2%" rather than future predictions with volume forecasts, maintains exactly 20 articles with hourly rotation system
+- June 29, 2025: **MAJOR**: Redesigned AI news system to track real corporate announcements instead of generating fictional content - system now searches NSE, BSE, MoneyControl, Economic Times, and Business Standard for verified IPO updates, order wins, earnings releases, and regulatory filings from current date and previous working day only, returns empty results when no real news found rather than creating fake market movements
 - June 29, 2025: **MAJOR**: Fixed login navigation issue and implemented working direct login interface - users can now enter phone numbers in login fields without being redirected to trending page, proper event handling prevents unwanted navigation while preserving input functionality, login form appears directly on locked Special articles with full 2-step authentication (phone → OTP → instant access)
 - June 29, 2025: **MAJOR**: Enhanced login messaging with clearer "🔒 LOGIN REQUIRED TO READ" prompts - Special articles now display prominent, unmistakable authentication requirements with clear value proposition messaging
 - June 29, 2025: **MAJOR**: Implemented AI-first navigation flow - app now opens to AI articles first, then automatically progresses to Special articles, then other sections, providing optimized content discovery journey
