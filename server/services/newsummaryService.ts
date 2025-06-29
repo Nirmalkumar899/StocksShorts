@@ -193,9 +193,9 @@ LINK: [Source URL for verification]`
     // Clean summary
     summary = summary.replace(/\s+/g, ' ').trim();
     
-    // Get verification URL
-    const verifyUrl = urls[0] || 'bit.ly/verify';
-    const verifyText = ` Verify: ${verifyUrl}`;
+    // Create clickable verification link
+    const verifyUrl = urls[0] || 'https://economictimes.indiatimes.com';
+    const verifyText = ` <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">Click here</a>`;
     
     // Calculate max summary length
     const maxLength = 350 - verifyText.length;
