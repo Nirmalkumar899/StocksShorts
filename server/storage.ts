@@ -1,4 +1,4 @@
-import { users, otpVerifications, aiQueries, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery } from "@shared/schema";
+import { users, otpVerifications, aiQueries, aiArticles, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, gte, sql } from "drizzle-orm";
 
@@ -13,6 +13,7 @@ export interface IStorage {
   upsertUser(user: any): Promise<User>;
   createAiQuery(query: InsertAiQuery): Promise<AiQuery>;
   getDailyQueryCount(userId: number): Promise<number>;
+  storeAiArticles(articles: any[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -119,6 +120,7 @@ export class DatabaseStorage implements IStorage {
         await db.insert(aiArticles).values({
           title: article.title,
           content: article.content,
+          type: article.type || "AI News",
           source: article.source,
           sentiment: article.sentiment,
           priority: article.priority,
