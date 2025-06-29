@@ -202,9 +202,9 @@ Format: [{"title": "DD-Jun-YYYY: Company: Real Event", "content": "Verified deta
             .limit(excess);
           
           if (oldestArticles.length > 0) {
-            await db.delete(aiArticles).where(
-              oldestArticles.map(a => aiArticles.id.eq(a.id)).reduce((acc, condition) => acc.or(condition))
-            );
+            for (const article of oldestArticles) {
+              await db.delete(aiArticles).where(eq(aiArticles.id, article.id));
+            }
             console.log(`Removed ${oldestArticles.length} old articles`);
           }
         }

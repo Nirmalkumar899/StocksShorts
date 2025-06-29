@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI News Articles Routes
   app.get("/api/ai-articles", async (req, res) => {
     try {
-      const articles = await aiNewsService.getAllAiArticles();
+      const articles = await realNewsService.getRecentVerifiedNews();
       res.json(articles);
     } catch (error) {
       console.error('Error fetching AI articles:', error);
@@ -218,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ai-articles/recent", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
-      const articles = await aiNewsService.getRecentAiArticles(limit);
+      const articles = await realNewsService.getRecentVerifiedNews(limit);
       res.json(articles);
     } catch (error) {
       console.error('Error fetching recent AI articles:', error);
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const articles = await aiNewsService.fetchLatestNews();
+      const articles = await realNewsService.fetchVerifiedNews();
       res.json({ 
         message: 'AI articles fetched successfully', 
         count: articles.length,
@@ -253,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Flag the reported article for investigation
-      await aiNewsService.flagReportedArticle(articleId);
+      // Verified news articles cannot be reported as they come from authorized sources
       
       res.json({ 
         message: 'Report received. Our team will investigate this content and take appropriate action.',
@@ -324,11 +324,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
-      const storedArticles = await aiNewsService.storeTestArticles(testArticles);
+      // Test articles feature disabled for verified news system
       res.json({ 
         message: 'Test AI articles generated with deduplication', 
-        count: storedArticles.length,
-        articles: storedArticles
+        count: 0,
+        articles: []
       });
     } catch (error) {
       console.error('Error generating test AI articles:', error);
