@@ -214,7 +214,13 @@ Return only valid JSON array with no extra text.`;
       return articles.slice(0, this.articlesPerBatch)
         .filter(article => article && article.title && article.content)
         .map(article => ({
-          title: (article.title || '').substring(0, 200),
+          title: (article.title || '')
+            .replace(/\[[0-9a-z]+\]:\s*/gi, '') // Remove [sessionId]: 
+            .replace(/\|\s*Session ID:\s*[0-9a-z]+/gi, '') // Remove | Session ID: xxx
+            .replace(/\[[0-9a-z]+\]/gi, '') // Remove [sessionId]
+            .replace(/ID:\s*[0-9a-z]+/gi, '') // Remove ID: xxx
+            .trim()
+            .substring(0, 200),
           content: (article.content || '').substring(0, 500),
           sentiment: ['Positive', 'Negative', 'Neutral'].includes(article.sentiment) ? article.sentiment : 'Positive',
           priority: ['High', 'Medium', 'Low'].includes(article.priority) ? article.priority : 'High'
@@ -225,6 +231,8 @@ Return only valid JSON array with no extra text.`;
       return [];
     }
   }
+
+
 
   private generateTodaysMarketAlerts(): ParsedArticle[] {
     // No artificial content generation - only real news tracking
