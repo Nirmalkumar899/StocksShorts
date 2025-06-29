@@ -199,15 +199,6 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
                 </div>
               </div>
               
-              {/* Additional Footer Disclaimer */}
-              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <p className="text-xs text-yellow-700 dark:text-yellow-300 font-medium">
-                  <strong>Important:</strong> This analysis is for educational purposes only. The provider is not registered with SEBI as an investment advisor. 
-                  Please verify all information independently and consult a SEBI-registered investment advisor before making any investment decisions. 
-                  We do not take responsibility for any investment decisions based on this educational content.
-                </p>
-              </div>
-              
               <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border-l-4 border-yellow-500">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="h-4 w-4 text-yellow-600" />

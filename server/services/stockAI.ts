@@ -1,7 +1,4 @@
-import OpenAI from "openai";
-
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Using Perplexity API for more accurate financial data and analysis
 
 import { stockDataProvider } from './stockDataProvider';
 import { screenerService } from './screenerService';
@@ -686,16 +683,22 @@ AVAILABLE MARKET DATA:
 Note: Detailed financial statements, quarterly results, PE ratios, and other fundamental metrics are not currently available for this analysis. Analysis will focus on business overview and technical aspects based on current price data.`;
       }
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo", // Using GPT-3.5-turbo for faster responses and better number handling
-        messages: [
-          { 
-            role: "system", 
-            content: "You are providing educational stock information only. Follow this EXACT structure with mandatory SEBI compliance disclaimers.\n\n**MANDATORY SEBI COMPLIANCE DISCLAIMERS**:\n\n⚠️ **IMPORTANT REGULATORY NOTICE**:\n- This is NOT investment advice, recommendation, or solicitation\n- This analysis is for educational purposes only\n- Past performance does not guarantee future results\n- Stock investments are subject to market risks\n- Consult SEBI-registered investment advisor before investing\n- The provider is not a SEBI-registered investment advisor\n- All data is sourced from public information and may contain errors\n- Users must verify all information independently\n- No liability for investment decisions based on this analysis\n\n**[COMPANY NAME] - EDUCATIONAL STOCK ANALYSIS**\n\n**BUSINESS OVERVIEW**: Company's core business model, revenue streams, market position. Educational information only.\n\n**QUARTERLY PERFORMANCE**: Use ONLY authentic quarterly data provided. Include specific revenue numbers (₹ crores) and growth percentages. Mark all data with source and date.\n\n**MANAGEMENT GUIDANCE**: Use ONLY authentic conference call data. Quote exact numerical guidance with clear attribution to management statements.\n\n**INDUSTRY CONTEXT**: Use ONLY industry commentary from provided data. Educational perspective on market dynamics.\n\n**VALUATION METRICS**: Present PE ratios and financial metrics as educational information only. No buy/sell recommendations.\n\n**TECHNICAL LEVELS**: Current price levels and technical patterns for educational reference only.\n\n**EDUCATIONAL SUMMARY**: Summarize key learning points about the company's financial profile.\n\n**FINAL DISCLAIMER**: Reiterate that this is educational content only, not investment advice. Users must consult SEBI-registered advisors for investment decisions.\n\nCRITICAL REQUIREMENTS:\n- Use ONLY authentic numbers from provided data\n- Mark all data with clear sources\n- Avoid any buy/sell/hold recommendations\n- Use educational language only\n- Include regulatory disclaimers prominently"
-          },
-          { 
-            role: "user", 
-            content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-sonar-small-128k-online",
+          messages: [
+            { 
+              role: "system", 
+              content: "You are providing educational stock information only. Follow this EXACT structure with mandatory SEBI compliance disclaimers.\n\n**MANDATORY SEBI COMPLIANCE DISCLAIMERS**:\n\n⚠️ **IMPORTANT REGULATORY NOTICE**:\n- This is NOT investment advice, recommendation, or solicitation\n- This analysis is for educational purposes only\n- Past performance does not guarantee future results\n- Stock investments are subject to market risks\n- Consult SEBI-registered investment advisor before investing\n- The provider is not a SEBI-registered investment advisor\n- All data is sourced from public information and may contain errors\n- Users must verify all information independently\n- No liability for investment decisions based on this analysis\n\n**[COMPANY NAME] - EDUCATIONAL STOCK ANALYSIS**\n\n**BUSINESS OVERVIEW**: Company's core business model, revenue streams, market position. Educational information only.\n\n**QUARTERLY PERFORMANCE**: Use ONLY authentic quarterly data provided. Include specific revenue numbers (₹ crores) and growth percentages. Mark all data with source and date.\n\n**MANAGEMENT GUIDANCE**: Use ONLY authentic conference call data. Quote exact numerical guidance with clear attribution to management statements.\n\n**INDUSTRY CONTEXT**: Use ONLY industry commentary from provided data. Educational perspective on market dynamics.\n\n**VALUATION METRICS**: Present PE ratios and financial metrics as educational information only. No buy/sell recommendations.\n\n**TECHNICAL LEVELS**: Current price levels and technical patterns for educational reference only.\n\n**EDUCATIONAL SUMMARY**: Summarize key learning points about the company's financial profile.\n\n**FINAL DISCLAIMER**: Reiterate that this is educational content only, not investment advice. Users must consult SEBI-registered advisors for investment decisions.\n\nCRITICAL REQUIREMENTS:\n- Use ONLY authentic numbers from provided data\n- Mark all data with clear sources\n- Avoid any buy/sell/hold recommendations\n- Use educational language only\n- Include regulatory disclaimers prominently"
+            },
+            { 
+              role: "user", 
+              content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
 
 ${marketDataText}
 
@@ -705,16 +708,28 @@ INSTRUCTIONS:
 - Quote specific revenue figures, growth percentages, and management targets from the data
 - Follow the exact structure: Business → Quarterly Performance → Management Guidance → Industry → Valuation → Technical → Conclusion
 - Write in flowing paragraphs, not bullet points` 
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.3
+            }
+          ],
+          max_tokens: 1500,
+          temperature: 0.2,
+          top_p: 0.9,
+          return_images: false,
+          return_related_questions: false,
+          search_recency_filter: "month",
+          stream: false
+        })
       });
 
-      return response.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      return data.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
       
     } catch (error) {
-      console.error("OpenAI API error:", error);
+      console.error("Perplexity API error:", error);
       const fallbackStockInfo = await this.identifyStock(query);
       return this.generateFallbackAnalysis(fallbackStockInfo);
     }
