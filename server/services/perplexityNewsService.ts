@@ -64,22 +64,37 @@ export class PerplexityNewsService {
       day: 'numeric' 
     });
 
-    // Priority-based news types with real market focus
+    // Priority-based news types with exactly 4 articles per priority
     const newsQueries = [
-      // Priority 1: SEBI investigations and fraud alerts
-      `Latest SEBI investigations, fraud alerts, or regulatory actions against Indian companies today ${todayString}`,
+      // Priority 1: SEBI investigations and fraud alerts (4 articles)
+      `Latest SEBI fraud investigations regulatory actions against Indian listed companies today ${todayString}`,
+      `SEBI enforcement actions penalties violations Indian stock market today ${todayString}`,
+      `Indian company regulatory violations SEBI warnings investigations today ${todayString}`,
+      `SEBI compliance failures stock exchange violations India today ${todayString}`,
       
-      // Priority 2: Breakout stocks with volume analysis  
-      `Indian stocks with technical breakouts and unusual volume surge today ${todayString}`,
+      // Priority 2: Breakout stocks with volume analysis (4 articles)
+      `Indian stocks technical breakouts unusual high volume surge today ${todayString}`,
+      `NSE BSE stocks breaking resistance levels volume spikes today ${todayString}`,
+      `Indian equity stocks price breakouts trading volumes today ${todayString}`,
+      `Stock market breakout stocks India volume analysis today ${todayString}`,
       
-      // Priority 3: Major order wins and contract announcements
-      `Indian companies major contract wins or order announcements affecting revenue today ${todayString}`,
+      // Priority 3: Major order wins and contract announcements (4 articles)
+      `Indian companies major contract wins order announcements revenue impact today ${todayString}`,
+      `Large contract awards Indian corporations business wins today ${todayString}`,
+      `Indian companies significant order wins project announcements today ${todayString}`,
+      `Major business contracts Indian listed companies today ${todayString}`,
       
-      // Priority 4: IPO subscription updates and grey market premium
-      `Indian IPO subscription status, grey market premium updates today ${todayString}`,
+      // Priority 4: Quarterly results with >20% growth (4 articles)
+      `Indian companies quarterly results revenue growth over 20 percent today ${todayString}`,
+      `Strong quarterly earnings Indian companies profit growth today ${todayString}`,
+      `Indian corporate quarterly results exceeding estimates today ${todayString}`,
+      `High growth quarterly results Indian listed companies today ${todayString}`,
       
-      // Priority 5: Brokerage calls with target prices
-      `Indian stock brokerage upgrades downgrades with target prices today ${todayString}`
+      // Priority 5: IPO updates and brokerage calls (4 articles)
+      `Indian IPO subscription status grey market premium updates today ${todayString}`,
+      `Indian stock brokerage upgrades downgrades target prices today ${todayString}`,
+      `IPO listing performance Indian stock market today ${todayString}`,
+      `Analyst recommendations Indian stocks buy sell ratings today ${todayString}`
     ];
 
     const allArticles: NewsArticle[] = [];
@@ -87,7 +102,7 @@ export class PerplexityNewsService {
     for (let i = 0; i < newsQueries.length; i++) {
       try {
         const query = newsQueries[i];
-        const priority = (i + 1).toString() as '1' | '2' | '3' | '4' | '5';
+        const priority = (Math.floor(i / 4) + 1).toString() as '1' | '2' | '3' | '4' | '5';
         
         const response = await fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
@@ -100,17 +115,17 @@ export class PerplexityNewsService {
             messages: [
               {
                 role: 'system',
-                content: `You are a financial news analyst for Indian stock market. Generate ONLY authentic, verified news from today. Include specific company names, exact numbers, and verified sources. Format as JSON array with fields: title, content, source, sentiment, priority. Only report actual events that occurred today.`
+                content: `You are a financial news analyst for Indian stock market. Search for ONLY authentic, verified news from today and yesterday. Include specific company names, exact numbers, and verified sources. Write clear news title and content. Only report actual events that occurred recently. Source must be specified at the end.`
               },
               {
                 role: 'user',
                 content: query
               }
             ],
-            max_tokens: 800,
+            max_tokens: 400,
             temperature: 0.1,
             top_p: 0.9,
-            search_domain_filter: ["moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com", "nseindia.com", "bseindia.com"],
+            search_domain_filter: ["moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com", "nseindia.com", "bseindia.com", "livemint.com"],
             return_images: false,
             return_related_questions: false,
             search_recency_filter: "day",
@@ -131,15 +146,15 @@ export class PerplexityNewsService {
           allArticles.push(...articles);
         }
         
-        // Add delay between requests to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Shorter delay between requests
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.error(`Error fetching news for query ${i + 1}:`, error);
       }
     }
 
-    // Return exactly 5 articles (1 per priority)
-    return allArticles.slice(0, 5);
+    // Return exactly 20 articles
+    return allArticles.slice(0, 20);
   }
 
   private parseNewsResponse(content: string, priority: '1' | '2' | '3' | '4' | '5', date: Date): NewsArticle[] {

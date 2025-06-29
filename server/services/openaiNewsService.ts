@@ -203,9 +203,9 @@ export class AI20ArticleManager {
     try {
       console.log('Running hourly AI article update - adding 5 new articles, maintaining 20 total');
       
-      // Generate 5 new articles using real market analyzer for authentic data
-      const { realMarketAnalyzer } = await import('./realMarketAnalyzer');
-      const articles = await realMarketAnalyzer.fetchRealMarketEvents();
+      // Generate 5 new articles using Perplexity for real market data
+      const { perplexityNewsService } = await import('./perplexityNewsService');
+      const articles = await perplexityNewsService.fetchRealNews();
       
       if (articles.length > 0) {
         // Store articles will automatically maintain the 20-article limit
