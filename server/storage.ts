@@ -1,6 +1,6 @@
 import { users, otpVerifications, aiQueries, aiArticles, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, gte, sql } from "drizzle-orm";
+import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -14,6 +14,7 @@ export interface IStorage {
   createAiQuery(query: InsertAiQuery): Promise<AiQuery>;
   getDailyQueryCount(userId: number): Promise<number>;
   storeAiArticles(articles: any[]): Promise<void>;
+  getStoredAiArticles(limit?: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -133,6 +134,29 @@ export class DatabaseStorage implements IStorage {
     
     // Maintain maximum 20 AI articles
     await this.maintainAiArticleLimit();
+  }
+
+  async getStoredAiArticles(limit: number = 20): Promise<any[]> {
+    try {
+      const articles = await db
+        .select()
+        .from(aiArticles)
+        .orderBy(desc(aiArticles.createdAt))
+        .limit(limit);
+      
+      return articles.map(article => ({
+        title: article.title,
+        content: article.content,
+        source: article.source,
+        type: article.type,
+        sentiment: article.sentiment,
+        priority: article.priority,
+        newsDate: article.newsDate
+      }));
+    } catch (error) {
+      console.error('Error fetching stored AI articles:', error);
+      return [];
+    }
   }
 
   async maintainAiArticleLimit(): Promise<void> {

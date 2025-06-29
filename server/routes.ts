@@ -218,7 +218,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ai-articles/recent", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
-      const articles = await openaiNewsService.fetchRealNews();
+      // Fetch stored AI articles from database instead of generating new ones
+      const articles = await storage.getStoredAiArticles(limit);
       res.json(articles);
     } catch (error) {
       console.error('Error fetching recent AI articles:', error);
