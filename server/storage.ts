@@ -15,6 +15,7 @@ export interface IStorage {
   getDailyQueryCount(userId: number): Promise<number>;
   storeAiArticles(articles: any[]): Promise<void>;
   getStoredAiArticles(limit?: number): Promise<any[]>;
+  clearAiArticles(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -182,6 +183,15 @@ export class DatabaseStorage implements IStorage {
       }
     } catch (error) {
       console.error('Error maintaining AI article limit:', error);
+    }
+  }
+
+  async clearAiArticles(): Promise<void> {
+    try {
+      await db.delete(aiArticles);
+      console.log('Cleared all AI articles from database');
+    } catch (error) {
+      console.error('Error clearing AI articles:', error);
     }
   }
 }
