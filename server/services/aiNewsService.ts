@@ -217,7 +217,8 @@ Return only valid JSON array with no extra text.`;
           title: (article.title || '')
             .replace(/\[[0-9a-z]+\]:\s*/gi, '') // Remove [sessionId]: 
             .replace(/\|\s*Session ID:\s*[0-9a-z]+/gi, '') // Remove | Session ID: xxx
-            .replace(/\[[0-9a-z]+\]/gi, '') // Remove [sessionId]
+            .replace(/\[[0-9a-z]+\]$/gi, '') // Remove [sessionId] at end
+            .replace(/\s+\[[0-9a-z]+\]/gi, '') // Remove [sessionId] with space
             .replace(/ID:\s*[0-9a-z]+/gi, '') // Remove ID: xxx
             .trim()
             .substring(0, 200),

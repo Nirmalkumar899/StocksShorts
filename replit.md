@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 29, 2025: **MAJOR**: Fixed AI article title cleaning system - removed unwanted session IDs and random alphanumeric strings (like "1751219431455l37znxxwgvb") from article titles using regex patterns, ensuring clean professional titles for all AI news articles
 - June 29, 2025: **MAJOR**: Enhanced AI news system to track comprehensive market events - now searches for brokerage reports with target prices, fraud alerts and SEBI investigations, FII/DII buying/selling data with sector allocation, Nifty/Sensex/Bank Nifty support/resistance levels from analysts, option chain analysis with PUT/CALL ratios and max pain levels, block/bulk deals with investor names, IPO subscription updates and GMP rates, all from verified sources only (NSE, BSE, MoneyControl, ET, BS) covering current date and previous working day
 - June 29, 2025: **MAJOR**: Fixed login navigation issue and implemented working direct login interface - users can now enter phone numbers in login fields without being redirected to trending page, proper event handling prevents unwanted navigation while preserving input functionality, login form appears directly on locked Special articles with full 2-step authentication (phone → OTP → instant access)
 - June 29, 2025: **MAJOR**: Enhanced login messaging with clearer "🔒 LOGIN REQUIRED TO READ" prompts - Special articles now display prominent, unmistakable authentication requirements with clear value proposition messaging
