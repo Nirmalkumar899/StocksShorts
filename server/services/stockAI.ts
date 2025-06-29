@@ -758,12 +758,22 @@ RECENT QUARTER PERFORMANCE:
         marketDataText = `I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now.`;
       }
       
+      // If we have testing phase data, return it immediately without API call
+      if (marketDataText.includes('testing phase')) {
+        return marketDataText;
+      }
+
+      // Add timeout controller for API call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
+      
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
           'Content-Type': 'application/json'
         },
+        signal: controller.signal,
         body: JSON.stringify({
           model: "llama-3.1-sonar-small-128k-online",
           messages: [
@@ -785,15 +795,17 @@ INSTRUCTIONS:
 - Write in flowing paragraphs, not bullet points` 
             }
           ],
-          max_tokens: 1500,
-          temperature: 0.2,
-          top_p: 0.9,
+          max_tokens: 1200,
+          temperature: 0.1,
+          top_p: 0.8,
           return_images: false,
           return_related_questions: false,
           search_recency_filter: "month",
           stream: false
         })
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Perplexity API error: ${response.status}`);
@@ -803,10 +815,16 @@ INSTRUCTIONS:
 
       return data.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Perplexity API error:", error);
-      const fallbackStockInfo = await this.identifyStock(query);
-      return this.generateFallbackAnalysis(fallbackStockInfo);
+      
+      // If it was a timeout or abort error, return testing phase message for data integrity
+      if (error?.name === 'AbortError' || error?.message?.includes('timeout')) {
+        return 'I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now.';
+      }
+      
+      // For other errors, generate fallback analysis
+      return this.generateFallbackAnalysis(stockInfo);
     }
   }
 
