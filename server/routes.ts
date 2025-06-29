@@ -232,16 +232,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const { geminiNewsService } = await import('./services/geminiNewsService');
-      await geminiNewsService.generateAndStore();
+      const { realNewsSearchService } = await import('./services/realNewsSearchService');
+      await realNewsSearchService.generateAndStoreRealNews();
       res.json({ 
-        message: 'Authentic news articles generated successfully via Gemini AI', 
-        description: '20 verified articles with real data from Economic Times, MoneyControl, Business Standard'
+        message: 'Real market news searched and summarized successfully', 
+        description: '20 authentic summaries from today and last working day - fraud alerts, breakouts, order wins, analyst reports'
       });
     } catch (error) {
-      console.error('Error generating authentic news via Gemini:', error);
+      console.error('Error searching real market news:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to generate authentic news articles'
+        message: error instanceof Error ? error.message : 'Failed to search real market news'
       });
     }
   });
