@@ -7,7 +7,7 @@ import { GoogleAnalytics } from "@/components/google-analytics";
 import { useSEO } from "@/hooks/useSEO";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
-import SebiRia from "@/pages/sebi-ria";
+import SebiRia from "@/pages/sebi-ria-new";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
