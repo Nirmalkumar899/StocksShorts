@@ -232,16 +232,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const { authenticNewsService } = await import('./services/authenticNewsService');
-      await authenticNewsService.generateAuthenticNews();
+      const { corporateAnnouncementService } = await import('./services/corporateAnnouncementService');
+      await corporateAnnouncementService.generateRealCorporateNews();
       res.json({ 
-        message: 'Searched and summarized authentic market news', 
-        description: '20 real news summaries from today and last working day in priority order: fraud, breakouts, order wins, analyst reports'
+        message: 'Found real corporate announcements from NSE/BSE', 
+        description: '20 actual company announcements from June 29 and June 27 - NSE/BSE filings, SEBI actions, brokerage reports'
       });
     } catch (error) {
-      console.error('Error searching authentic market news:', error);
+      console.error('Error fetching corporate announcements:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to search authentic market news'
+        message: error instanceof Error ? error.message : 'Failed to fetch corporate announcements'
       });
     }
   });
