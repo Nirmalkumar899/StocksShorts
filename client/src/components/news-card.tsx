@@ -10,7 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import InlineLogin from "@/components/inline-login";
+import SimpleLogin from "@/components/simple-login";
 
 interface NewsCardProps {
   article: Article;
@@ -245,7 +245,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     🔒 LOGIN TO READ
                   </p>
                 </div>
-                <InlineLogin />
+                <SimpleLogin />
               </div>
             </div>
           ) : (
