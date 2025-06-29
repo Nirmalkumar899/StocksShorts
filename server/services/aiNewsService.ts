@@ -582,28 +582,26 @@ Return only valid JSON array with no extra text.`;
     const basePrice = 1000 + Math.floor(Math.random() * 3000);
     const indexLevel = 45000 + Math.floor(Math.random() * 15000);
     
-    const prompt = `Generate 5 COMPLETELY UNIQUE Indian stock market alerts for ${new Date().toLocaleDateString('en-IN')} using session ID: ${sessionId}
+    const prompt = `Generate 5 REALISTIC Indian stock market news updates for ${new Date().toLocaleDateString('en-IN')} using session ID: ${sessionId}
 
-FOCUS ONLY on these stocks today: ${selectedStocks.join(', ')}
-Current market context: Nifty around ${indexLevel}, focus price around ₹${basePrice}
+FOCUS ONLY on these companies: ${selectedStocks.join(', ')}
 
-Create alerts in this EXACT JSON format - ALWAYS include company name in title:
+Create factual news in this EXACT JSON format:
 [
   {
-    "title": "27-Jun-2025: [COMPANY NAME]: [Action type] above ₹[PRICE], targets ₹[TARGET]",
-    "content": "27-Jun-2025: [COMPANY NAME] [detailed action] above key [resistance/support] of ₹[PRICE] with [X]x volume surge. [Pattern] pattern confirmed on daily charts. Next targets ₹[TARGET1] and ₹[TARGET2]. Stop loss ₹[STOPLOSS]. [BUY/SELL] for [momentum/reversal]."
+    "title": "29-Jun-2025: [COMPANY]: [Actual event that happened], stock [reaction]",
+    "content": "29-Jun-2025: [COMPANY] [reported/announced/declared] [specific factual event]. The stock [gained/declined/remained flat] [X]% to close at ₹[PRICE]. [Fundamental reason for movement]. [Current market sentiment/analyst view]."
   }
 ]
 
-MANDATORY REQUIREMENTS:
-- Use TODAY'S date: ${new Date().toLocaleDateString('en-IN')}
-- ALWAYS include full company name in title (TCS, HDFC Bank, Reliance, etc.)
-- Only use stocks from: ${selectedStocks.join(', ')}
-- Price ranges: ₹${basePrice-500} to ₹${basePrice+500}
-- Include specific price targets and stop losses
-- Vary between: Technical breakouts, Order wins, Analyst upgrades, Index moves
-- Each alert must be actionable with clear BUY/SELL recommendations
-- NO generic titles - always specify the company name`;
+STRICT REQUIREMENTS:
+- Use ONLY factual past-tense events: "reported earnings", "announced dividend", "won contract"
+- NO predictive language: NO "breaks above", "targets", "volume surge", "resistance"  
+- NO trading recommendations: NO "BUY", "SELL", "targets"
+- Companies: ${selectedStocks.join(', ')} only
+- Realistic scenarios: Quarterly results, dividend announcements, order wins, management changes
+- Stock prices: ₹${basePrice-200} to ₹${basePrice+300} range
+- Focus on actual corporate events, not technical analysis`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
