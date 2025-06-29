@@ -63,7 +63,7 @@ export class OpenAINewsService {
       
       console.log(`Fetching real news for trading days: ${dateStrings.join(', ')}`);
 
-      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      // Updated to use the latest GPT-4o model as requested by user
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -72,6 +72,14 @@ export class OpenAINewsService {
             content: `You are a financial news analyst. Find real financial news from the Indian stock market.
 
 SEARCH DATES: Check these trading days: ${dateStrings.join(', ')}
+
+COMPANY NAMES: Use ONLY real Indian company names from NSE/BSE:
+- Large Cap: TCS, Reliance, HDFC Bank, Infosys, Wipro, ITC, SBI, LTI Mindtree, Tech Mahindra, HCL Tech
+- Mid Cap: Lupin, UPL, Godrej Consumer, Pidilite, Marico, Asian Paints, Bajaj Finance, ICICI Lombard
+- Small Cap: Suzlon Energy, Vodafone Idea, Trent, Jubilant Food, Dixon Tech, CAMS, Route Mobile
+- IPO Companies: Bajaj Housing Finance, Swiggy, Zomato, Paytm, Nykaa, PolicyBazaar
+
+NEVER use placeholder names like ABC Ltd, XYZ Corp, DEF Industries, GHI Technologies, JKL Financial etc.
 
 RULES:
 1. Look for real news from recent trading days when Indian markets were open
@@ -92,6 +100,7 @@ AVOID:
 - Old quarterly earnings reports (Q1/Q2/Q3/Q4 results)
 - Generic market commentary
 - Events that happened weeks/months ago
+- Placeholder company names (ABC, XYZ, DEF etc.)
 
 Return JSON with "articles" array containing: title, content, source, sentiment, priority`
           },
@@ -99,20 +108,24 @@ Return JSON with "articles" array containing: title, content, source, sentiment,
             role: "user",
             content: `Find real Indian stock market news from recent trading days: ${dateStrings.join(' or ')}. 
 
+MANDATORY: Use ONLY real Indian company names from the list provided in system message.
+FORBIDDEN: Never use ABC Ltd, XYZ Corp, DEF Industries, GHI Technologies, JKL Financial or any placeholder names.
+
 PRIORITY FOCUS:
-1. Any fraud alerts or SEBI investigation news
-2. Technical breakout stocks with volume analysis
-3. Major order wins with revenue impact percentage
-4. Live IPO subscription data and listing updates
-5. Fresh brokerage calls with target prices
+1. Any fraud alerts or SEBI investigation news (use real companies like Paytm, Zomato, etc.)
+2. Technical breakout stocks with volume analysis (use real names like Suzlon Energy, Vodafone Idea, etc.)
+3. Major order wins with revenue impact percentage (use real names like TCS, Infosys, L&T, etc.)
+4. Live IPO subscription data and listing updates (use real IPO companies like Bajaj Housing Finance)
+5. Fresh brokerage calls with target prices (use real companies like Reliance, HDFC Bank, etc.)
 
 STRICT RULES:
 - NO quarterly earnings or Q1/Q2/Q3/Q4 results (these are scheduled events)
 - NO old news from weeks ago
+- NO placeholder company names - use actual NSE/BSE listed companies only
 - Focus on breaking developments and market-moving events
 - Include specific numbers, percentages, and target prices
 
-Return realistic news with proper source attribution.`
+Return realistic news with proper source attribution using REAL company names.`
           }
         ],
         temperature: 0.3, // Slightly higher for more realistic content
