@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
-import { perplexityNewsService } from "./services/perplexityNewsService";
+import { realMarketAnalyzer } from "./services/realMarketAnalyzer";
 import { ai20ArticleManager } from "./services/openaiNewsService";
 import { stockAI } from "./services/stockAI";
 import { realTimeStockService } from "./services/realTimeStockService";
@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI News Articles Routes
   app.get("/api/ai-articles", async (req, res) => {
     try {
-      const articles = await perplexityNewsService.fetchRealNews();
+      const articles = await realMarketAnalyzer.fetchRealMarketEvents();
       res.json(articles);
     } catch (error) {
       console.error('Error fetching AI articles:', error);
@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const articles = await perplexityNewsService.fetchRealNews();
+      const articles = await realMarketAnalyzer.fetchRealMarketEvents();
       res.json({ 
         message: 'AI articles fetched successfully', 
         count: articles.length,
