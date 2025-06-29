@@ -95,10 +95,19 @@ export class PerplexityNewsService {
 
     const allArticles: NewsArticle[] = [];
 
-    for (let i = 0; i < newsQueries.length; i++) {
+    // Process only 5 priority queries for faster response
+    const priorityQueries = [
+      newsQueries[0], // Priority 1: SEBI fraud
+      newsQueries[4], // Priority 2: Breakout stocks  
+      newsQueries[8], // Priority 3: Order wins
+      newsQueries[12], // Priority 4: Quarterly results
+      newsQueries[16] // Priority 5: IPO updates
+    ];
+
+    for (let i = 0; i < priorityQueries.length; i++) {
       try {
-        const query = newsQueries[i];
-        const priority = (Math.floor(i / 4) + 1).toString() as '1' | '2' | '3' | '4' | '5';
+        const query = priorityQueries[i];
+        const priority = (i + 1).toString() as '1' | '2' | '3' | '4' | '5';
         
         const response = await fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
@@ -111,14 +120,14 @@ export class PerplexityNewsService {
             messages: [
               {
                 role: 'system',
-                content: `You are a financial news analyst for Indian stock market. Search for ONLY authentic, verified news from today and yesterday. Include specific company names, exact numbers, and verified sources. Write clear news title and content. Only report actual events that occurred recently. Source must be specified at the end.`
+                content: `You are a financial news analyst. Find 4 authentic Indian stock market news items from verified sources. Write each as: TITLE: [clear title] CONTENT: [details with company names and numbers] SOURCE: [website name]. Only report real events from today or yesterday.`
               },
               {
                 role: 'user',
                 content: query
               }
             ],
-            max_tokens: 400,
+            max_tokens: 600,
             temperature: 0.1,
             top_p: 0.9,
             search_domain_filter: ["moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com", "nseindia.com", "bseindia.com", "livemint.com"],
@@ -130,7 +139,7 @@ export class PerplexityNewsService {
         });
 
         if (!response.ok) {
-          console.error(`Perplexity API error for query ${i + 1}:`, response.status);
+          console.error(`Perplexity API error for priority ${priority}:`, response.status);
           continue;
         }
 
@@ -138,14 +147,15 @@ export class PerplexityNewsService {
         const newsContent = data.choices[0]?.message?.content;
         
         if (newsContent) {
-          const articles = this.parseNewsResponse(newsContent, priority, today);
+          const articles = this.parseMultipleNewsItems(newsContent, priority, today);
           allArticles.push(...articles);
+          console.log(`Generated ${articles.length} articles for priority ${priority}`);
         }
         
-        // Shorter delay between requests
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Small delay between requests
+        await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
-        console.error(`Error fetching news for query ${i + 1}:`, error);
+        console.error(`Error fetching news for priority ${i + 1}:`, error);
       }
     }
 
@@ -204,6 +214,72 @@ export class PerplexityNewsService {
           newsDate: date
         });
       }
+    }
+    
+    return articles;
+  }
+
+  private parseMultipleNewsItems(content: string, priority: '1' | '2' | '3' | '4' | '5', date: Date): NewsArticle[] {
+    const articles: NewsArticle[] = [];
+    
+    try {
+      // Split content by TITLE: markers to find multiple news items
+      const newsItems = content.split(/TITLE:/i).filter(item => item.trim().length > 20);
+      
+      for (let i = 0; i < Math.min(newsItems.length, 4); i++) {
+        const item = newsItems[i].trim();
+        
+        // Extract title (first line)
+        const lines = item.split('\n').filter(line => line.trim());
+        if (lines.length === 0) continue;
+        
+        let title = lines[0].replace(/^CONTENT:/i, '').trim();
+        
+        // Extract content (lines between TITLE and SOURCE)
+        const contentLines = [];
+        let sourceFound = false;
+        
+        for (let j = 1; j < lines.length; j++) {
+          const line = lines[j].trim();
+          if (line.match(/^SOURCE:/i)) {
+            sourceFound = true;
+            break;
+          }
+          if (line.replace(/^CONTENT:/i, '').trim()) {
+            contentLines.push(line.replace(/^CONTENT:/i, '').trim());
+          }
+        }
+        
+        const content = contentLines.join(' ').trim();
+        
+        // Extract source
+        const sourceMatch = item.match(/SOURCE:\s*([^\n]+)/i);
+        const source = sourceMatch ? sourceMatch[1].trim() : 'Market Intelligence';
+        
+        if (title && content && title.length > 10) {
+          articles.push({
+            title: this.cleanTitle(title),
+            content: content.substring(0, 400),
+            source: source.substring(0, 50),
+            type: "AI News",
+            sentiment: this.determineSentiment(title + ' ' + content),
+            priority,
+            newsDate: date
+          });
+        }
+      }
+      
+      // If parsing fails, fallback to single article
+      if (articles.length === 0) {
+        const fallbackArticles = this.parseNewsResponse(content, priority, date);
+        articles.push(...fallbackArticles);
+      }
+      
+    } catch (error) {
+      console.error('Error parsing multiple news items:', error);
+      // Fallback to single article parsing
+      const fallbackArticles = this.parseNewsResponse(content, priority, date);
+      articles.push(...fallbackArticles);
     }
     
     return articles;
