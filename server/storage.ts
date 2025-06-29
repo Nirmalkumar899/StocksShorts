@@ -125,7 +125,7 @@ export class DatabaseStorage implements IStorage {
           sentiment: article.sentiment,
           priority: article.priority,
           newsDate: article.newsDate,
-        }).onConflictDoNothing();
+        });
       } catch (error) {
         console.error('Error storing AI article:', error);
       }
