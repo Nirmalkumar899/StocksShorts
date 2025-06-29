@@ -1,4 +1,25 @@
-import { users, otpVerifications, aiQueries, aiArticles, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery, type AiArticle } from "@shared/schema";
+import { 
+  users, 
+  otpVerifications, 
+  aiQueries, 
+  aiArticles, 
+  gmailCredentials, 
+  emailInsights, 
+  personalizedArticles,
+  type User, 
+  type InsertUser, 
+  type OtpVerification, 
+  type InsertOtp, 
+  type AiQuery, 
+  type InsertAiQuery, 
+  type AiArticle,
+  type GmailCredentials,
+  type InsertGmailCredentials,
+  type EmailInsights,
+  type InsertEmailInsights,
+  type PersonalizedArticle,
+  type InsertPersonalizedArticle
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
 
@@ -16,6 +37,13 @@ export interface IStorage {
   storeAiArticles(articles: any[]): Promise<void>;
   getStoredAiArticles(limit?: number): Promise<any[]>;
   clearAiArticles(): Promise<void>;
+  // Gmail integration methods
+  storeGmailCredentials(credentials: any): Promise<void>;
+  getGmailCredentials(userId: number): Promise<any>;
+  storeEmailInsights(insights: any): Promise<void>;
+  getEmailInsights(userId: number): Promise<any>;
+  storePersonalizedArticles(articles: any[]): Promise<void>;
+  getPersonalizedArticles(limit?: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {

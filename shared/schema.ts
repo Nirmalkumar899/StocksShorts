@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -184,3 +184,64 @@ export interface InvestmentAdvisorRow {
   Location: string;
   Rating: string;
 }
+
+// Gmail tracking and personalized articles
+export const gmailCredentials = pgTable("gmail_credentials", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiryDate: timestamp("expiry_date"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const emailInsights = pgTable("email_insights", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  companies: text("companies").array(),
+  sectors: text("sectors").array(),
+  keywords: text("keywords").array(),
+  topics: text("topics").array(),
+  sentiment: text("sentiment").notNull(),
+  scanDate: timestamp("scan_date").defaultNow(),
+  emailCount: integer("email_count").default(0),
+});
+
+export const personalizedArticles = pgTable("personalized_articles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  source: text("source").notNull(),
+  type: text("type").notNull().default("Personalized News"),
+  sentiment: text("sentiment").notNull(),
+  priority: text("priority").notNull(),
+  newsDate: timestamp("news_date").notNull(),
+  personalizationReason: text("personalization_reason").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertGmailCredentialsSchema = createInsertSchema(gmailCredentials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmailInsightsSchema = createInsertSchema(emailInsights).omit({
+  id: true,
+  scanDate: true,
+});
+
+export const insertPersonalizedArticleSchema = createInsertSchema(personalizedArticles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertGmailCredentials = z.infer<typeof insertGmailCredentialsSchema>;
+export type GmailCredentials = typeof gmailCredentials.$inferSelect;
+export type InsertEmailInsights = z.infer<typeof insertEmailInsightsSchema>;
+export type EmailInsights = typeof emailInsights.$inferSelect;
+export type InsertPersonalizedArticle = z.infer<typeof insertPersonalizedArticleSchema>;
+export type PersonalizedArticle = typeof personalizedArticles.$inferSelect;
