@@ -638,7 +638,28 @@ export class StockAIService {
     try {
       const stockInfo = await this.identifyStock(query);
       
-      // Try to fetch real financial data from Yahoo Finance
+      // Cross-verify financial data from multiple sources
+      console.log(`Cross-verifying financial data for ${stockInfo.symbol} across multiple sources...`);
+      const verifiedData = await dataVerification.getVerifiedFinancialData(stockInfo.symbol);
+      
+      // Prepare authenticated financial metrics
+      let authenticMetrics: any = {};
+      let verificationSummary = '';
+      
+      // Filter only verified metrics (variance < 5%)
+      for (const [metric, data] of Object.entries(verifiedData)) {
+        if (data.verified) {
+          authenticMetrics[metric] = data.value;
+        }
+      }
+      
+      const verifiedCount = Object.keys(authenticMetrics).length;
+      const totalChecked = Object.keys(verifiedData).length;
+      verificationSummary = verifiedCount > 0 ? 
+        `${verifiedCount}/${totalChecked} metrics cross-verified (<5% variance)` : 
+        'Unable to cross-verify data';
+      
+      // Try to fetch additional financial data as backup
       let marketDataText = "";
       const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
       
@@ -670,15 +691,33 @@ INTELLIGENT PE ANALYSIS:
 - Sector Context: ${sectorInsights}`;
         }
 
+        // Use cross-verified data when available, fallback to single source
+        const displayPE = authenticMetrics.pe ? authenticMetrics.pe.toFixed(1) + 'x ✓' : 
+                         (realFinancialData.pe ? realFinancialData.pe.toFixed(1) + 'x' : 'N/A');
+        const displayMarketCap = authenticMetrics.marketCap ? '₹' + (authenticMetrics.marketCap / 10000000).toFixed(0) + ' cr ✓' : 
+                                (realFinancialData.marketCap ? '₹' + (realFinancialData.marketCap / 10000000).toFixed(0) + ' cr' : 'N/A');
+        const displayProfitMargin = authenticMetrics.profitMargin ? (authenticMetrics.profitMargin * 100).toFixed(1) + '% ✓' : 
+                                   (realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A');
+        const displayRevGrowth = authenticMetrics.revenueGrowth ? (authenticMetrics.revenueGrowth * 100).toFixed(1) + '% ✓' : 
+                                (realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A');
+        const displayROE = authenticMetrics.roe ? (authenticMetrics.roe * 100).toFixed(1) + '% ✓' : 
+                          (realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A');
+        const displayDebtEquity = authenticMetrics.debtToEquity ? authenticMetrics.debtToEquity.toFixed(2) + ' ✓' : 
+                                 (realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A');
+
         marketDataText = `
-AUTHENTIC FINANCIAL DATA (${dataSource}):
+CROSS-VERIFIED FINANCIAL DATA (${verificationSummary}):
 - Current Price: ${stockInfo.currentPrice}
-- PE Ratio: ${realFinancialData.pe ? realFinancialData.pe.toFixed(1) + 'x' : 'N/A'}
-- Market Cap: ₹${realFinancialData.marketCap ? (realFinancialData.marketCap / 10000000).toFixed(0) + ' cr' : 'N/A'}
-- Profit Margin: ${realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A'}
-- Revenue Growth: ${realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A'}
-- ROE: ${realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A'}
-- Debt/Equity: ${realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A'}${peAnalysis}`;
+- PE Ratio: ${displayPE}
+- Market Cap: ${displayMarketCap}
+- Profit Margin: ${displayProfitMargin}
+- Revenue Growth: ${displayRevGrowth}
+- ROE: ${displayROE}
+- Debt/Equity: ${displayDebtEquity}${peAnalysis}
+
+DATA VERIFICATION NOTES:
+✓ = Cross-verified across multiple sources with <5% variance
+Numbers without ✓ are from single source and should be independently verified`;
 
         // Add conference call data if available
         if (realFinancialData.conferenceCallData) {
