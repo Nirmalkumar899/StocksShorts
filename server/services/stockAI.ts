@@ -663,7 +663,10 @@ export class StockAIService {
       let marketDataText = "";
       const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
       
-      if (realFinancialData) {
+      // Check if we have sufficient verified data to proceed
+      const hasMinimumData = verifiedCount >= 2 || (realFinancialData && Object.keys(realFinancialData).length > 3);
+      
+      if (hasMinimumData && realFinancialData) {
         let dataSource = "Screener.in";
         if (!realFinancialData.pe && !realFinancialData.marketCap) {
           dataSource = "Yahoo Finance";
@@ -739,11 +742,18 @@ AUTHENTIC CONFERENCE CALL DATA:
         }
       } else {
         marketDataText = `
-AVAILABLE MARKET DATA:
-- Current Trading Price: ${stockInfo.currentPrice}
-- Market Category: ${stockInfo.category} cap stock
+SYSTEM STATUS - TESTING PHASE:
 
-Note: Detailed financial statements, quarterly results, PE ratios, and other fundamental metrics are not currently available for this analysis. Analysis will focus on business overview and technical aspects based on current price data.`;
+I am still in testing phase and unable to fetch correct numbers for ${stockInfo.fullName} (${stockInfo.symbol}). 
+
+Kindly look for another stock for now. However, I will be able to share verified financial details soon.
+
+Current limitations:
+- Unable to cross-verify financial metrics from multiple sources
+- PE ratios, market cap, and other fundamentals cannot be authenticated
+- Revenue growth and profit margins require verification
+
+Please try analyzing a different stock or check back later when the data verification system is fully operational.`;
       }
       
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -757,7 +767,7 @@ Note: Detailed financial statements, quarterly results, PE ratios, and other fun
           messages: [
             { 
               role: "system", 
-              content: "You are providing educational stock information only. Create a well-formatted, professional analysis with clear sections and visual hierarchy.\n\n# FORMAT REQUIREMENTS:\n- Use clean markdown formatting with proper headings\n- Include bullet points and numbered lists for clarity\n- Highlight key metrics with **bold** text\n- Use line breaks and spacing for readability\n- Structure content logically with clear sections\n\n# ANALYSIS STRUCTURE:\n\n## 📊 **[COMPANY NAME] - Educational Analysis**\n\n### 🏢 **Business Overview**\nExplain the company's core business model, revenue streams, and market position. Keep it educational and informative.\n\n### 📈 **Financial Performance**\n**Quarterly Highlights:**\n- Revenue: **₹X,XXX crores** (Growth: +X.X%)\n- Profit Margin: **X.X%**\n- Market Cap: **₹X,XXX crores**\n\n### 💡 **Management Insights**\nKey guidance and outlook from recent management commentary (use only authentic data provided).\n\n### 🎯 **Valuation Analysis**\n**Key Ratios:**\n- PE Ratio: **X.Xx** (Current) | **X.Xx** (Projected)\n- ROE: **X.X%**\n- Debt/Equity: **X.XX**\n\n### 📊 **Technical Context**\nCurrent price levels and technical patterns for educational reference.\n\n### 🎓 **Educational Summary**\nKey learning points about the company's financial profile and sector dynamics.\n\n---\n\n⚠️ **Educational Purpose Only** - This analysis is for learning purposes. Always verify data independently and consult SEBI-registered advisors for investment decisions.\n\n# CRITICAL REQUIREMENTS:\n- Use ONLY authentic numbers from provided data\n- Format with clear visual hierarchy\n- Include proper spacing and bullet points\n- Mark all data sources clearly\n- Use educational language only\n- No investment recommendations"
+              content: "You are providing educational stock information only. Create a well-formatted, professional analysis with clear sections and visual hierarchy.\n\n# CRITICAL DATA POLICY:\n- If the provided data shows 'TESTING PHASE' or 'Unable to fetch correct numbers', DO NOT attempt to provide any analysis\n- Instead, return the exact testing phase message as provided in the data\n- NEVER create or estimate financial numbers when data is unavailable\n- Only proceed with analysis if authentic, cross-verified financial data is provided\n\n# FORMAT REQUIREMENTS (only if authentic data available):\n- Use clean markdown formatting with proper headings\n- Include bullet points and numbered lists for clarity\n- Highlight key metrics with **bold** text\n- Use line breaks and spacing for readability\n- Structure content logically with clear sections\n\n# ANALYSIS STRUCTURE (only if verified data available):\n\n## 📊 **[COMPANY NAME] - Educational Analysis**\n\n### 🏢 **Business Overview**\nExplain the company's core business model, revenue streams, and market position. Keep it educational and informative.\n\n### 📈 **Financial Performance**\n**Cross-Verified Metrics:**\n- Revenue: **₹X,XXX crores** (Growth: +X.X%)\n- Profit Margin: **X.X%**\n- Market Cap: **₹X,XXX crores**\n\n### 💡 **Management Insights**\nKey guidance and outlook from recent management commentary (use only authentic data provided).\n\n### 🎯 **Valuation Analysis**\n**Key Ratios:**\n- PE Ratio: **X.Xx** (Current) | **X.Xx** (Projected)\n- ROE: **X.X%**\n- Debt/Equity: **X.XX**\n\n### 📊 **Technical Context**\nCurrent price levels and technical patterns for educational reference.\n\n### 🎓 **Educational Summary**\nKey learning points about the company's financial profile and sector dynamics.\n\n---\n\n⚠️ **Educational Purpose Only** - This analysis is for learning purposes. Always verify data independently and consult SEBI-registered advisors for investment decisions.\n\n# CRITICAL REQUIREMENTS:\n- If data shows testing phase message, return it exactly as provided\n- Use ONLY cross-verified authentic numbers (marked with ✓)\n- Never estimate or create financial metrics\n- Format with clear visual hierarchy\n- Include proper spacing and bullet points\n- Mark all data sources clearly\n- Use educational language only\n- No investment recommendations"
             },
             { 
               role: "user", 
@@ -799,21 +809,32 @@ INSTRUCTIONS:
   }
 
   private generateFallbackAnalysis(stockInfo: { fullName: string; symbol: string; currentPrice: string; category: string }): string {
-    const target = this.calculateTargetPrice(stockInfo.currentPrice);
-    const support = this.calculateSupport(stockInfo.currentPrice);
-    const resistance = this.calculateResistance(stockInfo.currentPrice);
-    
-    return `**DISCLAIMER**: This is not investment advice. You should cross-check all numbers and do your own analysis before making any investment decisions.
+    return `## 🔧 **System Status - Testing Phase**
 
-**${stockInfo.fullName.toUpperCase()} - INVESTMENT ANALYSIS**
+### **${stockInfo.fullName} (${stockInfo.symbol})**
 
-**BUSINESS OVERVIEW**: ${stockInfo.fullName} operates in the Indian equity markets with its current market price at ${stockInfo.currentPrice}. The company falls under the ${stockInfo.category} cap category based on current valuations. Without access to detailed financial data, a comprehensive fundamental analysis cannot be provided at this time.
+I am still in testing phase and unable to fetch correct numbers for ${stockInfo.fullName}. 
 
-**TECHNICAL OUTLOOK**: From a technical perspective, the stock is currently trading at ${stockInfo.currentPrice} with immediate support anticipated around ${support} and resistance levels near ${resistance}. These levels are calculated based on standard technical analysis parameters and current price action.
+**Kindly look for another stock for now. However, I will be able to share verified financial details soon.**
 
-**INVESTMENT THESIS**: Given the limited availability of authentic financial data including quarterly results, PE ratios, debt levels, and management guidance, a detailed investment recommendation cannot be responsibly provided. Investors should conduct thorough due diligence using verified financial statements and recent quarterly results before making any investment decisions.
+### **Current Limitations:**
+- Unable to cross-verify financial metrics from multiple sources
+- PE ratios, market cap, and other fundamentals cannot be authenticated  
+- Revenue growth and profit margins require verification
+- Conference call data and management guidance need validation
 
-For a comprehensive analysis with specific numbers including revenue growth, profit margins, ROE, and multibagger potential assessment, please ensure access to authentic financial data from reliable sources such as company filings or verified financial databases.`;
+### **What's Being Worked On:**
+- Cross-verification system across NSE, Screener.in, MoneyControl, and Yahoo Finance
+- 5% variance tolerance checking for data accuracy
+- Intelligent PE ratio calculations based on sector patterns
+- Real-time financial data integration
+
+### **Recommendation:**
+Please try analyzing a different stock or check back later when the data verification system is fully operational.
+
+---
+
+⚠️ **Educational Purpose Only** - This analysis is for learning purposes. Always verify data independently and consult SEBI-registered advisors for investment decisions.`;
   }
 
   private getSectorAnalysis(category: string) {
