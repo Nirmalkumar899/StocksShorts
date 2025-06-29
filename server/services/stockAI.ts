@@ -246,7 +246,7 @@ export class StockAIService {
       console.log(`Fetching comprehensive financial data for ${symbol} from multiple sources`);
       const financialData = await financialDataProvider.getFinancialData(symbol);
       
-      if (financialData && financialData.currentPrice) {
+      if (financialData && (financialData.currentPrice || financialData.pe || financialData.marketCap)) {
         console.log(`Successfully retrieved authentic data for ${symbol} from ${financialData.source}:`, financialData);
         
         // Also fetch conference call data and merge it
@@ -274,11 +274,27 @@ export class StockAIService {
         return { ...conferenceData, symbol, source: 'NSE Conference Calls' };
       }
 
-      console.log(`No financial data available for ${symbol} from any source`);
-      return null;
+      console.log(`No financial data available for ${symbol} from any source - returning testing phase data`);
+      return {
+        symbol: symbol,
+        currentPrice: 'Market Price',
+        pe: null,
+        marketCap: null,
+        source: 'Testing Phase',
+        lastUpdated: new Date(),
+        testingPhase: true
+      };
     } catch (error) {
       console.log(`Error fetching financial data for ${symbol}:`, error);
-      return null;
+      return {
+        symbol: symbol,
+        currentPrice: 'Market Price', 
+        pe: null,
+        marketCap: null,
+        source: 'Testing Phase',
+        lastUpdated: new Date(),
+        testingPhase: true
+      };
     }
   }
 
@@ -663,8 +679,8 @@ export class StockAIService {
       let marketDataText = "";
       const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
       
-      // Check if we have sufficient verified data to proceed
-      const hasMinimumData = verifiedCount >= 2 && realFinancialData && realFinancialData.currentPrice;
+      // Check if we have sufficient data to proceed (either verified or fallback)
+      const hasMinimumData = realFinancialData && !realFinancialData.testingPhase;
       
       if (hasMinimumData) {
         let dataSource = "Screener.in";
@@ -738,6 +754,7 @@ RECENT QUARTER PERFORMANCE:
 - 52-Week Low: ₹${realFinancialData.fiftyTwoWeekLow || 'N/A'}`;
         }
       } else {
+        console.log(`Stock ${stockInfo.symbol} - insufficient data for analysis. Verified: ${verifiedCount}, Testing phase: ${realFinancialData?.testingPhase}`);
         marketDataText = `I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now.`;
       }
       
