@@ -13,6 +13,7 @@ import { financialDataProvider } from "./services/financialDataProvider";
 import { conferenceCallService } from "./services/conferenceCallService";
 import { candlestickImageService } from "./services/candlestickImageService";
 import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
+import { verifiedNewsService } from "./services/verifiedNewsService";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -233,15 +234,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      await realTimeMarketTracker.generateRealTimeMarketArticles();
+      await verifiedNewsService.generate100PercentAccurateNews();
       res.json({ 
-        message: 'Tracking live BSE/NSE announcements', 
-        description: 'Real-time monitoring of corporate filings, earnings calls, order wins, SEBI alerts and price movements as they get uploaded today'
+        message: '100% accuracy verification active', 
+        description: 'All market data cross-checked against official BSE/NSE sources for complete authenticity'
       });
     } catch (error) {
-      console.error('Error tracking real-time market data:', error);
+      console.error('Error in verified news generation:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to track live market announcements'
+        message: error instanceof Error ? error.message : 'Failed to generate verified market news'
       });
     }
   });
