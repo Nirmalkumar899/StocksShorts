@@ -118,6 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 29, 2025: **MAJOR**: Implemented login-required access for Special articles - StocksShorts Special content now requires user authentication while all other articles remain free to read, encouraging user registration while maintaining accessibility
 - June 29, 2025: **MAJOR**: App automatically navigates to Special section on startup - users now see curated StocksShorts Special content immediately when opening the app, enhancing discovery of premium editorial content
 - June 29, 2025: **MAJOR**: Enhanced data integrity with stricter cross-verification requirements - AI analysis now requires minimum 2 verified metrics from 3+ sources before proceeding, disabled GPT-generated conference call data to prevent sector-inappropriate information (e.g., capex for asset management companies), implemented honest testing phase messaging "I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now" when cross-verification fails, added sector-specific data validation to ensure appropriate metrics for each business type
 - June 29, 2025: **MAJOR**: Removed login requirement for AI stock analysis - made AI chat feature accessible to all users without authentication while preserving all cross-verification and testing phase transparency features, simplified error handling and removed daily query limits for better user experience
