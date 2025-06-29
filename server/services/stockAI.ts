@@ -2,6 +2,7 @@
 
 import { stockDataProvider } from './stockDataProvider';
 import { screenerService } from './screenerService';
+import { peRatioCalculator } from './peRatioCalculator';
 import axios from 'axios';
 
 export class StockAIService {
