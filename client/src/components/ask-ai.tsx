@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Send, Loader2, MessageSquare, X } from "lucide-react";
+import { Brain, Send, Loader2, MessageSquare, X, AlertTriangle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -170,16 +170,42 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
                 </div>
               </div>
               
+              {/* SEBI Compliance Warning */}
+              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-red-800 dark:text-red-300 mb-2">⚠️ SEBI Regulatory Disclaimer</p>
+                    <div className="text-red-700 dark:text-red-300 space-y-1">
+                      <p>• This is educational content only, NOT investment advice</p>
+                      <p>• Provider is not a SEBI-registered investment advisor</p>
+                      <p>• Consult SEBI-registered advisor before making investment decisions</p>
+                      <p>• Past performance does not guarantee future results</p>
+                      <p>• Stock investments are subject to market risks</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-l-4 border-green-500">
                 <div className="flex items-center gap-2 mb-3">
                   <Brain className="h-4 w-4 text-green-500" />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    AI Stock Analysis (Beta Testing)
+                    Educational Stock Analysis (Beta Testing)
                   </span>
                 </div>
                 <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">
                   {analysis}
                 </div>
+              </div>
+              
+              {/* Additional Footer Disclaimer */}
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-xs text-yellow-700 dark:text-yellow-300 font-medium">
+                  <strong>Important:</strong> This analysis is for educational purposes only. The provider is not registered with SEBI as an investment advisor. 
+                  Please verify all information independently and consult a SEBI-registered investment advisor before making any investment decisions. 
+                  We do not take responsibility for any investment decisions based on this educational content.
+                </p>
               </div>
               
               <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border-l-4 border-yellow-500">
