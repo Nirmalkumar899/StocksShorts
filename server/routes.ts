@@ -669,14 +669,14 @@ function startAINewsScheduler() {
   
   // Initial fetch to populate articles
   setTimeout(() => {
-    aiNewsService.fetchLatestNews().catch(console.error);
+    realNewsService.fetchVerifiedNews().catch(console.error);
   }, 5000); // Wait 5 seconds after server start
 
   // Schedule hourly rotation: add 5 new articles, remove 5 oldest
   setInterval(async () => {
     try {
       console.log('Scheduled hourly AI news rotation starting...');
-      await aiNewsService.fetchLatestNews();
+      await realNewsService.fetchVerifiedNews();
     } catch (error) {
       console.error('Scheduled AI news rotation failed:', error);
     }
