@@ -57,11 +57,11 @@ export default function GmailConnect() {
       
       // Fetch personalized articles
       const articles = await apiRequest("GET", "/api/personalized-articles?limit=5");
-      setPersonalizedArticles(articles);
+      setPersonalizedArticles(Array.isArray(articles) ? articles : []);
       
       toast({
         title: "Email Scan Complete",
-        description: `Generated ${articles.length} personalized articles based on your interests.`,
+        description: `Generated ${Array.isArray(articles) ? articles.length : 0} personalized articles based on your interests.`,
       });
     } catch (error) {
       console.error('Email scanning error:', error);
