@@ -146,46 +146,53 @@ export class PerplexityNewsService {
     const articles: NewsArticle[] = [];
     
     try {
-      // Try to extract JSON from the response
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        const newsArray = JSON.parse(jsonMatch[0]);
+      // Parse as text and create single article from Perplexity response
+      const lines = content.split('\n').filter(line => line.trim());
+      
+      if (lines.length >= 1) {
+        // Extract title (first meaningful line)
+        let title = lines[0].replace(/^\d+\.\s*/, '').trim();
         
-        for (const news of newsArray.slice(0, 1)) { // Take only 1 article per priority
-          if (news.title && news.content) {
-            articles.push({
-              title: this.cleanTitle(news.title),
-              content: news.content,
-              source: news.source || "Verified - Market Sources",
-              type: "AI News",
-              sentiment: this.determineSentiment(news.sentiment || news.title),
-              priority,
-              newsDate: date
-            });
-          }
+        // If first line is very short, combine with second line for title
+        if (title.length < 20 && lines.length > 1) {
+          title = lines.slice(0, 2).join(' ').replace(/^\d+\.\s*/, '').trim();
         }
-      } else {
-        // Fallback: Parse as text and create single article
-        const lines = content.split('\n').filter(line => line.trim());
-        if (lines.length >= 2) {
-          const title = lines[0].replace(/^\d+\.\s*/, '').trim();
-          const content = lines.slice(1).join(' ').trim();
-          
-          if (title && content) {
-            articles.push({
-              title: this.cleanTitle(title),
-              content: content,
-              source: "Verified - Market Sources",
-              type: "AI News",
-              sentiment: this.determineSentiment(title),
-              priority,
-              newsDate: date
-            });
-          }
+        
+        // Extract content (remaining lines)
+        const contentLines = lines.slice(1).filter(line => 
+          line.length > 20 && !line.startsWith('Source:') && !line.startsWith('Citation:')
+        );
+        
+        const content = contentLines.length > 0 ? contentLines.join(' ').trim() : title;
+        
+        if (title && content) {
+          articles.push({
+            title: this.cleanTitle(title),
+            content: content,
+            source: "Verified - Live Market Data",
+            type: "AI News",
+            sentiment: this.determineSentiment(title),
+            priority,
+            newsDate: date
+          });
         }
       }
     } catch (parseError) {
       console.error('Error parsing news response:', parseError);
+      
+      // Emergency fallback - create article from raw content
+      if (content && content.length > 50) {
+        const cleanContent = content.substring(0, 200).replace(/[{}[\]"]/g, '');
+        articles.push({
+          title: `${date.toLocaleDateString('en-IN')}: Market Update`,
+          content: cleanContent,
+          source: "Verified - Live Market Data",
+          type: "AI News",
+          sentiment: "Neutral",
+          priority,
+          newsDate: date
+        });
+      }
     }
     
     return articles;

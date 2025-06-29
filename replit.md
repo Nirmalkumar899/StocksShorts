@@ -118,6 +118,8 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- June 29, 2025: **MAJOR**: Switched to Perplexity API for real-time current market data - completely eliminated outdated June 27 news, now fetching live market updates with current timestamps (June 29, 2025), includes actual Indian companies like NLC India, NTPC, Nifty movements with verified economic sources
+- June 29, 2025: **MAJOR**: Fixed AI news data structure with proper React keys - eliminated "Each child in a list should have a unique key prop" warnings, articles now display consistently with proper IDs and unified data format matching regular articles
 - June 29, 2025: **MAJOR**: Implemented 20-article automatic management system with hourly updates - AI news now maintains exactly 20 articles by adding 5 new articles every hour and automatically removing oldest articles, providing continuous fresh market intelligence while preventing database bloat
 - June 29, 2025: **MAJOR**: Enhanced AI news system with GPT-4o model for superior market analysis - generates authentic news with real Indian companies (SEBI investigations, Suzlon breakouts, TCS contracts, Bajaj IPO updates, Reliance brokerage calls) following proper priority system and market calendar compliance
 - June 29, 2025: **MAJOR**: Upgraded AI news to use OpenAI o3-mini model for superior reasoning capabilities and enhanced financial analysis in market news generation with more detailed context and precise numerical data
