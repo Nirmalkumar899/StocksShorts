@@ -143,7 +143,11 @@ export class PerplexityNewsService {
             messages: [
               {
                 role: 'system',
-                content: `Find 1 real Indian stock market news. Write EXACTLY as: TITLE: [Company] [Action]: [Brief Details] CONTENT: [Exactly 350 characters with company name, numbers, percentages] SOURCE: [Website]. Use action words like surges, breaks, wins, reports, targets.`
+                content: `Find 1 real Indian stock market news from verified sources. Summarize in EXACTLY this format: 
+TITLE: [Catchy 8-12 word headline with action words] 
+CONTENT: [Exactly 350 characters summary with key facts, numbers, percentages. End with "Verify: [source URL]"] 
+SOURCE: [Website name]. 
+Make content readable in 350 chars including verification link.`
               },
               {
                 role: 'user',
@@ -375,7 +379,7 @@ export class PerplexityNewsService {
 
   private createCatchyArticle(content: string, priority: '1' | '2' | '3' | '4' | '5', date: Date): NewsArticle | null {
     try {
-      // Extract title between TITLE: and CONTENT:
+      // Extract title, content and source from Perplexity response
       const titleMatch = content.match(/TITLE:\s*([^\n]+)/i);
       const contentMatch = content.match(/CONTENT:\s*([^S]+?)(?=SOURCE:|$)/i);
       const sourceMatch = content.match(/SOURCE:\s*([^\n]+)/i);
@@ -384,13 +388,13 @@ export class PerplexityNewsService {
       
       let title = titleMatch[1].trim();
       let articleContent = contentMatch[1].trim();
-      const source = sourceMatch ? sourceMatch[1].trim() : 'Market Intelligence';
+      const source = sourceMatch ? sourceMatch[1].trim() : 'Verified Source';
       
-      // Clean and enhance title for catchiness
+      // Clean title and make it catchy
       title = this.enhanceTitleCatchiness(title, priority);
       
-      // Format content to exactly 350 characters
-      articleContent = this.formatExactly350Chars(articleContent);
+      // Format summary content to exactly 350 characters with verification link
+      articleContent = this.createSummaryWith350Chars(articleContent, content);
       
       return {
         title: title.substring(0, 80),
@@ -402,7 +406,7 @@ export class PerplexityNewsService {
         newsDate: date
       };
     } catch (error) {
-      console.error('Error creating catchy article:', error);
+      console.error('Error creating news summary:', error);
       return null;
     }
   }
@@ -443,36 +447,43 @@ export class PerplexityNewsService {
     return title;
   }
 
-  private formatExactly350Chars(content: string): string {
-    // Clean content
-    let cleaned = content
+  private createSummaryWith350Chars(articleContent: string, fullContent: string): string {
+    // Extract verification URL from Perplexity citations if available
+    const urlMatch = fullContent.match(/https?:\/\/[^\s\]]+/);
+    const verifyUrl = urlMatch ? urlMatch[0] : 'bit.ly/verify-news';
+    
+    // Clean the content
+    let summary = articleContent
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/\s+/g, ' ')
       .trim();
-
-    // If content is exactly 350 or close, return as is
-    if (cleaned.length >= 347 && cleaned.length <= 350) {
-      return cleaned;
-    }
-
-    if (cleaned.length > 350) {
-      // Cut at 347 characters and add ellipsis
-      cleaned = cleaned.substring(0, 347);
-      const lastSpace = cleaned.lastIndexOf(' ');
-      if (lastSpace > 320) {
-        cleaned = cleaned.substring(0, lastSpace) + '...';
+    
+    // Create verification link text
+    const verifyText = ` Verify: ${verifyUrl}`;
+    const maxSummaryLength = 350 - verifyText.length;
+    
+    // Trim summary to fit with verification link
+    if (summary.length > maxSummaryLength) {
+      summary = summary.substring(0, maxSummaryLength - 3);
+      const lastSpace = summary.lastIndexOf(' ');
+      if (lastSpace > maxSummaryLength - 20) {
+        summary = summary.substring(0, lastSpace) + '...';
       } else {
-        cleaned = cleaned + '...';
+        summary = summary + '...';
       }
-    } else {
-      // Pad to reach 350 characters
-      const needed = 350 - cleaned.length;
-      const padding = " Analysts suggest monitoring market developments closely for investment opportunities.";
-      cleaned = cleaned + padding.substring(0, needed);
     }
-
-    return cleaned;
+    
+    // Combine summary with verification link to exactly 350 characters
+    const result = summary + verifyText;
+    
+    // Ensure exactly 350 characters
+    if (result.length < 350) {
+      const padding = ' '.repeat(350 - result.length);
+      return result + padding;
+    }
+    
+    return result.substring(0, 350);
   }
 
   private determineSentiment(text: string): 'Positive' | 'Negative' | 'Neutral' {

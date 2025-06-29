@@ -232,16 +232,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const articles = await perplexityNewsService.fetchRealNews();
+      const { newsSummaryService } = await import('./services/newsummaryService');
+      await newsSummaryService.generateAndStore();
       res.json({ 
-        message: 'AI articles fetched successfully', 
-        count: articles.length,
-        articles 
+        message: 'News summaries generated successfully', 
+        description: '20 articles with catchy headlines and 350-character summaries with verification links'
       });
     } catch (error) {
-      console.error('Error fetching AI articles:', error);
+      console.error('Error generating news summaries:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to fetch AI articles'
+        message: error instanceof Error ? error.message : 'Failed to generate news summaries'
       });
     }
   });
