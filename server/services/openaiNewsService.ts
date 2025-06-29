@@ -203,8 +203,9 @@ export class AI20ArticleManager {
     try {
       console.log('Running hourly AI article update - adding 5 new articles, maintaining 20 total');
       
-      // Generate 5 new articles
-      const articles = await openaiNewsService.fetchRealNews();
+      // Generate 5 new articles using Perplexity for real-time data
+      const { perplexityNewsService } = await import('./perplexityNewsService');
+      const articles = await perplexityNewsService.fetchRealNews();
       
       if (articles.length > 0) {
         // Store articles will automatically maintain the 20-article limit
