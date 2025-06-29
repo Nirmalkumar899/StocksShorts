@@ -235,8 +235,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto mb-3">
           {isLocked ? (
             <div className="space-y-2">
-              <div className="text-gray-400 dark:text-gray-500 text-sm line-clamp-2">
-                {article.content.substring(0, 80)}...
+              <div className="text-gray-400 dark:text-gray-500 text-sm line-clamp-3">
+                {article.content}
               </div>
               <div className="p-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                 <div className="flex items-center justify-center mb-2">
