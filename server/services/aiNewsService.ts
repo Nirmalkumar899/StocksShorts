@@ -196,10 +196,10 @@ Return only valid JSON array with no extra text.`;
         }
       }
       
-      // Method 3: Use today's market alerts when API parsing fails
+      // If no real news found, don't generate fake content
       if (articles.length === 0) {
-        console.log('Generating today\'s market alerts from live data');
-        articles = this.generateTodaysMarketAlerts();
+        console.log('No real market news found for today/yesterday - not generating fake content');
+        return [];
       }
       
       console.log(`Extracted ${articles.length} articles from response`);
@@ -281,40 +281,10 @@ Return only valid JSON array with no extra text.`;
   }
 
   private generateFallbackArticles(): ParsedArticle[] {
-    const currentDate = new Date();
-    const dateStr = currentDate.toLocaleDateString('en-IN');
-    
-    const companies = ['TCS', 'Infosys', 'HDFC Bank', 'ICICI Bank', 'Reliance', 'Wipro', 'HCL Tech'];
-    const events = [
-      'reported Q4 FY25 results with 8% revenue growth',
-      'announced ₹750 crore contract from Fortune 500 client',
-      'declared interim dividend of ₹18 per share',
-      'completed acquisition of digital platform for ₹340 crore',
-      'appointed new CEO effective from next quarter'
-    ];
-    const reactions = ['gained 2.1%', 'declined 1.3%', 'remained flat', 'rose 3.4%'];
-    const prices = [4200, 1850, 1650, 1200, 2900, 1450, 1380];
-    
-    return [
-      {
-        title: `${dateStr}: ${companies[0]}: ${events[0]}, stock ${reactions[0]}`,
-        content: `${dateStr}: ${companies[0]} ${events[0]} to ₹61,327 crore. Net profit increased 11% to ₹12,040 crore beating estimates. The stock ${reactions[0]} to close at ₹${prices[0]}. Management maintained FY26 revenue growth guidance of 10-12%. Brokerages expect continued momentum in digital transformation deals.`,
-        sentiment: 'Positive',
-        priority: 'High'
-      },
-      {
-        title: `${dateStr}: ${companies[1]}: ${events[1]}, stock ${reactions[3]}`,
-        content: `${dateStr}: ${companies[1]} ${events[1]} covering digital transformation services over 3 years. The deal represents 4% of annual revenue. Stock ${reactions[3]} to ₹${prices[1]} on the announcement. This win strengthens the company's position in European markets. Analysts view this as validation of strategic focus.`,
-        sentiment: 'Positive',
-        priority: 'High'
-      },
-      {
-        title: `${dateStr}: ${companies[2]}: ${events[2]}, stock ${reactions[2]}`,
-        content: `${dateStr}: ${companies[2]} board ${events[2]} payable to shareholders on record date July 15. This represents payout ratio of 85% for the quarter. Stock ${reactions[2]} at ₹${prices[2]} post announcement. The bank reported healthy asset quality with GNPA at 1.28%. Credit growth remained robust at 15% YoY.`,
-        sentiment: 'Positive',
-        priority: 'Medium'
-      }
-    ];
+    // Return empty array - no fallback content
+    // We only want real news, not generated content
+    console.log('No real news found - returning empty array instead of fallback articles');
+    return [];
   }
 
   private async storeArticles(articles: ParsedArticle[]): Promise<AiArticle[]> {
@@ -593,26 +563,29 @@ Return only valid JSON array with no extra text.`;
     const basePrice = 1000 + Math.floor(Math.random() * 3000);
     const indexLevel = 45000 + Math.floor(Math.random() * 15000);
     
-    const prompt = `Generate 5 REALISTIC Indian stock market news updates for ${new Date().toLocaleDateString('en-IN')} using session ID: ${sessionId}
+    const prompt = `Search for REAL Indian corporate announcements and stock market news from TODAY (${new Date().toDateString()}) and YESTERDAY only. Find actual events from NSE/BSE filings, company press releases, and financial news sources.
 
-FOCUS ONLY on these companies: ${selectedStocks.join(', ')}
+Search specifically for:
+1. IPO announcements, subscription updates, listing schedules
+2. Major order wins/contracts (₹100+ crore value)
+3. Quarterly earnings released today/yesterday
+4. Dividend declarations, bonus issues, stock splits
+5. SEBI filings, regulatory approvals
+6. Management appointments, board changes
+7. Major gainers/losers with fundamental reasons
+8. Brokerage upgrades/downgrades with target prices
 
-Create factual news in this EXACT JSON format:
+CRITICAL: Only return VERIFIED news with actual sources. No fictional content.
+
+Format response as JSON array:
 [
   {
-    "title": "29-Jun-2025: [COMPANY]: [Actual event that happened], stock [reaction]",
-    "content": "29-Jun-2025: [COMPANY] [reported/announced/declared] [specific factual event]. The stock [gained/declined/remained flat] [X]% to close at ₹[PRICE]. [Fundamental reason for movement]. [Current market sentiment/analyst view]."
+    "title": "29-Jun-2025: [Company]: [Real event]",
+    "content": "29-Jun-2025: [Company] [actual announcement/event]. [Verified details]. Source: [Actual source - BSE/NSE filing, ET, BS, MC, company website]"
   }
 ]
 
-STRICT REQUIREMENTS:
-- Use ONLY factual past-tense events: "reported earnings", "announced dividend", "won contract"
-- NO predictive language: NO "breaks above", "targets", "volume surge", "resistance"  
-- NO trading recommendations: NO "BUY", "SELL", "targets"
-- Companies: ${selectedStocks.join(', ')} only
-- Realistic scenarios: Quarterly results, dividend announcements, order wins, management changes
-- Stock prices: ₹${basePrice-200} to ₹${basePrice+300} range
-- Focus on actual corporate events, not technical analysis`;
+If no real news found, return empty array []`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -625,16 +598,18 @@ STRICT REQUIREMENTS:
         messages: [
           {
             role: 'system',
-            content: 'You are a stock market analyst generating precise trading alerts for Indian markets. Always respond with valid JSON array format.'
+            content: 'You are a financial news researcher. Search NSE, BSE, MoneyControl, Economic Times, and Business Standard for VERIFIED Indian corporate announcements from today and yesterday only. Return actual news with sources, not generated content. Always respond with valid JSON array format.'
           },
           {
             role: 'user',
             content: prompt,
           },
         ],
-        max_tokens: 2000,
-        temperature: 0.8,
-        top_p: 0.9,
+        max_tokens: 1500,
+        temperature: 0.0,
+        search_domain_filter: ["nseindia.com", "bseindia.com", "moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com"],
+        search_recency_filter: "day",
+        return_related_questions: false,
         stream: false,
       }),
     });
