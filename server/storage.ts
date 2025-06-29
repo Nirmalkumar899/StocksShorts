@@ -142,7 +142,7 @@ export class DatabaseStorage implements IStorage {
       const articles = await db
         .select()
         .from(aiArticles)
-        .orderBy(desc(aiArticles.createdAt))
+        .orderBy(aiArticles.priority, desc(aiArticles.createdAt))
         .limit(limit);
       
       return articles.map((article: AiArticle) => ({
