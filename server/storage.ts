@@ -110,6 +110,25 @@ export class DatabaseStorage implements IStorage {
     
     return result[0]?.count || 0;
   }
+
+  async storeAiArticles(articles: any[]): Promise<void> {
+    if (articles.length === 0) return;
+
+    for (const article of articles) {
+      try {
+        await db.insert(aiArticles).values({
+          title: article.title,
+          content: article.content,
+          source: article.source,
+          sentiment: article.sentiment,
+          priority: article.priority,
+          newsDate: article.newsDate,
+        }).onConflictDoNothing();
+      } catch (error) {
+        console.error('Error storing AI article:', error);
+      }
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

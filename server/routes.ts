@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
-import { realNewsService } from "./services/realNewsService";
+import { openaiNewsService } from "./services/openaiNewsService";
 import { stockAI } from "./services/stockAI";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI News Articles Routes
   app.get("/api/ai-articles", async (req, res) => {
     try {
-      const articles = await realNewsService.getRecentVerifiedNews();
+      const articles = await openaiNewsService.fetchRealNews();
       res.json(articles);
     } catch (error) {
       console.error('Error fetching AI articles:', error);
@@ -218,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ai-articles/recent", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
-      const articles = await realNewsService.getRecentVerifiedNews(limit);
+      const articles = await openaiNewsService.fetchRealNews();
       res.json(articles);
     } catch (error) {
       console.error('Error fetching recent AI articles:', error);
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-articles/fetch", async (req, res) => {
     try {
-      const articles = await realNewsService.fetchVerifiedNews();
+      const articles = await openaiNewsService.fetchRealNews();
       res.json({ 
         message: 'AI articles fetched successfully', 
         count: articles.length,
@@ -665,20 +665,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // AI News Scheduler - Fetch news every 15 minutes
 function startAINewsScheduler() {
-  console.log('Starting AI News Scheduler - maintaining 20 articles with hourly rotation (5 new, 5 removed)');
+  console.log('Starting OpenAI News Scheduler - fetching real news from last working day only');
   
-  // Initial fetch to populate articles
-  setTimeout(() => {
-    realNewsService.fetchVerifiedNews().catch(console.error);
+  // Initial fetch to populate articles with market calendar check
+  setTimeout(async () => {
+    try {
+      const articles = await openaiNewsService.fetchRealNews();
+      if (articles.length > 0) {
+        await storage.storeAiArticles(articles);
+        console.log(`Initial fetch: Stored ${articles.length} real news articles from last working day`);
+      } else {
+        console.log('Initial fetch: No real news found - markets may be closed');
+      }
+    } catch (error) {
+      console.error('Initial AI news fetch failed:', error);
+    }
   }, 5000); // Wait 5 seconds after server start
 
-  // Schedule hourly rotation: add 5 new articles, remove 5 oldest
+  // Schedule every 2 hours - only fetch news from working days
   setInterval(async () => {
     try {
-      console.log('Scheduled hourly AI news rotation starting...');
-      await realNewsService.fetchVerifiedNews();
+      console.log('Scheduled AI news check starting...');
+      const articles = await openaiNewsService.fetchRealNews();
+      if (articles.length > 0) {
+        await storage.storeAiArticles(articles);
+        console.log(`Scheduled update: Found ${articles.length} real news articles`);
+      } else {
+        console.log('Scheduled update: No new real news found');
+      }
     } catch (error) {
-      console.error('Scheduled AI news rotation failed:', error);
+      console.error('Scheduled AI news update failed:', error);
     }
-  }, 60 * 60 * 1000); // 1 hour in milliseconds
+  }, 2 * 60 * 60 * 1000); // 2 hours in milliseconds
 }
