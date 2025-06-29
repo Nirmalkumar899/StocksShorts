@@ -171,31 +171,64 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
               </div>
               
               {/* SEBI Compliance Warning */}
-              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-semibold text-red-800 dark:text-red-300 mb-2">⚠️ SEBI Regulatory Disclaimer</p>
-                    <div className="text-red-700 dark:text-red-300 space-y-1">
-                      <p>• This is educational content only, NOT investment advice</p>
-                      <p>• Provider is not a SEBI-registered investment advisor</p>
-                      <p>• Consult SEBI-registered advisor before making investment decisions</p>
-                      <p>• Past performance does not guarantee future results</p>
-                      <p>• Stock investments are subject to market risks</p>
+              <div className="mb-6 p-5 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-l-4 border-red-500 rounded-r-xl shadow-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-red-500 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-red-800 dark:text-red-300 text-lg mb-3">
+                      ⚠️ SEBI Regulatory Disclaimer
+                    </h4>
+                    <div className="text-red-700 dark:text-red-300 space-y-2 text-sm leading-relaxed">
+                      <p className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                        This is educational content only, NOT investment advice
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                        Provider is not a SEBI-registered investment advisor
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                        Consult SEBI-registered advisor before making investment decisions
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                        Past performance does not guarantee future results
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                        Stock investments are subject to market risks
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-l-4 border-green-500">
-                <div className="flex items-center gap-2 mb-3">
-                  <Brain className="h-4 w-4 text-green-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Educational Stock Analysis (Beta Testing)
-                  </span>
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <Brain className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Educational Stock Analysis
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Powered by Perplexity AI • Beta Testing
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">
-                  {analysis}
+                
+                <div className="p-6">
+                  <div className="prose prose-gray dark:prose-invert max-w-none">
+                    <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-base">
+                      {analysis}
+                    </div>
+                  </div>
                 </div>
               </div>
               
