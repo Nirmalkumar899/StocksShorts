@@ -241,11 +241,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <div className="mt-4 flex items-center justify-center p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                 <div className="text-center">
                   <Lock className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
-                    StocksShorts Special Content
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">
+                    🔒 LOGIN REQUIRED TO READ
                   </p>
                   <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
-                    Login required to read full article
+                    StocksShorts Special premium content. Other articles are free!
                   </p>
                   <Button
                     size="sm"

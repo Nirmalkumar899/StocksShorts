@@ -215,11 +215,14 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
                   <div className="flex items-center justify-center p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     <div className="text-center">
                       <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400 mx-auto mb-3" />
-                      <p className="text-lg font-medium text-amber-800 dark:text-amber-200 mb-2">
-                        StocksShorts Special Content
+                      <p className="text-xl font-bold text-amber-800 dark:text-amber-200 mb-2">
+                        🔒 LOGIN REQUIRED TO READ
+                      </p>
+                      <p className="text-base font-medium text-amber-700 dark:text-amber-300 mb-2">
+                        This is StocksShorts Special premium content
                       </p>
                       <p className="text-sm text-amber-600 dark:text-amber-400 mb-4">
-                        Login required to read full article. Other articles are free to read.
+                        All other articles on our platform are completely free to read!
                       </p>
                       <Button
                         onClick={handleLoginPrompt}

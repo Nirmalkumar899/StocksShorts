@@ -27,11 +27,11 @@ export default function Home() {
   const queryClient = useQueryClient();
   const switchingRef = useRef(false);
 
-  // Category order for auto-switching
+  // Category order for auto-switching - AI first, then Special, then others
   const categoryOrder = [
-    'all',
     'ai',
-    'stocksshorts-special', 
+    'stocksshorts-special',
+    'all',
     'breakout-stocks',
     'kalkabazaar',
     'warrants',
@@ -45,8 +45,8 @@ export default function Home() {
 
   // Map URLs to categories for subpage support
   const urlToCategoryMap: { [key: string]: string } = {
-    '/': 'all',
-    '/home': 'all',
+    '/': 'ai',
+    '/home': 'ai',
     '/trending': 'all',
     '/ai-news': 'ai',
     '/special': 'stocksshorts-special',

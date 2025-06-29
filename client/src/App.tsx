@@ -17,10 +17,10 @@ function Router() {
   useSEO(); // Enable dynamic SEO
   const [location, setLocation] = useLocation();
   
-  // Auto-navigate to Special section on app startup
+  // Auto-navigate to AI News section on app startup
   useEffect(() => {
     if (location === "/") {
-      setLocation("/special");
+      setLocation("/ai-news");
     }
   }, [location, setLocation]);
   
