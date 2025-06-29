@@ -63,9 +63,9 @@ export class OpenAINewsService {
       
       console.log(`Fetching real news for trading days: ${dateStrings.join(', ')}`);
 
-      // Updated to use the latest GPT-4o model as requested by user
+      // Updated to use the latest o3-mini model for enhanced reasoning capabilities
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "o3-mini",
         messages: [
           {
             role: "system",
