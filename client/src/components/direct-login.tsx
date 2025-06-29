@@ -6,11 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-interface SimpleLoginProps {
+interface DirectLoginProps {
   onSuccess?: () => void;
 }
 
-export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
+export default function DirectLogin({ onSuccess }: DirectLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
@@ -95,72 +95,63 @@ export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
     verifyOtpMutation.mutate({ phone: phoneNumber, otpCode: otp });
   };
 
-  const preventNavigation = (e: React.MouseEvent | React.FocusEvent) => {
-    e.preventDefault();
+  const handleContainerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, setter: (value: string) => void, formatter?: (value: string) => string) => {
-    e.stopPropagation(); // Only stop propagation, don't prevent default for input
-    const value = formatter ? formatter(e.target.value) : e.target.value;
-    setter(value);
-  };
-
   return (
-    <div className="w-full" onMouseDown={preventNavigation} onClick={preventNavigation}>
+    <div className="w-full" onClick={handleContainerClick}>
       {step === "phone" ? (
-        <div onMouseDown={preventNavigation} onClick={preventNavigation}>
-          <form onSubmit={handlePhoneSubmit} onMouseDown={preventNavigation} onClick={preventNavigation}>
-            <div className="flex items-center space-x-2">
-              <Phone className="h-3 w-3 text-primary flex-shrink-0" />
-              <Input
-                type="tel"
-                placeholder="Mobile number"
-                value={phoneNumber}
-                onChange={(e) => handleInputChange(e, setPhoneNumber, formatPhoneNumber)}
-                onMouseDown={preventNavigation}
-                onClick={preventNavigation}
-                onFocus={preventNavigation}
-                className="text-center text-xs h-7 flex-1"
-                maxLength={10}
-              />
-              <Button 
-                type="submit" 
-                onMouseDown={preventNavigation}
-                onClick={preventNavigation}
-                className="h-7 text-xs px-3 flex-shrink-0" 
-                disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
-              >
-                {sendOtpMutation.isPending ? "..." : "Send"}
-              </Button>
-            </div>
-          </form>
-        </div>
+        <form onSubmit={handlePhoneSubmit}>
+          <div className="flex items-center space-x-2" onClick={handleContainerClick}>
+            <Phone className="h-3 w-3 text-primary flex-shrink-0" />
+            <Input
+              type="tel"
+              placeholder="Mobile number"
+              value={phoneNumber}
+              onChange={(e) => {
+                e.stopPropagation();
+                setPhoneNumber(formatPhoneNumber(e.target.value));
+              }}
+              onClick={handleContainerClick}
+              className="text-center text-xs h-7 flex-1"
+              maxLength={10}
+            />
+            <Button 
+              type="submit" 
+              onClick={handleContainerClick}
+              className="h-7 text-xs px-3 flex-shrink-0" 
+              disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
+            >
+              {sendOtpMutation.isPending ? "..." : "Send"}
+            </Button>
+          </div>
+        </form>
       ) : (
-        <div className="space-y-2" onMouseDown={preventNavigation} onClick={preventNavigation}>
+        <div className="space-y-2" onClick={handleContainerClick}>
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
               OTP sent to +91 {phoneNumber}
             </p>
           </div>
-          <form onSubmit={handleOtpSubmit} onMouseDown={preventNavigation} onClick={preventNavigation}>
-            <div className="flex items-center space-x-2">
+          <form onSubmit={handleOtpSubmit}>
+            <div className="flex items-center space-x-2" onClick={handleContainerClick}>
               <LogIn className="h-3 w-3 text-primary flex-shrink-0" />
               <Input
                 type="text"
                 placeholder="6-digit OTP"
                 value={otp}
-                onChange={(e) => handleInputChange(e, setOtp, (val) => val.replace(/\D/g, "").slice(0, 6))}
-                onMouseDown={preventNavigation}
-                onClick={preventNavigation}
-                onFocus={preventNavigation}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                }}
+                onClick={handleContainerClick}
                 className="text-center text-xs h-7 tracking-widest flex-1"
                 maxLength={6}
               />
               <Button 
                 type="submit" 
-                onMouseDown={preventNavigation}
-                onClick={preventNavigation}
+                onClick={handleContainerClick}
                 className="h-7 text-xs px-3 flex-shrink-0" 
                 disabled={verifyOtpMutation.isPending || otp.length !== 6}
               >
@@ -173,9 +164,8 @@ export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
             variant="ghost"
             size="sm"
             className="w-full text-xs h-5"
-            onMouseDown={preventNavigation}
             onClick={(e) => {
-              preventNavigation(e);
+              e.stopPropagation();
               setStep("phone");
             }}
           >

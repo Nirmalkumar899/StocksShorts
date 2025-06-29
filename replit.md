@@ -118,7 +118,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
-- June 29, 2025: **MAJOR**: Implemented compact login interface directly on locked content - users now see phone number input field directly on the same screen without scrolling, streamlined 2-step login process (phone → OTP → instant access) with compact UI design
+- June 29, 2025: **MAJOR**: Fixed login navigation issue and implemented working direct login interface - users can now enter phone numbers in login fields without being redirected to trending page, proper event handling prevents unwanted navigation while preserving input functionality, login form appears directly on locked Special articles with full 2-step authentication (phone → OTP → instant access)
 - June 29, 2025: **MAJOR**: Enhanced login messaging with clearer "🔒 LOGIN REQUIRED TO READ" prompts - Special articles now display prominent, unmistakable authentication requirements with clear value proposition messaging
 - June 29, 2025: **MAJOR**: Implemented AI-first navigation flow - app now opens to AI articles first, then automatically progresses to Special articles, then other sections, providing optimized content discovery journey
 - June 29, 2025: **MAJOR**: Implemented login-required access for Special articles - StocksShorts Special content now requires user authentication while all other articles remain free to read, encouraging user registration while maintaining accessibility
