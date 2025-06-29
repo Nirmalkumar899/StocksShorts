@@ -1,23 +1,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Phone, LogIn } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
 
-interface SimpleLoginProps {
+interface CompactLoginProps {
   onSuccess?: () => void;
 }
 
-export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
+export default function CompactLogin({ onSuccess }: CompactLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
 
   const sendOtpMutation = useMutation({
     mutationFn: async (phone: string) => {
@@ -54,7 +51,6 @@ export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
         description: "Welcome! You can now read all articles.",
       });
       onSuccess?.();
-      // Refresh the page to update authentication state
       window.location.reload();
     },
     onError: (error: any) => {
@@ -68,9 +64,6 @@ export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
 
   const formatPhoneNumber = (value: string) => {
     const digits = value.replace(/\D/g, "");
-    if (digits.length <= 10) {
-      return digits;
-    }
     return digits.slice(0, 10);
   };
 
@@ -101,27 +94,24 @@ export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
   };
 
   return (
-    <Card className="w-full max-w-sm mx-auto">
-      <CardContent className="p-4">
+    <div className="w-full max-w-xs mx-auto">
+      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-sm">
         {step === "phone" ? (
-          <form onSubmit={handlePhoneSubmit} className="space-y-3">
-            <div className="text-center mb-3">
-              <Phone className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <h3 className="font-medium">Login to Read</h3>
-              <p className="text-xs text-muted-foreground">Enter your mobile number</p>
-            </div>
-            <div className="space-y-2">
+          <form onSubmit={handlePhoneSubmit} className="space-y-2">
+            <div className="text-center">
+              <Phone className="h-4 w-4 mx-auto mb-1 text-primary" />
+              <h3 className="font-medium text-sm mb-2">Login to Read</h3>
               <Input
                 type="tel"
-                placeholder="Enter 10-digit mobile number"
+                placeholder="10-digit mobile number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
-                className="text-center"
+                className="text-center text-sm h-8 mb-2"
                 maxLength={10}
               />
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full h-8 text-xs" 
                 disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
               >
                 {sendOtpMutation.isPending ? "Sending..." : "Send OTP"}
@@ -129,43 +119,43 @@ export default function SimpleLogin({ onSuccess }: SimpleLoginProps) {
             </div>
           </form>
         ) : (
-          <form onSubmit={handleOtpSubmit} className="space-y-3">
-            <div className="text-center mb-3">
-              <LogIn className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <h3 className="font-medium">Enter OTP</h3>
-              <p className="text-xs text-muted-foreground">
+          <form onSubmit={handleOtpSubmit} className="space-y-2">
+            <div className="text-center">
+              <LogIn className="h-4 w-4 mx-auto mb-1 text-primary" />
+              <h3 className="font-medium text-sm">Enter OTP</h3>
+              <p className="text-xs text-muted-foreground mb-2">
                 Sent to +91 {phoneNumber}
               </p>
-            </div>
-            <div className="space-y-2">
               <Input
                 type="text"
-                placeholder="Enter 6-digit OTP"
+                placeholder="6-digit OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                className="text-center text-lg tracking-widest"
+                className="text-center text-sm h-8 tracking-widest mb-2"
                 maxLength={6}
               />
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={verifyOtpMutation.isPending || otp.length !== 6}
-              >
-                {verifyOtpMutation.isPending ? "Verifying..." : "Login"}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => setStep("phone")}
-              >
-                Change Number
-              </Button>
+              <div className="space-y-1">
+                <Button 
+                  type="submit" 
+                  className="w-full h-8 text-xs" 
+                  disabled={verifyOtpMutation.isPending || otp.length !== 6}
+                >
+                  {verifyOtpMutation.isPending ? "Verifying..." : "Login"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs h-6"
+                  onClick={() => setStep("phone")}
+                >
+                  Change Number
+                </Button>
+              </div>
             </div>
           </form>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

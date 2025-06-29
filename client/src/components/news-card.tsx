@@ -10,7 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import SimpleLogin from "@/components/simple-login";
+import CompactLogin from "@/components/compact-login";
 
 interface NewsCardProps {
   article: Article;
@@ -249,7 +249,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     StocksShorts Special premium content. Other articles are free!
                   </p>
                 </div>
-                <SimpleLogin />
+                <CompactLogin />
               </div>
             </div>
           ) : (

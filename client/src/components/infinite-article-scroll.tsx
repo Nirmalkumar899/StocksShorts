@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Share2, Copy, ArrowLeft, ExternalLink, Lock, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import SimpleLogin from "@/components/simple-login";
+import CompactLogin from "@/components/compact-login";
 import type { Article } from "@shared/schema";
 
 interface InfiniteArticleScrollProps {
@@ -223,7 +223,7 @@ export default function InfiniteArticleScroll({ articles, initialArticleId, onBa
                         StocksShorts Special premium content. Other articles are free!
                       </p>
                     </div>
-                    <SimpleLogin />
+                    <CompactLogin />
                   </div>
                 </div>
               ) : (
