@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI News Articles Routes
   app.get("/api/ai-articles", async (req, res) => {
     try {
-      const articles = await perplexityNewsService.fetchRealNews();
+      const articles = await storage.getStoredAiArticles(20);
       res.json(articles);
     } catch (error) {
       console.error('Error fetching AI articles:', error);
