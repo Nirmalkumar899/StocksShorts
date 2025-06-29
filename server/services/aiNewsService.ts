@@ -222,62 +222,14 @@ Return only valid JSON array with no extra text.`;
 
     } catch (error) {
       console.error('Error parsing articles:', error);
-      return this.generateTodaysMarketAlerts();
+      return [];
     }
   }
 
   private generateTodaysMarketAlerts(): ParsedArticle[] {
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    });
-    const timeStr = today.toLocaleTimeString('en-IN', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
-    
-    // Generate realistic live market alerts with current levels
-    const niftyLevel = 25650 + Math.floor(Math.random() * 100);
-    const hdfcPrice = 1750 + Math.floor(Math.random() * 50);
-    const tcsPrice = 4100 + Math.floor(Math.random() * 100);
-    
-    // Generate completely unique content with timestamp IDs to prevent any repetition
-    const uniqueId = Date.now();
-    const stockOptions = ['TCS', 'Reliance', 'HDFC Bank', 'Infosys', 'ICICI Bank', 'SBI', 'Wipro', 'HUL', 'L&T', 'Bajaj Finance'];
-    const sectorOptions = ['IT Index', 'Bank Nifty', 'Auto Index', 'Pharma Index', 'Metal Index', 'FMCG Index'];
-    const ipoOptions = ['NTPC Green Energy', 'Swiggy', 'Ola Electric', 'Hyundai Motor India', 'Bajaj Housing'];
-    
-    const randomStock = stockOptions[Math.floor(Math.random() * stockOptions.length)];
-    const randomSector = sectorOptions[Math.floor(Math.random() * sectorOptions.length)];
-    const randomIPO = ipoOptions[Math.floor(Math.random() * ipoOptions.length)];
-    
-    const basePrice = 1000 + Math.floor(Math.random() * 2000);
-    const sectorLevel = 40000 + Math.floor(Math.random() * 10000);
-    const premium = 5 + Math.floor(Math.random() * 20);
-    
-    return [
-      {
-        title: `${dateStr} ${timeStr}: ${randomStock} breakout above ₹${basePrice}, targets ₹${basePrice + 100} [${uniqueId}]`,
-        content: `${dateStr} ${timeStr}: ${randomStock} breaks above key resistance of ₹${basePrice} with heavy volume surge. Technical breakout confirmed on hourly charts. Next targets ₹${basePrice + 50} and ₹${basePrice + 100}. Stop loss ₹${basePrice - 30}. Strong momentum indicates further upside potential. [ID: ${uniqueId}]`,
-        sentiment: 'Positive',
-        priority: 'High'
-      },
-      {
-        title: `${dateStr} ${timeStr}: ${randomSector} crosses ${sectorLevel} resistance, bullish outlook [${uniqueId + 1}]`,
-        content: `${dateStr} ${timeStr}: ${randomSector} breaks above critical resistance at ${sectorLevel} with strong participation. Sector showing broad-based strength. Key levels to watch: ${sectorLevel + 200} and ${sectorLevel + 400}. Support at ${sectorLevel - 150}. [ID: ${uniqueId + 1}]`,
-        sentiment: 'Positive',
-        priority: 'High'
-      },
-      {
-        title: `${dateStr} ${timeStr}: ${randomIPO} IPO update: Grey market premium ${premium}%, listing ahead [${uniqueId + 2}]`,
-        content: `${dateStr} ${timeStr}: ${randomIPO} IPO showing grey market premium of ${premium}% ahead of listing. Business fundamentals remain strong with growth prospects. Expected listing price reflects investor sentiment. Monitor for volatility. [ID: ${uniqueId + 2}]`,
-        sentiment: premium > 15 ? 'Positive' : 'Neutral',
-        priority: 'Medium'
-      }
-    ];
+    // No artificial content generation - only real news tracking
+    console.log('No artificial market alerts generated - system only tracks verified news');
+    return [];
   }
 
   private generateFallbackArticles(): ParsedArticle[] {
@@ -566,25 +518,29 @@ Return only valid JSON array with no extra text.`;
     const currentDate = new Date().toDateString();
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
     
-    const prompt = `Search NSE India, BSE India, MoneyControl, Economic Times and Business Standard for ACTUAL Indian corporate announcements from ${currentDate} and ${yesterday} ONLY.
+    const prompt = `Search NSE India, BSE India, MoneyControl, Economic Times and Business Standard for ACTUAL Indian market events from ${currentDate} and ${yesterday} ONLY.
 
 Find these REAL events with SOURCE verification:
-• IPO subscription updates, GMP, listing schedules
-• Major order wins/contracts announced (₹100+ crore)
-• Quarterly earnings released with actual numbers
-• Dividend/bonus declarations with record dates
-• SEBI approvals, regulatory filings
-• Management changes, CEO appointments
-• Top gainers/losers with actual reasons
-• Brokerage rating changes with target prices
+• IPO subscription updates, GMP, listing schedules, allotment status
+• Major order wins/contracts announced (₹100+ crore value)
+• Quarterly earnings released with actual revenue/profit numbers
+• Dividend/bonus declarations with record dates and amounts
+• SEBI approvals, regulatory filings, compliance actions
+• Management changes, CEO/CFO appointments
+• Brokerage reports with BUY/SELL ratings and specific target prices
+• Corporate fraud alerts, SEBI investigations, penalty announcements
+• FII/DII buying/selling data with sector allocation
+• Nifty/Sensex/Bank Nifty support/resistance levels from technical analysts
+• Option chain analysis with PUT/CALL ratios and max pain levels
+• Block deals, bulk deals with investor names and quantities
 
-MANDATORY: Only return NEWS with verifiable sources. NO predictions or technical analysis.
+MANDATORY: Only return VERIFIED news with actual sources. Include specific numbers, target prices, support/resistance levels.
 
-JSON format with actual sources:
+JSON format with sources:
 [
   {
-    "title": "29-Jun-2025: [Company]: [Actual announcement]",
-    "content": "29-Jun-2025: [Company] [real event details with numbers]. Source: [NSE/BSE/ET/BS/MC/Company website]"
+    "title": "29-Jun-2025: [Event]: [Specific details with numbers]",
+    "content": "29-Jun-2025: [Detailed event description with actual figures, target prices, levels]. Source: [NSE/BSE/ET/BS/MC/Brokerage name]"
   }
 ]
 
@@ -610,7 +566,7 @@ Return [] if no verified news found.`;
         ],
         max_tokens: 1500,
         temperature: 0.0,
-        search_domain_filter: ["nseindia.com", "bseindia.com", "moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com"],
+        search_domain_filter: ["nseindia.com", "bseindia.com", "moneycontrol.com", "economictimes.indiatimes.com", "business-standard.com", "livemint.com", "financialexpress.com"],
         search_recency_filter: "day",
         return_related_questions: false,
         stream: false,
