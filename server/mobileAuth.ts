@@ -25,11 +25,13 @@ function normalizePhoneNumber(phoneNumber: string): string {
 async function sendSMS(phoneNumber: string, otp: string): Promise<boolean> {
   try {
     const fast2smsKey = process.env.FAST2SMS_API_KEY;
+    console.log(`Environment check - Fast2SMS key present: ${!!fast2smsKey}`);
     
     // Try Fast2SMS first - now activated with balance
     if (fast2smsKey) {
       try {
         console.log(`Sending OTP to ${phoneNumber} via Fast2SMS (₹0.15 per SMS)`);
+        console.log(`OTP being sent: ${otp}`);
         
         const fast2smsResponse = await fetch('https://www.fast2sms.com/dev/bulkV2', {
           method: 'POST',
@@ -46,7 +48,7 @@ async function sendSMS(phoneNumber: string, otp: string): Promise<boolean> {
         });
 
         const fast2smsResult = await fast2smsResponse.json();
-        console.log(`Fast2SMS response:`, fast2smsResult);
+        console.log(`Fast2SMS full response:`, JSON.stringify(fast2smsResult, null, 2));
         
         if (fast2smsResult.return === true) {
           console.log(`✅ SMS sent successfully to ${phoneNumber} via Fast2SMS (Request ID: ${fast2smsResult.request_id})`);
