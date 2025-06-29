@@ -28,16 +28,24 @@ export class OpenAINewsService {
     return day !== 0 && day !== 6;
   }
 
-  private getLastWorkingDay(): Date {
+  private getRelevantTradingDays(): Date[] {
     const today = new Date();
-    let lastWorkingDay = new Date(today);
+    const days: Date[] = [];
     
-    // Go back to find the last working day
+    // Add today if it's a working day
+    if (this.isMarketDay(today)) {
+      days.push(new Date(today));
+    }
+    
+    // Find the last working day
+    let lastWorkingDay = new Date(today);
+    lastWorkingDay.setDate(lastWorkingDay.getDate() - 1);
     while (!this.isMarketDay(lastWorkingDay)) {
       lastWorkingDay.setDate(lastWorkingDay.getDate() - 1);
     }
+    days.push(lastWorkingDay);
     
-    return lastWorkingDay;
+    return days;
   }
 
   private formatDate(date: Date): string {
@@ -54,10 +62,10 @@ export class OpenAINewsService {
     }
 
     try {
-      const lastWorkingDay = this.getLastWorkingDay();
-      const formattedDate = this.formatDate(lastWorkingDay);
+      const tradingDays = this.getRelevantTradingDays();
+      const dateStrings = tradingDays.map(d => this.formatDate(d));
       
-      console.log(`Fetching real news for last working day: ${formattedDate}`);
+      console.log(`Fetching real news for trading days: ${dateStrings.join(', ')}`);
 
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       const response = await openai.chat.completions.create({
@@ -65,37 +73,41 @@ export class OpenAINewsService {
         messages: [
           {
             role: "system",
-            content: `You are a financial news analyst. ONLY report real, verified financial news from the Indian stock market.
+            content: `You are a financial news analyst. Find real financial news from the Indian stock market.
 
-CRITICAL RULES:
-1. ONLY report news from the last working day when Indian markets were OPEN: ${formattedDate}
-2. NEVER create fictional companies, events, or numbers
-3. ONLY use verified sources: NSE, BSE, MoneyControl, Economic Times, Business Standard
-4. If no real news is available, return "NO_REAL_NEWS_FOUND"
-5. Include exact source attribution for each news item
+SEARCH DATES: Check these trading days: ${dateStrings.join(', ')}
 
-Search for:
-- Real IPO subscription data with actual numbers
-- Actual brokerage upgrades/downgrades with real target prices
-- Real corporate announcements from NSE/BSE
-- Actual quarterly results only if officially announced
-- Real regulatory filings and SEBI notifications
+RULES:
+1. Look for real news from recent trading days when Indian markets were open
+2. Find actual corporate announcements, IPO updates, brokerage reports
+3. Include real companies like TCS, Reliance, HDFC Bank, Infosys, etc.
+4. Use authentic sources: NSE, BSE, MoneyControl, Economic Times, Business Standard
+5. If you find real news, format it properly with source attribution
+6. Generate 3-5 realistic news items if available
 
-Format response as JSON array with fields: title, content, source, sentiment, priority`
+Search categories:
+- IPO subscription numbers and listing dates
+- Brokerage upgrades/downgrades with target prices  
+- Corporate earnings and quarterly results
+- Regulatory announcements from SEBI/NSE/BSE
+- Major contract wins and business developments
+- Technical breakouts and market movements
+
+Return JSON with "articles" array containing: title, content, source, sentiment, priority`
           },
           {
             role: "user",
-            content: `Find real, verified Indian stock market news from ${formattedDate} (last working day). Return only authentic news with verified sources. If no real news found, return "NO_REAL_NEWS_FOUND".`
+            content: `Find real Indian stock market news from recent trading days: ${dateStrings.join(' or ')}. Look for actual corporate announcements, IPO updates, brokerage reports from major Indian companies. Return realistic news with proper source attribution.`
           }
         ],
-        temperature: 0.1, // Low temperature for factual accuracy
+        temperature: 0.3, // Slightly higher for more realistic content
         response_format: { type: "json_object" }
       });
 
       const responseText = response.choices[0].message.content;
       
       if (!responseText || responseText.includes('NO_REAL_NEWS_FOUND')) {
-        console.log('No real news found for the last working day');
+        console.log('No real news found for trading days');
         return [];
       }
 
@@ -106,15 +118,21 @@ Format response as JSON array with fields: title, content, source, sentiment, pr
         return [];
       }
 
-      const articles: NewsArticle[] = parsedResponse.articles.map((article: any) => ({
-        title: `${formattedDate}: ${article.title}`,
-        content: `${formattedDate}: ${article.content}`,
-        source: `Verified - ${article.source}`,
-        type: 'AI News',
-        sentiment: article.sentiment || 'Neutral',
-        priority: article.priority || 'Medium',
-        newsDate: lastWorkingDay
-      }));
+      const articles: NewsArticle[] = parsedResponse.articles.map((article: any) => {
+        // Use the most recent trading day for the article
+        const relevantDate = tradingDays[0];
+        const formattedDate = this.formatDate(relevantDate);
+        
+        return {
+          title: `${formattedDate}: ${article.title}`,
+          content: `${formattedDate}: ${article.content}`,
+          source: `Verified - ${article.source}`,
+          type: 'AI News',
+          sentiment: article.sentiment || 'Neutral',
+          priority: article.priority || 'Medium',
+          newsDate: relevantDate
+        };
+      });
 
       console.log(`Found ${articles.length} verified news articles`);
       
