@@ -28,9 +28,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Check if this is a Special article that requires login
+  // Check if this is a Special article (no login required anymore)
   const isSpecialArticle = article.type === 'StocksShorts Special';
-  const isLocked = isSpecialArticle && !isAuthenticated;
+  const isLocked = false; // Removed login requirement for Special articles
 
   const reportMutation = useMutation({
     mutationFn: async () => {

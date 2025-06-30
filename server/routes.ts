@@ -3,8 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
-import { perplexityNewsService } from "./services/perplexityNewsService";
-import { ai20ArticleManager } from "./services/openaiNewsService";
+
 import { stockAI } from "./services/stockAI";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
@@ -16,7 +15,7 @@ import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
 import { verifiedNewsService } from "./services/verifiedNewsService";
 import { directExchangeConnector } from "./services/directExchangeConnector";
 import { authenticDataProvider } from "./services/authenticDataProvider";
-import { realAuthenticNewsService } from "./services/realAuthenticNews";
+
 import { gmailTracker } from "./services/gmailTracker";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -209,47 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI News Articles Routes
-  app.get("/api/ai-articles", async (req, res) => {
-    try {
-      const articles = await storage.getStoredAiArticles(20);
-      res.json(articles);
-    } catch (error) {
-      console.error('Error fetching AI articles:', error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to fetch AI articles'
-      });
-    }
-  });
 
-  app.get("/api/ai-articles/recent", async (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 20;
-      // Fetch stored AI articles from database instead of generating new ones
-      const articles = await storage.getStoredAiArticles(limit);
-      res.json(articles);
-    } catch (error) {
-      console.error('Error fetching recent AI articles:', error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to fetch recent AI articles'
-      });
-    }
-  });
-
-  app.post("/api/ai-articles/fetch", async (req, res) => {
-    try {
-      await realAuthenticNewsService.generate20AuthenticArticles();
-      res.json({ 
-        message: 'Real announcements summarized', 
-        description: 'Corporate announcements, conference calls, and analyst reports from today and previous working day summarized with catchy headlines and 350-character articles'
-      });
-    } catch (error) {
-      console.error('Error summarizing real announcements:', error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to summarize real announcements'
-      });
-    }
-  });
 
   // Verify stock price accuracy across multiple sources
   app.get("/api/verify-price/:symbol", async (req, res) => {
@@ -354,43 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test route to generate sample AI news with deduplication
-  app.post("/api/ai-articles/test", async (req, res) => {
-    try {
-      const testArticles = [
-        {
-          title: "Reliance Industries: Brokers upgrade target to ₹3,200",
-          content: "Reliance Industries received upgrades from multiple brokers today with target prices raised to ₹3,200-3,300 range. Strong Q3 results and petrochemical margin expansion cited as key drivers. Current price ₹2,850 offers 20% upside potential. BUY recommendation across the board.",
-          sentiment: "Positive" as const,
-          priority: "High" as const
-        },
-        {
-          title: "HDFC Bank: Technical breakout signals rally to ₹1,850",
-          content: "HDFC Bank broke above key resistance at ₹1,750 with volumes 2x normal. Next targets at ₹1,850 and ₹1,920. Banking sector rotation gaining momentum as NIM compression concerns fade. Stop loss ₹1,720. BUY for 15% upside.",
-          sentiment: "Positive" as const,
-          priority: "High" as const
-        },
-        {
-          title: "Reliance Industries: Target price increased to ₹3,200", // Similar to first - should be filtered
-          content: "Multiple brokers have raised Reliance target to ₹3,200 citing strong fundamentals.",
-          sentiment: "Positive" as const,
-          priority: "Medium" as const
-        }
-      ];
 
-      // Test articles feature disabled for verified news system
-      res.json({ 
-        message: 'Test AI articles generated with deduplication', 
-        count: 0,
-        articles: []
-      });
-    } catch (error) {
-      console.error('Error generating test AI articles:', error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to generate test AI articles'
-      });
-    }
-  });
 
   // Get Investment Advisors
   app.get("/api/investment-advisors", async (req, res) => {
@@ -710,8 +633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Start Enhanced 20-Article Management System
-  ai20ArticleManager.startHourlyUpdates();
+  // AI news system removed - focusing on Google Sheets content only
 
   // Gmail integration endpoints
   app.get("/api/gmail/auth-url", async (req, res) => {
