@@ -18,10 +18,10 @@ function Router() {
   useSEO(); // Enable dynamic SEO
   const [location, setLocation] = useLocation();
   
-  // Auto-navigate to AI News section on app startup
+  // Auto-navigate to Special section on app startup
   useEffect(() => {
     if (location === "/") {
-      setLocation("/ai-news");
+      setLocation("/special");
     }
   }, [location, setLocation]);
   
@@ -40,7 +40,7 @@ function Router() {
       <Route path="/others" component={Home} />
       <Route path="/orders" component={Home} />
       <Route path="/research" component={Home} />
-      <Route path="/ai-news" component={Home} />
+
       <Route path="/sebi-ria">
         {() => <SebiRia onBack={() => window.history.back()} />}
       </Route>
