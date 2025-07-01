@@ -249,7 +249,24 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               </div>
             </div>
           ) : (
-            article.content
+            <div>
+              {article.content.length > 350 ? (
+                <div>
+                  <div>{article.content.substring(0, 350)}...</div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(`/article/${article.id}`, '_blank');
+                    }}
+                    className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline inline-flex items-center gap-1"
+                  >
+                    View More <ExternalLink className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                article.content
+              )}
+            </div>
           )}
         </div>
         
