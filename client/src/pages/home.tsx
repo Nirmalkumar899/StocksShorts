@@ -21,7 +21,7 @@ import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
   const [location] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('stocksshorts-special');
   const [activeSection, setActiveSection] = useState('home');
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -63,9 +63,9 @@ export default function Home() {
     '/disclaimer': 'all'
   };
 
-  // Set category based on URL
+  // Set category based on URL - start with Special by default
   useEffect(() => {
-    const categoryFromUrl = urlToCategoryMap[location] || 'all';
+    const categoryFromUrl = urlToCategoryMap[location] || 'stocksshorts-special';
     setSelectedCategory(categoryFromUrl);
     
     // Set active section based on URL
