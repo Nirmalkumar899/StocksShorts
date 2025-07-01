@@ -125,21 +125,34 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     }
   };
 
-  // Function to determine if content needs truncation (more conservative approach)
+  // Function to determine if content needs truncation (more aggressive approach)
   const shouldShowViewMore = () => {
     const lines = article.content.split('\n');
-    const hasNaturalBreaks = lines.length > 4;
-    const isLongContent = article.content.length > 200; // About 4-5 lines of text
-    return hasNaturalBreaks || isLongContent;
+    const hasMultipleLines = lines.length > 3;
+    const isLongContent = article.content.length > 150; // More sensitive threshold
+    const hasLongLines = lines.some(line => line.length > 80); // Check for long lines
+    
+    // Debug logging for specific articles
+    if (article.title.includes('Sastasundar') || article.title.includes('Quantum')) {
+      console.log(`Article: ${article.title}`);
+      console.log(`Content length: ${article.content.length}`);
+      console.log(`Lines count: ${lines.length}`);
+      console.log(`Has multiple lines: ${hasMultipleLines}`);
+      console.log(`Is long content: ${isLongContent}`);
+      console.log(`Has long lines: ${hasLongLines}`);
+      console.log(`Should show view more: ${hasMultipleLines || isLongContent || hasLongLines}`);
+    }
+    
+    return hasMultipleLines || isLongContent || hasLongLines;
   };
 
   const getTruncatedContent = (text: string) => {
     const lines = text.split('\n');
-    if (lines.length > 4) {
-      return lines.slice(0, 4).join('\n');
+    if (lines.length > 3) {
+      return lines.slice(0, 3).join('\n');
     }
-    // If no natural breaks, truncate to about 4 lines worth of characters
-    const maxChars = 200;
+    // If no natural breaks, truncate to about 3-4 lines worth of characters
+    const maxChars = 150;
     if (text.length > maxChars) {
       return text.substring(0, maxChars);
     }
