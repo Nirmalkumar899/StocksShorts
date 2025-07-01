@@ -186,10 +186,19 @@ export default function Home() {
 
   const translateMutation = useMutation({
     mutationFn: async (articles: Article[]) => {
-      const response = await apiRequest('POST', '/api/translate-articles', { articles });
-      return response.json();
+      console.log("Translation API call starting with", articles.length, "articles");
+      try {
+        const response = await apiRequest('POST', '/api/translate-articles', { articles });
+        const data = await response.json();
+        console.log("Translation API response received", data.length, "translated articles");
+        return data;
+      } catch (error) {
+        console.error("Translation API error:", error);
+        throw error;
+      }
     },
     onSuccess: (data: Article[]) => {
+      console.log("Translation success, processing", data.length, "articles");
       const translatedMap: { [key: number]: Article } = {};
       data.forEach(article => {
         translatedMap[article.id] = article;
@@ -202,6 +211,7 @@ export default function Home() {
       });
     },
     onError: (error: Error) => {
+      console.error("Translation mutation error:", error);
       toast({
         title: "Translation failed", 
         description: error.message,
@@ -215,6 +225,7 @@ export default function Home() {
   };
 
   const handleTranslate = () => {
+    console.log("Translate button clicked", { isTranslated, articlesLength: articles?.length });
     if (isTranslated) {
       setIsTranslated(false);
       setTranslatedArticles({});
@@ -224,7 +235,15 @@ export default function Home() {
       });
     } else {
       if (articles && articles.length > 0) {
+        console.log("Starting translation for", articles.length, "articles");
         translateMutation.mutate(articles);
+      } else {
+        console.log("No articles to translate");
+        toast({
+          title: "No articles to translate",
+          description: "Please wait for articles to load first.",
+          variant: "destructive",
+        });
       }
     }
   };
