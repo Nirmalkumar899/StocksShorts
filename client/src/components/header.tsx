@@ -1,4 +1,4 @@
-import { RefreshCw, Moon, Sun, Download } from "lucide-react";
+import { RefreshCw, Moon, Sun, Download, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
@@ -6,6 +6,9 @@ import { useState, useEffect } from "react";
 interface HeaderProps {
   onRefresh: () => void;
   isRefreshing: boolean;
+  onTranslate?: () => void;
+  isTranslated?: boolean;
+  isTranslating?: boolean;
 }
 
 interface BeforeInstallPromptEvent extends Event {

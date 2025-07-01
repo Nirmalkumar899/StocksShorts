@@ -223,8 +223,8 @@ export default function Home() {
         description: "Articles are now displayed in English.",
       });
     } else {
-      if (articlesQuery.data && articlesQuery.data.length > 0) {
-        translateMutation.mutate(articlesQuery.data);
+      if (articles && articles.length > 0) {
+        translateMutation.mutate(articles);
       }
     }
   };
