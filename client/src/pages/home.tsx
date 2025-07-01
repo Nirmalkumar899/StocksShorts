@@ -28,6 +28,7 @@ export default function Home() {
   const switchingRef = useRef(false);
   const lastScrollTopRef = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Category order for auto-switching - Special first, then others
   const categoryOrder = [
@@ -181,40 +182,56 @@ export default function Home() {
     setSelectedCategory(category);
   };
 
-  // Auto-switch to next category when current one ends
+  // Ultra-seamless category switching - TikTok-like experience
   const switchToNextCategory = useCallback(() => {
-    if (switchingRef.current) return; // Prevent multiple rapid switches
+    if (switchingRef.current) return; 
     
     switchingRef.current = true;
     const currentIndex = categoryOrder.indexOf(selectedCategory);
     const nextIndex = (currentIndex + 1) % categoryOrder.length;
     const nextCategory = categoryOrder[nextIndex];
     
-    console.log(`Auto-switching from ${selectedCategory} to ${nextCategory}`);
+    // Instant category change
     setSelectedCategory(nextCategory);
     
-    // Reset switching flag after shorter delay for smoother experience
-    setTimeout(() => {
-      switchingRef.current = false;
-    }, 1500);
+    // Immediate scroll reset for seamless flow
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+        lastScrollTopRef.current = 0;
+      }
+      // Quick unlock for next potential switch
+      setTimeout(() => {
+        switchingRef.current = false;
+      }, 100);
+    });
   }, [selectedCategory, categoryOrder]);
 
-  // Auto-switch to previous category when scrolling up from beginning
+  // Ultra-seamless backward switching
   const switchToPreviousCategory = useCallback(() => {
-    if (switchingRef.current) return; // Prevent multiple rapid switches
+    if (switchingRef.current) return; 
     
     switchingRef.current = true;
     const currentIndex = categoryOrder.indexOf(selectedCategory);
     const previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
     const previousCategory = categoryOrder[previousIndex];
     
-    console.log(`Auto-switching backward from ${selectedCategory} to ${previousCategory}`);
+    // Instant category change
     setSelectedCategory(previousCategory);
     
-    // Reset switching flag after shorter delay for smoother experience
-    setTimeout(() => {
-      switchingRef.current = false;
-    }, 1500);
+    // Immediate positioning for reverse flow
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const maxScroll = container.scrollHeight - container.clientHeight;
+        container.scrollTop = Math.max(0, maxScroll - 10); // Near bottom but not exact
+        lastScrollTopRef.current = container.scrollTop;
+      }
+      // Quick unlock
+      setTimeout(() => {
+        switchingRef.current = false;
+      }, 100);
+    });
   }, [selectedCategory, categoryOrder]);
 
   const handleArticleClick = (article: Article) => {
@@ -319,29 +336,36 @@ export default function Home() {
           // News Cards - Inshorts style full-screen layout
           <div 
             ref={scrollContainerRef}
-            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide transition-all duration-200 ease-in-out"
             onScroll={(e) => {
               const element = e.target as HTMLElement;
               const currentScrollTop = element.scrollTop;
-              const isAtEnd = currentScrollTop + element.clientHeight >= element.scrollHeight - 20;
-              const isAtBeginning = currentScrollTop <= 10;
+              const maxScroll = element.scrollHeight - element.clientHeight;
               const scrollDirection = currentScrollTop > lastScrollTopRef.current ? 'down' : 'up';
+              
+              // Ultra-sensitive thresholds for TikTok-like seamless experience
+              const isAtEnd = currentScrollTop >= maxScroll - 2;
+              const isAtBeginning = currentScrollTop <= 2;
+              
+              // Clear previous timeout
+              if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+              }
               
               // Update last scroll position
               lastScrollTopRef.current = currentScrollTop;
               
-              // Auto-switch to next category when scrolling down and reaching end
+              // Debounced seamless switching for ultra-smooth experience
               if (isAtEnd && articles.length > 0 && !switchingRef.current && scrollDirection === 'down') {
-                setTimeout(() => {
+                scrollTimeoutRef.current = setTimeout(() => {
                   switchToNextCategory();
-                }, 300);
+                }, 50); // Minimal delay for smooth transition
               }
               
-              // Auto-switch to previous category when scrolling up and reaching beginning
               if (isAtBeginning && articles.length > 0 && !switchingRef.current && scrollDirection === 'up') {
-                setTimeout(() => {
+                scrollTimeoutRef.current = setTimeout(() => {
                   switchToPreviousCategory();
-                }, 300);
+                }, 50); // Minimal delay for smooth reverse transition
               }
             }}
           >
