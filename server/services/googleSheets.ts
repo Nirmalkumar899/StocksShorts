@@ -191,16 +191,20 @@ export class GoogleSheetsService {
       const articleType = article.type.toLowerCase().trim();
       const categoryId = category.toLowerCase();
       
-      // Enhanced category mapping to match Google Sheets categories exactly
+      // Enhanced category mapping to match Google Sheets Column D values exactly
       switch (categoryId) {
-        case 'all':
-          return true; // Show all articles for trending
+        case 'trending':
+          // Debug for trending category
+          if (categoryId === 'trending') {
+            console.log(`Checking trending: articleType="${articleType}" (should be "nifty")`);
+          }
+          return articleType === 'nifty'; // Trending maps to Nifty articles
         case 'kalkabazaar':
-          return articleType === 'kalkabazaar' || articleType === 'nifty' || articleType === 'index' || articleType === 'sensex';
+          return articleType === 'index'; // Kalkabazaar maps to Index articles  
         case 'warrants':
-          return articleType === 'warrants';
+          return articleType === 'warrants' || articleType === 'preferential/warrants';
         case 'stocksshorts-special':
-          return articleType === 'stocksshorts special' || articleType === 'special';
+          return articleType === 'stocksshorts special';
         case 'breakout-stocks':
           return articleType === 'breakout stocks' || articleType === 'breakout stock' || articleType === 'breakout';
         case 'educational':
@@ -210,20 +214,15 @@ export class GoogleSheetsService {
         case 'global':
           return articleType === 'global';
         case 'others':
-          return articleType === 'most active' || articleType === 'active' || articleType === 'other' || 
-                 articleType === 'others' || articleType === 'crypto and us market';
+          return articleType === 'others';
         case 'crypto':
-          return articleType === 'crypto' || articleType === 'crypro' || articleType === 'cryptocurrency' || 
-                 articleType.includes('crypto') || articleType.includes('crypro') || articleType === 'bitcoin' || 
-                 articleType === 'ethereum' || articleType.includes('coin');
+          return articleType === 'crypro'; // Handle the typo in Google Sheets
         case 'us-market':
-          return articleType === 'us market' || articleType === 'us-market' || articleType === 'usa' || 
-                 articleType.includes('us market') || articleType === 'american' || articleType.includes('nasdaq') || 
-                 articleType.includes('s&p') || articleType.includes('dow');
+          return articleType === 'us market';
         case 'order-win':
-          return articleType === 'order win' || articleType === 'orders';
+          return articleType === 'order win';
         case 'research-report':
-          return articleType === 'research report' || articleType === 'research';
+          return articleType === 'research report' || articleType.includes('research report');
         case 'ai':
           return false; // AI News comes from separate service, not Google Sheets
         default:
