@@ -23,6 +23,8 @@ export default function Home() {
   const [location] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState('stocksshorts-special');
   const [activeSection, setActiveSection] = useState('home');
+  const [isTranslated, setIsTranslated] = useState(false);
+  const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const switchingRef = useRef(false);
@@ -139,8 +141,9 @@ export default function Home() {
       }
       
       // Sort articles by priority when in 'all' (trending) category
+      let processedData = data;
       if (selectedCategory === 'all') {
-        return data.sort((a: Article, b: Article) => {
+        processedData = data.sort((a: Article, b: Article) => {
           const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
           const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
           const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
@@ -148,7 +151,12 @@ export default function Home() {
         });
       }
       
-      return data;
+      // Apply translations if available
+      if (isTranslated) {
+        return processedData.map(article => translatedArticles[article.id] || article);
+      }
+      
+      return processedData;
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -176,8 +184,49 @@ export default function Home() {
     },
   });
 
+  const translateMutation = useMutation({
+    mutationFn: async (articles: Article[]) => {
+      const response = await apiRequest('POST', '/api/translate-articles', { articles });
+      return response.json();
+    },
+    onSuccess: (data: Article[]) => {
+      const translatedMap: { [key: number]: Article } = {};
+      data.forEach(article => {
+        translatedMap[article.id] = article;
+      });
+      setTranslatedArticles(translatedMap);
+      setIsTranslated(true);
+      toast({
+        title: "Content translated",
+        description: "All articles have been translated to Hindi.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Translation failed", 
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleRefresh = () => {
     refreshMutation.mutate();
+  };
+
+  const handleTranslate = () => {
+    if (isTranslated) {
+      setIsTranslated(false);
+      setTranslatedArticles({});
+      toast({
+        title: "Showing original content",
+        description: "Articles are now displayed in English.",
+      });
+    } else {
+      if (articlesQuery.data && articlesQuery.data.length > 0) {
+        translateMutation.mutate(articlesQuery.data);
+      }
+    }
   };
 
   const handleCategoryChange = (category: string) => {
