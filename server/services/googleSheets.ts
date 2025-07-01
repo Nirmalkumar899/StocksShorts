@@ -222,36 +222,7 @@ export class GoogleSheetsService {
         case 'ai':
           return false; // AI News comes from separate service, not Google Sheets
         default:
-          // Enhanced direct matching with flexible pattern matching
-          const normalizedCategory = categoryId.replace('-', ' ').toLowerCase();
-          const normalizedArticleType = articleType.toLowerCase();
-          
-          // Direct exact match
-          if (normalizedArticleType === normalizedCategory) {
-            return true;
-          }
-          
-          // Partial match (contains)
-          if (normalizedArticleType.includes(normalizedCategory) || normalizedCategory.includes(normalizedArticleType)) {
-            return true;
-          }
-          
-          // Handle common variations
-          const categoryVariations: { [key: string]: string[] } = {
-            'orders': ['order win', 'order wins', 'orders'],
-            'research': ['research report', 'research reports', 'research'],
-            'special': ['stocksshorts special', 'special'],
-            'breakout': ['breakout stock', 'breakout stocks', 'breakout'],
-            'index': ['kalkabazaar', 'nifty', 'sensex', 'index']
-          };
-          
-          for (const [key, variations] of Object.entries(categoryVariations)) {
-            if (normalizedCategory.includes(key) && variations.some(v => normalizedArticleType.includes(v))) {
-              return true;
-            }
-          }
-          
-          return false;
+          return false; // Strict matching only - no fallback matching
       }
     });
   }
