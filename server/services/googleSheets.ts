@@ -114,7 +114,9 @@ export class GoogleSheetsService {
 
           // Get priority from column 7 and category from column 8
           const priority = row[7] || 'Medium';
-          const category = row[8] || row[3] || 'Index'; // Use category column first, fallback to type
+          
+          // Use column D (Type) as primary category source based on user request
+          const category = row[3] || 'Index'; // Use Type column (D) as requested
 
           // Generate candlestick chart for educational articles
           let imageUrl = null;
