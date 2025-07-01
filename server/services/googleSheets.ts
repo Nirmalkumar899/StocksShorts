@@ -208,11 +208,16 @@ export class GoogleSheetsService {
         case 'global':
           return articleType === 'global';
         case 'others':
-          return articleType === 'most active' || articleType === 'active' || articleType === 'other' || articleType === 'others';
+          return articleType === 'most active' || articleType === 'active' || articleType === 'other' || 
+                 articleType === 'others' || articleType === 'crypto and us market';
         case 'crypto':
-          return articleType === 'crypto' || articleType === 'crypro' || articleType === 'cryptocurrency' || articleType.includes('crypto');
+          return articleType === 'crypto' || articleType === 'crypro' || articleType === 'cryptocurrency' || 
+                 articleType.includes('crypto') || articleType.includes('crypro') || articleType === 'bitcoin' || 
+                 articleType === 'ethereum' || articleType.includes('coin');
         case 'us-market':
-          return articleType === 'us market' || articleType === 'us-market' || articleType === 'usa' || articleType.includes('us market');
+          return articleType === 'us market' || articleType === 'us-market' || articleType === 'usa' || 
+                 articleType.includes('us market') || articleType === 'american' || articleType.includes('nasdaq') || 
+                 articleType.includes('s&p') || articleType.includes('dow');
         case 'order-win':
           return articleType === 'order win' || articleType === 'orders';
         case 'research-report':
