@@ -30,16 +30,15 @@ interface CategoryFilterProps {
 const categories = [
   { id: 'all', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500', url: '/' },
   { id: 'stocksshorts-special', label: 'Special', icon: Crown, special: true, gradient: 'from-amber-500 to-orange-500', url: '/special' },
+  { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500', url: '/ipo' },
   { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500', url: '/breakout' },
   { id: 'kalkabazaar', label: 'Kalkabazaar', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar' },
   { id: 'warrants', label: 'Warrants', icon: ScrollText, gradient: 'from-purple-500 to-violet-500', url: '/warrants' },
-  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational' },
-  { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500', url: '/ipo' },
   { id: 'global', label: 'Global', icon: Globe, gradient: 'from-teal-500 to-cyan-500', url: '/global' },
+  { id: 'others', label: 'Others', icon: Building2, gradient: 'from-gray-500 to-slate-500', url: '/others' },
   { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500', url: '/orders' },
   { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500', url: '/research' },
-  { id: 'crypto', label: 'Crypto', icon: Bitcoin, gradient: 'from-yellow-500 to-amber-500', url: '/crypto' },
-  { id: 'us-market', label: 'US Market', icon: DollarSign, gradient: 'from-green-500 to-emerald-500', url: '/us-market' },
+  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational' },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
