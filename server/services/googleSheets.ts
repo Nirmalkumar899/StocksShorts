@@ -101,6 +101,11 @@ export class GoogleSheetsService {
 
           // Get full content without truncation
           const content = row[2] || '';
+          
+          // Debug content length for troubleshooting
+          if (content.length > 300 && content.includes('…')) {
+            console.log(`Article "${row[1]}" content length: ${content.length}, ends with: "${content.slice(-50)}"`);
+          }
 
           // Map sentiment column (Positive/Negative) to our format
           const sentimentValue = row[6] || 'Neutral';
