@@ -20,7 +20,7 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
+export default function Header({ onRefresh, isRefreshing, onTranslate, isTranslated, isTranslating }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
   const [showInstallButton, setShowInstallButton] = useState(false);
 
@@ -170,6 +170,17 @@ export default function Header({ onRefresh, isRefreshing }: HeaderProps) {
             >
               <RefreshCw className={`h-4 w-4 text-neutral-600 dark:text-neutral-400 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
+            {onTranslate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onTranslate}
+                disabled={isTranslating}
+                className={`p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors ${isTranslated ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+              >
+                <Languages className={`h-4 w-4 ${isTranslated ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-600 dark:text-neutral-400'} ${isTranslating ? 'animate-pulse' : ''}`} />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"

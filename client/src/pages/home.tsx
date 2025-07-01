@@ -347,7 +347,13 @@ export default function Home() {
     <>
       {/* Fixed Header */}
       <div className="flex-shrink-0">
-        <Header onRefresh={handleRefresh} isRefreshing={refreshMutation.isPending} />
+        <Header 
+          onRefresh={handleRefresh} 
+          isRefreshing={refreshMutation.isPending}
+          onTranslate={handleTranslate}
+          isTranslated={isTranslated}
+          isTranslating={translateMutation.isPending}
+        />
         <div className="px-4">
           <AskAI isHighlighted={true} />
         </div>

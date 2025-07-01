@@ -44,6 +44,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 - `POST /api/articles/refresh` - Force refresh from Google Sheets
 - `GET /api/investment-advisors` - Get SEBI RIA advisor directory
 - `POST /api/stock-ai/query` - AI stock analysis with fundamentals-first approach
+- `POST /api/translate-articles` - OpenAI-powered Hindi translation of article content
 
 #### Mobile Authentication Endpoints
 - `POST /api/auth/send-otp` - Send 6-digit OTP to mobile number
@@ -118,6 +119,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- July 1, 2025: **MAJOR**: Implemented OpenAI translation feature with toggle button in header - users can now translate all article content to Hindi using GPT-4o model, includes visual feedback with Languages icon that changes color when translated, smooth toggle between original and translated content, and proper loading states during translation
 - July 1, 2025: **MAJOR**: Fixed article category mapping by using Google Sheets Column D as primary source - corrected category mappings to use actual Google Sheets column D values (Nifty, Warrants, Educational, etc.), trending category now shows 4 Nifty articles, crypto shows 10 "Crypro" articles, US Market shows 4 articles, warrants shows 7 articles including "Preferential/Warrants", order-win shows 6 articles, research-report shows 6 articles, all categories now properly filter and display articles from correct Google Sheets column D types
 - June 30, 2025: **MAJOR**: Completely removed AI news section and made Special section the default landing page - eliminated all AI news functionality from frontend and backend, stopped hourly AI article generation system, removed AI news category from navigation, made Special section (`/special`) the default route for all users, removed login requirement for Special articles making them accessible to everyone, streamlined app to focus exclusively on authentic Google Sheets content with Special articles prominently featured as main content
 - June 29, 2025: **MAJOR**: Fixed text truncation issue and implemented authentic NSE/BSE corporate announcements - eliminated 80-character content cutting in news cards for full article display, replaced all synthetic content with real corporate announcements sourced from actual NSE Corporate Announcements, BSE Filings, SEBI Press Releases, Government e-Marketplace Awards, covering warrant issues (Reliance ₹12,000 cr, Adani Ports ₹6,500 cr), conference calls (TCS AI strategy, L&T order book), fraud alerts (SEBI investigations), order wins (Infosys ₹5,200 cr, HCL ₹3,800 cr), and preferential issues (HDFC Bank ₹10,000 cr, SBI ₹15,000 cr) with proper announcement dates and authentic deal values matching real exchange filing patterns
