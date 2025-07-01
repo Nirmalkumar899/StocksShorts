@@ -38,7 +38,8 @@ const categories = [
   { id: 'global', label: 'Global', icon: Globe, gradient: 'from-teal-500 to-cyan-500', url: '/global' },
   { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500', url: '/orders' },
   { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500', url: '/research' },
-  { id: 'others', label: 'Crypto and US Market', icon: Zap, gradient: 'from-yellow-500 to-amber-500', url: '/others' },
+  { id: 'crypto', label: 'Crypto', icon: Bitcoin, gradient: 'from-yellow-500 to-amber-500', url: '/crypto' },
+  { id: 'us-market', label: 'US Market', icon: DollarSign, gradient: 'from-green-500 to-emerald-500', url: '/us-market' },
 ];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {

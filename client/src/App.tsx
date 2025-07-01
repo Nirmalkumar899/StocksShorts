@@ -38,6 +38,8 @@ function Router() {
       <Route path="/ipo" component={Home} />
       <Route path="/global" component={Home} />
       <Route path="/others" component={Home} />
+      <Route path="/crypto" component={Home} />
+      <Route path="/us-market" component={Home} />
       <Route path="/orders" component={Home} />
       <Route path="/research" component={Home} />
 
