@@ -21,6 +21,7 @@ interface NewsCardProps {
 export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [, setLocation] = useLocation();
   const sentimentColor = getSentimentColor(article.sentiment);
   const typeColor = getTypeColor(article.type || 'AI News');
@@ -250,21 +251,34 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           ) : (
             <div>
-              {article.content.length > 350 ? (
+              {article.content.length > 350 && !isExpanded ? (
                 <div>
-                  <div>{article.content.substring(0, 350)}...</div>
+                  <div className="whitespace-pre-wrap">{article.content.substring(0, 350)}...</div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(`/article/${article.id}`, '_blank');
+                      setIsExpanded(true);
                     }}
-                    className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline inline-flex items-center gap-1"
+                    className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
                   >
-                    View More <ExternalLink className="h-3 w-3" />
+                    View More
                   </button>
                 </div>
               ) : (
-                article.content
+                <div>
+                  <div className="whitespace-pre-wrap">{article.content}</div>
+                  {article.content.length > 350 && isExpanded && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(false);
+                      }}
+                      className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline block"
+                    >
+                      View Less
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}

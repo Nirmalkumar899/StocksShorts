@@ -209,6 +209,10 @@ export class GoogleSheetsService {
           return articleType === 'global';
         case 'others':
           return articleType === 'most active' || articleType === 'active' || articleType === 'other' || articleType === 'others';
+        case 'crypto':
+          return articleType === 'crypto' || articleType === 'crypro' || articleType === 'cryptocurrency' || articleType.includes('crypto');
+        case 'us-market':
+          return articleType === 'us market' || articleType === 'us-market' || articleType === 'usa' || articleType.includes('us market');
         case 'order-win':
           return articleType === 'order win' || articleType === 'orders';
         case 'research-report':
