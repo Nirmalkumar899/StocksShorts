@@ -25,7 +25,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-[9999]">
-      <div className="flex items-center justify-around py-2">
+      <div className="flex items-center py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -35,7 +35,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
               key={item.id}
               variant="ghost"
               onClick={() => handleTabClick(item)}
-              className={`flex flex-col items-center py-2 px-2 transition-colors min-w-0 ${
+              className={`flex flex-col items-center py-2 px-2 transition-colors min-w-0 flex-1 ${
                 isActive 
                   ? 'text-primary' 
                   : 'text-neutral-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary'
