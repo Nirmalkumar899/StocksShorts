@@ -139,6 +139,34 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     return text;
   };
 
+  // Format content with bold headings and proper alignment for long articles
+  const formatLongContent = (content: string) => {
+    if (content.length < 500) {
+      return content;
+    }
+
+    // Split content into paragraphs and format headings
+    return content
+      .split('\n')
+      .map(paragraph => {
+        const trimmed = paragraph.trim();
+        if (!trimmed) return '';
+        
+        // Check if line is a heading (short line followed by content, or contains emojis/special chars)
+        const isHeading = (
+          trimmed.length < 60 && 
+          (trimmed.includes(':') || trimmed.includes('—') || 
+           trimmed.match(/^[A-Z][a-zA-Z\s]+$/))
+        );
+        
+        if (isHeading) {
+          return `**${trimmed}**`;
+        }
+        return trimmed;
+      })
+      .join('\n\n');
+  };
+
   const handleViewMore = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsModalOpen(true);
@@ -287,7 +315,33 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                   </button>
                 </div>
               ) : (
-                <div className="whitespace-pre-wrap">{article.content}</div>
+                <div className="whitespace-pre-wrap text-left leading-relaxed">
+                  {article.content.length >= 500 ? (
+                    <div className="space-y-3">
+                      {formatLongContent(article.content).split('\n\n').map((paragraph, index) => {
+                        if (!paragraph.trim()) return null;
+                        
+                        // Check if paragraph is marked as heading with **text**
+                        if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                          const headingText = paragraph.slice(2, -2);
+                          return (
+                            <div key={index} className="font-bold text-lg mt-4 mb-2 text-primary">
+                              {headingText}
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div key={index} className="text-sm leading-relaxed">
+                            {paragraph}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    article.content
+                  )}
+                </div>
               )}
             </div>
           )}
