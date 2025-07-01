@@ -127,17 +127,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   // Function to determine if content needs truncation 
   const shouldShowViewMore = () => {
-    const isLongContent = article.content.length > 250; // Set to 250 characters as requested
-    
-    // Debug logging for specific articles
-    if (article.title.includes('Sastasundar') || article.title.includes('Quantum')) {
-      console.log(`Article: ${article.title}`);
-      console.log(`Content length: ${article.content.length}`);
-      console.log(`Is long content (>250): ${isLongContent}`);
-      console.log(`Should show view more: ${isLongContent}`);
-    }
-    
-    return isLongContent;
+    return article.content.length > 250; // Set to 250 characters as requested
   };
 
   const getTruncatedContent = (text: string) => {
@@ -286,30 +276,19 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              {(() => {
-                const showViewMore = shouldShowViewMore();
-                
-                // Debug logging for specific articles
-                if (article.title.includes('Sastasundar') || article.title.includes('Quantum')) {
-                  console.log(`Rendering ${article.title}: showViewMore = ${showViewMore}`);
-                }
-                
-                return showViewMore ? (
-                  <>
-                    <div className="whitespace-pre-wrap flex-1" ref={contentRef}>
-                      {getTruncatedContent(article.content)}...
-                    </div>
-                    <button
-                      onClick={handleViewMore}
-                      className="mt-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline self-start"
-                    >
-                      View More
-                    </button>
-                  </>
-                ) : (
-                  <div className="whitespace-pre-wrap">{article.content}</div>
-                );
-              })()}
+              {shouldShowViewMore() ? (
+                <div className="whitespace-pre-wrap">
+                  {getTruncatedContent(article.content)}...{' '}
+                  <button
+                    onClick={handleViewMore}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
+                  >
+                    View More
+                  </button>
+                </div>
+              ) : (
+                <div className="whitespace-pre-wrap">{article.content}</div>
+              )}
             </div>
           )}
         </div>
