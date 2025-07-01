@@ -182,7 +182,7 @@ export default function Home() {
     setSelectedCategory(category);
   };
 
-  // Ultra-seamless category switching - TikTok-like experience
+  // Invisible TikTok-style category switching
   const switchToNextCategory = useCallback(() => {
     if (switchingRef.current) return; 
     
@@ -191,23 +191,21 @@ export default function Home() {
     const nextIndex = (currentIndex + 1) % categoryOrder.length;
     const nextCategory = categoryOrder[nextIndex];
     
-    // Instant category change
     setSelectedCategory(nextCategory);
     
-    // Immediate scroll reset for seamless flow
+    // Instant smooth positioning
     requestAnimationFrame(() => {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTop = 0;
         lastScrollTopRef.current = 0;
       }
-      // Quick unlock for next potential switch
       setTimeout(() => {
         switchingRef.current = false;
-      }, 100);
+      }, 200);
     });
   }, [selectedCategory, categoryOrder]);
 
-  // Ultra-seamless backward switching
+  // Invisible backward category switching
   const switchToPreviousCategory = useCallback(() => {
     if (switchingRef.current) return; 
     
@@ -216,21 +214,22 @@ export default function Home() {
     const previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
     const previousCategory = categoryOrder[previousIndex];
     
-    // Instant category change
     setSelectedCategory(previousCategory);
     
-    // Immediate positioning for reverse flow
+    // Position at end for reverse flow
     requestAnimationFrame(() => {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
-        const maxScroll = container.scrollHeight - container.clientHeight;
-        container.scrollTop = Math.max(0, maxScroll - 10); // Near bottom but not exact
-        lastScrollTopRef.current = container.scrollTop;
+        // Wait for content to load then position at bottom
+        setTimeout(() => {
+          const maxScroll = container.scrollHeight - container.clientHeight;
+          container.scrollTop = Math.max(0, maxScroll - 50);
+          lastScrollTopRef.current = container.scrollTop;
+        }, 50);
       }
-      // Quick unlock
       setTimeout(() => {
         switchingRef.current = false;
-      }, 100);
+      }, 200);
     });
   }, [selectedCategory, categoryOrder]);
 
@@ -343,38 +342,21 @@ export default function Home() {
               const maxScroll = element.scrollHeight - element.clientHeight;
               const scrollDirection = currentScrollTop > lastScrollTopRef.current ? 'down' : 'up';
               
-              // More generous thresholds for reliable switching
-              const isAtEnd = currentScrollTop >= maxScroll - 50;
-              const isAtBeginning = currentScrollTop <= 50;
+              // Precise thresholds for TikTok-like switching
+              const tolerance = 100;
+              const isAtEnd = currentScrollTop >= maxScroll - tolerance;
+              const isAtBeginning = currentScrollTop <= tolerance;
               
-              // Clear previous timeout
-              if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-              }
-              
-              // Debug logging
-              console.log('Scroll:', {
-                currentScrollTop,
-                maxScroll,
-                scrollDirection,
-                isAtEnd,
-                isAtBeginning,
-                switching: switchingRef.current,
-                articleCount: articles.length
-              });
-              
-              // Update last scroll position
+              // Update last scroll position first
               lastScrollTopRef.current = currentScrollTop;
               
-              // Immediate switching for better responsiveness
-              if (isAtEnd && articles.length > 0 && !switchingRef.current && scrollDirection === 'down') {
-                console.log('Switching to next category');
-                switchToNextCategory();
-              }
-              
-              if (isAtBeginning && articles.length > 0 && !switchingRef.current && scrollDirection === 'up') {
-                console.log('Switching to previous category');
-                switchToPreviousCategory();
+              // Instant category switching when conditions are met
+              if (!switchingRef.current && articles.length > 0) {
+                if (isAtEnd && scrollDirection === 'down') {
+                  switchToNextCategory();
+                } else if (isAtBeginning && scrollDirection === 'up') {
+                  switchToPreviousCategory();
+                }
               }
             }}
           >
