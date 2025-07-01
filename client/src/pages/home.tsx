@@ -199,8 +199,23 @@ export default function Home() {
     }, 1500);
   }, [selectedCategory, categoryOrder]);
 
-
-
+  // Auto-switch to previous category when scrolling up from beginning
+  const switchToPreviousCategory = useCallback(() => {
+    if (switchingRef.current) return; // Prevent multiple rapid switches
+    
+    switchingRef.current = true;
+    const currentIndex = categoryOrder.indexOf(selectedCategory);
+    const previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
+    const previousCategory = categoryOrder[previousIndex];
+    
+    console.log(`Auto-switching backward from ${selectedCategory} to ${previousCategory}`);
+    setSelectedCategory(previousCategory);
+    
+    // Reset switching flag after shorter delay for smoother experience
+    setTimeout(() => {
+      switchingRef.current = false;
+    }, 1500);
+  }, [selectedCategory, categoryOrder]);
 
   const handleArticleClick = (article: Article) => {
     // Handle article click - could open modal or navigate
