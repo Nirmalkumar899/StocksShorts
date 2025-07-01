@@ -125,27 +125,23 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     }
   };
 
-  // Function to count lines in content (approximate based on character count and line breaks)
-  const getLineCount = (text: string) => {
-    const naturalBreaks = text.split('\n').length;
-    const approximateLineLength = 50; // Average characters per line in mobile view
-    const wrappedLines = Math.ceil(text.length / approximateLineLength);
-    return Math.max(naturalBreaks, wrappedLines);
-  };
-
+  // Function to determine if content needs truncation (more conservative approach)
   const shouldShowViewMore = () => {
-    return getLineCount(article.content) > 6;
+    const lines = article.content.split('\n');
+    const hasNaturalBreaks = lines.length > 4;
+    const isLongContent = article.content.length > 200; // About 4-5 lines of text
+    return hasNaturalBreaks || isLongContent;
   };
 
   const getTruncatedContent = (text: string) => {
     const lines = text.split('\n');
-    if (lines.length > 6) {
-      return lines.slice(0, 6).join('\n');
+    if (lines.length > 4) {
+      return lines.slice(0, 4).join('\n');
     }
-    // If no natural breaks, truncate by characters to approximate 6 lines
-    const approximateMaxChars = 6 * 50; // 6 lines * 50 chars per line
-    if (text.length > approximateMaxChars) {
-      return text.substring(0, approximateMaxChars);
+    // If no natural breaks, truncate to about 4 lines worth of characters
+    const maxChars = 200;
+    if (text.length > maxChars) {
+      return text.substring(0, maxChars);
     }
     return text;
   };
@@ -269,7 +265,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </h2>
         
         {/* Content - More space for article text */}
-        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed overflow-y-auto mb-3">
+        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3 max-h-32 overflow-hidden">
           {isLocked ? (
             <div className="space-y-2">
               <div className="text-gray-400 dark:text-gray-500 text-sm">
@@ -286,19 +282,19 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               </div>
             </div>
           ) : (
-            <div>
+            <div className="h-full flex flex-col">
               {shouldShowViewMore() ? (
-                <div>
-                  <div className="whitespace-pre-wrap" ref={contentRef}>
+                <>
+                  <div className="whitespace-pre-wrap flex-1" ref={contentRef}>
                     {getTruncatedContent(article.content)}...
                   </div>
                   <button
                     onClick={handleViewMore}
-                    className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
+                    className="mt-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline self-start"
                   >
                     View More
                   </button>
-                </div>
+                </>
               ) : (
                 <div className="whitespace-pre-wrap">{article.content}</div>
               )}
