@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle, ExternalLink, Copy, Lock, LogIn } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Share2, TrendingUp, TrendingDown, BarChart3, AlertTriangle, ExternalLink, Copy, Lock, LogIn, X } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -21,8 +22,9 @@ interface NewsCardProps {
 export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const contentRef = useRef<HTMLDivElement>(null);
   const sentimentColor = getSentimentColor(article.sentiment);
   const typeColor = getTypeColor(article.type || 'AI News');
   const queryClient = useQueryClient();
@@ -121,6 +123,40 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       default:
         return 'border-l-primary';
     }
+  };
+
+  // Function to count lines in content (approximate based on character count and line breaks)
+  const getLineCount = (text: string) => {
+    const naturalBreaks = text.split('\n').length;
+    const approximateLineLength = 50; // Average characters per line in mobile view
+    const wrappedLines = Math.ceil(text.length / approximateLineLength);
+    return Math.max(naturalBreaks, wrappedLines);
+  };
+
+  const shouldShowViewMore = () => {
+    return getLineCount(article.content) > 6;
+  };
+
+  const getTruncatedContent = (text: string) => {
+    const lines = text.split('\n');
+    if (lines.length > 6) {
+      return lines.slice(0, 6).join('\n');
+    }
+    // If no natural breaks, truncate by characters to approximate 6 lines
+    const approximateMaxChars = 6 * 50; // 6 lines * 50 chars per line
+    if (text.length > approximateMaxChars) {
+      return text.substring(0, approximateMaxChars);
+    }
+    return text;
+  };
+
+  const handleViewMore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -251,34 +287,20 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           ) : (
             <div>
-              {article.content.length > 350 && !isExpanded ? (
+              {shouldShowViewMore() ? (
                 <div>
-                  <div className="whitespace-pre-wrap">{article.content.substring(0, 350)}...</div>
+                  <div className="whitespace-pre-wrap" ref={contentRef}>
+                    {getTruncatedContent(article.content)}...
+                  </div>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(true);
-                    }}
+                    onClick={handleViewMore}
                     className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
                   >
                     View More
                   </button>
                 </div>
               ) : (
-                <div>
-                  <div className="whitespace-pre-wrap">{article.content}</div>
-                  {article.content.length > 350 && isExpanded && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsExpanded(false);
-                      }}
-                      className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline block"
-                    >
-                      View Less
-                    </button>
-                  )}
-                </div>
+                <div className="whitespace-pre-wrap">{article.content}</div>
               )}
             </div>
           )}
