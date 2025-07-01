@@ -335,6 +335,87 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
       </div>
+
+      {/* Full Article Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold pr-8">
+              {article.title}
+            </DialogTitle>
+            <DialogClose asChild>
+              <Button
+                variant="ghost"
+                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                onClick={handleCloseModal}
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
+            </DialogClose>
+          </DialogHeader>
+          
+          <div className="mt-4 space-y-4">
+            {/* Article Image */}
+            <div className="relative h-64 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+              <img 
+                src={article.imageUrl || getContextualImage(article)} 
+                alt={article.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <div className="hidden absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="text-white text-lg font-semibold opacity-90">
+                  {(article.type || 'NEWS').toUpperCase()}
+                </div>
+              </div>
+            </div>
+
+            {/* Article Content */}
+            <div className="prose max-w-none dark:prose-invert">
+              <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed whitespace-pre-wrap">
+                {article.content}
+              </div>
+            </div>
+
+            {/* Article Metadata */}
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
+                <span className="font-medium">Source: {article.source}</span>
+                <span>
+                  {article.type === 'AI News' ? 
+                    formatTimeAgo(article.createdAt) : 
+                    formatTimeAgo(article.time)
+                  }
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Category:</span>
+                  <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-medium">
+                    {article.type}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Sentiment:</span>
+                  <div className="flex items-center gap-1">
+                    {getSentimentIcon()}
+                    <span className="text-xs font-medium capitalize">
+                      {article.sentiment}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
