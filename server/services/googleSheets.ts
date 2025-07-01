@@ -194,10 +194,6 @@ export class GoogleSheetsService {
       // Enhanced category mapping to match Google Sheets Column D values exactly
       switch (categoryId) {
         case 'trending':
-          // Debug for trending category
-          if (categoryId === 'trending') {
-            console.log(`Checking trending: articleType="${articleType}" (should be "nifty")`);
-          }
           return articleType === 'nifty'; // Trending maps to Nifty articles
         case 'kalkabazaar':
           return articleType === 'index'; // Kalkabazaar maps to Index articles  
