@@ -182,18 +182,28 @@ export default function Home() {
     setSelectedCategory(category);
   };
 
-  // Invisible TikTok-style category switching
+  // TikTok-style category switching with exact order control
   const switchToNextCategory = useCallback(() => {
     if (switchingRef.current) return; 
     
     switchingRef.current = true;
     const currentIndex = categoryOrder.indexOf(selectedCategory);
-    const nextIndex = (currentIndex + 1) % categoryOrder.length;
+    
+    // Ensure we follow the exact order: Special → IPO → Trending → Breakout → Kalkabazaar → Warrants → Global → Others → Order Win → Research → Educational
+    let nextIndex;
+    if (currentIndex === -1) {
+      // If current category is not in order, start from Special
+      nextIndex = 0;
+    } else {
+      nextIndex = (currentIndex + 1) % categoryOrder.length;
+    }
+    
     const nextCategory = categoryOrder[nextIndex];
+    console.log(`Switching from ${selectedCategory} to ${nextCategory}`);
     
     setSelectedCategory(nextCategory);
     
-    // Instant smooth positioning
+    // Reset to top for next category
     requestAnimationFrame(() => {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTop = 0;
@@ -201,35 +211,43 @@ export default function Home() {
       }
       setTimeout(() => {
         switchingRef.current = false;
-      }, 200);
+      }, 300);
     });
   }, [selectedCategory, categoryOrder]);
 
-  // Invisible backward category switching
+  // Backward category switching with exact order control
   const switchToPreviousCategory = useCallback(() => {
     if (switchingRef.current) return; 
     
     switchingRef.current = true;
     const currentIndex = categoryOrder.indexOf(selectedCategory);
-    const previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
+    
+    let previousIndex;
+    if (currentIndex === -1) {
+      // If current category is not in order, start from last
+      previousIndex = categoryOrder.length - 1;
+    } else {
+      previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
+    }
+    
     const previousCategory = categoryOrder[previousIndex];
+    console.log(`Switching backward from ${selectedCategory} to ${previousCategory}`);
     
     setSelectedCategory(previousCategory);
     
-    // Position at end for reverse flow
+    // Position at bottom for reverse flow
     requestAnimationFrame(() => {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
-        // Wait for content to load then position at bottom
         setTimeout(() => {
           const maxScroll = container.scrollHeight - container.clientHeight;
-          container.scrollTop = Math.max(0, maxScroll - 50);
+          container.scrollTop = Math.max(0, maxScroll - 100);
           lastScrollTopRef.current = container.scrollTop;
-        }, 50);
+        }, 100);
       }
       setTimeout(() => {
         switchingRef.current = false;
-      }, 200);
+      }, 300);
     });
   }, [selectedCategory, categoryOrder]);
 
@@ -342,19 +360,22 @@ export default function Home() {
               const maxScroll = element.scrollHeight - element.clientHeight;
               const scrollDirection = currentScrollTop > lastScrollTopRef.current ? 'down' : 'up';
               
-              // Precise thresholds for TikTok-like switching
-              const tolerance = 100;
-              const isAtEnd = currentScrollTop >= maxScroll - tolerance;
-              const isAtBeginning = currentScrollTop <= tolerance;
+              // More sensitive thresholds for seamless switching
+              const endTolerance = 50;
+              const beginTolerance = 30;
+              const isAtEnd = currentScrollTop >= maxScroll - endTolerance;
+              const isAtBeginning = currentScrollTop <= beginTolerance;
               
-              // Update last scroll position first
+              // Store previous scroll position
               lastScrollTopRef.current = currentScrollTop;
               
-              // Instant category switching when conditions are met
+              // Trigger category switching when reaching ends
               if (!switchingRef.current && articles.length > 0) {
                 if (isAtEnd && scrollDirection === 'down') {
+                  console.log('Reached end, switching to next category');
                   switchToNextCategory();
                 } else if (isAtBeginning && scrollDirection === 'up') {
+                  console.log('Reached beginning, switching to previous category');
                   switchToPreviousCategory();
                 }
               }
