@@ -343,29 +343,38 @@ export default function Home() {
               const maxScroll = element.scrollHeight - element.clientHeight;
               const scrollDirection = currentScrollTop > lastScrollTopRef.current ? 'down' : 'up';
               
-              // Ultra-sensitive thresholds for TikTok-like seamless experience
-              const isAtEnd = currentScrollTop >= maxScroll - 2;
-              const isAtBeginning = currentScrollTop <= 2;
+              // More generous thresholds for reliable switching
+              const isAtEnd = currentScrollTop >= maxScroll - 50;
+              const isAtBeginning = currentScrollTop <= 50;
               
               // Clear previous timeout
               if (scrollTimeoutRef.current) {
                 clearTimeout(scrollTimeoutRef.current);
               }
               
+              // Debug logging
+              console.log('Scroll:', {
+                currentScrollTop,
+                maxScroll,
+                scrollDirection,
+                isAtEnd,
+                isAtBeginning,
+                switching: switchingRef.current,
+                articleCount: articles.length
+              });
+              
               // Update last scroll position
               lastScrollTopRef.current = currentScrollTop;
               
-              // Debounced seamless switching for ultra-smooth experience
+              // Immediate switching for better responsiveness
               if (isAtEnd && articles.length > 0 && !switchingRef.current && scrollDirection === 'down') {
-                scrollTimeoutRef.current = setTimeout(() => {
-                  switchToNextCategory();
-                }, 50); // Minimal delay for smooth transition
+                console.log('Switching to next category');
+                switchToNextCategory();
               }
               
               if (isAtBeginning && articles.length > 0 && !switchingRef.current && scrollDirection === 'up') {
-                scrollTimeoutRef.current = setTimeout(() => {
-                  switchToPreviousCategory();
-                }, 50); // Minimal delay for smooth reverse transition
+                console.log('Switching to previous category');
+                switchToPreviousCategory();
               }
             }}
           >
