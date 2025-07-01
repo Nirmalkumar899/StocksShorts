@@ -266,10 +266,11 @@ Preferred communication style: Simple, everyday language.
 5. Kalkabazaar (renamed from Index)
 6. Warrants
 7. Global
-8. Others (renamed from Most Active)
-9. Order Win
-10. Research Report
-11. Educational
+8. Order Win
+9. Research Report
+10. Educational
+11. US Market
+12. Crypto
 
 ### Navigation Requirements
 - Connect (SEBI RIA): Clean "Coming Soon" message for investment advisor connections, uses "Connect SEBI RIA" label for clarity

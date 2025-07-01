@@ -30,7 +30,7 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Category order for auto-switching - Special first, then IPO, then others, Educational last
+  // Category order for auto-switching - Special → IPO → ... → Educational → US Market → Crypto
   const categoryOrder = [
     'stocksshorts-special',
     'ipo',
@@ -39,10 +39,11 @@ export default function Home() {
     'kalkabazaar',
     'warrants',
     'global',
-    'others',
     'order-win',
     'research-report',
-    'educational'
+    'educational',
+    'us-market',
+    'crypto'
   ];
 
   // Map URLs to categories for subpage support
@@ -57,9 +58,10 @@ export default function Home() {
     '/educational': 'educational',
     '/ipo': 'ipo',
     '/global': 'global',
-    '/others': 'others',
     '/orders': 'order-win',
     '/research': 'research-report',
+    '/us-market': 'us-market',
+    '/crypto': 'crypto',
     '/disclaimer': 'all'
   };
 
