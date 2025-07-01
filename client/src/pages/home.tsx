@@ -27,6 +27,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const switchingRef = useRef(false);
   const lastScrollTopRef = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Category order for auto-switching - Special first, then others
   const categoryOrder = [
@@ -198,23 +199,8 @@ export default function Home() {
     }, 1500);
   }, [selectedCategory, categoryOrder]);
 
-  // Auto-switch to previous category when scrolling up from beginning
-  const switchToPreviousCategory = useCallback(() => {
-    if (switchingRef.current) return; // Prevent multiple rapid switches
-    
-    switchingRef.current = true;
-    const currentIndex = categoryOrder.indexOf(selectedCategory);
-    const previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
-    const previousCategory = categoryOrder[previousIndex];
-    
-    console.log(`Auto-switching from ${selectedCategory} to ${previousCategory}`);
-    setSelectedCategory(previousCategory);
-    
-    // Reset switching flag after shorter delay for smoother experience
-    setTimeout(() => {
-      switchingRef.current = false;
-    }, 1500);
-  }, [selectedCategory, categoryOrder]);
+
+
 
   const handleArticleClick = (article: Article) => {
     // Handle article click - could open modal or navigate
@@ -317,6 +303,7 @@ export default function Home() {
         ) : (
           // News Cards - Inshorts style full-screen layout
           <div 
+            ref={scrollContainerRef}
             className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
             onScroll={(e) => {
               const element = e.target as HTMLElement;

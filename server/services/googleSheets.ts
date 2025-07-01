@@ -194,9 +194,9 @@ export class GoogleSheetsService {
       // Enhanced category mapping to match Google Sheets Column D values exactly
       switch (categoryId) {
         case 'trending':
-          return articleType === 'nifty'; // Trending maps to Nifty articles
+          return articleType === 'kalkabazaar'; // Trending maps to Kalkabazaar articles
         case 'kalkabazaar':
-          return articleType === 'index'; // Kalkabazaar maps to Index articles  
+          return articleType === 'kalkabazaar'; // Kalkabazaar maps directly to Kalkabazaar articles  
         case 'warrants':
           return articleType === 'warrants' || articleType === 'preferential/warrants';
         case 'stocksshorts-special':
