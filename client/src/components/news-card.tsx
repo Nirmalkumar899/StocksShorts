@@ -127,13 +127,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   // Function to determine if content needs truncation 
   const shouldShowViewMore = () => {
-    const isLongContent = article.content.length > 280; // Increased threshold as requested
+    const isLongContent = article.content.length > 250; // Set to 250 characters as requested
     
     // Debug logging for specific articles
     if (article.title.includes('Sastasundar') || article.title.includes('Quantum')) {
       console.log(`Article: ${article.title}`);
       console.log(`Content length: ${article.content.length}`);
-      console.log(`Is long content (>280): ${isLongContent}`);
+      console.log(`Is long content (>250): ${isLongContent}`);
       console.log(`Should show view more: ${isLongContent}`);
     }
     
@@ -141,8 +141,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   const getTruncatedContent = (text: string) => {
-    // Truncate to 280 characters
-    const maxChars = 280;
+    // Truncate to 250 characters
+    const maxChars = 250;
     if (text.length > maxChars) {
       return text.substring(0, maxChars);
     }
