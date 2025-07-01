@@ -155,6 +155,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 - June 28, 2025: **MAJOR**: Implemented Google Search Console integration with verification meta tags, analytics tracking, and comprehensive setup guide - ready to track search rankings and performance for Indian stock market keywords
 - June 28, 2025: **MAJOR**: Implemented comprehensive SEO optimization with dynamic page titles, structured data, sitemap.xml, robots.txt, Open Graph tags, Twitter Cards, and performance optimizations - complete enterprise-level SEO for maximum search engine visibility targeting Indian stock market queries
 - June 28, 2025: **MAJOR**: Added "thinking" notification for AI stock analysis to prevent user impatience during slower searches - shows "AI is analyzing the stock data. This may take a moment." immediately when query submitted, providing clear feedback during processing delays
+- July 1, 2025: **MAJOR**: Reorganized category flow order per user request - moved IPO category to position 3 (right after StocksShorts Special), moved Educational category to position 11 (last in sequence), creating new seamless scroll order: Special → IPO → Trending → Breakout → Kalkabazaar → Warrants → Global → Others → Order Win → Research Report → Educational
 - July 1, 2025: **MAJOR**: Implemented ultra-seamless bidirectional category switching with TikTok-like experience - eliminated all visible category transitions using ultra-sensitive scroll thresholds (2px), debounced scroll detection with 50ms timeout, requestAnimationFrame for instant positioning, 100ms unlock timing, and smooth CSS transitions, creating invisible category switches that users never notice during forward or reverse scrolling
 - July 1, 2025: **MAJOR**: Fixed Kalkabazaar category mapping and improved bidirectional scrolling - updated Google Sheets mapping to recognize "Kalkabazaar" articles (user renamed "Nifty" to "Kalkabazaar" in sheets), enhanced reverse scrolling with proper scroll position management for smoother backward navigation through categories
 - July 1, 2025: **MAJOR**: Enhanced formatting for long articles (500+ characters) with bold headings and improved text alignment - articles now automatically detect headings (lines with colons, dashes, or short titles) and format them as bold text with proper spacing, plus better left alignment and line spacing for readability
@@ -260,15 +261,15 @@ Preferred communication style: Simple, everyday language.
 ### Category Structure (Priority Order)
 1. Trending (priority-based sorting: High > Medium > Low)
 2. StocksShorts Special  
-3. Breakout Stocks
-4. Kalkabazaar (renamed from Index)
-5. Warrants
-6. Educational
-7. IPO
-8. Global
-9. Others (renamed from Most Active)
-10. Order Win
-11. Research Report
+3. IPO
+4. Breakout Stocks
+5. Kalkabazaar (renamed from Index)
+6. Warrants
+7. Global
+8. Others (renamed from Most Active)
+9. Order Win
+10. Research Report
+11. Educational
 
 ### Navigation Requirements
 - Connect (SEBI RIA): Clean "Coming Soon" message for investment advisor connections, uses "Connect SEBI RIA" label for clarity

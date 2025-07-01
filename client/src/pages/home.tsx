@@ -30,19 +30,19 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Category order for auto-switching - Special first, then others
+  // Category order for auto-switching - Special first, then IPO, then others, Educational last
   const categoryOrder = [
     'stocksshorts-special',
+    'ipo',
     'all',
     'breakout-stocks',
     'kalkabazaar',
     'warrants',
-    'educational',
-    'ipo',
     'global',
     'others',
     'order-win',
-    'research-report'
+    'research-report',
+    'educational'
   ];
 
   // Map URLs to categories for subpage support
