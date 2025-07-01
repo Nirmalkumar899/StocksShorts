@@ -26,6 +26,7 @@ export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const switchingRef = useRef(false);
+  const lastScrollTopRef = useRef(0);
 
   // Category order for auto-switching - Special first, then others
   const categoryOrder = [
@@ -195,7 +196,25 @@ export default function Home() {
     setTimeout(() => {
       switchingRef.current = false;
     }, 1500);
-  }, [selectedCategory, categoryOrder, toast]);
+  }, [selectedCategory, categoryOrder]);
+
+  // Auto-switch to previous category when scrolling up from beginning
+  const switchToPreviousCategory = useCallback(() => {
+    if (switchingRef.current) return; // Prevent multiple rapid switches
+    
+    switchingRef.current = true;
+    const currentIndex = categoryOrder.indexOf(selectedCategory);
+    const previousIndex = (currentIndex - 1 + categoryOrder.length) % categoryOrder.length;
+    const previousCategory = categoryOrder[previousIndex];
+    
+    console.log(`Auto-switching from ${selectedCategory} to ${previousCategory}`);
+    setSelectedCategory(previousCategory);
+    
+    // Reset switching flag after shorter delay for smoother experience
+    setTimeout(() => {
+      switchingRef.current = false;
+    }, 1500);
+  }, [selectedCategory, categoryOrder]);
 
   const handleArticleClick = (article: Article) => {
     // Handle article click - could open modal or navigate
@@ -301,13 +320,26 @@ export default function Home() {
             className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
             onScroll={(e) => {
               const element = e.target as HTMLElement;
-              const isAtEnd = element.scrollTop + element.clientHeight >= element.scrollHeight - 20;
+              const currentScrollTop = element.scrollTop;
+              const isAtEnd = currentScrollTop + element.clientHeight >= element.scrollHeight - 20;
+              const isAtBeginning = currentScrollTop <= 10;
+              const scrollDirection = currentScrollTop > lastScrollTopRef.current ? 'down' : 'up';
               
-              // Auto-switch to next category when reaching end
-              if (isAtEnd && articles.length > 0 && !switchingRef.current) {
+              // Update last scroll position
+              lastScrollTopRef.current = currentScrollTop;
+              
+              // Auto-switch to next category when scrolling down and reaching end
+              if (isAtEnd && articles.length > 0 && !switchingRef.current && scrollDirection === 'down') {
                 setTimeout(() => {
                   switchToNextCategory();
-                }, 300); // Reduced delay for smoother experience
+                }, 300);
+              }
+              
+              // Auto-switch to previous category when scrolling up and reaching beginning
+              if (isAtBeginning && articles.length > 0 && !switchingRef.current && scrollDirection === 'up') {
+                setTimeout(() => {
+                  switchToPreviousCategory();
+                }, 300);
               }
             }}
           >
