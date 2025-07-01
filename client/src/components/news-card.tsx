@@ -125,34 +125,24 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     }
   };
 
-  // Function to determine if content needs truncation (more aggressive approach)
+  // Function to determine if content needs truncation 
   const shouldShowViewMore = () => {
-    const lines = article.content.split('\n');
-    const hasMultipleLines = lines.length > 3;
-    const isLongContent = article.content.length > 150; // More sensitive threshold
-    const hasLongLines = lines.some(line => line.length > 80); // Check for long lines
+    const isLongContent = article.content.length > 280; // Increased threshold as requested
     
     // Debug logging for specific articles
     if (article.title.includes('Sastasundar') || article.title.includes('Quantum')) {
       console.log(`Article: ${article.title}`);
       console.log(`Content length: ${article.content.length}`);
-      console.log(`Lines count: ${lines.length}`);
-      console.log(`Has multiple lines: ${hasMultipleLines}`);
-      console.log(`Is long content: ${isLongContent}`);
-      console.log(`Has long lines: ${hasLongLines}`);
-      console.log(`Should show view more: ${hasMultipleLines || isLongContent || hasLongLines}`);
+      console.log(`Is long content (>280): ${isLongContent}`);
+      console.log(`Should show view more: ${isLongContent}`);
     }
     
-    return hasMultipleLines || isLongContent || hasLongLines;
+    return isLongContent;
   };
 
   const getTruncatedContent = (text: string) => {
-    const lines = text.split('\n');
-    if (lines.length > 3) {
-      return lines.slice(0, 3).join('\n');
-    }
-    // If no natural breaks, truncate to about 3-4 lines worth of characters
-    const maxChars = 150;
+    // Truncate to 280 characters
+    const maxChars = 280;
     if (text.length > maxChars) {
       return text.substring(0, maxChars);
     }
@@ -278,7 +268,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </h2>
         
         {/* Content - More space for article text */}
-        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3 max-h-32 overflow-hidden">
+        <div className="flex-1 text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3">
           {isLocked ? (
             <div className="space-y-2">
               <div className="text-gray-400 dark:text-gray-500 text-sm">
@@ -296,21 +286,30 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              {shouldShowViewMore() ? (
-                <>
-                  <div className="whitespace-pre-wrap flex-1" ref={contentRef}>
-                    {getTruncatedContent(article.content)}...
-                  </div>
-                  <button
-                    onClick={handleViewMore}
-                    className="mt-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline self-start"
-                  >
-                    View More
-                  </button>
-                </>
-              ) : (
-                <div className="whitespace-pre-wrap">{article.content}</div>
-              )}
+              {(() => {
+                const showViewMore = shouldShowViewMore();
+                
+                // Debug logging for specific articles
+                if (article.title.includes('Sastasundar') || article.title.includes('Quantum')) {
+                  console.log(`Rendering ${article.title}: showViewMore = ${showViewMore}`);
+                }
+                
+                return showViewMore ? (
+                  <>
+                    <div className="whitespace-pre-wrap flex-1" ref={contentRef}>
+                      {getTruncatedContent(article.content)}...
+                    </div>
+                    <button
+                      onClick={handleViewMore}
+                      className="mt-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline self-start"
+                    >
+                      View More
+                    </button>
+                  </>
+                ) : (
+                  <div className="whitespace-pre-wrap">{article.content}</div>
+                );
+              })()}
             </div>
           )}
         </div>
