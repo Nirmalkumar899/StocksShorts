@@ -176,6 +176,13 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                 }}
                 onFocus={(e) => {
                   e.stopPropagation();
+                  // Force text visibility styles when keyboard opens
+                  const input = e.target as HTMLInputElement;
+                  input.style.color = '#000000';
+                  input.style.backgroundColor = '#ffffff';
+                  input.style.webkitTextFillColor = '#000000';
+                  input.style.webkitTextStroke = '0.5px #000000';
+                  
                   // Scroll the input into view when focused
                   setTimeout(() => {
                     e.target.scrollIntoView({ 
@@ -184,6 +191,13 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                       inline: 'nearest'
                     });
                   }, 100);
+                }}
+                onInput={(e) => {
+                  // Force text visibility during typing
+                  const input = e.target as HTMLInputElement;
+                  input.style.color = '#000000';
+                  input.style.webkitTextFillColor = '#000000';
+                  input.style.zIndex = '99999';
                 }}
                 onClick={handleContainerClick}
                 className="w-full h-14 px-4 py-3 text-center text-xl font-bold border-2 border-blue-500 rounded-lg mobile-input"
@@ -246,6 +260,13 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                 }}
                 onFocus={(e) => {
                   e.stopPropagation();
+                  // Force text visibility styles when keyboard opens
+                  const input = e.target as HTMLInputElement;
+                  input.style.color = '#000000';
+                  input.style.backgroundColor = '#ffffff';
+                  input.style.webkitTextFillColor = '#000000';
+                  input.style.webkitTextStroke = '0.5px #000000';
+                  
                   // More aggressive scrolling for OTP input when keyboard appears
                   setTimeout(() => {
                     const element = e.target;
@@ -265,6 +286,13 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                       window.scrollBy(0, -150);
                     }, 200);
                   }, 50);
+                }}
+                onInput={(e) => {
+                  // Force text visibility during typing
+                  const input = e.target as HTMLInputElement;
+                  input.style.color = '#000000';
+                  input.style.webkitTextFillColor = '#000000';
+                  input.style.zIndex = '99999';
                 }}
                 onClick={handleContainerClick}
                 className="w-full h-14 px-4 py-3 text-center text-xl font-bold border-2 border-blue-500 rounded-lg mobile-input"

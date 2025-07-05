@@ -519,13 +519,17 @@
     letter-spacing: 3px !important;
     padding: 16px !important;
     position: relative !important;
-    z-index: 999 !important;
+    z-index: 9999 !important;
     height: 60px !important;
     min-height: 60px !important;
     border: 3px solid #1d4ed8 !important;
     border-radius: 12px !important;
     margin-top: 8px !important;
     margin-bottom: 8px !important;
+    /* Fix iOS keyboard text visibility */
+    -webkit-text-stroke: 0.5px #000000 !important;
+    text-shadow: none !important;
+    caret-color: #000000 !important;
   }
 
   .mobile-input-container input:focus,
@@ -538,5 +542,34 @@
     border: 3px solid #1d4ed8 !important;
     box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.3) !important;
     outline: none !important;
+    -webkit-text-stroke: 0.5px #000000 !important;
+    text-shadow: none !important;
+    caret-color: #000000 !important;
+  }
+
+  /* Special handling for keyboard open state */
+  .mobile-input-container.keyboard-open input,
+  .mobile-input-container.keyboard-open input[type="tel"],
+  .mobile-input-container.keyboard-open input[type="text"] {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-text-stroke: 1px #000000 !important;
+    text-shadow: 0 0 1px #000000 !important;
+    position: relative !important;
+    z-index: 99999 !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+  }
+
+  /* Force text visibility during active typing */
+  .mobile-input-container input:active,
+  .mobile-input-container input[type="tel"]:active,
+  .mobile-input-container input[type="text"]:active {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-text-stroke: 1px #000000 !important;
+    text-shadow: 0 0 1px #000000 !important;
   }
 }
