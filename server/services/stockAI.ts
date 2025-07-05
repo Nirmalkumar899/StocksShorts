@@ -1,14 +1,15 @@
-// Using Perplexity API for more accurate financial data and analysis
+// Using OpenAI API for comprehensive stock analysis with company website research
 
-import { stockDataProvider } from './stockDataProvider';
-import { screenerService } from './screenerService';
-import { peRatioCalculator } from './peRatioCalculator';
-import { dataVerification } from './dataVerification';
+import OpenAI from 'openai';
 import axios from 'axios';
 
-if (!process.env.PERPLEXITY_API_KEY) {
-  throw new Error('PERPLEXITY_API_KEY is required for stock analysis');
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY is required for stock analysis');
 }
+
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY 
+});
 
 export class StockAIService {
   private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string; screenerData?: any }> {
@@ -656,45 +657,32 @@ export class StockAIService {
 
   private async getCompanyOverview(companyName: string, symbol: string): Promise<string> {
     try {
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-sonar-small-128k-online",
-          messages: [
-            { 
-              role: "system", 
-              content: "You are a financial research assistant. Provide comprehensive company overviews by reading company websites and official sources."
-            },
-            { 
-              role: "user", 
-              content: `Read the official website of ${companyName} (${symbol}) and provide a comprehensive overview covering:
+      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a financial research assistant. Search and read the official company website to provide comprehensive company overviews. Focus only on official company sources."
+          },
+          { 
+            role: "user", 
+            content: `Search and read the official website of ${companyName} (${symbol}) to provide a comprehensive overview covering:
 
-1. What the company does (core business model)
+1. What the company does (core business model and main products/services)
 2. Main revenue streams and business segments
 3. Key markets and geographic presence  
 4. Recent business developments and strategic initiatives
 5. Competitive positioning in the industry
 
-Focus on factual information from the company's official website, annual reports, and recent press releases. Keep it concise but informative (300-400 words).`
-            }
-          ],
-          max_tokens: 600,
-          temperature: 0.1,
-          search_recency_filter: "month",
-          stream: false
-        })
+Please visit the company's official website directly and extract factual information from their About Us, Business Segments, Products/Services, and Investor Relations pages. Keep it concise but informative (300-400 words).`
+          }
+        ],
+        max_tokens: 600,
+        temperature: 0.1
       });
 
-      if (!response.ok) {
-        throw new Error(`Perplexity API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0].message.content || "Company overview not available at this time.";
+      return response.choices[0].message.content || "Company overview not available at this time.";
     } catch (error) {
       console.error("Error fetching company overview:", error);
       return "Company overview not available at this time.";
@@ -703,22 +691,17 @@ Focus on factual information from the company's official website, annual reports
 
   private async getConferenceCallTranscript(companyName: string, symbol: string): Promise<string> {
     try {
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-sonar-small-128k-online",
-          messages: [
-            { 
-              role: "system", 
-              content: "You are a financial analyst specializing in earnings call analysis. Extract key insights from the latest quarterly conference call transcripts."
-            },
-            { 
-              role: "user", 
-              content: `Find and analyze the latest quarterly earnings conference call transcript for ${companyName} (${symbol}). Extract:
+      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a financial analyst specializing in earnings call analysis. Search for and analyze the latest quarterly conference call transcripts from company websites and official sources only."
+          },
+          { 
+            role: "user", 
+            content: `Search for and analyze the latest quarterly earnings conference call transcript for ${companyName} (${symbol}) from their official website investor relations section. Extract:
 
 **KEY QUARTER HIGHLIGHTS:**
 - Revenue and profit performance vs previous quarter and year-ago quarter
@@ -737,22 +720,14 @@ Focus on factual information from the company's official website, annual reports
 - Management responses on competitive positioning
 - Commentary on sectoral challenges or opportunities
 
-Focus on the most recent quarter's call. Provide specific numbers, percentages, and quotes where mentioned. If no recent transcript is available, mention that clearly.`
-            }
-          ],
-          max_tokens: 800,
-          temperature: 0.1,
-          search_recency_filter: "month",
-          stream: false
-        })
+Search the company's official investor relations page for earnings call transcripts or presentations. Focus on the most recent quarter's call. Provide specific numbers, percentages, and quotes where mentioned. If no recent transcript is available, mention that clearly.`
+          }
+        ],
+        max_tokens: 800,
+        temperature: 0.1
       });
 
-      if (!response.ok) {
-        throw new Error(`Perplexity API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0].message.content || "Recent conference call transcript not available.";
+      return response.choices[0].message.content || "Recent conference call transcript not available.";
     } catch (error) {
       console.error("Error fetching conference call transcript:", error);
       return "Recent conference call transcript not available.";
@@ -761,22 +736,17 @@ Focus on the most recent quarter's call. Provide specific numbers, percentages, 
 
   private async getInvestorPresentationInsights(companyName: string, symbol: string): Promise<string> {
     try {
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-sonar-small-128k-online",
-          messages: [
-            { 
-              role: "system", 
-              content: "You are a financial analyst specializing in investor presentation analysis. Extract strategic insights from company presentations."
-            },
-            { 
-              role: "user", 
-              content: `Find and analyze the latest investor presentation for ${companyName} (${symbol}). Look for:
+      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are a financial analyst specializing in investor presentation analysis. Search company websites directly for investor presentations and extract strategic insights."
+          },
+          { 
+            role: "user", 
+            content: `Search the official website of ${companyName} (${symbol}) for their latest investor presentation or annual report from their investor relations section. Analyze:
 
 **STRATEGIC HIGHLIGHTS:**
 - Company's strategic priorities and focus areas
@@ -799,22 +769,14 @@ Focus on the most recent quarter's call. Provide specific numbers, percentages, 
 - Key investment highlights and growth drivers
 - Risk factors and mitigation strategies mentioned
 
-Focus on the most recent investor presentation or annual report. Provide specific targets, timelines, and strategic priorities mentioned. If no recent presentation is available, mention that clearly.`
-            }
-          ],
-          max_tokens: 700,
-          temperature: 0.1,
-          search_recency_filter: "month", 
-          stream: false
-        })
+Please visit the company's official investor relations page and look for recent investor presentations, annual reports, or corporate factsheets. Provide specific targets, timelines, and strategic priorities mentioned. If no recent presentation is available, mention that clearly.`
+          }
+        ],
+        max_tokens: 700,
+        temperature: 0.1
       });
 
-      if (!response.ok) {
-        throw new Error(`Perplexity API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.choices[0].message.content || "Recent investor presentation not available.";
+      return response.choices[0].message.content || "Recent investor presentation not available.";
     } catch (error) {
       console.error("Error fetching investor presentation:", error);
       return "Recent investor presentation not available.";

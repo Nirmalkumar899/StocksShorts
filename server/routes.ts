@@ -6,7 +6,7 @@ import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
 
-import { stockAI } from "./services/stockAI";
+import { stockAI } from "./services/stockAI-new";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
 import { stockTester } from "./services/stockTester";
