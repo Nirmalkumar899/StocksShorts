@@ -122,24 +122,24 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
 
           {/* Content Section (Bottom - Full Width) */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
+          <div className="flex-1 p-4 pb-20 flex flex-col justify-between">
             <div className="h-full flex flex-col">
               <div className="flex-1">
-                <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
+                <h3 className="font-bold text-lg mb-3 line-clamp-2">{article.title}</h3>
                 
                 {/* Show only 150 characters with read more for Special articles */}
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-                  <div className="space-y-2">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <div className="space-y-3 mb-4">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                       {article.content.substring(0, 150)}...
                     </p>
-                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-4 rounded-xl border-2 border-blue-300 dark:border-blue-700 shadow-sm">
-                      <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-2">
-                        <Lock className="h-5 w-5" />
-                        <span className="text-base font-bold">🔒 LOGIN REQUIRED</span>
+                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-3 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
+                      <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-1">
+                        <Lock className="h-4 w-4" />
+                        <span className="text-sm font-bold">🔒 LOGIN REQUIRED</span>
                       </div>
-                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                        Go to Profile section to login and read the full article
+                      <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                        Go to Profile section to login and read full article
                       </p>
                     </div>
                   </div>
