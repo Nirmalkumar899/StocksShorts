@@ -32,9 +32,14 @@ export default function AISection({ onBack }: AISectionProps) {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-              AI Stock Analysis
-            </h2>
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                AI Stock Analysis
+              </h2>
+              <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 px-2 py-1 rounded-full text-xs font-medium">
+                Beta Testing
+              </span>
+            </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm max-w-2xl mx-auto">
               Get detailed analysis of Indian stocks with authentic financial data, 
               quarterly performance insights, and investment recommendations.
