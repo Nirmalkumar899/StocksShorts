@@ -56,6 +56,10 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   const shouldShowViewMore = () => {
+    // Don't show View More for Special articles if not authenticated
+    if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
+      return false;
+    }
     return article.content && article.content.length > 350;
   };
 
@@ -65,6 +69,16 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   const handleViewMore = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Check if this is a special article that requires authentication
+    if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
+      // Show login message instead of opening modal
+      toast({
+        title: "Login Required",
+        description: "Please go to Profile section to login and read the full article",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsModalOpen(true);
   };
 
@@ -250,9 +264,26 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               
               {/* Full article content */}
               <div className="prose dark:prose-invert max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                  {article.content}
-                </div>
+                {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+                  <div className="space-y-4">
+                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                      {article.content.substring(0, 150)}...
+                    </div>
+                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-4 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
+                      <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-2">
+                        <Lock className="h-4 w-4" />
+                        <span className="text-sm font-bold">🔒 LOGIN REQUIRED TO READ FULL ARTICLE</span>
+                      </div>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                        Please go to Profile section to login and read the complete article
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                    {article.content}
+                  </div>
+                )}
               </div>
             </div>
           </div>
