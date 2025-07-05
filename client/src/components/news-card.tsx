@@ -127,19 +127,19 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <div className="flex-1">
                 <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
                 
-                {/* Show only 200 characters with read more for Special articles */}
+                {/* Show only 150 characters with read more for Special articles */}
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {article.content.substring(0, 200)}...
+                      {article.content.substring(0, 150)}...
                     </p>
-                    <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                        <Lock className="h-4 w-4" />
-                        <span className="text-sm font-medium">Login required to read more</span>
+                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-4 rounded-xl border-2 border-blue-300 dark:border-blue-700 shadow-sm">
+                      <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-2">
+                        <Lock className="h-5 w-5" />
+                        <span className="text-base font-bold">🔒 LOGIN REQUIRED</span>
                       </div>
-                      <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">
-                        Go to Profile section to login and access full article
+                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                        Go to Profile section to login and read the full article
                       </p>
                     </div>
                   </div>
