@@ -40,7 +40,7 @@ export default function Home() {
     'breakout-stocks',
     'kalkabazaar',
     'warrants',
-    'global',
+    'trader-view',
     'order-win',
     'research-report',
     'educational',

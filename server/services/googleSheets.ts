@@ -262,14 +262,14 @@ export class GoogleSheetsService {
           return articleType === 'educational';
         case 'ipo':
           return articleType === 'ipo';
-        case 'global':
-          return articleType === 'global';
+        case 'trader-view':
+          return articleType === 'trader view';
         case 'others':
           return articleType === 'others';
         case 'crypto':
           return articleType === 'crypro'; // Handle the typo in Google Sheets
         case 'us-market':
-          return articleType === 'us market';
+          return articleType === 'us market' || articleType === 'global';
         case 'order-win':
           return articleType === 'order win';
         case 'research-report':

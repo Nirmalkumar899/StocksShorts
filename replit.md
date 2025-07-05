@@ -119,6 +119,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- July 5, 2025: **MAJOR**: Replaced Global section with Trader View section - removed Global category from navigation and added Trader View section, mapped "Trader View" articles from Google Sheets to new section, moved Global articles to US Market category for better organization, updated category filtering and routing
 - July 5, 2025: **MAJOR**: Fixed cross-origin error overlay appearing on article pages - added global error suppression for development cross-origin errors, implemented React error boundary for article page crashes, simplified article page component to eliminate complex infinite scroll causing issues, added proper error handling for share functionality and image loading, articles now open cleanly without error overlays
 - July 5, 2025: **MAJOR**: Completely fixed image system for all article types - eliminated white/blank images with comprehensive fallback system, enhanced company-specific image matching for Order Win/Research Report articles (Cochin Shipyard → ships, Kalpataru → power transmission, Reliance → oil/petrochemicals, TCS/Infosys → software, Banking companies → financial buildings), images now show target companies being discussed rather than brokerages making recommendations, added error handling with guaranteed image fallbacks to prevent white screens, each company gets unique image variations to avoid repetition
 - July 5, 2025: **MAJOR**: Removed automatic category switching for manual user control - eliminated auto-switch functionality that was causing jarring transitions between categories, users now have complete control over category navigation through manual selection only, cleaned up switching refs and transition code, improved user engagement by allowing natural category exploration without forced redirects
@@ -273,11 +274,11 @@ Preferred communication style: Simple, everyday language.
 4. Breakout Stocks
 5. Kalkabazaar (renamed from Index)
 6. Warrants
-7. Global
+7. Trader View (replacing Global, linked to "Trader View" articles in Google Sheets)
 8. Order Win
 9. Research Report
 10. Educational
-11. US Market
+11. US Market (now includes Global articles from Google Sheets)
 12. Crypto
 
 ### Navigation Requirements

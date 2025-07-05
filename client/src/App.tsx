@@ -52,7 +52,7 @@ function Router() {
       <Route path="/warrants" component={Home} />
       <Route path="/educational" component={Home} />
       <Route path="/ipo" component={Home} />
-      <Route path="/global" component={Home} />
+      <Route path="/trader-view" component={Home} />
       <Route path="/others" component={Home} />
       <Route path="/crypto" component={Home} />
       <Route path="/us-market" component={Home} />
