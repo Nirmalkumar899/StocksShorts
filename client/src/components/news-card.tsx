@@ -128,14 +128,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         onClick={onClick}
       >
         {/* Article Content Container */}
-        <div className="flex h-full">
+        <div className="flex h-full min-h-[300px]">
           {/* Image Section (40% width) */}
-          <div className="w-2/5 relative">
+          <div className="w-2/5 relative min-h-[300px]">
             <div className="absolute inset-0">
               <img
                 src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
                 alt={article.title}
-                className="w-full h-full object-contain cursor-pointer bg-gray-100 dark:bg-gray-800"
+                className="w-full h-full object-cover cursor-pointer"
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setImageError(true)}
                 onClick={(e) => {
@@ -264,11 +264,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <div className="space-y-4">
             {/* Article Image in Modal */}
             {(article.imageUrl || getContextualImage(article)) && (
-              <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <div className="relative w-full h-80 rounded-lg overflow-hidden">
                 <img
                   src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
                   alt={article.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
                 />
