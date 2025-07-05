@@ -20,7 +20,7 @@ import {
   Users,
   DollarSign,
   Star
-} from "lucide-react";
+} from "@/lib/icons";
 
 interface CategoryFilterProps {
   selectedCategory: string;

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, ShieldCheck, Brain, User, FileText } from "lucide-react";
+import { Home, ShieldCheck, Brain, User, FileText } from "@/lib/icons";
 import { useLocation } from "wouter";
 
 interface BottomNavigationProps {

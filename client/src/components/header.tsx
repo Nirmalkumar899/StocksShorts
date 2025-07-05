@@ -1,4 +1,4 @@
-import { RefreshCw, Moon, Sun, Download, Languages } from "lucide-react";
+import { RefreshCw, Moon, Sun, Download, Languages } from "@/lib/icons";
 import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
