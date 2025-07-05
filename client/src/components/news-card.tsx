@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Eye, EyeOff, X, Lock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { getContextualImage } from '@/lib/imageUtils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import ImageLightbox from '@/components/image-lightbox';
-import DirectLogin from '@/components/direct-login';
 import type { Article } from '@shared/schema';
 
 interface NewsCardProps {
@@ -48,42 +47,20 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const getSentimentBorderColor = () => {
     switch (article.sentiment) {
       case 'Positive':
-        return 'border-green-500';
+        return 'border-l-green-500';
       case 'Negative':
-        return 'border-red-500';
+        return 'border-l-red-500';
       default:
-        return 'border-gray-300';
+        return 'border-l-gray-400';
     }
   };
 
-  const formatNewsContent = (content: string) => {
-    return content.split('\n').map((paragraph, index) => {
-      if (paragraph.trim().length === 0) return '';
-      
-      const lines = paragraph.split(':');
-      if (lines.length > 1 && lines[0].length < 50) {
-        return `**${lines[0]}:** ${lines.slice(1).join(':')}`;
-      }
-      
-      const dashSplit = paragraph.split(' - ');
-      if (dashSplit.length > 1 && dashSplit[0].length < 30) {
-        return `**${dashSplit[0]}** - ${dashSplit.slice(1).join(' - ')}`;
-      }
-      
-      if (paragraph.length < 50 && !paragraph.includes('.')) {
-        return `**${paragraph}**`;
-      }
-      
-      return paragraph;
-    }).join('\n\n');
+  const shouldShowViewMore = () => {
+    return article.content && article.content.length > 250;
   };
 
   const getTruncatedContent = (content: string) => {
-    return content.substring(0, 250);
-  };
-
-  const shouldShowViewMore = () => {
-    return article.content.length > 250;
+    return content?.substring(0, 250) || '';
   };
 
   const handleViewMore = (e: React.MouseEvent) => {
@@ -126,94 +103,64 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       >
         {/* Article Content Container - Inshorts Style */}
         <div className="flex flex-col h-full">
-          {/* Special layout for locked StocksShorts Special articles */}
-          {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-            <>
-              {/* Login Section (Top) */}
-              <div className="p-4 bg-gradient-to-b from-blue-50 to-white dark:from-blue-950 dark:to-gray-900 border-b border-blue-200 dark:border-blue-800">
-                <div className="text-center space-y-4">
-                  <Lock className="h-8 w-8 text-blue-600 mx-auto" />
-                  <div>
-                    <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-gray-100">{article.title}</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-400 mb-2 font-medium">
-                      🔒 LOGIN REQUIRED TO READ
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                      StocksShorts Special articles require authentication
-                    </p>
-                  </div>
-                  <DirectLogin />
-                </div>
-              </div>
-              
-              {/* Image Section (Bottom - Blurred for locked content) */}
-              <div className="w-full h-48 relative bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                <img
-                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                  alt={article.title}
-                  className="w-full h-full object-contain filter blur-sm opacity-50"
-                  onLoad={() => setImageLoaded(true)}
-                  onError={(e) => {
-                    setImageError(true);
-                    e.currentTarget.src = getContextualImage(article);
-                  }}
-                />
-                {/* Overlay to indicate locked content */}
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                  <div className="bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded-lg backdrop-blur-sm">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Preview - Login to view full content
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Normal layout for other articles */}
-              {/* Image Section (Top - Full Width) */}
-              <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
-                <img
-                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                  alt={article.title}
-                  className="w-full h-full object-contain cursor-pointer"
-                  onLoad={() => setImageLoaded(true)}
-                  onError={(e) => {
-                    setImageError(true);
-                    e.currentTarget.src = getContextualImage(article);
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsLightboxOpen(true);
-                  }}
-                />
-              </div>
+          {/* Image Section (Top - Full Width) */}
+          <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
+            <img
+              src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+              alt={article.title}
+              className="w-full h-full object-contain cursor-pointer"
+              onLoad={() => setImageLoaded(true)}
+              onError={(e) => {
+                setImageError(true);
+                e.currentTarget.src = getContextualImage(article);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(true);
+              }}
+            />
+          </div>
 
-              {/* Content Section (Bottom - Full Width) */}
-              <div className="flex-1 p-4 flex flex-col justify-between">
-                <div className="h-full flex flex-col">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
-                    {shouldShowViewMore() ? (
-                      <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {getTruncatedContent(article.content)}...{' '}
-                        <button
-                          onClick={handleViewMore}
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
-                        >
-                          View More
-                        </button>
+          {/* Content Section (Bottom - Full Width) */}
+          <div className="flex-1 p-4 flex flex-col justify-between">
+            <div className="h-full flex flex-col">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
+                
+                {/* Show only 200 characters with read more for Special articles */}
+                {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+                  <div className="space-y-3">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {article.content.substring(0, 200)}...
+                    </p>
+                    <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                        <Lock className="h-4 w-4" />
+                        <span className="text-sm font-medium">Login required to read more</span>
                       </div>
-                    ) : (
-                      <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {article.content}
-                      </div>
-                    )}
+                      <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">
+                        Go to Profile section to login and access full article
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : shouldShowViewMore() ? (
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {getTruncatedContent(article.content)}...{' '}
+                    <button
+                      onClick={handleViewMore}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
+                    >
+                      View More
+                    </button>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {article.content}
+                  </div>
+                )}
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
         
         {/* Source and time - positioned at bottom */}
@@ -276,58 +223,64 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               {article.title}
             </DialogTitle>
             <DialogClose asChild>
-              <Button
-                variant="ghost"
-                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-                onClick={handleCloseModal}
-              >
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="absolute right-4 top-4">
+                <span className="sr-only">Close</span>
+                ×
               </Button>
             </DialogClose>
           </DialogHeader>
           
           <div className="space-y-4">
-            {/* Article Image in Modal */}
-            {(article.imageUrl || getContextualImage(article)) && (
-              <div className="relative w-full h-80 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                <img
-                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                  alt={article.title}
-                  className="max-w-full max-h-full object-contain"
-                  onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
-                />
-              </div>
-            )}
+            {/* Article image in modal */}
+            <div className="w-full max-h-96 overflow-hidden rounded-lg">
+              <img
+                src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                alt={article.title}
+                className="w-full h-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = getContextualImage(article);
+                }}
+              />
+            </div>
             
-            {/* Article Content in Modal */}
-            <div className="prose prose-sm dark:prose-invert max-w-none">
+            {/* Full article content */}
+            <div className="prose dark:prose-invert max-w-none">
               <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                {formatNewsContent(article.content)}
+                {article.content}
               </div>
             </div>
             
-            {/* Meta Information */}
+            {/* Article meta info */}
             <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <span className="flex items-center space-x-1">
                   {getSentimentIcon()}
                   <span className="capitalize">{article.sentiment}</span>
                 </span>
+                <span>•</span>
                 <span>{article.source}</span>
+                <span>•</span>
                 <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
               </div>
               
-              {/* Share Button in Modal */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="ml-4"
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Link
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
