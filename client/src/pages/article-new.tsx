@@ -3,8 +3,9 @@ import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Share2, Copy, ExternalLink } from "lucide-react";
+import { ArrowLeft, Share2, Copy, ExternalLink, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 import type { Article } from "@shared/schema";
 
@@ -12,6 +13,7 @@ export default function ArticlePage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   
   // Get specific article by ID
   const { data: article, isLoading, error } = useQuery<Article>({
@@ -153,7 +155,30 @@ export default function ArticlePage() {
 
             {/* Content */}
             <div className="text-foreground/80 leading-relaxed mb-6">
-              <div dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }} />
+              {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+                <div className="space-y-4">
+                  <div dangerouslySetInnerHTML={{ 
+                    __html: article.content.substring(0, 150).replace(/\n/g, '<br />') + '...' 
+                  }} />
+                  <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-6 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
+                    <div className="flex items-center gap-3 text-blue-800 dark:text-blue-200 mb-3">
+                      <Lock className="h-5 w-5" />
+                      <span className="text-lg font-bold">🔒 LOGIN REQUIRED TO READ FULL ARTICLE</span>
+                    </div>
+                    <p className="text-blue-700 dark:text-blue-300 font-medium mb-4">
+                      This is a premium StocksShorts Special article. Please login to read the complete content with detailed analysis and insights.
+                    </p>
+                    <Button 
+                      onClick={() => setLocation('/profile')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Go to Profile & Login
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }} />
+              )}
             </div>
 
             {/* Metadata */}

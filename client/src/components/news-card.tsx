@@ -113,7 +113,22 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
           getSentimentBorderColor()
         } hover:shadow-lg transition-shadow duration-200`}
-        onClick={onClick}
+        onClick={(e) => {
+          // Check if this is a special article that requires authentication
+          if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
+            // Prevent navigation and show login message
+            e.preventDefault();
+            e.stopPropagation();
+            toast({
+              title: "Login Required",
+              description: "Please go to Profile section to login and read the full article",
+              variant: "destructive",
+            });
+            return;
+          }
+          // For other articles or authenticated users, proceed with normal click
+          onClick();
+        }}
       >
         {/* Article Content Container - Inshorts Style */}
         <div className="flex flex-col h-full">
