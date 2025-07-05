@@ -4,8 +4,14 @@ export function getContextualImage(article: { title: string; content: string; ty
     const { title = '', content = '', type = '', id = 1 } = article || {};
     const combinedText = (title + ' ' + content).toLowerCase();
     
-    // Use article ID to ensure different articles get different images even with similar content
-    const imageVariant = (id % 3) + 1;
+    // Create sophisticated hash-based image selection to prevent repetition
+    const titleHash = title.length;
+    const contentHash = content.length;
+    const typeHash = type.length;
+    const combinedHash = titleHash + contentHash + typeHash + id;
+    
+    // Use 9 variations instead of 3 for much more variety
+    const imageVariant = (combinedHash % 9) + 1;
   
   
   // Specific company images based on company names
@@ -13,18 +19,30 @@ export function getContextualImage(article: { title: string; content: string; ty
     const relianceImages = [
       'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
       'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemical
-      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
+      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80', // Energy
+      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop&auto=format&q=80', // Industrial plant
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Oil & gas
+      'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=800&h=600&fit=crop&auto=format&q=80', // Energy towers
+      'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&auto=format&q=80', // Refinery complex
+      'https://images.unsplash.com/photo-1605737717911-b6e2b7d3a5c0?w=800&h=600&fit=crop&auto=format&q=80', // Chemical industry
+      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop&auto=format&q=80'  // Power plant
     ];
-    return relianceImages[imageVariant - 1];
+    return relianceImages[(imageVariant - 1) % relianceImages.length];
   }
   
   if (combinedText.includes('tcs') || combinedText.includes('tata consultancy')) {
     const tcsImages = [
       'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop&auto=format&q=80', // Office building
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Business analytics
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80'  // Corporate
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80', // Corporate
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Software development
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // Technology
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&auto=format&q=80', // IT services
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=600&fit=crop&auto=format&q=80', // Corporate office
+      'https://images.unsplash.com/photo-1516321165247-4aa89a48be28?w=800&h=600&fit=crop&auto=format&q=80', // Business meeting
+      'https://images.unsplash.com/photo-1553484771-371a605b060b?w=800&h=600&fit=crop&auto=format&q=80'  // Tech innovation
     ];
-    return tcsImages[imageVariant - 1];
+    return tcsImages[(imageVariant - 1) % tcsImages.length];
   }
   
   if (combinedText.includes('infosys')) {
@@ -585,27 +603,45 @@ export function getContextualImage(article: { title: string; content: string; ty
     const optionsImages = [
       'https://images.unsplash.com/photo-1643116774075-acc00caa9a7b?w=800&h=600&fit=crop&auto=format&q=80', // Trading charts
       'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Market analysis
-      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80'  // Stock charts
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Stock charts
+      'https://images.unsplash.com/photo-1559589689-577aabd1db4f?w=800&h=600&fit=crop&auto=format&q=80', // Financial data
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&auto=format&q=80', // Analytics
+      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format&q=80', // Investment
+      'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=600&fit=crop&auto=format&q=80', // Trading screen
+      'https://images.unsplash.com/photo-1559526324-c1f275fbfa32?w=800&h=600&fit=crop&auto=format&q=80', // Market data
+      'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=600&fit=crop&auto=format&q=80'  // Stock exchange
     ];
-    return optionsImages[imageVariant - 1];
+    return optionsImages[(imageVariant - 1) % optionsImages.length];
   }
 
   if (combinedText.includes('dividend') || combinedText.includes('reward') || combinedText.includes('red flag')) {
     const dividendImages = [
       'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format&q=80', // Investment
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Financial analysis
-      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80'  // Business building
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Business building
+      'https://images.unsplash.com/photo-1559589689-577aabd1db4f?w=800&h=600&fit=crop&auto=format&q=80', // Financial planning
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Stock market
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80', // Corporate office
+      'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=600&fit=crop&auto=format&q=80', // Trading analysis
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&auto=format&q=80', // Data analytics
+      'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=600&fit=crop&auto=format&q=80'  // Finance
     ];
-    return dividendImages[imageVariant - 1];
+    return dividendImages[(imageVariant - 1) % dividendImages.length];
   }
 
   if (combinedText.includes('market-cap') || combinedText.includes('category') || combinedText.includes('large') || combinedText.includes('mid') || combinedText.includes('small')) {
     const marketCapImages = [
       'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Stock market
       'https://images.unsplash.com/photo-1643116774075-acc00caa9a7b?w=800&h=600&fit=crop&auto=format&q=80', // Market analysis
-      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80'  // Financial charts
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Financial charts
+      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format&q=80', // Investment growth
+      'https://images.unsplash.com/photo-1559589689-577aabd1db4f?w=800&h=600&fit=crop&auto=format&q=80', // Market data
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&auto=format&q=80', // Analytics
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Business insights
+      'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=600&fit=crop&auto=format&q=80', // Trading screen
+      'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=600&fit=crop&auto=format&q=80'  // Stock exchange
     ];
-    return marketCapImages[imageVariant - 1];
+    return marketCapImages[(imageVariant - 1) % marketCapImages.length];
   }
 
   // Enhanced fallback system based on article type to prevent white/blank images
@@ -652,9 +688,9 @@ export function getContextualImage(article: { title: string; content: string; ty
     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80'  // Business analytics
   ];
   
-  // Ensure imageVariant is always valid (1, 2, or 3)
-  const safeVariant = Math.max(1, Math.min(3, imageVariant || 1));
-  const finalImage = ultimateFallbackImages[safeVariant - 1];
+  // Ensure imageVariant is always valid (1-9 range)
+  const safeVariant = Math.max(1, Math.min(9, imageVariant || 1));
+  const finalImage = ultimateFallbackImages[(safeVariant - 1) % ultimateFallbackImages.length];
   
   // Double-check we have a valid URL
   if (!finalImage || finalImage === '') {
