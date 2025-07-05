@@ -54,14 +54,14 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   const specializations = ["All", ...Array.from(new Set(advisors.map(advisor => advisor.specialization).filter((spec): spec is string => Boolean(spec))))];
 
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) => {
+    if (!searchQuery) return true;
+    
     const matchesSearch = 
       advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (advisor.location || '').toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesSpecialization = selectedSpecialization === "All" || advisor.specialization === selectedSpecialization;
-    
-    return matchesSearch && matchesSpecialization;
+    return matchesSearch;
   });
 
   const sortedAdvisors = (() => {
@@ -116,74 +116,40 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
       </div>
 
       {/* Search Bar */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="relative mb-3">
+      <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             type="text"
-            placeholder="Search advisors by name, company, or location..."
+            placeholder="Search advisors..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-3 w-full bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
+            className="pl-10 pr-4 py-2 w-full bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
           />
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          <div className="flex items-center gap-2 min-w-fit">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <select
-              value={selectedSpecialization}
-              onChange={(e) => setSelectedSpecialization(e.target.value)}
-              className="px-3 py-1 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md"
-            >
-              {specializations.map(spec => (
-                <option key={spec} value={spec}>{spec}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-2 min-w-fit">
-            <SortAsc className="h-4 w-4 text-gray-500" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-1 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md"
-            >
-              <option value="random">Random (Fair)</option>
-              <option value="name">Name</option>
-              <option value="location">Location</option>
-              <option value="experience">Experience</option>
-            </select>
-          </div>
         </div>
       </div>
 
-      {/* Verification Disclaimer */}
-      <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-        <Alert className="border-amber-300 dark:border-amber-700 bg-transparent">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm">
-            <strong>Important:</strong> Contact details are not verified by StocksShorts. Please verify SEBI registration independently before engaging services.
-          </AlertDescription>
-        </Alert>
+      {/* Compact Disclaimer */}
+      <div className="px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+        <p className="text-amber-800 dark:text-amber-200 text-xs flex items-center gap-1">
+          <AlertTriangle className="h-3 w-3" />
+          Contact details not verified - verify SEBI registration independently
+        </p>
       </div>
 
       {/* Results Count & Random Indicator */}
-      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {searchQuery || selectedSpecialization !== "All" 
+            {searchQuery 
               ? `${sortedAdvisors.length} advisor(s) found`
-              : `${advisors.length} registered advisors available`
+              : `${advisors.length} registered advisors`
             }
           </p>
-          {sortBy === "random" && (
-            <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-              <div className="animate-pulse w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-              Shuffles every 30s
-            </div>
-          )}
+          <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+            <div className="animate-pulse w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            Auto-shuffle
+          </div>
         </div>
       </div>
 
@@ -207,104 +173,90 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
             </Button>
           </div>
         ) : (
-          <div className="p-4 space-y-4">
+          <div className="p-3 space-y-3">
             {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
-              <Card key={advisor.id} className="hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-4">
+              <Card key={advisor.id} className="hover:shadow-md transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-base text-gray-900 dark:text-white">
                           {advisor.name}
                         </h3>
-                        {sortBy === "random" && index < 3 && (
-                          <Badge variant="outline" className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 text-xs">
-                            Featured
+                        {index < 3 && (
+                          <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs">
+                            Top
                           </Badge>
                         )}
                       </div>
-                      <p className="text-blue-600 dark:text-blue-400 text-sm font-semibold mb-1">
+                      <p className="text-blue-600 dark:text-blue-400 text-sm mb-1">
                         {advisor.designation}
                       </p>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">
                         {advisor.company}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      {advisor.rating && (
-                        <div className="flex items-center gap-1 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">
-                          <Star className="h-3 w-3 text-green-600 dark:text-green-400 fill-current" />
-                          <span className="text-xs font-semibold text-green-700 dark:text-green-400">{advisor.rating}</span>
-                        </div>
-                      )}
-                      <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs">
-                        SEBI RIA
-                      </Badge>
-                    </div>
+                    {advisor.rating && (
+                      <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md">
+                        <Star className="h-3 w-3 text-green-600 dark:text-green-400 fill-current" />
+                        <span className="text-xs text-green-700 dark:text-green-400">{advisor.rating}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-3">
                     {advisor.specialization && (
-                      <Badge variant="secondary" className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs font-medium">
+                      <Badge variant="secondary" className="text-xs">
                         {advisor.specialization}
                       </Badge>
                     )}
                     {advisor.location && (
-                      <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-md text-xs text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                         <MapPin className="h-3 w-3" />
                         {advisor.location}
                       </div>
                     )}
-                    {advisor.experience && (
-                      <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-md text-xs text-amber-700 dark:text-amber-400">
-                        <Star className="h-3 w-3" />
-                        {advisor.experience}
-                      </div>
-                    )}
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {advisor.phone && (
-                      <Button 
-                        size="sm" 
-                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-xs font-medium shadow-sm"
-                        onClick={() => window.open(`tel:${advisor.phone}`, '_self')}
-                      >
-                        <Phone className="h-3 w-3 mr-1" />
-                        Call Now
-                      </Button>
-                    )}
-                    {advisor.email && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs font-medium border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        onClick={() => window.open(`mailto:${advisor.email}`, '_self')}
-                      >
-                        <Mail className="h-3 w-3 mr-1" />
-                        Email
-                      </Button>
-                    )}
-                    {advisor.website && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs font-medium border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        onClick={() => window.open(advisor.website || '', '_blank')}
-                      >
-                        <Globe className="h-3 w-3 mr-1" />
-                        Website
-                      </Button>
-                    )}
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <Button 
+                      size="sm" 
+                      className={`text-xs ${advisor.phone ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                      onClick={() => advisor.phone && window.open(`tel:${advisor.phone}`, '_self')}
+                      disabled={!advisor.phone}
+                    >
+                      <Phone className="h-3 w-3 mr-1" />
+                      Call
+                    </Button>
+                    
+                    <Button 
+                      size="sm" 
+                      className={`text-xs ${advisor.phone ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                      onClick={() => advisor.phone && window.open(`https://wa.me/91${advisor.phone?.replace(/\D/g, '')}`, '_blank')}
+                      disabled={!advisor.phone}
+                    >
+                      <svg className="h-3 w-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                      </svg>
+                      WhatsApp
+                    </Button>
+                    
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className={`text-xs ${advisor.email ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : 'text-gray-400 cursor-not-allowed'}`}
+                      onClick={() => advisor.email && window.open(`mailto:${advisor.email}`, '_self')}
+                      disabled={!advisor.email}
+                    >
+                      <Mail className="h-3 w-3 mr-1" />
+                      Email
+                    </Button>
                   </div>
                   
-                  {/* Verification Notice */}
-                  <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      Contact details not verified - please verify SEBI registration independently
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Not verified by StocksShorts
+                  </p>
                 </CardContent>
               </Card>
             ))}
