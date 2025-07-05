@@ -79,11 +79,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         typeSet.forEach(type => uniqueTypes.push(type));
         console.log('All article categories in sheets:', uniqueTypes);
         
-        // Sort by date (most recent first) using timeago column
+        // Sort by date (most recent first) - prioritize articles with actual timestamps
         const sortedArticles = articles.sort((a, b) => {
-          const dateA = a.time ? new Date(a.time).getTime() : 0;
-          const dateB = b.time ? new Date(b.time).getTime() : 0;
-          return dateB - dateA; // Most recent first
+          // Helper function to get sortable timestamp
+          const getTimestamp = (article: any) => {
+            if (article.time) {
+              const timestamp = new Date(article.time).getTime();
+              return isNaN(timestamp) ? 0 : timestamp;
+            }
+            // Fallback to createdAt if time is null
+            return article.createdAt ? new Date(article.createdAt).getTime() : 0;
+          };
+          
+          const timestampA = getTimestamp(a);
+          const timestampB = getTimestamp(b);
+          
+          // Articles with timestamps always come before those without
+          if (timestampA > 0 && timestampB === 0) return -1;
+          if (timestampA === 0 && timestampB > 0) return 1;
+          
+          // If both have timestamps, sort by most recent first
+          if (timestampA > 0 && timestampB > 0) {
+            return timestampB - timestampA;
+          }
+          
+          // If neither has timestamps, maintain original order
+          return 0;
         });
         
         // Return full articles without truncation
