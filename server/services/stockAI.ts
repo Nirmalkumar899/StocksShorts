@@ -6,6 +6,10 @@ import { peRatioCalculator } from './peRatioCalculator';
 import { dataVerification } from './dataVerification';
 import axios from 'axios';
 
+if (!process.env.PERPLEXITY_API_KEY) {
+  throw new Error('PERPLEXITY_API_KEY is required for stock analysis');
+}
+
 export class StockAIService {
   private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string; screenerData?: any }> {
     const queryLower = query.toLowerCase().trim();
@@ -650,11 +654,190 @@ export class StockAIService {
     return mappings[symbol.toUpperCase()] || null;
   }
 
+  private async getCompanyOverview(companyName: string, symbol: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-sonar-small-128k-online",
+          messages: [
+            { 
+              role: "system", 
+              content: "You are a financial research assistant. Provide comprehensive company overviews by reading company websites and official sources."
+            },
+            { 
+              role: "user", 
+              content: `Read the official website of ${companyName} (${symbol}) and provide a comprehensive overview covering:
+
+1. What the company does (core business model)
+2. Main revenue streams and business segments
+3. Key markets and geographic presence  
+4. Recent business developments and strategic initiatives
+5. Competitive positioning in the industry
+
+Focus on factual information from the company's official website, annual reports, and recent press releases. Keep it concise but informative (300-400 words).`
+            }
+          ],
+          max_tokens: 600,
+          temperature: 0.1,
+          search_recency_filter: "month",
+          stream: false
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content || "Company overview not available at this time.";
+    } catch (error) {
+      console.error("Error fetching company overview:", error);
+      return "Company overview not available at this time.";
+    }
+  }
+
+  private async getConferenceCallTranscript(companyName: string, symbol: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-sonar-small-128k-online",
+          messages: [
+            { 
+              role: "system", 
+              content: "You are a financial analyst specializing in earnings call analysis. Extract key insights from the latest quarterly conference call transcripts."
+            },
+            { 
+              role: "user", 
+              content: `Find and analyze the latest quarterly earnings conference call transcript for ${companyName} (${symbol}). Extract:
+
+**KEY QUARTER HIGHLIGHTS:**
+- Revenue and profit performance vs previous quarter and year-ago quarter
+- Key business metrics and operational updates
+- Major business wins, new contracts, or partnerships announced
+
+**MANAGEMENT GROWTH OUTLOOK & COMMENTARY:**
+- Forward guidance for next quarter and full year
+- Growth targets and expansion plans mentioned
+- Management's view on industry trends and market conditions
+- Capital expenditure plans and strategic investments
+- Any comments on margin outlook and cost management
+
+**INVESTOR Q&A INSIGHTS:**
+- Key concerns raised by analysts
+- Management responses on competitive positioning
+- Commentary on sectoral challenges or opportunities
+
+Focus on the most recent quarter's call. Provide specific numbers, percentages, and quotes where mentioned. If no recent transcript is available, mention that clearly.`
+            }
+          ],
+          max_tokens: 800,
+          temperature: 0.1,
+          search_recency_filter: "month",
+          stream: false
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content || "Recent conference call transcript not available.";
+    } catch (error) {
+      console.error("Error fetching conference call transcript:", error);
+      return "Recent conference call transcript not available.";
+    }
+  }
+
+  private async getInvestorPresentationInsights(companyName: string, symbol: string): Promise<string> {
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-sonar-small-128k-online",
+          messages: [
+            { 
+              role: "system", 
+              content: "You are a financial analyst specializing in investor presentation analysis. Extract strategic insights from company presentations."
+            },
+            { 
+              role: "user", 
+              content: `Find and analyze the latest investor presentation for ${companyName} (${symbol}). Look for:
+
+**STRATEGIC HIGHLIGHTS:**
+- Company's strategic priorities and focus areas
+- Market opportunity size and growth projections
+- Competitive advantages and differentiation factors
+
+**FINANCIAL TARGETS & ROADMAP:**
+- Medium to long-term financial targets (3-5 year outlook)
+- Revenue growth aspirations and margin expansion plans
+- Return ratios targets (ROE, ROCE) and capital allocation strategy
+
+**KEY BUSINESS UPDATES:**
+- New product launches or service offerings
+- Geographic expansion plans or market entry strategies
+- Technology investments and digital transformation initiatives
+- ESG initiatives and sustainability commitments
+
+**INVESTMENT THESIS:**
+- Management's value proposition to investors
+- Key investment highlights and growth drivers
+- Risk factors and mitigation strategies mentioned
+
+Focus on the most recent investor presentation or annual report. Provide specific targets, timelines, and strategic priorities mentioned. If no recent presentation is available, mention that clearly.`
+            }
+          ],
+          max_tokens: 700,
+          temperature: 0.1,
+          search_recency_filter: "month", 
+          stream: false
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content || "Recent investor presentation not available.";
+    } catch (error) {
+      console.error("Error fetching investor presentation:", error);
+      return "Recent investor presentation not available.";
+    }
+  }
+
   async analyzeStock(query: string): Promise<string> {
     try {
       const stockInfo = await this.identifyStock(query);
       
-      // Cross-verify financial data from multiple sources
+      // Get comprehensive company information
+      console.log(`Fetching comprehensive analysis for ${stockInfo.symbol}...`);
+      
+      // Step 1: Company overview from website
+      const companyOverview = await this.getCompanyOverview(stockInfo.fullName, stockInfo.symbol);
+      
+      // Step 2: Latest quarter conference call transcript
+      const conferenceCallInsights = await this.getConferenceCallTranscript(stockInfo.fullName, stockInfo.symbol);
+      
+      // Step 3: Investor presentation insights
+      const investorPresentationInsights = await this.getInvestorPresentationInsights(stockInfo.fullName, stockInfo.symbol);
+      
+      // Step 4: Cross-verify financial data from multiple sources
       console.log(`Cross-verifying financial data for ${stockInfo.symbol} across multiple sources...`);
       const verifiedData = await dataVerification.getVerifiedFinancialData(stockInfo.symbol);
       
@@ -783,16 +966,28 @@ RECENT QUARTER PERFORMANCE:
             },
             { 
               role: "user", 
-              content: `Analyze ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
+              content: `Provide comprehensive analysis for ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
 
+## COMPANY OVERVIEW:
+${companyOverview}
+
+## LATEST QUARTER CONFERENCE CALL INSIGHTS:
+${conferenceCallInsights}
+
+## INVESTOR PRESENTATION HIGHLIGHTS:
+${investorPresentationInsights}
+
+## FINANCIAL DATA:
 ${marketDataText}
 
-INSTRUCTIONS:
-- Use the authentic financial metrics provided above
-- If conference call data is shown, use those exact quarterly numbers and management guidance
-- Quote specific revenue figures, growth percentages, and management targets from the data
-- Follow the exact structure: Business → Quarterly Performance → Management Guidance → Industry → Valuation → Technical → Conclusion
-- Write in flowing paragraphs, not bullet points` 
+ANALYSIS INSTRUCTIONS:
+- Start with what the company does based on the company overview section
+- Include key insights from the latest conference call, especially management growth outlook and commentary
+- Incorporate strategic highlights from investor presentations
+- Use the authentic financial metrics provided
+- Structure as: Company Business → Conference Call Key Points → Management Growth Outlook → Investor Presentation Strategy → Financial Analysis → Investment Summary
+- Provide specific numbers, percentages, and quotes from the data sources
+- Write in clear, educational format with proper headings` 
             }
           ],
           max_tokens: 1200,
