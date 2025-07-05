@@ -140,7 +140,8 @@ export class GoogleSheetsService {
               const fileIdMatch = providedImageUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
               if (fileIdMatch) {
                 const fileId = fileIdMatch[1];
-                imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                // Use Google Drive thumbnail URL format that works for public images
+                imageUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
                 console.log(`Converted Google Drive URL for ${category} article: ${title}`);
                 console.log(`Original URL: ${providedImageUrl}`);
                 console.log(`Converted URL: ${imageUrl}`);
