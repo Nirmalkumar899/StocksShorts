@@ -182,19 +182,8 @@ export class GoogleSheetsService {
               imageUrl = providedImageUrl;
             }
             console.log(`Using provided image URL for ${category} article: ${title}`);
-          } else if (candlestickImageService.shouldGenerateChart(content, category)) {
-            // Generate candlestick chart when no image URL is provided
-            try {
-              const stockSymbol = candlestickImageService.extractStockSymbol(title, content);
-              // Pass category as articleType and title for better pattern detection
-              const svg = candlestickImageService.generateCandlestickSVG(content, stockSymbol, category, title);
-              const base64 = Buffer.from(svg).toString('base64');
-              imageUrl = `data:image/svg+xml;base64,${base64}`;
-              console.log(`Generated candlestick chart for ${category} article: ${title}`);
-            } catch (error) {
-              console.warn(`Failed to generate chart for article ${title}:`, error);
-            }
           }
+          // Don't generate candlestick charts automatically - let frontend handle image selection
 
           // Debug: Log final imageUrl value
           if (imageUrl) {
