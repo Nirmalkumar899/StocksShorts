@@ -20,21 +20,22 @@ function Router() {
   useSEO(); // Enable dynamic SEO
   const [location, setLocation] = useLocation();
   
-  const [showSplash, setShowSplash] = useState(true);
+  // Temporarily disable splash screen for debugging
+  // const [showSplash, setShowSplash] = useState(true);
   
-  // Show splash screen for 1 second on first load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  // // Show splash screen for 1 second on first load
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setShowSplash(false);
+  //   }, 1000);
+  //   
+  //   return () => clearTimeout(timer);
+  // }, []);
   
-  // Show splash screen for first 1 second
-  if (showSplash) {
-    return <SplashScreen />;
-  }
+  // // Show splash screen for first 1 second
+  // if (showSplash) {
+  //   return <SplashScreen />;
+  // }
   
   return (
     <Switch>
