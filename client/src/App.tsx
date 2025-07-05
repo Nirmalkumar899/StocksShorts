@@ -20,11 +20,11 @@ function Router() {
   const [location, setLocation] = useLocation();
   const [showSplash, setShowSplash] = useState(true);
   
-  // Show splash screen for 1 second on first load
+  // Show splash screen for 3 seconds on first load
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 1000);
+    }, 3000);
     
     return () => clearTimeout(timer);
   }, []);
