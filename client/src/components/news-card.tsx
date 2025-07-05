@@ -135,7 +135,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <img
                 src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
                 alt={article.title}
-                className="w-full h-full object-cover cursor-pointer"
+                className="w-full h-full object-contain cursor-pointer bg-gray-100 dark:bg-gray-800"
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setImageError(true)}
                 onClick={(e) => {
@@ -264,11 +264,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <div className="space-y-4">
             {/* Article Image in Modal */}
             {(article.imageUrl || getContextualImage(article)) && (
-              <div className="relative w-full h-64 rounded-lg overflow-hidden">
+              <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
                 <img
                   src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
                   alt={article.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
                 />
