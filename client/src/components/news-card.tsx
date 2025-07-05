@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { Share2, TrendingUp, TrendingDown, BarChart3, ExternalLink, Copy, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Share2, TrendingUp, TrendingDown, BarChart3, ExternalLink, Copy, Lock, X } from "lucide-react";
 import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
@@ -18,22 +20,17 @@ interface NewsCardProps {
   onToggleExpanded?: () => void;
 }
 
-export default function NewsCard({ article, onClick, onShare, isExpanded = false, onToggleExpanded }: NewsCardProps) {
+export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [, setLocation] = useLocation();
+  
   const sentimentColor = getSentimentColor(article.sentiment);
   const typeColor = getTypeColor(article.type || 'AI News');
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-
-  const reportMutation = {
-    mutate: async (articleId: number) => {
-      // Mock implementation for reporting functionality
-      console.log('Reported article:', articleId);
-    }
-  };
 
   const handleCopyLink = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,14 +55,9 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
     window.open(`/article/${article.id}`, '_blank');
   };
 
-  const handleLoginPrompt = (e: React.MouseEvent) => {
+  const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toast({
-      title: "Login Required",
-      description: "Please login to access StocksShorts Special content. Other articles are free to read.",
-      variant: "default",
-    });
-    setLocation("/profile");
+    onShare(e);
   };
   
   const getSentimentIcon = () => {
@@ -92,18 +84,16 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
 
   // Function to determine if content needs truncation 
   const shouldShowViewMore = () => {
-    return article.content.length > 250; // Set to 250 characters as requested
+    return article.content.length > 250;
   };
 
   // Function to get truncated content for preview
   const getTruncatedContent = (content: string) => {
     if (content.length <= 250) return content;
     
-    // Find the last complete word within 250 characters
     const truncated = content.substring(0, 250);
     const lastSpaceIndex = truncated.lastIndexOf(' ');
     
-    // Return content up to the last complete word, or just truncate at 250 if no space found
     return lastSpaceIndex > 200 ? truncated.substring(0, lastSpaceIndex) : truncated;
   };
 
@@ -112,7 +102,6 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
       .split('\n')
       .filter(line => line.trim() !== '')
       .map(line => {
-        // Format headings (lines with colons, dashes, or short titles)
         if (line.includes(':') || line.includes('-') || (line.length < 50 && line.trim().endsWith('.'))) {
           return `**${line.trim()}**`;
         }
@@ -123,137 +112,201 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
 
   const handleViewMore = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onToggleExpanded) {
-      onToggleExpanded();
-    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
-    <div 
-      className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
-        getSentimentBorderColor()
-      } hover:shadow-lg transition-shadow duration-200`}
-      onClick={onClick}
-    >
-      {/* Article Content Container */}
-      <div className="flex h-full">
-        {/* Image Section (40% width) */}
-        <div className="w-2/5 relative">
-          <div className="absolute inset-0">
-            <img
-              src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-              alt={article.title}
-              className="w-full h-full object-cover cursor-pointer"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLightboxOpen(true);
-              }}
-            />
-            
-            {/* Image overlay gradient for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20"></div>
-          </div>
-        </div>
-
-        {/* Content Section (60% width) */}
-        <div className="w-3/5 p-4 flex flex-col justify-between">
-          {/* Article content based on authentication status */}
-          {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-            <div className="h-full flex flex-col justify-center items-center text-center space-y-4">
-              <Lock className="h-8 w-8 text-gray-400" />
-              <div>
-                <h3 className="font-bold text-lg mb-2">{article.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  🔒 LOGIN REQUIRED TO READ
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mb-4">
-                  StocksShorts Special articles require authentication. Other articles are free to read.
-                </p>
-                <DirectLogin />
-              </div>
+    <>
+      <div 
+        className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
+          getSentimentBorderColor()
+        } hover:shadow-lg transition-shadow duration-200`}
+        onClick={onClick}
+      >
+        {/* Article Content Container */}
+        <div className="flex h-full">
+          {/* Image Section (40% width) */}
+          <div className="w-2/5 relative">
+            <div className="absolute inset-0">
+              <img
+                src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                alt={article.title}
+                className="w-full h-full object-cover cursor-pointer"
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLightboxOpen(true);
+                }}
+              />
+              
+              {/* Image overlay gradient for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20"></div>
             </div>
-          ) : (
-            <div className="h-full flex flex-col">
-              {shouldShowViewMore() && !isExpanded ? (
-                <div className="whitespace-pre-wrap">
-                  {getTruncatedContent(article.content)}...{' '}
-                  <button
-                    onClick={handleViewMore}
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
-                  >
-                    View More
-                  </button>
+          </div>
+
+          {/* Content Section (60% width) */}
+          <div className="w-3/5 p-4 flex flex-col justify-between">
+            {/* Article content based on authentication status */}
+            {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+              <div className="h-full flex flex-col justify-center items-center text-center space-y-4">
+                <Lock className="h-8 w-8 text-gray-400" />
+                <div>
+                  <h3 className="font-bold text-lg mb-2">{article.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    🔒 LOGIN REQUIRED TO READ
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mb-4">
+                    StocksShorts Special articles require authentication. Other articles are free to read.
+                  </p>
+                  <DirectLogin />
                 </div>
-              ) : (
-                <div className="whitespace-pre-wrap text-left leading-relaxed">
-                  {article.content}
-                  {isExpanded && shouldShowViewMore() && (
-                    <button
-                      onClick={handleViewMore}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline ml-2"
-                    >
-                      View Less
-                    </button>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
+                  {shouldShowViewMore() ? (
+                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {getTruncatedContent(article.content)}...{' '}
+                      <button
+                        onClick={handleViewMore}
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
+                      >
+                        View More
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {article.content}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-        
-        {/* Source and time - moved below content */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
-              <span className="flex items-center space-x-1">
-                {getSentimentIcon()}
-                <span className="capitalize font-medium">{article.sentiment}</span>
-              </span>
-              <span className="text-gray-500">•</span>
-              <span className="font-medium">{article.source}</span>
-              <span className="text-gray-500">•</span>
-              <span>{formatTimeAgo(article.time)}</span>
-            </div>
-            
-            {/* Action buttons */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleCopyLink}
-                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title="Copy link"
-              >
-                <Copy className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-              </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Source and time - positioned at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
+                <span className="flex items-center space-x-1">
+                  {getSentimentIcon()}
+                  <span className="capitalize font-medium">{article.sentiment}</span>
+                </span>
+                <span className="text-gray-500">•</span>
+                <span className="font-medium">{article.source}</span>
+                <span className="text-gray-500">•</span>
+                <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+              </div>
               
-              <button
-                onClick={handleOpenArticle}
-                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title="Open article"
-              >
-                <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-              </button>
-              
-              <button
-                onClick={onShare}
-                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title="Share article"
-              >
-                <Share2 className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-              </button>
+              {/* Action buttons */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleCopyLink}
+                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  title="Copy link"
+                >
+                  <Copy className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+                </button>
+                
+                <button
+                  onClick={handleOpenArticle}
+                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  title="Open article"
+                >
+                  <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+                </button>
+                
+                <button
+                  onClick={handleShare}
+                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  title="Share article"
+                >
+                  <Share2 className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Image Lightbox */}
+        <ImageLightbox
+          src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+          alt={article.title}
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+        />
       </div>
 
-      {/* Image Lightbox for Educational and Trader View articles */}
-      <ImageLightbox
-        src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-        alt={article.title}
-        isOpen={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-      />
-    </div>
+      {/* Full Article Modal - RESTORED ORIGINAL DESIGN */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold pr-8">
+              {article.title}
+            </DialogTitle>
+            <DialogClose asChild>
+              <Button
+                variant="ghost"
+                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+                onClick={handleCloseModal}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Article Image in Modal */}
+            {(article.imageUrl || getContextualImage(article)) && (
+              <div className="relative w-full h-64 rounded-lg overflow-hidden">
+                <img
+                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageError(true)}
+                />
+              </div>
+            )}
+            
+            {/* Article Content in Modal */}
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                {formatNewsContent(article.content)}
+              </div>
+            </div>
+            
+            {/* Meta Information */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                <span className="flex items-center space-x-1">
+                  {getSentimentIcon()}
+                  <span className="capitalize">{article.sentiment}</span>
+                </span>
+                <span>{article.source}</span>
+                <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+              </div>
+              
+              {/* Share Button in Modal */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="ml-4"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
