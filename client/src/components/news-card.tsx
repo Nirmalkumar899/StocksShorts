@@ -190,7 +190,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       {/* Article Image - Full container with proper scaling */}
       <div className="h-2/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative flex items-center justify-center">
         <img 
-          src={getContextualImage({ ...article, imageUrl: article.imageUrl || undefined })} 
+          src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))} 
           alt={article.title}
           className={`w-full h-full object-fill transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -200,25 +200,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           }}
           loading="eager"
           decoding="async"
-          onLoad={() => {
-            setImageLoaded(true);
-            setImageError(false);
-          }}
+          onLoad={() => setImageLoaded(true)}
           onError={(e) => {
-            console.log(`Image failed to load for article: ${article.title}`, e);
-            const target = e.target as HTMLImageElement;
-            const currentSrc = target.src;
-            
-            // Try a different fallback image if the current one fails
-            if (!currentSrc.includes('?fallback=1')) {
-              target.src = 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80&fallback=1';
-            } else {
-              // If fallback also fails, use emergency image
-              target.src = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80';
+            console.log(`Image failed to load, using fallback: ${article.imageUrl}`, e);
+            if (!imageError) {
+              setImageError(true);
+              setImageLoaded(false);
+              // Force re-render with fallback image
+              setTimeout(() => setImageLoaded(true), 100);
             }
-            
-            setImageLoaded(true);
-            setImageError(true);
           }}
         />
         
@@ -227,8 +217,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-gray-200 dark:from-gray-700 via-gray-300 dark:via-gray-600 to-gray-200 dark:to-gray-700 animate-pulse"></div>
         )}
         
-        {/* Always show beautiful fallback if image fails or loads slowly */}
-        {(!imageLoaded || imageError) && (
+        {/* Enhanced fallback for failed images */}
+        {imageError && (
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center">
             <div className="text-center text-white">
               <div className="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -239,9 +229,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <div className="text-sm font-bold">
                 {(article.type || 'NEWS').toUpperCase()}
               </div>
-              <div className="text-xs opacity-75 mt-1">
-                {imageError ? 'Stock Market News' : 'Loading...'}
-              </div>
+              <div className="text-xs opacity-75 mt-1">Stock Market News</div>
             </div>
           </div>
         )}
@@ -389,7 +377,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             {/* Article Image */}
             <div className="relative h-64 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
               <img 
-                src={getContextualImage({ ...article, imageUrl: article.imageUrl || undefined })} 
+                src={article.imageUrl || getContextualImage(article)} 
                 alt={article.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
