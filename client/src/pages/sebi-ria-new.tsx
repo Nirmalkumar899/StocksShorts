@@ -197,11 +197,6 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
                           <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {advisor.name}
                           </h3>
-                          {index < 3 && (
-                            <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs animate-pulse">
-                              ⭐ Featured
-                            </Badge>
-                          )}
                         </div>
                       </div>
                       <p className="text-blue-600 dark:text-blue-400 text-sm font-semibold mb-1">
