@@ -187,15 +187,16 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     >
       {/* Inshorts-style layout: Image top, content bottom */}
       
-      {/* Article Image - Original height restored */}
-      <div className="h-2/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative flex items-center justify-center">
+      {/* Article Image - Full width without cropping */}
+      <div className="h-2/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative">
         {!imageError && (
           <img 
             src={article.imageUrl || getContextualImage(article)} 
             alt={article.title}
-            className={`w-full h-full object-cover object-top transition-opacity duration-300 ${
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
+            style={{ objectPosition: 'center center' }}
             loading="eager"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
