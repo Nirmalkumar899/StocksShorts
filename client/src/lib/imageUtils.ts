@@ -1,10 +1,11 @@
 // Dynamic image selection based on article content and type
 export function getContextualImage(article: { title: string; content: string; type: string; id: number }): string {
-  const { title, content, type, id } = article;
-  const combinedText = (title + ' ' + content).toLowerCase();
-  
-  // Use article ID to ensure different articles get different images even with similar content
-  const imageVariant = (id % 3) + 1;
+  try {
+    const { title = '', content = '', type = '', id = 1 } = article || {};
+    const combinedText = (title + ' ' + content).toLowerCase();
+    
+    // Use article ID to ensure different articles get different images even with similar content
+    const imageVariant = (id % 3) + 1;
   
   
   // Specific company images based on company names
@@ -616,12 +617,26 @@ export function getContextualImage(article: { title: string; content: string; ty
     return cryptoFallback[imageVariant - 1];
   }
 
-  // Strong default fallback to prevent any white/blank images
-  const strongDefaultImages = [
+  // Ultimate fallback - guaranteed to work
+  const ultimateFallbackImages = [
     'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Business building
     'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80', // Corporate office
     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80'  // Business analytics
   ];
   
-  return strongDefaultImages[imageVariant - 1];
+  // Ensure imageVariant is always valid (1, 2, or 3)
+  const safeVariant = Math.max(1, Math.min(3, imageVariant || 1));
+  const finalImage = ultimateFallbackImages[safeVariant - 1];
+  
+  // Double-check we have a valid URL
+  if (!finalImage || finalImage === '') {
+    return 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80';
+  }
+  
+  return finalImage;
+  } catch (error) {
+    console.error('Error in getContextualImage:', error);
+    // Emergency fallback - always return a working image
+    return 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80';
+  }
 }

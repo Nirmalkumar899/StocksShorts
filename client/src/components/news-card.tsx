@@ -189,37 +189,47 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       
       {/* Article Image - Full container with proper scaling */}
       <div className="h-2/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative flex items-center justify-center">
-        {!imageError && (
-          <img 
-            src={article.imageUrl || getContextualImage(article)} 
-            alt={article.title}
-            className={`w-full h-full object-fill transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{ 
-              imageRendering: 'crisp-edges'
-            }}
-            loading="eager"
-            decoding="async"
-            onLoad={() => setImageLoaded(true)}
-            onError={(e) => {
-              console.log(`Image failed to load: ${article.imageUrl}`, e);
+        <img 
+          src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))} 
+          alt={article.title}
+          className={`w-full h-full object-fill transition-opacity duration-300 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ 
+            imageRendering: 'crisp-edges'
+          }}
+          loading="eager"
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
+          onError={(e) => {
+            console.log(`Image failed to load, using fallback: ${article.imageUrl}`, e);
+            if (!imageError) {
               setImageError(true);
               setImageLoaded(false);
-            }}
-          />
-        )}
+              // Force re-render with fallback image
+              setTimeout(() => setImageLoaded(true), 100);
+            }
+          }}
+        />
         
         {/* Loading skeleton */}
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 bg-gradient-to-r from-gray-200 dark:from-gray-700 via-gray-300 dark:via-gray-600 to-gray-200 dark:to-gray-700 animate-pulse"></div>
         )}
         
-        {/* Fallback gradient for failed images */}
+        {/* Enhanced fallback for failed images */}
         {imageError && (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <div className="text-white text-sm font-semibold opacity-90">
-              {(article.type || 'NEWS').toUpperCase()}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center">
+            <div className="text-center text-white">
+              <div className="w-16 h-16 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="text-sm font-bold">
+                {(article.type || 'NEWS').toUpperCase()}
+              </div>
+              <div className="text-xs opacity-75 mt-1">Stock Market News</div>
             </div>
           </div>
         )}
