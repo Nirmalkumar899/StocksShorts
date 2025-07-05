@@ -231,54 +231,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </span>
         </div>
         
-        {/* Action buttons on image */}
-        <div className="absolute top-3 right-3 flex space-x-2">
-          {/* Report button for AI News only */}
-          {article.type === 'AI News' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReport}
-              disabled={reportMutation.isPending}
-              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-              title="Report incorrect information"
-            >
-              <AlertTriangle className="h-4 w-4" />
-            </Button>
-          )}
-          
-          {/* Individual article link buttons */}
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopyLink}
-              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-              title="Copy article link"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleOpenArticle}
-              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-              title="Open article page"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onShare}
-              className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
-              title="Share options"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
+        {/* Share button on image */}
+        <div className="absolute top-3 right-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onShare}
+            className="text-white/80 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2"
+            title="Share options"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       
