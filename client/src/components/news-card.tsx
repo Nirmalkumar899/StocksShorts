@@ -127,14 +127,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         } hover:shadow-lg transition-shadow duration-200`}
         onClick={onClick}
       >
-        {/* Article Content Container */}
-        <div className="flex h-full min-h-[400px]">
-          {/* Image Section (40% width) */}
-          <div className="w-2/5 relative min-h-[400px] bg-gray-50 dark:bg-gray-800">
+        {/* Article Content Container - Inshorts Style */}
+        <div className="flex flex-col h-full">
+          {/* Image Section (Top - Full Width) */}
+          <div className="w-full h-64 relative bg-gray-50 dark:bg-gray-800">
             <img
               src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
               alt={article.title}
-              className="w-full h-full object-contain cursor-pointer"
+              className="w-full h-full object-cover cursor-pointer"
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
               onClick={(e) => {
@@ -144,8 +144,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             />
           </div>
 
-          {/* Content Section (60% width) */}
-          <div className="w-3/5 p-4 flex flex-col justify-between">
+          {/* Content Section (Bottom - Full Width) */}
+          <div className="flex-1 p-4 flex flex-col justify-between">
             {/* Article content based on authentication status */}
             {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
               <div className="h-full flex flex-col justify-center items-center text-center space-y-4">
