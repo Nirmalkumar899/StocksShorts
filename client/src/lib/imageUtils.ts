@@ -6,8 +6,9 @@ export function getContextualImage(article: { title: string; content: string; ty
   // Use article ID to ensure different articles get different images even with similar content
   const imageVariant = (id % 3) + 1;
   
+  
   // Specific company images based on company names
-  if (combinedText.includes('reliance')) {
+  if (combinedText.includes('reliance') || combinedText.includes('ril')) {
     const relianceImages = [
       'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
       'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemical
@@ -192,6 +193,134 @@ export function getContextualImage(article: { title: string; content: string; ty
       'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
     ];
     return ntpcImages[imageVariant - 1];
+  }
+  
+  // Focus on target companies, not brokerages
+  if (combinedText.includes('trent')) {
+    const trentImages = [
+      'https://images.unsplash.com/photo-1544441893-675973e31985?w=800&h=600&fit=crop&auto=format&q=80', // Fashion retail
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80', // Clothing store
+      'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&h=600&fit=crop&auto=format&q=80'  // Retail shopping
+    ];
+    return trentImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('indusind bank') || combinedText.includes('indusind')) {
+    const indusBankImages = [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Bank building
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&auto=format&q=80', // Banking services
+      'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format&q=80'  // Financial services
+    ];
+    return indusBankImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('blue star')) {
+    const blueStarImages = [
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&h=600&fit=crop&auto=format&q=80', // Air conditioning/cooling
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Industrial equipment
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Manufacturing
+    ];
+    return blueStarImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('zensar')) {
+    const zensarImages = [
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Software/IT
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&auto=format&q=80', // Technology consulting
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80'  // Digital services
+    ];
+    return zensarImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('kaynes technology') || combinedText.includes('kaynes')) {
+    const kaynesImages = [
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Electronics/tech
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // EMS manufacturing
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial tech
+    ];
+    return kaynesImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('kp green') || combinedText.includes('solar') || combinedText.includes('renewable')) {
+    const solarImages = [
+      'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=800&h=600&fit=crop&auto=format&q=80', // Solar panels
+      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Green energy
+      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80'  // Infrastructure
+    ];
+    return solarImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('metro') || combinedText.includes('railway') || combinedText.includes('transport')) {
+    const transportImages = [
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&h=600&fit=crop&auto=format&q=80', // Metro/train
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80'  // Construction
+    ];
+    return transportImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('garment') || combinedText.includes('textile') || combinedText.includes('export')) {
+    const textileImages = [
+      'https://images.unsplash.com/photo-1544441893-675973e31985?w=800&h=600&fit=crop&auto=format&q=80', // Retail/fashion
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80', // Manufacturing
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+    ];
+    return textileImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('nbcc') || combinedText.includes('construction') || combinedText.includes('building')) {
+    const constructionImages = [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+    ];
+    return constructionImages[imageVariant - 1];
+  }
+  
+  // Additional Indian companies commonly featured in research reports
+  if (combinedText.includes('axis bank') || combinedText.includes('axis direct')) {
+    const axisBankImages = [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Banking
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&auto=format&q=80', // Financial services
+      'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format&q=80'  // Bank building
+    ];
+    return axisBankImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('kotak bank') || combinedText.includes('kotak mahindra')) {
+    const kotakImages = [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Banking
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&auto=format&q=80', // Financial services
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80'  // Business analytics
+    ];
+    return kotakImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('sbi cards') || combinedText.includes('state bank')) {
+    const sbiImages = [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Banking
+      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop&auto=format&q=80', // Credit cards
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&auto=format&q=80'  // Financial services
+    ];
+    return sbiImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('max india') || combinedText.includes('antara') || combinedText.includes('senior care')) {
+    const maxIndiaImages = [
+      'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop&auto=format&q=80', // Healthcare
+      'https://images.unsplash.com/photo-1565372195458-9de0b320ef04?w=800&h=600&fit=crop&auto=format&q=80', // Senior care
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80'  // Healthcare services
+    ];
+    return maxIndiaImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('v2 retail') || combinedText.includes('retail')) {
+    const v2RetailImages = [
+      'https://images.unsplash.com/photo-1544441893-675973e31985?w=800&h=600&fit=crop&auto=format&q=80', // Retail shopping
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80', // Store
+      'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&h=600&fit=crop&auto=format&q=80'  // Fashion retail
+    ];
+    return v2RetailImages[imageVariant - 1];
   }
   
   // Move chart patterns to later in the priority order
