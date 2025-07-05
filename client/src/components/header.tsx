@@ -1,5 +1,5 @@
 import { RefreshCw, Moon, Sun, Download, Languages } from "lucide-react";
-import logoImage from "@assets/IMG_4184_1751710507049.jpeg";
+import logoImage from "@assets/stocksshorts-logo.jpeg";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
@@ -138,6 +138,9 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
               alt="StocksShorts" 
               className="h-8 w-auto object-contain"
             />
+            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+              StocksShorts
+            </span>
           </div>
           <div className="flex items-center space-x-2">
             {showInstallButton && (
