@@ -187,8 +187,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     >
       {/* Inshorts-style layout: Image top, content bottom */}
       
-      {/* Article Image - Full image display with optimal sizing */}
-      <div className="h-3/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative flex items-center justify-center">
+      {/* Article Image - Original height restored */}
+      <div className="h-2/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative flex items-center justify-center">
         {!imageError && (
           <img 
             src={article.imageUrl || getContextualImage(article)} 
@@ -279,8 +279,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </div>
       </div>
       
-      {/* Article Content - Remaining space */}
-      <div className="h-2/5 bg-white dark:bg-gray-900 p-4 flex flex-col">
+      {/* Article Content - Expanded for better readability */}
+      <div className="h-3/5 bg-white dark:bg-gray-900 p-4 flex flex-col">
         {/* Title */}
         <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-3">
           {article.title}
