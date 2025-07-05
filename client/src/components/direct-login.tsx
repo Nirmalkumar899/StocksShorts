@@ -100,9 +100,19 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto" onClick={handleContainerClick}>
+    <div 
+      className="w-full max-w-sm mx-auto mobile-input-container" 
+      onClick={handleContainerClick}
+      style={{
+        position: 'relative',
+        zIndex: 1000,
+        // Ensure the component adapts to viewport changes (keyboard)
+        minHeight: 'fit-content',
+        paddingBottom: 'env(keyboard-inset-height, 0px)'
+      }}
+    >
       {step === "phone" ? (
-        <form onSubmit={handlePhoneSubmit}>
+        <form onSubmit={handlePhoneSubmit} className="mobile-form">
           <div className="space-y-3" onClick={handleContainerClick}>
             {/* Larger phone icon and label */}
             <div className="text-center">
@@ -122,15 +132,28 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   e.stopPropagation();
                   setPhoneNumber(formatPhoneNumber(e.target.value));
                 }}
+                onFocus={(e) => {
+                  e.stopPropagation();
+                  // Scroll the input into view when focused
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'center',
+                      inline: 'nearest'
+                    });
+                  }, 100);
+                }}
                 onClick={handleContainerClick}
-                className="text-center text-base h-12 text-lg tracking-wider border-2 border-primary/20 focus:border-primary"
+                className="text-center text-base h-12 text-lg tracking-wider border-2 border-primary/20 focus:border-primary mobile-input"
                 maxLength={10}
+                autoComplete="tel"
+                inputMode="numeric"
               />
               
               <Button 
                 type="submit" 
                 onClick={handleContainerClick}
-                className="w-full h-12 text-base font-medium" 
+                className="w-full h-12 text-base font-medium mobile-button" 
                 disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
                 size="lg"
               >
@@ -140,7 +163,7 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
           </div>
         </form>
       ) : (
-        <div className="space-y-3" onClick={handleContainerClick}>
+        <div className="space-y-3 mobile-form" onClick={handleContainerClick}>
           {/* OTP step with larger elements */}
           <div className="text-center">
             <LogIn className="h-8 w-8 text-primary mx-auto mb-2" />
@@ -162,15 +185,28 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   e.stopPropagation();
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
                 }}
+                onFocus={(e) => {
+                  e.stopPropagation();
+                  // Scroll the input into view when focused
+                  setTimeout(() => {
+                    e.target.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'center',
+                      inline: 'nearest'
+                    });
+                  }, 100);
+                }}
                 onClick={handleContainerClick}
-                className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary"
+                className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary mobile-input"
                 maxLength={6}
+                autoComplete="one-time-code"
+                inputMode="numeric"
               />
               
               <Button 
                 type="submit" 
                 onClick={handleContainerClick}
-                className="w-full h-12 text-base font-medium" 
+                className="w-full h-12 text-base font-medium mobile-button" 
                 disabled={verifyOtpMutation.isPending || otp.length !== 6}
                 size="lg"
               >

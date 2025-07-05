@@ -298,4 +298,75 @@
   .animate-shimmer-glow {
     animation: shimmerGlow 2s infinite;
   }
+
+  /* Mobile keyboard viewport handling */
+  .mobile-input-container {
+    /* Use dvh (dynamic viewport height) for mobile keyboards */
+    min-height: fit-content;
+    position: relative;
+    z-index: 1000;
+  }
+
+  .mobile-form {
+    /* Ensure form stays visible when keyboard appears */
+    position: relative;
+    width: 100%;
+  }
+
+  .mobile-input {
+    /* Optimize input for mobile keyboards */
+    touch-action: manipulation;
+    -webkit-user-select: text;
+    user-select: text;
+    /* Prevent iOS zoom on input focus */
+    font-size: 16px !important;
+  }
+
+  .mobile-button {
+    /* Ensure buttons remain accessible with keyboard */
+    touch-action: manipulation;
+    min-height: 44px; /* iOS recommended touch target */
+  }
+
+  /* iOS specific keyboard handling */
+  @supports (-webkit-touch-callout: none) {
+    .mobile-input-container {
+      /* Handle iOS virtual keyboard with environment variables */
+      padding-bottom: env(keyboard-inset-height, 0px);
+      /* Use safe area insets for iPhone notch/home indicator */
+      padding-bottom: max(env(keyboard-inset-height, 0px), env(safe-area-inset-bottom, 0px));
+    }
+    
+    .mobile-input:focus {
+      /* Prevent iOS zoom on focus */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+  }
+
+  /* Viewport meta tag support for keyboard handling */
+  @media screen and (max-height: 500px) {
+    /* When keyboard is likely open (reduced viewport height) */
+    .mobile-input-container {
+      /* Adjust positioning to keep inputs visible */
+      margin-top: auto;
+      margin-bottom: 20px;
+    }
+  }
+
+  /* Smooth transitions for keyboard appearance */
+  .mobile-form {
+    transition: all 0.3s ease-in-out;
+  }
+
+  /* Ensure content stays visible on very small screens */
+  @media screen and (max-height: 400px) {
+    .mobile-input-container {
+      padding: 10px 0;
+    }
+    
+    .mobile-input-container .space-y-3 > * + * {
+      margin-top: 0.5rem;
+    }
+  }
 }
