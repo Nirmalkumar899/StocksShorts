@@ -303,31 +303,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 </div>
               ) : (
                 <div className="whitespace-pre-wrap text-left leading-relaxed">
-                  {article.content.length >= 500 ? (
-                    <div className="space-y-3">
-                      {formatLongContent(article.content).split('\n\n').map((paragraph, index) => {
-                        if (!paragraph.trim()) return null;
-                        
-                        // Check if paragraph is marked as heading with **text**
-                        if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                          const headingText = paragraph.slice(2, -2);
-                          return (
-                            <div key={index} className="font-bold text-lg mt-4 mb-2 text-primary">
-                              {headingText}
-                            </div>
-                          );
-                        }
-                        
-                        return (
-                          <div key={index} className="text-sm leading-relaxed">
-                            {paragraph}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    article.content
-                  )}
+                  {article.content}
                 </div>
               )}
             </div>
@@ -405,8 +381,34 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
             {/* Article Content */}
             <div className="prose max-w-none dark:prose-invert">
-              <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed whitespace-pre-wrap">
-                {article.content}
+              <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                {article.content.length >= 500 ? (
+                  <div className="space-y-3">
+                    {formatLongContent(article.content).split('\n\n').map((paragraph, index) => {
+                      if (!paragraph.trim()) return null;
+                      
+                      // Check if paragraph is marked as heading with **text**
+                      if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                        const headingText = paragraph.slice(2, -2);
+                        return (
+                          <div key={index} className="font-bold text-xl mt-6 mb-3 text-primary">
+                            {headingText}
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div key={index} className="text-base leading-relaxed whitespace-pre-wrap">
+                          {paragraph}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap">
+                    {article.content}
+                  </div>
+                )}
               </div>
             </div>
 
