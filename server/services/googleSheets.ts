@@ -149,6 +149,20 @@ export class GoogleSheetsService {
                 imageUrl = providedImageUrl;
                 console.log(`Could not extract file ID from Google Drive URL: ${providedImageUrl}`);
               }
+            } else if (providedImageUrl.includes('imgur.com/a/')) {
+              // Convert Imgur album URLs to direct image URLs
+              const albumIdMatch = providedImageUrl.match(/imgur\.com\/a\/([a-zA-Z0-9]+)/);
+              if (albumIdMatch) {
+                const albumId = albumIdMatch[1];
+                // Use direct Imgur image URL format
+                imageUrl = `https://i.imgur.com/${albumId}.jpg`;
+                console.log(`Converted Imgur album URL for ${category} article: ${title}`);
+                console.log(`Original URL: ${providedImageUrl}`);
+                console.log(`Converted URL: ${imageUrl}`);
+              } else {
+                imageUrl = providedImageUrl;
+                console.log(`Could not extract album ID from Imgur URL: ${providedImageUrl}`);
+              }
             } else {
               // Use provided image URL as-is for other services
               imageUrl = providedImageUrl;
