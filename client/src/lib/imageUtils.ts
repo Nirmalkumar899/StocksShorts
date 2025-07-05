@@ -580,6 +580,34 @@ export function getContextualImage(article: { title: string; content: string; ty
     return chartImages[imageVariant - 1];
   }
   
+  // Add more specific patterns for common article titles that might be missed
+  if (combinedText.includes('options') || combinedText.includes('support') || combinedText.includes('resistance')) {
+    const optionsImages = [
+      'https://images.unsplash.com/photo-1643116774075-acc00caa9a7b?w=800&h=600&fit=crop&auto=format&q=80', // Trading charts
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Market analysis
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80'  // Stock charts
+    ];
+    return optionsImages[imageVariant - 1];
+  }
+
+  if (combinedText.includes('dividend') || combinedText.includes('reward') || combinedText.includes('red flag')) {
+    const dividendImages = [
+      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format&q=80', // Investment
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Financial analysis
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80'  // Business building
+    ];
+    return dividendImages[imageVariant - 1];
+  }
+
+  if (combinedText.includes('market-cap') || combinedText.includes('category') || combinedText.includes('large') || combinedText.includes('mid') || combinedText.includes('small')) {
+    const marketCapImages = [
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Stock market
+      'https://images.unsplash.com/photo-1643116774075-acc00caa9a7b?w=800&h=600&fit=crop&auto=format&q=80', // Market analysis
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80'  // Financial charts
+    ];
+    return marketCapImages[imageVariant - 1];
+  }
+
   // Enhanced fallback system based on article type to prevent white/blank images
   if (article.type === 'Order Win') {
     const orderWinFallback = [
