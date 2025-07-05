@@ -158,15 +158,43 @@ export function getContextualImage(article: { title: string; content: string; ty
     return ultratechImages[imageVariant - 1];
   }
   
-  // Chart and technical analysis patterns
-  if (combinedText.includes('chart') || combinedText.includes('technical') || combinedText.includes('analysis')) {
-    const chartImages = [
-      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&h=600&fit=crop&auto=format&q=80'
+  if (combinedText.includes('grse') || combinedText.includes('cochin shipyard') || combinedText.includes('shipyard')) {
+    const shipyardImages = [
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format&q=80', // Naval ship
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&auto=format&q=80', // Shipbuilding
+      'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800&h=600&fit=crop&auto=format&q=80'  // Maritime industry
     ];
-    return chartImages[imageVariant - 1];
+    return shipyardImages[imageVariant - 1];
   }
+  
+  if (combinedText.includes('coal india') || combinedText.includes('coal')) {
+    const coalImages = [
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Mining
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Energy
+      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+    ];
+    return coalImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('ongc') || combinedText.includes('oil') || combinedText.includes('gas')) {
+    const ongcImages = [
+      'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil rig
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemical
+      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
+    ];
+    return ongcImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('ntpc') || combinedText.includes('power')) {
+    const ntpcImages = [
+      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Power plant
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Energy infrastructure
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+    ];
+    return ntpcImages[imageVariant - 1];
+  }
+  
+  // Move chart patterns to later in the priority order
   
   // Add warrants as a specific category before other checks
   if (type.toLowerCase().includes('warrants') || combinedText.includes('warrant')) {
@@ -258,11 +286,21 @@ export function getContextualImage(article: { title: string; content: string; ty
     return indexImages[imageVariant - 1];
   }
   
+  // Chart and technical analysis patterns (lower priority)
+  if (combinedText.includes('chart') || combinedText.includes('technical') || combinedText.includes('analysis')) {
+    const chartImages = [
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80',
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80',
+      'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?w=800&h=600&fit=crop&auto=format&q=80'
+    ];
+    return chartImages[imageVariant - 1];
+  }
+  
   // Default market images for general content
   const defaultImages = [
-    'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format',
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format'
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format', // Business building
+    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format', // Corporate office
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format'  // Business analytics
   ];
   
   return defaultImages[imageVariant - 1];
