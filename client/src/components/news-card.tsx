@@ -56,11 +56,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   const shouldShowViewMore = () => {
-    return article.content && article.content.length > 250;
+    return article.content && article.content.length > 350;
   };
 
   const getTruncatedContent = (content: string) => {
-    return content?.substring(0, 250) || '';
+    return content?.substring(0, 350) || '';
   };
 
   const handleViewMore = (e: React.MouseEvent) => {
@@ -122,15 +122,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
 
           {/* Content Section (Bottom - Full Width) */}
-          <div className="flex-1 p-4 pb-20 flex flex-col justify-between">
+          <div className="flex-1 p-3 pb-16 flex flex-col justify-between">
             <div className="h-full flex flex-col">
               <div className="flex-1">
-                <h3 className="font-bold text-lg mb-3 line-clamp-2">{article.title}</h3>
+                <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
                 
                 {/* Show only 150 characters with read more for Special articles */}
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
                   <div className="space-y-3 mb-4">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                       {article.content.substring(0, 150)}...
                     </p>
                     <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-2.5 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
@@ -144,17 +144,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     </div>
                   </div>
                 ) : shouldShowViewMore() ? (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                     {getTruncatedContent(article.content)}...{' '}
                     <button
                       onClick={handleViewMore}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-xs font-medium underline"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
                     >
                       View More
                     </button>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                     {article.content}
                   </div>
                 )}
