@@ -144,25 +144,19 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
           </div>
           <div className="flex items-center space-x-2">
             {showInstallButton && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleInstallClick}
-                      className="relative p-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl animate-pulse hover:scale-105"
-                    >
-                      <Download className="h-4 w-4 text-white" />
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="font-medium">Add to Home Screen</p>
-                    <p className="text-xs opacity-80">Install StocksShorts app for quick access</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleInstallClick}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+                >
+                  <Download className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                </Button>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400 hidden sm:block">
+                  Click to download
+                </span>
+              </div>
             )}
             <Button
               variant="ghost"

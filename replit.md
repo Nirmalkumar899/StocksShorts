@@ -119,6 +119,7 @@ StocksShorts is a news aggregation platform that provides concise Indian stock m
 
 ## Recent Changes
 
+- July 5, 2025: **MAJOR**: Implemented chronological article sorting by date and simplified download icon - articles now sort by most recent date first using timeago column across all sections (Trending, Special, etc.), replaced complex animated download button with clean simple icon and "Click to download" text, eliminated gaudy animations and color gradients for professional appearance
 - July 5, 2025: **MAJOR**: Added new StocksShorts logo and enhanced lightbox branding - integrated user-provided logo image, added "StocksShorts" text next to logo in header, implemented logo branding in lightbox overlay with backdrop blur effect, updated splash screen with new logo, complete visual consistency across all components
 - July 5, 2025: **MAJOR**: Replaced Global section with Trader View section - removed Global category from navigation and added Trader View section, mapped "Trader View" articles from Google Sheets to new section, moved Global articles to US Market category for better organization, updated category filtering and routing
 - July 5, 2025: **MAJOR**: Fixed cross-origin error overlay appearing on article pages - added global error suppression for development cross-origin errors, implemented React error boundary for article page crashes, simplified article page component to eliminate complex infinite scroll causing issues, added proper error handling for share functionality and image loading, articles now open cleanly without error overlays

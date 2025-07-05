@@ -79,12 +79,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         typeSet.forEach(type => uniqueTypes.push(type));
         console.log('All article categories in sheets:', uniqueTypes);
         
-        // Sort by priority for trending view
+        // Sort by date (most recent first) using timeago column
         const sortedArticles = articles.sort((a, b) => {
-          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-          return bPriority - aPriority;
+          const dateA = a.time ? new Date(a.time).getTime() : 0;
+          const dateB = b.time ? new Date(b.time).getTime() : 0;
+          return dateB - dateA; // Most recent first
         });
         
         // Return full articles without truncation

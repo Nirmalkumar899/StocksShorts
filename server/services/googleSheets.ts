@@ -239,10 +239,15 @@ export class GoogleSheetsService {
     const allArticles = await this.fetchArticles();
     
     if (category === 'all') {
-      return allArticles;
+      // Sort all articles by date (most recent first)
+      return allArticles.sort((a, b) => {
+        const dateA = a.time ? new Date(a.time).getTime() : 0;
+        const dateB = b.time ? new Date(b.time).getTime() : 0;
+        return dateB - dateA; // Most recent first
+      });
     }
     
-    return allArticles.filter(article => {
+    const filteredArticles = allArticles.filter(article => {
       const articleType = article.type.toLowerCase().trim();
       const categoryId = category.toLowerCase();
       
@@ -279,6 +284,13 @@ export class GoogleSheetsService {
         default:
           return false; // Strict matching only - no fallback matching
       }
+    });
+    
+    // Sort filtered articles by date (most recent first)
+    return filteredArticles.sort((a, b) => {
+      const dateA = a.time ? new Date(a.time).getTime() : 0;
+      const dateB = b.time ? new Date(b.time).getTime() : 0;
+      return dateB - dateA; // Most recent first
     });
   }
 
