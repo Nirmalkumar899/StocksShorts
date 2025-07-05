@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Share2, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import CommentsSection from "@/components/comments-section";
+
 import type { Article } from "@shared/schema";
 
 export default function ArticlePage() {
@@ -168,18 +168,7 @@ export default function ArticlePage() {
               </span>
             </div>
 
-            {/* Comments Section - Only for Trader View articles */}
-            {article.type === 'Trader View' && (
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
-                  <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Chart Discussion</h3>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                    Share your analysis and discuss this chart with other traders
-                  </p>
-                </div>
-                <CommentsSection articleId={article.id} articleTitle={article.title} />
-              </div>
-            )}
+
           </div>
         </Card>
       </div>

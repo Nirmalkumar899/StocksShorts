@@ -34,7 +34,7 @@ const categories = [
   { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500', url: '/breakout' },
   { id: 'kalkabazaar', label: 'Kalkabazaar', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar' },
   { id: 'warrants', label: 'Warrants', icon: ScrollText, gradient: 'from-purple-500 to-violet-500', url: '/warrants' },
-  { id: 'trader-view', label: 'Trader View', icon: Star, gradient: 'from-teal-500 to-cyan-500', url: '/trader-view' },
+
   { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500', url: '/orders' },
   { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500', url: '/research' },
   { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational' },

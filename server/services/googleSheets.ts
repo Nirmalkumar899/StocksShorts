@@ -202,6 +202,10 @@ export class GoogleSheetsService {
             imageUrl,
             createdAt: new Date(),
           };
+        })
+        .filter(article => {
+          // Filter out Trader View articles completely
+          return article.type.toLowerCase() !== 'trader view';
         });
 
       // Cache articles for 30 seconds to speed up repeated requests
@@ -267,8 +271,7 @@ export class GoogleSheetsService {
           return articleType === 'educational';
         case 'ipo':
           return articleType === 'ipo';
-        case 'trader-view':
-          return articleType === 'trader view';
+
         case 'others':
           return articleType === 'others';
         case 'crypto':

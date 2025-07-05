@@ -40,7 +40,6 @@ export default function Home() {
     'breakout-stocks',
     'kalkabazaar',
     'warrants',
-    'trader-view',
     'order-win',
     'research-report',
     'educational',
@@ -50,8 +49,8 @@ export default function Home() {
 
   // Map URLs to categories for subpage support
   const urlToCategoryMap: { [key: string]: string } = {
-    '/': 'stocksshorts-special',
-    '/home': 'stocksshorts-special',
+    '/': 'all',
+    '/home': 'all',
     '/trending': 'all',
     '/special': 'stocksshorts-special',
     '/breakout': 'breakout-stocks',
@@ -67,9 +66,9 @@ export default function Home() {
     '/disclaimer': 'all'
   };
 
-  // Set category based on URL - start with Special by default
+  // Set category based on URL - start with Trending by default
   useEffect(() => {
-    const categoryFromUrl = urlToCategoryMap[location] || 'stocksshorts-special';
+    const categoryFromUrl = urlToCategoryMap[location] || 'all';
     setSelectedCategory(categoryFromUrl);
     
     // Set active section based on URL
