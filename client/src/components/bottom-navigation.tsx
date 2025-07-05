@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, ShieldCheck, MessageCircle, User, FileText } from "lucide-react";
+import { Home, ShieldCheck, Brain, User, FileText } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface BottomNavigationProps {
@@ -10,8 +10,8 @@ interface BottomNavigationProps {
 const navItems = [
   { id: 'home', label: 'Home', icon: Home, url: '/' },
   { id: 'sebi-ria', label: 'Connect RIA', icon: ShieldCheck, url: '/sebi-ria' },
+  { id: 'ai-section', label: 'AI Analysis', icon: Brain, url: '/ai-analysis' },
   { id: 'profile', label: 'Profile', icon: User, url: '/profile' },
-  { id: 'contact', label: 'Feed', icon: MessageCircle, url: '/contact' },
   { id: 'disclaimer', label: 'Disclaimer', icon: FileText, url: '/disclaimer' },
 ];
 

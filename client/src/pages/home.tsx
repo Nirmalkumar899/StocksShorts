@@ -12,12 +12,13 @@ import Header from '@/components/header';
 import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
-import AskAI from '@/components/ask-ai';
+
 import { VisitorStats } from '@/components/visitor-stats';
 import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
+import AISection from '@/pages/ai-section';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -303,6 +304,8 @@ export default function Home() {
         return <Profile onBack={() => setActiveSection('home')} />;
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
+      case 'ai-section':
+        return <AISection onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }
@@ -319,9 +322,6 @@ export default function Home() {
           isTranslated={isTranslated}
           isTranslating={translateMutation.isPending}
         />
-        <div className="px-4">
-          <AskAI isHighlighted={true} />
-        </div>
         <CategoryFilter 
           selectedCategory={selectedCategory}
           onCategoryChange={handleCategoryChange}
