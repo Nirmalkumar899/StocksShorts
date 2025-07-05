@@ -19,28 +19,33 @@ import SplashScreen from "@/components/splash-screen";
 function Router() {
   useSEO(); // Enable dynamic SEO
   const [location, setLocation] = useLocation();
-  const [showSplash, setShowSplash] = useState(true);
+  
+  // Debug logging
+  console.log("Router component rendering, location:", location);
+  
+  // Temporarily disable splash screen for debugging
+  // const [showSplash, setShowSplash] = useState(true);
   
   // Show splash screen for 1 second on first load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setShowSplash(false);
+  //   }, 1000);
+  //   
+  //   return () => clearTimeout(timer);
+  // }, []);
   
   // Auto-navigate to Trending section on app startup
-  useEffect(() => {
-    if (location === "/" && !showSplash) {
-      setLocation("/");
-    }
-  }, [location, setLocation, showSplash]);
+  // useEffect(() => {
+  //   if (location === "/" && !showSplash) {
+  //     setLocation("/");
+  //   }
+  // }, [location, setLocation, showSplash]);
 
   // Show splash screen for first 1 second
-  if (showSplash) {
-    return <SplashScreen />;
-  }
+  // if (showSplash) {
+  //   return <SplashScreen />;
+  // }
   
   return (
     <Switch>
