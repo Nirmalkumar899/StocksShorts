@@ -193,16 +193,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <img 
             src={article.imageUrl || getContextualImage(article)} 
             alt={article.title}
-            className={`max-w-full max-h-full object-contain transition-opacity duration-300 ${
+            className={`w-full h-full object-contain transition-opacity duration-300 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             style={{ 
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '100%',
-              maxHeight: '100%',
               imageRendering: 'crisp-edges'
-            }}
+            }
             loading="eager"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
