@@ -385,7 +385,7 @@ export default function Home() {
             }}
           >
             {articles.map((article) => (
-              <div key={article.id} className="min-h-[350px] h-full snap-start">
+              <div key={article.id} className="min-h-[400px] h-full snap-start">
                 <NewsCard
                   article={article}
                   onClick={() => handleArticleClick(article)}

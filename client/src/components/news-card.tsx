@@ -128,13 +128,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         onClick={onClick}
       >
         {/* Article Content Container */}
-        <div className="flex h-full min-h-[350px]">
+        <div className="flex h-full min-h-[400px]">
           {/* Image Section (40% width) */}
-          <div className="w-2/5 relative min-h-[350px] flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+          <div className="w-2/5 relative min-h-[400px] bg-gray-50 dark:bg-gray-800">
             <img
               src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
               alt={article.title}
-              className="max-w-full max-h-full object-contain cursor-pointer"
+              className="w-full h-full object-cover cursor-pointer"
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
               onClick={(e) => {
