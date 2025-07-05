@@ -100,43 +100,60 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
   };
 
   return (
-    <div className="w-full" onClick={handleContainerClick}>
+    <div className="w-full max-w-sm mx-auto" onClick={handleContainerClick}>
       {step === "phone" ? (
         <form onSubmit={handlePhoneSubmit}>
-          <div className="flex items-center space-x-2" onClick={handleContainerClick}>
-            <Phone className="h-3 w-3 text-primary flex-shrink-0" />
-            <Input
-              type="tel"
-              placeholder="Mobile number"
-              value={phoneNumber}
-              onChange={(e) => {
-                e.stopPropagation();
-                setPhoneNumber(formatPhoneNumber(e.target.value));
-              }}
-              onClick={handleContainerClick}
-              className="text-center text-xs h-7 flex-1"
-              maxLength={10}
-            />
-            <Button 
-              type="submit" 
-              onClick={handleContainerClick}
-              className="h-7 text-xs px-3 flex-shrink-0" 
-              disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
-            >
-              {sendOtpMutation.isPending ? "..." : "Send"}
-            </Button>
+          <div className="space-y-3" onClick={handleContainerClick}>
+            {/* Larger phone icon and label */}
+            <div className="text-center">
+              <Phone className="h-8 w-8 text-primary mx-auto mb-2" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Enter Mobile Number
+              </p>
+            </div>
+            
+            {/* Enhanced input field */}
+            <div className="space-y-2">
+              <Input
+                type="tel"
+                placeholder="10-digit mobile number"
+                value={phoneNumber}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setPhoneNumber(formatPhoneNumber(e.target.value));
+                }}
+                onClick={handleContainerClick}
+                className="text-center text-base h-12 text-lg tracking-wider border-2 border-primary/20 focus:border-primary"
+                maxLength={10}
+              />
+              
+              <Button 
+                type="submit" 
+                onClick={handleContainerClick}
+                className="w-full h-12 text-base font-medium" 
+                disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
+                size="lg"
+              >
+                {sendOtpMutation.isPending ? "Sending..." : "Send OTP"}
+              </Button>
+            </div>
           </div>
         </form>
       ) : (
-        <div className="space-y-2" onClick={handleContainerClick}>
+        <div className="space-y-3" onClick={handleContainerClick}>
+          {/* OTP step with larger elements */}
           <div className="text-center">
+            <LogIn className="h-8 w-8 text-primary mx-auto mb-2" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Enter OTP
+            </p>
             <p className="text-xs text-muted-foreground">
-              OTP sent to +91 {phoneNumber}
+              Sent to +91 {phoneNumber}
             </p>
           </div>
+          
           <form onSubmit={handleOtpSubmit}>
-            <div className="flex items-center space-x-2" onClick={handleContainerClick}>
-              <LogIn className="h-3 w-3 text-primary flex-shrink-0" />
+            <div className="space-y-2">
               <Input
                 type="text"
                 placeholder="6-digit OTP"
@@ -146,24 +163,27 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
                 }}
                 onClick={handleContainerClick}
-                className="text-center text-xs h-7 tracking-widest flex-1"
+                className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary"
                 maxLength={6}
               />
+              
               <Button 
                 type="submit" 
                 onClick={handleContainerClick}
-                className="h-7 text-xs px-3 flex-shrink-0" 
+                className="w-full h-12 text-base font-medium" 
                 disabled={verifyOtpMutation.isPending || otp.length !== 6}
+                size="lg"
               >
-                {verifyOtpMutation.isPending ? "..." : "Login"}
+                {verifyOtpMutation.isPending ? "Logging in..." : "Login"}
               </Button>
             </div>
           </form>
+          
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="w-full text-xs h-5"
+            className="w-full text-sm h-8"
             onClick={(e) => {
               e.stopPropagation();
               setStep("phone");

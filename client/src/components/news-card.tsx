@@ -1,16 +1,14 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
-import { Share2, TrendingUp, TrendingDown, BarChart3, ExternalLink, Copy, Lock, X } from "lucide-react";
-import { formatTimeAgo, getSentimentColor, getTypeColor } from "@/lib/utils";
-import { getContextualImage } from "@/lib/imageUtils";
-import type { Article } from "@shared/schema";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
-import DirectLogin from "@/components/direct-login";
-import ImageLightbox from "@/components/image-lightbox";
+import React, { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Eye, EyeOff, X, Lock } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { getContextualImage } from '@/lib/imageUtils';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import ImageLightbox from '@/components/image-lightbox';
+import DirectLogin from '@/components/direct-login';
+import type { Article } from '@shared/schema';
 
 interface NewsCardProps {
   article: Article;
@@ -21,33 +19,87 @@ interface NewsCardProps {
 }
 
 export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [, setLocation] = useLocation();
-  
-  const sentimentColor = getSentimentColor(article.sentiment);
-  const typeColor = getTypeColor(article.type || 'AI News');
+  const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const handleCopyLink = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const articleLink = `${window.location.origin}/article/${article.id}`;
+  const formatTimeAgo = (date: Date): string => {
     try {
-      await navigator.clipboard.writeText(articleLink);
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'unknown time';
+    }
+  };
+
+  const getSentimentIcon = () => {
+    switch (article.sentiment) {
+      case 'Positive':
+        return <TrendingUp className="h-3 w-3 text-green-500" />;
+      case 'Negative':
+        return <TrendingDown className="h-3 w-3 text-red-500" />;
+      default:
+        return <Minus className="h-3 w-3 text-gray-500" />;
+    }
+  };
+
+  const getSentimentBorderColor = () => {
+    switch (article.sentiment) {
+      case 'Positive':
+        return 'border-green-500';
+      case 'Negative':
+        return 'border-red-500';
+      default:
+        return 'border-gray-300';
+    }
+  };
+
+  const formatNewsContent = (content: string) => {
+    return content.split('\n').map((paragraph, index) => {
+      if (paragraph.trim().length === 0) return '';
+      
+      const lines = paragraph.split(':');
+      if (lines.length > 1 && lines[0].length < 50) {
+        return `**${lines[0]}:** ${lines.slice(1).join(':')}`;
+      }
+      
+      const dashSplit = paragraph.split(' - ');
+      if (dashSplit.length > 1 && dashSplit[0].length < 30) {
+        return `**${dashSplit[0]}** - ${dashSplit.slice(1).join(' - ')}`;
+      }
+      
+      if (paragraph.length < 50 && !paragraph.includes('.')) {
+        return `**${paragraph}**`;
+      }
+      
+      return paragraph;
+    }).join('\n\n');
+  };
+
+  const getTruncatedContent = (content: string) => {
+    return content.substring(0, 250);
+  };
+
+  const shouldShowViewMore = () => {
+    return article.content.length > 250;
+  };
+
+  const handleViewMore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsModalOpen(true);
+  };
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/article/${article.id}`;
+    navigator.clipboard.writeText(url).then(() => {
       toast({
         title: "Link copied!",
-        description: "Article link copied to clipboard",
+        description: "Article link has been copied to your clipboard.",
       });
-    } catch (err) {
-      toast({
-        title: "Copy failed",
-        description: "Please copy the link manually",
-        variant: "destructive",
-      });
-    }
+    });
   };
 
   const handleOpenArticle = (e: React.MouseEvent) => {
@@ -58,61 +110,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     onShare(e);
-  };
-  
-  const getSentimentIcon = () => {
-    switch ((article.sentiment || 'neutral').toLowerCase()) {
-      case 'positive':
-        return <TrendingUp className="text-success h-3 w-3" />;
-      case 'negative':
-        return <TrendingDown className="text-danger h-3 w-3" />;
-      default:
-        return <BarChart3 className="text-primary h-3 w-3" />;
-    }
-  };
-
-  const getSentimentBorderColor = () => {
-    switch ((article.sentiment || 'neutral').toLowerCase()) {
-      case 'positive':
-        return 'border-l-green-500';
-      case 'negative':
-        return 'border-l-red-500';
-      default:
-        return 'border-l-primary';
-    }
-  };
-
-  // Function to determine if content needs truncation 
-  const shouldShowViewMore = () => {
-    return article.content.length > 250;
-  };
-
-  // Function to get truncated content for preview
-  const getTruncatedContent = (content: string) => {
-    if (content.length <= 250) return content;
-    
-    const truncated = content.substring(0, 250);
-    const lastSpaceIndex = truncated.lastIndexOf(' ');
-    
-    return lastSpaceIndex > 200 ? truncated.substring(0, lastSpaceIndex) : truncated;
-  };
-
-  const formatNewsContent = (content: string) => {
-    return content
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => {
-        if (line.includes(':') || line.includes('-') || (line.length < 50 && line.trim().endsWith('.'))) {
-          return `**${line.trim()}**`;
-        }
-        return line.trim();
-      })
-      .join('\n\n');
-  };
-
-  const handleViewMore = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -129,106 +126,135 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       >
         {/* Article Content Container - Inshorts Style */}
         <div className="flex flex-col h-full">
-          {/* Image Section (Top - Full Width) */}
-          <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
-            <img
-              src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-              alt={article.title}
-              className="w-full h-full object-contain cursor-pointer"
-              onLoad={() => setImageLoaded(true)}
-              onError={(e) => {
-                setImageError(true);
-                // Force fallback after error
-                e.currentTarget.src = getContextualImage(article);
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLightboxOpen(true);
-              }}
-            />
-          </div>
-
-          {/* Content Section (Bottom - Full Width) */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
-            {/* Article content based on authentication status */}
-            {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-              <div className="h-full flex flex-col justify-center items-center text-center space-y-4">
-                <Lock className="h-8 w-8 text-gray-400" />
-                <div>
-                  <h3 className="font-bold text-lg mb-2">{article.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    🔒 LOGIN REQUIRED TO READ
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mb-4">
-                    StocksShorts Special articles require authentication. Other articles are free to read.
-                  </p>
+          {/* Special layout for locked StocksShorts Special articles */}
+          {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+            <>
+              {/* Login Section (Top) */}
+              <div className="p-4 bg-gradient-to-b from-blue-50 to-white dark:from-blue-950 dark:to-gray-900 border-b border-blue-200 dark:border-blue-800">
+                <div className="text-center space-y-4">
+                  <Lock className="h-8 w-8 text-blue-600 mx-auto" />
+                  <div>
+                    <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-gray-100">{article.title}</h3>
+                    <p className="text-sm text-blue-700 dark:text-blue-400 mb-2 font-medium">
+                      🔒 LOGIN REQUIRED TO READ
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                      StocksShorts Special articles require authentication
+                    </p>
+                  </div>
                   <DirectLogin />
                 </div>
               </div>
-            ) : (
-              <div className="h-full flex flex-col">
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
-                  {shouldShowViewMore() ? (
-                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {getTruncatedContent(article.content)}...{' '}
-                      <button
-                        onClick={handleViewMore}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
-                      >
-                        View More
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {article.content}
-                    </div>
-                  )}
+              
+              {/* Image Section (Bottom - Blurred for locked content) */}
+              <div className="w-full h-48 relative bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                <img
+                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                  alt={article.title}
+                  className="w-full h-full object-contain filter blur-sm opacity-50"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={(e) => {
+                    setImageError(true);
+                    e.currentTarget.src = getContextualImage(article);
+                  }}
+                />
+                {/* Overlay to indicate locked content */}
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded-lg backdrop-blur-sm">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Preview - Login to view full content
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-          
-          {/* Source and time - positioned at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
-                <span className="flex items-center space-x-1">
-                  {getSentimentIcon()}
-                  <span className="capitalize font-medium">{article.sentiment}</span>
-                </span>
-                <span className="text-gray-500">•</span>
-                <span className="font-medium">{article.source}</span>
-                <span className="text-gray-500">•</span>
-                <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+            </>
+          ) : (
+            <>
+              {/* Normal layout for other articles */}
+              {/* Image Section (Top - Full Width) */}
+              <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
+                <img
+                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                  alt={article.title}
+                  className="w-full h-full object-contain cursor-pointer"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={(e) => {
+                    setImageError(true);
+                    e.currentTarget.src = getContextualImage(article);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsLightboxOpen(true);
+                  }}
+                />
               </div>
+
+              {/* Content Section (Bottom - Full Width) */}
+              <div className="flex-1 p-4 flex flex-col justify-between">
+                <div className="h-full flex flex-col">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
+                    {shouldShowViewMore() ? (
+                      <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {getTruncatedContent(article.content)}...{' '}
+                        <button
+                          onClick={handleViewMore}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
+                        >
+                          View More
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {article.content}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* Source and time - positioned at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
+              <span className="flex items-center space-x-1">
+                {getSentimentIcon()}
+                <span className="capitalize font-medium">{article.sentiment}</span>
+              </span>
+              <span className="text-gray-500">•</span>
+              <span className="font-medium">{article.source}</span>
+              <span className="text-gray-500">•</span>
+              <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleCopyLink}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Copy link"
+              >
+                <Copy className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              </button>
               
-              {/* Action buttons */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleCopyLink}
-                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="Copy link"
-                >
-                  <Copy className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-                </button>
-                
-                <button
-                  onClick={handleOpenArticle}
-                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="Open article"
-                >
-                  <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-                </button>
-                
-                <button
-                  onClick={handleShare}
-                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="Share article"
-                >
-                  <Share2 className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-                </button>
-              </div>
+              <button
+                onClick={handleOpenArticle}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Open article"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              </button>
+              
+              <button
+                onClick={handleShare}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Share article"
+              >
+                <Share2 className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              </button>
             </div>
           </div>
         </div>
