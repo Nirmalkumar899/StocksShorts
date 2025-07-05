@@ -186,14 +186,20 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   }, 100);
                 }}
                 onClick={handleContainerClick}
-                className="text-center text-base h-12 text-lg tracking-wider border-2 border-primary/20 focus:border-primary mobile-input text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+                className="text-center text-base h-12 text-lg tracking-wider border-2 border-primary/20 focus:border-primary mobile-input"
                 maxLength={10}
                 autoComplete="tel"
                 inputMode="numeric"
                 style={{
-                  color: '#1f2937 !important',
-                  backgroundColor: '#ffffff !important',
-                  fontSize: '16px !important'
+                  color: '#000000',
+                  backgroundColor: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  WebkitTextFillColor: '#000000',
+                  WebkitAppearance: 'none',
+                  border: '2px solid #3b82f6',
+                  borderRadius: '6px'
                 }}
               />
               
@@ -255,14 +261,20 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   }, 50);
                 }}
                 onClick={handleContainerClick}
-                className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary mobile-input text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+                className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary mobile-input"
                 maxLength={6}
                 autoComplete="one-time-code"
                 inputMode="numeric"
                 style={{
-                  color: '#1f2937 !important',
-                  backgroundColor: '#ffffff !important',
-                  fontSize: '16px !important'
+                  color: '#000000',
+                  backgroundColor: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  WebkitTextFillColor: '#000000',
+                  WebkitAppearance: 'none',
+                  border: '2px solid #3b82f6',
+                  borderRadius: '6px'
                 }}
               />
               

@@ -431,15 +431,36 @@
   }
 
   /* Force input visibility regardless of other styles */
-  .mobile-input-container .mobile-input:focus {
-    color: #1f2937 !important;
+  .mobile-input-container .mobile-input {
+    color: #000000 !important;
     background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-appearance: none !important;
+    border: 2px solid #3b82f6 !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+  }
+
+  .mobile-input-container .mobile-input:focus {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
     outline: none !important;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+    border: 2px solid #3b82f6 !important;
+  }
+
+  .dark .mobile-input-container .mobile-input {
+    color: #ffffff !important;
+    background-color: #374151 !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border: 2px solid #60a5fa !important;
   }
 
   .dark .mobile-input-container .mobile-input:focus {
-    color: #f9fafb !important;
+    color: #ffffff !important;
     background-color: #374151 !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border: 2px solid #60a5fa !important;
   }
 }
