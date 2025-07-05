@@ -166,7 +166,7 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
             
             {/* Enhanced input field */}
             <div className="space-y-2">
-              <Input
+              <input
                 type="tel"
                 placeholder="10-digit mobile number"
                 value={phoneNumber}
@@ -186,21 +186,24 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   }, 100);
                 }}
                 onClick={handleContainerClick}
-                className="text-center text-base h-12 text-lg tracking-wider border-2 border-primary/20 focus:border-primary mobile-input"
+                className="w-full h-12 px-3 py-2 text-center text-lg font-bold border-2 border-blue-500 rounded-md mobile-input"
                 maxLength={10}
                 autoComplete="tel"
                 inputMode="numeric"
                 style={{
                   color: '#000000',
                   backgroundColor: '#ffffff',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  textAlign: 'center',
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  textAlign: 'center' as const,
                   WebkitTextFillColor: '#000000',
-                  WebkitAppearance: 'none',
-                  border: '2px solid #3b82f6',
-                  borderRadius: '6px'
-                }}
+                  WebkitAppearance: 'none' as const,
+                  border: '3px solid #1d4ed8',
+                  borderRadius: '8px',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  letterSpacing: '2px'
+                } as React.CSSProperties}
               />
               
               <Button 
@@ -230,7 +233,7 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
           
           <form onSubmit={handleOtpSubmit}>
             <div className="space-y-2">
-              <Input
+              <input
                 type="text"
                 placeholder="6-digit OTP"
                 value={otp}
@@ -261,21 +264,24 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   }, 50);
                 }}
                 onClick={handleContainerClick}
-                className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary mobile-input"
+                className="w-full h-12 px-3 py-2 text-center text-lg font-bold border-2 border-blue-500 rounded-md mobile-input"
                 maxLength={6}
                 autoComplete="one-time-code"
                 inputMode="numeric"
                 style={{
                   color: '#000000',
                   backgroundColor: '#ffffff',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  textAlign: 'center',
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  textAlign: 'center' as const,
                   WebkitTextFillColor: '#000000',
-                  WebkitAppearance: 'none',
-                  border: '2px solid #3b82f6',
-                  borderRadius: '6px'
-                }}
+                  WebkitAppearance: 'none' as const,
+                  border: '3px solid #1d4ed8',
+                  borderRadius: '8px',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  letterSpacing: '4px'
+                } as React.CSSProperties}
               />
               
               <Button 

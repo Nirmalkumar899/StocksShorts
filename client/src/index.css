@@ -463,4 +463,43 @@
     -webkit-text-fill-color: #ffffff !important;
     border: 2px solid #60a5fa !important;
   }
+
+  /* Native HTML input overrides for complete visibility control */
+  input[type="tel"], input[type="text"] {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-text-security: none !important;
+    -webkit-appearance: none !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    letter-spacing: 2px !important;
+  }
+
+  .mobile-input-container input[type="tel"], 
+  .mobile-input-container input[type="text"] {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-text-security: none !important;
+    -webkit-appearance: none !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    letter-spacing: 2px !important;
+    border: 3px solid #1d4ed8 !important;
+    border-radius: 8px !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-input-container input[type="tel"]:focus, 
+  .mobile-input-container input[type="text"]:focus {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    border: 3px solid #1d4ed8 !important;
+    box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.3) !important;
+  }
 }
