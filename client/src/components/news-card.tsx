@@ -128,25 +128,20 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         onClick={onClick}
       >
         {/* Article Content Container */}
-        <div className="flex h-full min-h-[300px]">
+        <div className="flex h-full min-h-[350px]">
           {/* Image Section (40% width) */}
-          <div className="w-2/5 relative min-h-[300px]">
-            <div className="absolute inset-0">
-              <img
-                src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                alt={article.title}
-                className="w-full h-full object-cover cursor-pointer"
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsLightboxOpen(true);
-                }}
-              />
-              
-              {/* Image overlay gradient for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20"></div>
-            </div>
+          <div className="w-2/5 relative min-h-[350px] flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+            <img
+              src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+              alt={article.title}
+              className="max-w-full max-h-full object-contain cursor-pointer"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(true);
+              }}
+            />
           </div>
 
           {/* Content Section (60% width) */}
@@ -264,11 +259,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <div className="space-y-4">
             {/* Article Image in Modal */}
             {(article.imageUrl || getContextualImage(article)) && (
-              <div className="relative w-full h-80 rounded-lg overflow-hidden">
+              <div className="relative w-full h-80 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
                 <img
                   src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
                   alt={article.title}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain"
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
                 />
