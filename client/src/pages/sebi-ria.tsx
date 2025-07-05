@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, ScrollText } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, ScrollText, Shuffle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,10 +14,21 @@ interface SebiRiaProps {
 export default function SebiRia({ onBack }: SebiRiaProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [featuredAdvisorIndex, setFeaturedAdvisorIndex] = useState(0);
 
   const { data: advisors = [], isLoading } = useQuery<InvestmentAdvisor[]>({
     queryKey: ['/api/investment-advisors'],
   });
+
+  // Rotate featured advisor every 5 seconds
+  useEffect(() => {
+    if (advisors.length > 0) {
+      const interval = setInterval(() => {
+        setFeaturedAdvisorIndex(prev => (prev + 1) % Math.min(advisors.length, 10));
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [advisors.length]);
 
 
 
@@ -47,6 +58,8 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     );
   }
 
+  const featuredAdvisor = advisors[featuredAdvisorIndex];
+
   return (
     <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col p-4">
       <div className="flex items-center justify-between mb-6">
@@ -64,6 +77,97 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
           <Search className="h-5 w-5" />
         </Button>
       </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search advisors by name, company, specialization, or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full"
+          />
+        </div>
+      </div>
+
+      {/* Featured Advisor Section */}
+      {featuredAdvisor && !searchQuery && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Shuffle className="h-5 w-5 text-blue-600" />
+              Featured SEBI RIA
+            </h2>
+            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
+              Auto-rotating
+            </div>
+          </div>
+          <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold mb-1">{featuredAdvisor.name}</h3>
+                  <p className="text-blue-100 text-sm">{featuredAdvisor.company}</p>
+                  <p className="text-blue-200 text-xs">{featuredAdvisor.designation}</p>
+                </div>
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  SEBI RIA
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-xs text-blue-200 mb-1">Specialization</p>
+                  <p className="text-sm font-medium">{featuredAdvisor.specialization || 'Investment Advisory'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-blue-200 mb-1">Experience</p>
+                  <p className="text-sm font-medium">{featuredAdvisor.experience || 'Professional'}</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {featuredAdvisor.location && (
+                  <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
+                    <MapPin className="h-3 w-3" />
+                    {featuredAdvisor.location}
+                  </div>
+                )}
+                {featuredAdvisor.rating && (
+                  <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
+                    <Star className="h-3 w-3 fill-current" />
+                    {featuredAdvisor.rating}
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                {featuredAdvisor.phone && (
+                  <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs">
+                    <Phone className="h-3 w-3 mr-1" />
+                    Call
+                  </Button>
+                )}
+                {featuredAdvisor.email && (
+                  <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs">
+                    <Mail className="h-3 w-3 mr-1" />
+                    Email
+                  </Button>
+                )}
+                {featuredAdvisor.website && (
+                  <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs">
+                    <Globe className="h-3 w-3 mr-1" />
+                    Website
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* SEBI RIA Education Section */}
       <div className="flex-1 overflow-y-auto pb-20">
