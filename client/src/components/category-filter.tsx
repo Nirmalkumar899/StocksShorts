@@ -52,7 +52,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
 
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="grid grid-cols-6 gap-1.5 px-2 py-2">
+      <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
         {categories.map((category) => {
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
@@ -65,7 +65,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               size="sm"
               onClick={() => handleCategoryClick(category)}
               className={`
-                group relative flex flex-col items-center justify-start p-1 h-14 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
+                group relative flex flex-col items-center justify-center p-2 h-16 w-20 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0 flex-shrink-0
                 ${isSelected
                   ? isSpecial
                     ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white shadow-2xl transform scale-110 ring-4 ring-amber-200 dark:ring-amber-800'
