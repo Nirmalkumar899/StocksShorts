@@ -140,8 +140,8 @@ export class GoogleSheetsService {
               const fileIdMatch = providedImageUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
               if (fileIdMatch) {
                 const fileId = fileIdMatch[1];
-                // Use Google Drive direct image URL format for public files
-                imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                // Use Google Drive direct download format that bypasses CORS
+                imageUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
                 console.log(`Converted Google Drive URL for ${category} article: ${title}`);
                 console.log(`Original URL: ${providedImageUrl}`);
                 console.log(`Converted URL: ${imageUrl}`);
