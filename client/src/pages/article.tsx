@@ -201,7 +201,6 @@ export default function ArticlePage() {
             </div>
 
             {/* Comments Section - Only for Trader View articles */}
-            {console.log('Article type:', article.type, 'Should show comments:', article.type === 'Trader View')}
             {article.type === 'Trader View' && (
               <div className="px-6 pb-6">
                 <div className="bg-blue-50 p-4 rounded-lg mb-4">

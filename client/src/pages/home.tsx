@@ -20,7 +20,7 @@ import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
@@ -255,8 +255,9 @@ export default function Home() {
 
 
   const handleArticleClick = (article: Article) => {
-    // Handle article click - could open modal or navigate
+    // Navigate to individual article page where comments section will be visible
     console.log('Article clicked:', article);
+    setLocation(`/article/${article.id}`);
   };
 
   const handleShare = (e: React.MouseEvent, article: Article) => {
