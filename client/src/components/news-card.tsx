@@ -316,7 +316,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <span className="ml-2 flex-shrink-0">
             {article.type === 'AI News' ? 
               formatTimeAgo(article.createdAt) : 
-              formatTimeAgo(article.time)
+              formatTimeAgo(article.time || new Date())
             }
           </span>
         </div>
@@ -324,7 +324,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         <div className="flex flex-col space-y-2 text-white text-xs flex-shrink-0 drop-shadow-md" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="font-medium">{formatTimeAgo(article.time)}</span>
+              <span className="font-medium">{formatTimeAgo(article.time || new Date())}</span>
               <span>•</span>
               <span className="font-medium truncate max-w-[150px]">{article.source}</span>
             </div>
@@ -419,7 +419,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 <span>
                   {article.type === 'AI News' ? 
                     formatTimeAgo(article.createdAt) : 
-                    formatTimeAgo(article.time)
+                    formatTimeAgo(article.time || new Date())
                   }
                 </span>
               </div>

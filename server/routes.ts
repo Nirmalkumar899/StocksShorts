@@ -79,32 +79,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         typeSet.forEach(type => uniqueTypes.push(type));
         console.log('All article categories in sheets:', uniqueTypes);
         
-        // Sort by date (most recent first) - prioritize articles with actual timestamps
+        // Sort by date (most recent first) - articles without timestamp are treated as beginning of today
         const sortedArticles = articles.sort((a, b) => {
           // Helper function to get sortable timestamp
           const getTimestamp = (article: any) => {
             if (article.time) {
               const timestamp = new Date(article.time).getTime();
-              return isNaN(timestamp) ? 0 : timestamp;
+              if (!isNaN(timestamp)) return timestamp;
             }
-            // Fallback to createdAt if time is null
-            return article.createdAt ? new Date(article.createdAt).getTime() : 0;
+            
+            // If no timestamp, treat as beginning of today (very recent)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Start of today
+            return today.getTime();
           };
           
           const timestampA = getTimestamp(a);
           const timestampB = getTimestamp(b);
           
-          // Articles with timestamps always come before those without
-          if (timestampA > 0 && timestampB === 0) return -1;
-          if (timestampA === 0 && timestampB > 0) return 1;
-          
-          // If both have timestamps, sort by most recent first
-          if (timestampA > 0 && timestampB > 0) {
-            return timestampB - timestampA;
-          }
-          
-          // If neither has timestamps, maintain original order
-          return 0;
+          // Sort by most recent first (higher timestamp first)
+          return timestampB - timestampA;
         });
         
         // Return full articles without truncation

@@ -53,7 +53,7 @@ export const articles = pgTable("articles", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   type: text("type").notNull(), // Index, Warrants, StocksShorts Special, Breakout Stocks, Educational, IPO, Global, Most Active, Order Win
-  time: timestamp("time").notNull(),
+  time: timestamp("time"), // Allow null for articles without specific timestamp
   source: text("source").notNull(),
   sentiment: text("sentiment").notNull(), // Positive, Negative, Neutral
   priority: text("priority").notNull(), // High, Medium, Low

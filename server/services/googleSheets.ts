@@ -82,6 +82,11 @@ export class GoogleSheetsService {
       
       const articles: Article[] = rows
         .filter(row => row.length >= 6) // At least ID, Title, Content, Type, TimeAgo, Source
+        .filter(row => {
+          // Filter out Trader View articles completely as per July 5, 2025 requirement
+          const category = row[3] || ''; // Column D (Type)
+          return category.toLowerCase().trim() !== 'trader view';
+        })
         .map((row, index) => {
           // Google Sheets structure: A=ID, B=Title, C=Content, D=Type, E=TimeAgo, F=Source, G=Sentiment, H=Priority, I=ImageURL
           
@@ -97,12 +102,20 @@ export class GoogleSheetsService {
             // Handle "TimeAgo" column format
             if (timeStr.includes('ago')) {
               parsedTime = this.parseRelativeTime(timeStr);
+            } else if (timeStr.trim() === '' || timeStr.trim() === 'null') {
+              // Handle null/empty timestamps - treat as beginning of today (12:01 AM)
+              const today = new Date();
+              today.setHours(0, 1, 0, 0); // Set to 12:01 AM of today
+              parsedTime = today;
             } else {
               parsedTime = new Date(timeStr);
             }
           } catch (error) {
             console.warn(`Invalid time format for row ${index + 2}: ${timeStr}`);
-            parsedTime = new Date();
+            // Treat invalid timestamps as beginning of today (12:01 AM)
+            const today = new Date();
+            today.setHours(0, 1, 0, 0);
+            parsedTime = today;
           }
 
           // Get full content without truncation
@@ -195,7 +208,7 @@ export class GoogleSheetsService {
             title,
             content,
             type: category, // Use category instead of type for better mapping
-            time: parsedTime,
+            time: parsedTime, // Now always a Date object (12:01 AM for null timestamps)
             source: row[5] || 'Unknown Source',
             sentiment,
             priority,
@@ -244,9 +257,10 @@ export class GoogleSheetsService {
     
     if (category === 'all') {
       // Sort all articles by date (most recent first)
+      // Articles with null timestamps are set to 12:01 AM of today
       return allArticles.sort((a, b) => {
-        const dateA = a.time ? new Date(a.time).getTime() : 0;
-        const dateB = b.time ? new Date(b.time).getTime() : 0;
+        const dateA = new Date(a.time).getTime();
+        const dateB = new Date(b.time).getTime();
         return dateB - dateA; // Most recent first
       });
     }
