@@ -188,12 +188,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       {/* Inshorts-style layout: Image top, content bottom */}
       
       {/* Article Image - Optimized loading */}
-      <div className="h-2/5 bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
+      <div className="h-2/5 bg-gray-50 dark:bg-gray-800 overflow-hidden relative">
         {!imageError && (
           <img 
             src={article.imageUrl || getContextualImage(article)} 
             alt={article.title}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
+            className={`w-full h-full object-contain transition-opacity duration-300 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             loading="eager"

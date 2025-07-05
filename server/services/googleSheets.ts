@@ -135,8 +135,23 @@ export class GoogleSheetsService {
           }
           
           if (providedImageUrl && (providedImageUrl.startsWith('http://') || providedImageUrl.startsWith('https://'))) {
-            // Use provided image URL from Google Sheets column I
-            imageUrl = providedImageUrl;
+            // Convert Google Drive sharing URLs to direct image URLs
+            if (providedImageUrl.includes('drive.google.com')) {
+              const fileIdMatch = providedImageUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+              if (fileIdMatch) {
+                const fileId = fileIdMatch[1];
+                imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log(`Converted Google Drive URL for ${category} article: ${title}`);
+                console.log(`Original URL: ${providedImageUrl}`);
+                console.log(`Converted URL: ${imageUrl}`);
+              } else {
+                imageUrl = providedImageUrl;
+                console.log(`Could not extract file ID from Google Drive URL: ${providedImageUrl}`);
+              }
+            } else {
+              // Use provided image URL as-is for other services
+              imageUrl = providedImageUrl;
+            }
             console.log(`Using provided image URL for ${category} article: ${title}`);
           } else if (candlestickImageService.shouldGenerateChart(content, category)) {
             // Generate candlestick chart when no image URL is provided
@@ -152,6 +167,11 @@ export class GoogleSheetsService {
             }
           }
 
+          // Debug: Log final imageUrl value
+          if (imageUrl) {
+            console.log(`Final imageUrl for article "${title}": ${imageUrl}`);
+          }
+          
           return {
             id: parseInt(row[0]) || index + 1,
             title,
