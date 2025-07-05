@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import logoImage from "@assets/stocksshorts-logo.jpeg";
+import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 
 interface ImageLightboxProps {
   src: string;

@@ -1,4 +1,4 @@
-import logoImage from "@assets/stocksshorts-logo.jpeg";
+import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 
 export default function SplashScreen() {
   return (
