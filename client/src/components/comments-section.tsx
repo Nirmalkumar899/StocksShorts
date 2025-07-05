@@ -229,7 +229,7 @@ export default function CommentsSection({ articleId, articleTitle }: CommentsSec
               comment={comment}
               onReply={handleReply}
               onDelete={handleDelete}
-              currentUserId={user?.id}
+              currentUserId={(user as any)?.id || 0}
             />
           ))}
         </div>
