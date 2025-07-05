@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
-import { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode, useState } from "react";
+import ImageLightbox from "@/components/image-lightbox";
 
 // Error Boundary to catch JavaScript errors
 class ArticleErrorBoundary extends Component<
@@ -51,6 +52,7 @@ class ArticleErrorBoundary extends Component<
 export default function ArticlePage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
   // Get all articles
   const { data: articles, isLoading, error } = useQuery<Article[]>({
@@ -157,7 +159,14 @@ export default function ArticlePage() {
               <img
                 src={article.imageUrl || getContextualImage(article)}
                 alt={article.title}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${
+                  (article.type === 'Educational' || article.type === 'Trader View') ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''
+                }`}
+                onClick={() => {
+                  if (article.type === 'Educational' || article.type === 'Trader View') {
+                    setIsLightboxOpen(true);
+                  }
+                }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = getContextualImage(article);
@@ -191,6 +200,14 @@ export default function ArticlePage() {
             </div>
           </Card>
         </div>
+
+        {/* Image Lightbox for Educational and Trader View articles */}
+        <ImageLightbox
+          src={article.imageUrl || getContextualImage(article)}
+          alt={article.title}
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+        />
       </div>
     </ArticleErrorBoundary>
   );

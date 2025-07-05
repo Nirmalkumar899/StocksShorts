@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import DirectLogin from "@/components/direct-login";
+import ImageLightbox from "@/components/image-lightbox";
 
 interface NewsCardProps {
   article: Article;
@@ -23,6 +24,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [, setLocation] = useLocation();
   const contentRef = useRef<HTMLDivElement>(null);
   const sentimentColor = getSentimentColor(article.sentiment);
@@ -194,7 +196,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           alt={article.title}
           className={`w-full h-full object-fill transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
+          } ${
+            (article.type === 'Educational' || article.type === 'Trader View') ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''
           }`}
+          onClick={(e) => {
+            if (article.type === 'Educational' || article.type === 'Trader View') {
+              e.stopPropagation();
+              setIsLightboxOpen(true);
+            }
+          }}
           style={{ 
             imageRendering: 'crisp-edges'
           }}
@@ -434,6 +444,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Image Lightbox for Educational and Trader View articles */}
+      <ImageLightbox
+        src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+        alt={article.title}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+      />
     </div>
   );
 }
