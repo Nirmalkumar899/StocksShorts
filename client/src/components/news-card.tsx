@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } fro
 import { useAuth } from '@/hooks/useAuth';
 import { getContextualImage } from '@/lib/imageUtils';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import ImageLightbox from '@/components/image-lightbox';
 import type { Article } from '@shared/schema';
@@ -215,43 +215,51 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         />
       </div>
 
-      {/* Full Article Modal - RESTORED ORIGINAL DESIGN */}
+      {/* Full Article Modal - Enhanced for all screens */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold pr-8">
+        <DialogContent className="modal-content w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4">
+            <DialogTitle className="text-lg font-bold pr-8 line-clamp-2">
               {article.title}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Full article content for {article.title}
+            </DialogDescription>
             <DialogClose asChild>
-              <Button variant="ghost" size="icon" className="absolute right-4 top-4">
+              <Button variant="ghost" size="icon" className="absolute right-4 top-4 z-50">
                 <span className="sr-only">Close</span>
                 ×
               </Button>
             </DialogClose>
           </DialogHeader>
           
-          <div className="space-y-4">
-            {/* Article image in modal */}
-            <div className="w-full max-h-96 overflow-hidden rounded-lg">
-              <img
-                src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                alt={article.title}
-                className="w-full h-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = getContextualImage(article);
-                }}
-              />
-            </div>
-            
-            {/* Full article content */}
-            <div className="prose dark:prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
-                {article.content}
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto modal-scroll">
+            <div className="space-y-6 pb-6">
+              {/* Article image in modal */}
+              <div className="w-full max-h-80 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                <img
+                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                  alt={article.title}
+                  className="w-full h-auto object-contain transition-all duration-300"
+                  onError={(e) => {
+                    e.currentTarget.src = getContextualImage(article);
+                  }}
+                />
+              </div>
+              
+              {/* Full article content */}
+              <div className="prose dark:prose-invert max-w-none">
+                <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-base">
+                  {article.content}
+                </div>
               </div>
             </div>
-            
-            {/* Article meta info */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          </div>
+          
+          {/* Fixed footer with actions */}
+          <div className="flex-shrink-0 pt-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <span className="flex items-center space-x-1">
                   {getSentimentIcon()}
@@ -268,6 +276,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                   variant="outline"
                   size="sm"
                   onClick={handleCopyLink}
+                  className="transition-all duration-200 hover:scale-105"
                 >
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Link
@@ -276,6 +285,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                   variant="outline"
                   size="sm"
                   onClick={handleShare}
+                  className="transition-all duration-200 hover:scale-105"
                 >
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
