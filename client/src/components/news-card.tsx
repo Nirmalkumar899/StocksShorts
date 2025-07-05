@@ -199,7 +199,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             loading="eager"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
-            onError={() => {
+            onError={(e) => {
+              console.log(`Image failed to load: ${article.imageUrl}`, e);
               setImageError(true);
               setImageLoaded(false);
             }}
