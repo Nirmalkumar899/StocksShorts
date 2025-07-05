@@ -259,8 +259,8 @@ export class GoogleSheetsService {
       // Sort all articles by date (most recent first)
       // Articles with null timestamps are set to 12:01 AM of today
       return allArticles.sort((a, b) => {
-        const dateA = new Date(a.time).getTime();
-        const dateB = new Date(b.time).getTime();
+        const dateA = a.time ? new Date(a.time).getTime() : new Date().setHours(0, 1, 0, 0);
+        const dateB = b.time ? new Date(b.time).getTime() : new Date().setHours(0, 1, 0, 0);
         return dateB - dateA; // Most recent first
       });
     }
