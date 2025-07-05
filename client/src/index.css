@@ -502,4 +502,41 @@
     border: 3px solid #1d4ed8 !important;
     box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.3) !important;
   }
+
+  /* Ultra-aggressive input visibility fixes */
+  .mobile-input-container input,
+  .mobile-input-container input[type="tel"], 
+  .mobile-input-container input[type="text"],
+  input.mobile-input {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-text-security: none !important;
+    -webkit-appearance: none !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+    letter-spacing: 3px !important;
+    padding: 16px !important;
+    position: relative !important;
+    z-index: 999 !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    border: 3px solid #1d4ed8 !important;
+    border-radius: 12px !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .mobile-input-container input:focus,
+  .mobile-input-container input[type="tel"]:focus, 
+  .mobile-input-container input[type="text"]:focus,
+  input.mobile-input:focus {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    border: 3px solid #1d4ed8 !important;
+    box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.3) !important;
+    outline: none !important;
+  }
 }

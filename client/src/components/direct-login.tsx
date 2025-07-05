@@ -157,18 +157,18 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
         <form onSubmit={handlePhoneSubmit} className="mobile-form">
           <div className="space-y-3" onClick={handleContainerClick}>
             {/* Larger phone icon and label */}
-            <div className="text-center">
-              <Phone className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="text-center mb-4">
+              <Phone className="h-6 w-6 text-primary mx-auto mb-1" />
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
                 Enter Mobile Number
               </p>
             </div>
             
-            {/* Enhanced input field */}
-            <div className="space-y-2">
+            {/* Enhanced input field with proper spacing */}
+            <div className="space-y-3 mt-4">
               <input
                 type="tel"
-                placeholder="10-digit mobile number"
+                placeholder="Enter phone number"
                 value={phoneNumber}
                 onChange={(e) => {
                   e.stopPropagation();
@@ -186,23 +186,26 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   }, 100);
                 }}
                 onClick={handleContainerClick}
-                className="w-full h-12 px-3 py-2 text-center text-lg font-bold border-2 border-blue-500 rounded-md mobile-input"
+                className="w-full h-14 px-4 py-3 text-center text-xl font-bold border-2 border-blue-500 rounded-lg mobile-input"
                 maxLength={10}
                 autoComplete="tel"
                 inputMode="numeric"
                 style={{
                   color: '#000000',
                   backgroundColor: '#ffffff',
-                  fontSize: '18px',
-                  fontWeight: '700',
+                  fontSize: '20px',
+                  fontWeight: '800',
                   textAlign: 'center' as const,
                   WebkitTextFillColor: '#000000',
                   WebkitAppearance: 'none' as const,
                   border: '3px solid #1d4ed8',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   outline: 'none',
                   boxShadow: 'none',
-                  letterSpacing: '2px'
+                  letterSpacing: '3px',
+                  padding: '16px',
+                  zIndex: 10,
+                  position: 'relative'
                 } as React.CSSProperties}
               />
               
@@ -221,9 +224,9 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
       ) : (
         <div className="space-y-3 mobile-form" onClick={handleContainerClick}>
           {/* OTP step with larger elements */}
-          <div className="text-center">
-            <LogIn className="h-8 w-8 text-primary mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <div className="text-center mb-4">
+            <LogIn className="h-6 w-6 text-primary mx-auto mb-1" />
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
               Enter OTP
             </p>
             <p className="text-xs text-muted-foreground">
@@ -232,10 +235,10 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
           </div>
           
           <form onSubmit={handleOtpSubmit}>
-            <div className="space-y-2">
+            <div className="space-y-3 mt-4">
               <input
                 type="text"
-                placeholder="6-digit OTP"
+                placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) => {
                   e.stopPropagation();
@@ -264,23 +267,26 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                   }, 50);
                 }}
                 onClick={handleContainerClick}
-                className="w-full h-12 px-3 py-2 text-center text-lg font-bold border-2 border-blue-500 rounded-md mobile-input"
+                className="w-full h-14 px-4 py-3 text-center text-xl font-bold border-2 border-blue-500 rounded-lg mobile-input"
                 maxLength={6}
                 autoComplete="one-time-code"
                 inputMode="numeric"
                 style={{
                   color: '#000000',
                   backgroundColor: '#ffffff',
-                  fontSize: '18px',
-                  fontWeight: '700',
+                  fontSize: '20px',
+                  fontWeight: '800',
                   textAlign: 'center' as const,
                   WebkitTextFillColor: '#000000',
                   WebkitAppearance: 'none' as const,
                   border: '3px solid #1d4ed8',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   outline: 'none',
                   boxShadow: 'none',
-                  letterSpacing: '4px'
+                  letterSpacing: '6px',
+                  padding: '16px',
+                  zIndex: 10,
+                  position: 'relative'
                 } as React.CSSProperties}
               />
               
