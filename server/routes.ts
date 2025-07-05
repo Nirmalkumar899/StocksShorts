@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import * as fs from "fs";
+import * as path from "path";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
@@ -781,6 +783,20 @@ Content: [Hindi translation]`
       console.error("Error fetching personalized articles:", error);
       res.status(500).json({ message: "Failed to fetch personalized articles" });
     }
+  });
+
+  // Serve attached assets
+  app.get('/assets/:filename', (req, res) => {
+    const { filename } = req.params;
+    const filePath = path.join(process.cwd(), 'attached_assets', filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Asset not found' });
+    }
+    
+    // Serve the file with proper content type
+    res.sendFile(filePath);
   });
 
   const httpServer = createServer(app);

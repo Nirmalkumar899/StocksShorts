@@ -163,6 +163,20 @@ export class GoogleSheetsService {
                 imageUrl = providedImageUrl;
                 console.log(`Could not extract album ID from Imgur URL: ${providedImageUrl}`);
               }
+            } else if (providedImageUrl.includes('replit.com') && providedImageUrl.includes('attached_assets')) {
+              // Convert Replit URLs to local asset URLs
+              const assetMatch = providedImageUrl.match(/attached_assets\/([^#]+)/);
+              if (assetMatch) {
+                const filename = assetMatch[1];
+                // Use local asset serving endpoint
+                imageUrl = `/assets/${filename}`;
+                console.log(`Converted Replit asset URL for ${category} article: ${title}`);
+                console.log(`Original URL: ${providedImageUrl}`);
+                console.log(`Converted URL: ${imageUrl}`);
+              } else {
+                imageUrl = providedImageUrl;
+                console.log(`Could not extract filename from Replit URL: ${providedImageUrl}`);
+              }
             } else {
               // Use provided image URL as-is for other services
               imageUrl = providedImageUrl;
