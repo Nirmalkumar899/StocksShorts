@@ -206,7 +206,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           }}
           onError={(e) => {
             console.log(`Image failed to load for article: ${article.title}`, e);
-            // Force show the article content even if image fails
+            const target = e.target as HTMLImageElement;
+            const currentSrc = target.src;
+            
+            // Try a different fallback image if the current one fails
+            if (!currentSrc.includes('?fallback=1')) {
+              target.src = 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80&fallback=1';
+            } else {
+              // If fallback also fails, use emergency image
+              target.src = 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80';
+            }
+            
             setImageLoaded(true);
             setImageError(true);
           }}

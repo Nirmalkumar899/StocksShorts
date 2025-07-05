@@ -704,9 +704,11 @@ export function getContextualImage(article: { title: string; content: string; ty
   
   // Double-check we have a valid URL
   if (!finalImage || finalImage === '') {
+    console.log('Using emergency fallback image - no valid image found');
     return 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80';
   }
   
+  console.log(`Final image URL for "${title}": ${finalImage}`);
   return finalImage;
   } catch (error) {
     console.error('Error in getContextualImage:', error);
