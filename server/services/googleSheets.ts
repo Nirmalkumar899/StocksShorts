@@ -75,7 +75,7 @@ export class GoogleSheetsService {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Sheet1!A2:I', // ID, Title, Content, Type, TimeAgo, Source, Sentiment, Priority, Category
+        range: 'Sheet1!A2:J', // ID, Title, Content, Type, TimeAgo, Source, Sentiment, Priority, Category, ImageURL
       });
 
       const rows: string[][] = response.data.values || [];
@@ -83,7 +83,13 @@ export class GoogleSheetsService {
       const articles: Article[] = rows
         .filter(row => row.length >= 6) // At least ID, Title, Content, Type, TimeAgo, Source
         .map((row, index) => {
-          // Google Sheets structure: ID, Title, Content, Type, TimeAgo, Source, Sentiment, Priority, Category
+          // Google Sheets structure: A=ID, B=Title, C=Content, D=Type, E=TimeAgo, F=Source, G=Sentiment, H=Priority, I=ImageURL
+          
+          // Debug: Log the row structure for first few articles
+          if (index < 3) {
+            console.log(`Row ${index + 2} structure (length: ${row.length}):`, row.map((cell, i) => `${String.fromCharCode(65 + i)}="${cell}"`));
+          }
+          
           const timeStr = row[4] || '1 hour ago';
           let parsedTime: Date;
           
@@ -118,11 +124,22 @@ export class GoogleSheetsService {
           // Use column D (Type) as primary category source based on user request
           const category = row[3] || 'Index'; // Use Type column (D) as requested
 
-          // Generate candlestick chart for educational articles
+          // Get Image URL from column I, or generate candlestick chart if no URL provided
           let imageUrl = null;
           const title = row[1] || 'Untitled';
+          const providedImageUrl = row[8] ? row[8].trim() : ''; // Column I (Image URL)
           
-          if (candlestickImageService.shouldGenerateChart(content, category)) {
+          // Debug: Log the image URL check
+          if (providedImageUrl) {
+            console.log(`Found image URL in column I for article "${title}": ${providedImageUrl}`);
+          }
+          
+          if (providedImageUrl && (providedImageUrl.startsWith('http://') || providedImageUrl.startsWith('https://'))) {
+            // Use provided image URL from Google Sheets column I
+            imageUrl = providedImageUrl;
+            console.log(`Using provided image URL for ${category} article: ${title}`);
+          } else if (candlestickImageService.shouldGenerateChart(content, category)) {
+            // Generate candlestick chart when no image URL is provided
             try {
               const stockSymbol = candlestickImageService.extractStockSymbol(title, content);
               // Pass category as articleType to generate appropriate chart patterns
