@@ -97,6 +97,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific article by ID
+  app.get("/api/articles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid article ID' });
+      }
+
+      const articles = await googleSheetsService.fetchArticles();
+      const article = articles.find(a => a.id === id);
+      
+      if (!article) {
+        return res.status(404).json({ message: 'Article not found' });
+      }
+
+      res.json(article);
+    } catch (error) {
+      console.error('Error fetching article:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch article'
+      });
+    }
+  });
+
   // Refresh articles (force fetch from Google Sheets)
   app.post("/api/articles/refresh", async (req, res) => {
     try {
