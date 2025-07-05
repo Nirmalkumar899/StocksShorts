@@ -13,6 +13,7 @@ import MobileLogin from "./mobile-login";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import BottomNavigation from "@/components/bottom-navigation";
 
 interface ProfileProps {
   onBack: () => void;
@@ -380,6 +381,11 @@ export default function Profile({ onBack }: ProfileProps) {
             )}
           </CardContent>
         </Card>
+      </div>
+      
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab="profile" onTabChange={() => {}} />
       </div>
     </div>
   );

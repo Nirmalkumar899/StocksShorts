@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery } from "@tanstack/react-query";
 import type { InvestmentAdvisor } from "@shared/schema";
+import BottomNavigation from "@/components/bottom-navigation";
 
 interface SebiRiaProps {
   onBack: () => void;
@@ -255,6 +256,11 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
             ))}
           </div>
         )}
+      </div>
+      
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab="sebi-ria" onTabChange={() => {}} />
       </div>
     </div>
   );

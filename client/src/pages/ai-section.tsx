@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AskAI from '@/components/ask-ai';
+import BottomNavigation from '@/components/bottom-navigation';
 
 interface AISectionProps {
   onBack: () => void;
@@ -88,6 +89,11 @@ export default function AISection({ onBack }: AISectionProps) {
             </p>
           </div>
         </div>
+      </div>
+      
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab="ai-section" onTabChange={() => {}} />
       </div>
     </div>
   );
