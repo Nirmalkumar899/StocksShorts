@@ -107,33 +107,36 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <Button variant="ghost" onClick={onBack}>
+      <div className="flex items-center justify-between p-4 border-b border-blue-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 shadow-sm">
+        <Button variant="ghost" onClick={onBack} className="hover:bg-blue-100 dark:hover:bg-gray-700">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Connect with SEBI RIA</h1>
+        <div className="text-center">
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">Connect with SEBI RIA</h1>
+          <p className="text-xs text-blue-600 dark:text-blue-400">Registered Investment Advisors</p>
+        </div>
         <div className="w-10" />
       </div>
 
       {/* Search Bar */}
-      <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-600">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 h-4 w-4" />
           <Input
             type="text"
-            placeholder="Search advisors..."
+            placeholder="Search by name, company, or location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
+            className="pl-10 pr-4 py-3 w-full bg-white dark:bg-gray-900 border-blue-200 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
 
       {/* Compact Disclaimer */}
-      <div className="px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-        <p className="text-amber-800 dark:text-amber-200 text-xs flex items-center gap-1">
-          <AlertTriangle className="h-3 w-3" />
-          Contact details not verified - verify SEBI registration independently
+      <div className="px-4 py-2 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-amber-200 dark:border-amber-700">
+        <p className="text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2">
+          <AlertTriangle className="h-3 w-3 text-amber-600" />
+          <span className="font-medium">Contact details not verified - verify SEBI registration independently</span>
         </p>
       </div>
 
@@ -173,55 +176,81 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
             </Button>
           </div>
         ) : (
-          <div className="p-3 space-y-3">
+          <div className="p-4 space-y-4">
             {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
-              <Card key={advisor.id} className="hover:shadow-md transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
+              <Card 
+                key={advisor.id} 
+                className="group hover:shadow-xl hover:scale-[1.01] transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 rounded-xl overflow-hidden"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animation: 'fadeInUp 0.5s ease-out forwards'
+                }}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-base text-gray-900 dark:text-white">
-                          {advisor.name}
-                        </h3>
-                        {index < 3 && (
-                          <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs">
-                            Top
-                          </Badge>
-                        )}
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          {advisor.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {advisor.name}
+                          </h3>
+                          {index < 3 && (
+                            <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs animate-pulse">
+                              ⭐ Featured
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-blue-600 dark:text-blue-400 text-sm mb-1">
+                      <p className="text-blue-600 dark:text-blue-400 text-sm font-semibold mb-1">
                         {advisor.designation}
                       </p>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
                         {advisor.company}
                       </p>
                     </div>
-                    {advisor.rating && (
-                      <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md">
-                        <Star className="h-3 w-3 text-green-600 dark:text-green-400 fill-current" />
-                        <span className="text-xs text-green-700 dark:text-green-400">{advisor.rating}</span>
-                      </div>
-                    )}
+                    <div className="flex flex-col items-end gap-2">
+                      {advisor.rating && (
+                        <div className="flex items-center gap-1 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-1 rounded-full border border-green-200 dark:border-green-700">
+                          <Star className="h-3 w-3 text-green-600 dark:text-green-400 fill-current" />
+                          <span className="text-xs font-bold text-green-700 dark:text-green-400">{advisor.rating}</span>
+                        </div>
+                      )}
+                      <Badge className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-800 dark:text-blue-200 text-xs border border-blue-200 dark:border-blue-700">
+                        SEBI RIA
+                      </Badge>
+                    </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {advisor.specialization && (
-                      <Badge variant="secondary" className="text-xs">
-                        {advisor.specialization}
+                      <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-700 dark:text-purple-300 text-xs border border-purple-200 dark:border-purple-700">
+                        💼 {advisor.specialization}
                       </Badge>
                     )}
                     {advisor.location && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-1 bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-700 dark:to-slate-700 px-3 py-1 rounded-full text-xs text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                         <MapPin className="h-3 w-3" />
                         {advisor.location}
                       </div>
                     )}
+                    {advisor.experience && (
+                      <div className="flex items-center gap-1 bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 px-3 py-1 rounded-full text-xs text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
+                        🎯 {advisor.experience}
+                      </div>
+                    )}
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
                     <Button 
                       size="sm" 
-                      className={`text-xs ${advisor.phone ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                      className={`text-xs transition-all duration-200 ${
+                        advisor.phone 
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transform hover:scale-105' 
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                      }`}
                       onClick={() => advisor.phone && window.open(`tel:${advisor.phone}`, '_self')}
                       disabled={!advisor.phone}
                     >
@@ -231,7 +260,11 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
                     
                     <Button 
                       size="sm" 
-                      className={`text-xs ${advisor.phone ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                      className={`text-xs transition-all duration-200 ${
+                        advisor.phone 
+                          ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-md hover:shadow-lg transform hover:scale-105' 
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                      }`}
                       onClick={() => advisor.phone && window.open(`https://wa.me/91${advisor.phone?.replace(/\D/g, '')}`, '_blank')}
                       disabled={!advisor.phone}
                     >
@@ -244,7 +277,11 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
                     <Button 
                       size="sm" 
                       variant="outline"
-                      className={`text-xs ${advisor.email ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : 'text-gray-400 cursor-not-allowed'}`}
+                      className={`text-xs transition-all duration-200 ${
+                        advisor.email 
+                          ? 'border-blue-200 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-500 transform hover:scale-105' 
+                          : 'text-gray-400 border-gray-200 dark:border-gray-600 cursor-not-allowed'
+                      }`}
                       onClick={() => advisor.email && window.open(`mailto:${advisor.email}`, '_self')}
                       disabled={!advisor.email}
                     >
@@ -253,10 +290,12 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
                     </Button>
                   </div>
                   
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    Not verified by StocksShorts
-                  </p>
+                  <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                      <AlertTriangle className="h-3 w-3 text-amber-500" />
+                      <span className="italic">Contact details not verified by StocksShorts</span>
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
