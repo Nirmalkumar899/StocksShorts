@@ -22,7 +22,7 @@ import AISection from '@/pages/ai-section';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('trending');
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
@@ -36,7 +36,7 @@ export default function Home() {
 
   // Category order for auto-switching - Trending → Special → IPO → ... → Educational → US Market → Crypto
   const categoryOrder = [
-    'all',
+    'trending',
     'stocksshorts-special',
     'ipo',
     'breakout-stocks',
@@ -51,9 +51,9 @@ export default function Home() {
 
   // Map URLs to categories for subpage support
   const urlToCategoryMap: { [key: string]: string } = {
-    '/': 'all',
-    '/home': 'all',
-    '/trending': 'all',
+    '/': 'trending',
+    '/home': 'trending',
+    '/trending': 'trending',
     '/special': 'stocksshorts-special',
     '/breakout': 'breakout-stocks',
     '/kalkabazaar': 'kalkabazaar',
@@ -65,12 +65,12 @@ export default function Home() {
     '/research': 'research-report',
     '/us-market': 'us-market',
     '/crypto': 'crypto',
-    '/disclaimer': 'all'
+    '/disclaimer': 'trending'
   };
 
   // Set category based on URL - start with Trending by default
   useEffect(() => {
-    const categoryFromUrl = urlToCategoryMap[location] || 'all';
+    const categoryFromUrl = urlToCategoryMap[location] || 'trending';
     setSelectedCategory(categoryFromUrl);
     
     // Set active section based on URL
@@ -114,11 +114,11 @@ export default function Home() {
     error,
     refetch
   } = useQuery<Article[]>({
-    queryKey: ['/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
+    queryKey: ['/api/articles', selectedCategory === 'trending' ? undefined : selectedCategory],
     queryFn: async () => {
       let url = '/api/articles';
       
-      if (selectedCategory !== 'all') {
+      if (selectedCategory !== 'trending') {
         url = `/api/articles?category=${selectedCategory}`;
       }
       
@@ -141,14 +141,24 @@ export default function Home() {
         return [];
       }
       
-      // Sort articles by priority when in 'all' (trending) category
+      // Sort articles chronologically when in 'trending' category (latest first)
       let processedData = data;
-      if (selectedCategory === 'all') {
+      if (selectedCategory === 'trending') {
         processedData = data.sort((a: Article, b: Article) => {
-          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-          return bPriority - aPriority; // High priority first
+          // Parse timestamps, default to 12:01 AM (start of day) if missing
+          const getTimestamp = (article: Article) => {
+            if (!article.time) {
+              // Articles without timestamp are considered uploaded at 12:01 AM start of day
+              return new Date('2025-07-05T00:01:00Z').getTime();
+            }
+            return new Date(article.time).getTime();
+          };
+          
+          const aTime = getTimestamp(a);
+          const bTime = getTimestamp(b);
+          
+          // Sort by most recent first (descending order)
+          return bTime - aTime;
         });
       }
       
