@@ -1,5 +1,5 @@
 import { RefreshCw, Moon, Sun, Download, Languages } from "lucide-react";
-import logoImage from "@assets/IMG_4184_1751708235236.png";
+import logoImage from "@assets/IMG_4184_1751710507049.jpeg";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
