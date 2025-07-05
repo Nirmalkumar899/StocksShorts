@@ -198,7 +198,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             }`}
             style={{ 
               imageRendering: 'crisp-edges'
-            }
+            }}
             loading="eager"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
