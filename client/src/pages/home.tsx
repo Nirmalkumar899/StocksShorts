@@ -252,7 +252,7 @@ export default function Home() {
     setSelectedCategory(category);
   };
 
-  // TikTok-style category switching with exact order control
+  // Ultra-smooth category switching with content preloading
   const switchToNextCategory = useCallback(() => {
     if (switchingRef.current) return; 
     
@@ -271,21 +271,25 @@ export default function Home() {
     const nextCategory = categoryOrder[nextIndex];
     console.log(`Switching from ${selectedCategory} to ${nextCategory}`);
     
+    // Smooth transition without jarring resets
     setSelectedCategory(nextCategory);
     
-    // Reset to top for next category
-    requestAnimationFrame(() => {
+    // Ultra-smooth positioning - no visible jumps
+    setTimeout(() => {
       if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
+        scrollContainerRef.current.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
         lastScrollTopRef.current = 0;
       }
       setTimeout(() => {
         switchingRef.current = false;
-      }, 300);
-    });
+      }, 100);
+    }, 50);
   }, [selectedCategory, categoryOrder]);
 
-  // Backward category switching with exact order control
+  // Ultra-smooth backward category switching  
   const switchToPreviousCategory = useCallback(() => {
     if (switchingRef.current) return; 
     
@@ -305,20 +309,23 @@ export default function Home() {
     
     setSelectedCategory(previousCategory);
     
-    // Position at bottom for reverse flow
-    requestAnimationFrame(() => {
+    // Smooth positioning at end for backward flow
+    setTimeout(() => {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         setTimeout(() => {
           const maxScroll = container.scrollHeight - container.clientHeight;
-          container.scrollTop = Math.max(0, maxScroll - 100);
+          container.scrollTo({
+            top: Math.max(0, maxScroll - 50),
+            behavior: 'smooth'
+          });
           lastScrollTopRef.current = container.scrollTop;
-        }, 100);
+        }, 50);
       }
       setTimeout(() => {
         switchingRef.current = false;
-      }, 300);
-    });
+      }, 100);
+    }, 50);
   }, [selectedCategory, categoryOrder]);
 
   const handleArticleClick = (article: Article) => {
@@ -384,15 +391,15 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-hidden">
-        {isLoading ? (
-          // Loading State
+        {isLoading && !switchingRef.current ? (
+          // Loading State - only show when not category switching
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
               <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
             </div>
           </div>
-        ) : articles.length === 0 ? (
+        ) : articles.length === 0 && !switchingRef.current ? (
           // Empty State
           <div className="h-full flex flex-col items-center justify-center px-4">
             <div className="text-6xl mb-4">📰</div>
@@ -426,26 +433,28 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          // News Cards - Inshorts style full-screen layout
+          // News Cards - Inshorts style full-screen layout with seamless transitions
           <div 
             ref={scrollContainerRef}
-            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide transition-all duration-200 ease-in-out"
+            className={`h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide transition-all duration-200 ease-in-out ${
+              switchingRef.current ? 'opacity-90 pointer-events-none' : 'opacity-100'
+            }`}
             onScroll={(e) => {
               const element = e.target as HTMLElement;
               const currentScrollTop = element.scrollTop;
               const maxScroll = element.scrollHeight - element.clientHeight;
               const scrollDirection = currentScrollTop > lastScrollTopRef.current ? 'down' : 'up';
               
-              // More sensitive thresholds for seamless switching
-              const endTolerance = 50;
-              const beginTolerance = 30;
+              // Ultra-sensitive thresholds for invisible switching
+              const endTolerance = 10;
+              const beginTolerance = 10;
               const isAtEnd = currentScrollTop >= maxScroll - endTolerance;
               const isAtBeginning = currentScrollTop <= beginTolerance;
               
               // Store previous scroll position
               lastScrollTopRef.current = currentScrollTop;
               
-              // Trigger category switching when reaching ends
+              // Trigger category switching when reaching ends - instant and smooth
               if (!switchingRef.current && articles.length > 0) {
                 if (isAtEnd && scrollDirection === 'down') {
                   console.log('Reached end, switching to next category');
