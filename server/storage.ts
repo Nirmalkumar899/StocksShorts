@@ -6,6 +6,7 @@ import {
   gmailCredentials, 
   emailInsights, 
   personalizedArticles,
+  comments,
   type User, 
   type InsertUser, 
   type OtpVerification, 
@@ -18,7 +19,9 @@ import {
   type EmailInsights,
   type InsertEmailInsights,
   type PersonalizedArticle,
-  type InsertPersonalizedArticle
+  type InsertPersonalizedArticle,
+  type Comment,
+  type InsertComment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
@@ -44,6 +47,11 @@ export interface IStorage {
   getEmailInsights(userId: number): Promise<any>;
   storePersonalizedArticles(articles: any[]): Promise<void>;
   getPersonalizedArticles(limit?: number): Promise<any[]>;
+  // Comments system
+  createComment(comment: InsertComment): Promise<Comment>;
+  getCommentsByArticle(articleId: number): Promise<Comment[]>;
+  getCommentById(id: number): Promise<Comment | undefined>;
+  deleteComment(id: number, userId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -285,6 +293,56 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
     
     return articles;
+  }
+
+  // Comments system methods
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const [newComment] = await db.insert(comments).values({
+      ...comment,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
+    return newComment;
+  }
+
+  async getCommentsByArticle(articleId: number): Promise<Comment[]> {
+    const allComments = await db.select().from(comments)
+      .where(eq(comments.articleId, articleId))
+      .orderBy(comments.createdAt);
+    
+    // Group comments by parent ID to create thread structure
+    const commentsMap = new Map<number, Comment & { replies?: Comment[] }>();
+    const rootComments: (Comment & { replies?: Comment[] })[] = [];
+    
+    allComments.forEach((comment: Comment) => {
+      commentsMap.set(comment.id, { ...comment, replies: [] });
+      if (!comment.parentId) {
+        rootComments.push(commentsMap.get(comment.id)!);
+      }
+    });
+    
+    // Add replies to their parent comments
+    allComments.forEach((comment: Comment) => {
+      if (comment.parentId && commentsMap.has(comment.parentId)) {
+        const parentComment = commentsMap.get(comment.parentId)!;
+        if (!parentComment.replies) parentComment.replies = [];
+        parentComment.replies.push(commentsMap.get(comment.id)!);
+      }
+    });
+    
+    return rootComments as Comment[];
+  }
+
+  async getCommentById(id: number): Promise<Comment | undefined> {
+    const [comment] = await db.select().from(comments)
+      .where(eq(comments.id, id));
+    return comment;
+  }
+
+  async deleteComment(id: number, userId: number): Promise<boolean> {
+    const result = await db.delete(comments)
+      .where(and(eq(comments.id, id), eq(comments.userId, userId)));
+    return result.rowCount > 0;
   }
 }
 

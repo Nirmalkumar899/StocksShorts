@@ -245,3 +245,24 @@ export type InsertEmailInsights = z.infer<typeof insertEmailInsightsSchema>;
 export type EmailInsights = typeof emailInsights.$inferSelect;
 export type InsertPersonalizedArticle = z.infer<typeof insertPersonalizedArticleSchema>;
 export type PersonalizedArticle = typeof personalizedArticles.$inferSelect;
+
+// Comments system for Trader View articles
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  articleId: integer("article_id").notNull(),
+  userId: integer("user_id").notNull(),
+  parentId: integer("parent_id"), // For replies
+  content: text("content").notNull(),
+  authorName: varchar("author_name", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCommentSchema = createInsertSchema(comments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Comment = typeof comments.$inferSelect;

@@ -8,6 +8,7 @@ import { getContextualImage } from "@/lib/imageUtils";
 import type { Article } from "@shared/schema";
 import { Component, ErrorInfo, ReactNode, useState } from "react";
 import ImageLightbox from "@/components/image-lightbox";
+import CommentsSection from "@/components/comments-section";
 
 // Error Boundary to catch JavaScript errors
 class ArticleErrorBoundary extends Component<
@@ -198,6 +199,16 @@ export default function ArticlePage() {
                 </span>
               </div>
             </div>
+
+            {/* Comments Section - Only for Trader View articles */}
+            {article.type === 'Trader View' && (
+              <div className="px-6 pb-6">
+                <CommentsSection 
+                  articleId={article.id} 
+                  articleTitle={article.title}
+                />
+              </div>
+            )}
           </Card>
         </div>
 

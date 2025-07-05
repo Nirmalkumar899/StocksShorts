@@ -352,6 +352,60 @@ Content: [Hindi translation]`
     }
   });
 
+  // Comments API routes for Trader View section
+  app.get('/api/comments/:articleId', async (req, res) => {
+    try {
+      const articleId = parseInt(req.params.articleId);
+      const comments = await storage.getCommentsByArticle(articleId);
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ message: 'Failed to fetch comments' });
+    }
+  });
+
+  app.post('/api/comments', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const { articleId, content, parentId } = req.body;
+      const userId = (req.session as any).userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+
+      const comment = await storage.createComment({
+        articleId: parseInt(articleId),
+        userId,
+        content,
+        parentId: parentId ? parseInt(parentId) : null,
+        authorName: (user.firstName && user.lastName) ? `${user.firstName} ${user.lastName}` : user.firstName || user.phoneNumber || 'Anonymous'
+      });
+
+      res.json(comment);
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(500).json({ message: 'Failed to create comment' });
+    }
+  });
+
+  app.delete('/api/comments/:id', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const commentId = parseInt(req.params.id);
+      const userId = (req.session as any).userId;
+      
+      const success = await storage.deleteComment(commentId, userId);
+      if (success) {
+        res.json({ message: 'Comment deleted successfully' });
+      } else {
+        res.status(404).json({ message: 'Comment not found or unauthorized' });
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      res.status(500).json({ message: 'Failed to delete comment' });
+    }
+  });
+
   // Stock AI Query endpoint - No Authentication Required
   app.post("/api/stock-ai/query", async (req: any, res) => {
     try {
