@@ -1,7 +1,17 @@
 // Dynamic image selection based on article content and type
-export function getContextualImage(article: { title: string; content: string; type: string; id: number }): string {
+export function getContextualImage(article: { title: string; content: string; type: string; id: number; imageUrl?: string | undefined }): string {
   try {
-    const { title = '', content = '', type = '', id = 1 } = article || {};
+    const { title = '', content = '', type = '', id = 1, imageUrl = null } = article || {};
+    
+    // FIRST PRIORITY: Use the actual image URL from Google Sheets if it exists
+    if (imageUrl && imageUrl.trim() !== '' && imageUrl !== 'null' && imageUrl !== null) {
+      console.log(`Using provided image URL for ${type} article: ${title}`);
+      return imageUrl;
+    }
+    
+    // ONLY generate contextual images for articles without image URLs
+    console.log(`Generating contextual image for ${type} article: ${title} (no image URL provided)`);
+    
     const combinedText = (title + ' ' + content).toLowerCase();
     
     // Create sophisticated hash-based image selection to prevent repetition

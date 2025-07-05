@@ -92,7 +92,7 @@ export default function Home() {
     const imagesToPreload = articleList.slice(0, 8); // Preload first 8 images
     imagesToPreload.forEach(article => {
       const img = new Image();
-      img.src = article.imageUrl || getContextualImage(article);
+      img.src = getContextualImage({ ...article, imageUrl: article.imageUrl || undefined });
       img.loading = 'eager';
     });
   }, []);

@@ -190,7 +190,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       {/* Article Image - Full container with proper scaling */}
       <div className="h-2/5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden relative flex items-center justify-center">
         <img 
-          src={getContextualImage(article)} 
+          src={getContextualImage({ ...article, imageUrl: article.imageUrl || undefined })} 
           alt={article.title}
           className={`w-full h-full object-fill transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
@@ -379,7 +379,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             {/* Article Image */}
             <div className="relative h-64 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
               <img 
-                src={article.imageUrl || getContextualImage(article)} 
+                src={getContextualImage({ ...article, imageUrl: article.imageUrl || undefined })} 
                 alt={article.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
