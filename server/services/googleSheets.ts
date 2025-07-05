@@ -186,8 +186,8 @@ export class GoogleSheetsService {
             // Generate candlestick chart when no image URL is provided
             try {
               const stockSymbol = candlestickImageService.extractStockSymbol(title, content);
-              // Pass category as articleType to generate appropriate chart patterns
-              const svg = candlestickImageService.generateCandlestickSVG(content, stockSymbol, category);
+              // Pass category as articleType and title for better pattern detection
+              const svg = candlestickImageService.generateCandlestickSVG(content, stockSymbol, category, title);
               const base64 = Buffer.from(svg).toString('base64');
               imageUrl = `data:image/svg+xml;base64,${base64}`;
               console.log(`Generated candlestick chart for ${category} article: ${title}`);

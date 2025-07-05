@@ -32,8 +32,9 @@ export class CandlestickImageService {
   };
 
   // Generate educational candlestick patterns based on specific article content
-  private generateEducationalPattern(content: string): CandlestickData[] {
+  private generateEducationalPattern(content: string, title?: string): CandlestickData[] {
     const lowerContent = content.toLowerCase();
+    const lowerTitle = title?.toLowerCase() || '';
     
     // Analyze specific educational content for precise pattern generation
     if (lowerContent.includes('doji') && lowerContent.includes('indecision')) {
@@ -46,9 +47,13 @@ export class CandlestickImageService {
       return this.generateSpecificBullishEngulfingPattern(content);
     } else if (lowerContent.includes('bearish engulfing')) {
       return this.generateSpecificBearishEngulfingPattern(content);
-    } else if (lowerContent.includes('morning star') && lowerContent.includes('bullish')) {
+    } else if (lowerContent.includes('morning star') || lowerTitle.includes('morning star') || 
+               lowerContent.includes('morning-star') || lowerTitle.includes('morning-star')) {
+      console.log('Generating Morning Star pattern for article:', title || content.substring(0, 50));
       return this.generateSpecificMorningStarPattern(content);
-    } else if (lowerContent.includes('evening star') && lowerContent.includes('peak')) {
+    } else if (lowerContent.includes('evening star') || lowerTitle.includes('evening star') ||
+               lowerContent.includes('evening-star') || lowerTitle.includes('evening-star')) {
+      console.log('Generating Evening Star pattern for article:', title || content.substring(0, 50));
       return this.generateSpecificEveningStarPattern(content);
     } else if (lowerContent.includes('piercing line')) {
       return this.generateSpecificPiercingLinePattern(content);
@@ -884,14 +889,15 @@ export class CandlestickImageService {
   generateCandlestickSVG(
     articleContent: string,
     stockSymbol: string = 'STOCK',
-    articleType?: string
+    articleType?: string,
+    articleTitle?: string
   ): string {
     let candleData: CandlestickData[];
     const isEducational = articleType?.toLowerCase().includes('educational');
     
     // Use educational patterns for educational articles
     if (isEducational) {
-      candleData = this.generateEducationalPattern(articleContent);
+      candleData = this.generateEducationalPattern(articleContent, articleTitle);
     } else {
       const priceInfo = this.extractPriceInfo(articleContent);
       
@@ -1015,8 +1021,8 @@ export class CandlestickImageService {
   }
 
   // Convert SVG to base64 data URL for embedding
-  generateChartDataURL(articleContent: string, stockSymbol: string = 'STOCK'): string {
-    const svg = this.generateCandlestickSVG(articleContent, stockSymbol);
+  generateChartDataURL(articleContent: string, stockSymbol: string = 'STOCK', articleType?: string, articleTitle?: string): string {
+    const svg = this.generateCandlestickSVG(articleContent, stockSymbol, articleType, articleTitle);
     const base64 = Buffer.from(svg).toString('base64');
     return `data:image/svg+xml;base64,${base64}`;
   }
