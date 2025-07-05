@@ -18,9 +18,11 @@ interface NewsCardProps {
   article: Article;
   onClick: () => void;
   onShare: (e: React.MouseEvent) => void;
+  isExpanded?: boolean;
+  onToggleExpanded?: () => void;
 }
 
-export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
+export default function NewsCard({ article, onClick, onShare, isExpanded = false, onToggleExpanded }: NewsCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -171,7 +173,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   const handleViewMore = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsModalOpen(true);
+    if (onToggleExpanded) {
+      onToggleExpanded();
+    }
   };
 
   const handleCloseModal = () => {
@@ -291,7 +295,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              {shouldShowViewMore() ? (
+              {shouldShowViewMore() && !isExpanded ? (
                 <div className="whitespace-pre-wrap">
                   {getTruncatedContent(article.content)}...{' '}
                   <button
@@ -304,6 +308,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               ) : (
                 <div className="whitespace-pre-wrap text-left leading-relaxed">
                   {article.content}
+                  {isExpanded && shouldShowViewMore() && (
+                    <button
+                      onClick={handleViewMore}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline ml-2"
+                    >
+                      View Less
+                    </button>
+                  )}
                 </div>
               )}
             </div>

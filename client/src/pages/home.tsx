@@ -25,6 +25,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
+  const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -271,6 +272,18 @@ export default function Home() {
     }
   };
 
+  const handleToggleExpanded = (articleId: number) => {
+    setExpandedArticles(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(articleId)) {
+        newExpanded.delete(articleId);
+      } else {
+        newExpanded.add(articleId);
+      }
+      return newExpanded;
+    });
+  };
+
   // Fast client-side navigation - no page reloads
   const handleTabChange = (tab: string) => {
     handleSectionChange(tab);
@@ -377,6 +390,8 @@ export default function Home() {
                   article={article}
                   onClick={() => handleArticleClick(article)}
                   onShare={(e) => handleShare(e, article)}
+                  isExpanded={expandedArticles.has(article.id)}
+                  onToggleExpanded={() => handleToggleExpanded(article.id)}
                 />
               </div>
             ))}
