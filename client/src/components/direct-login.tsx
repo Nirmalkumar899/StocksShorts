@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, LogIn } from "lucide-react";
@@ -14,7 +14,47 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const { toast } = useToast();
+
+  // Detect keyboard appearance by monitoring viewport height changes
+  useEffect(() => {
+    const initialHeight = window.innerHeight;
+    
+    const handleResize = () => {
+      const currentHeight = window.innerHeight;
+      const heightDifference = initialHeight - currentHeight;
+      
+      // If viewport height reduced by more than 150px, keyboard is likely open
+      setIsKeyboardOpen(heightDifference > 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
+  // Add viewport change listener for mobile keyboards
+  useEffect(() => {
+    const handleViewportChange = () => {
+      // Update CSS custom property for keyboard height
+      const viewportHeight = window.innerHeight;
+      const documentHeight = document.documentElement.clientHeight;
+      const keyboardHeight = Math.max(0, documentHeight - viewportHeight);
+      
+      document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+    };
+
+    window.addEventListener('resize', handleViewportChange);
+    
+    return () => {
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, []);
 
   const sendOtpMutation = useMutation({
     mutationFn: async (phone: string) => {
@@ -101,14 +141,16 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
 
   return (
     <div 
-      className="w-full max-w-sm mx-auto mobile-input-container" 
+      className={`w-full max-w-sm mx-auto mobile-input-container ${isKeyboardOpen ? 'keyboard-open' : ''}`}
       onClick={handleContainerClick}
       style={{
         position: 'relative',
         zIndex: 1000,
         // Ensure the component adapts to viewport changes (keyboard)
         minHeight: 'fit-content',
-        paddingBottom: 'env(keyboard-inset-height, 0px)'
+        paddingBottom: 'env(keyboard-inset-height, 0px)',
+        // Use the detected keyboard height
+        marginBottom: isKeyboardOpen ? 'var(--keyboard-height, 0px)' : '0px'
       }}
     >
       {step === "phone" ? (
@@ -187,14 +229,25 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
                 }}
                 onFocus={(e) => {
                   e.stopPropagation();
-                  // Scroll the input into view when focused
+                  // More aggressive scrolling for OTP input when keyboard appears
                   setTimeout(() => {
-                    e.target.scrollIntoView({ 
-                      behavior: 'smooth', 
-                      block: 'center',
-                      inline: 'nearest'
-                    });
-                  }, 100);
+                    const element = e.target;
+                    const container = element.closest('.mobile-input-container');
+                    
+                    // First scroll the container to top of viewport
+                    if (container) {
+                      container.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                      });
+                    }
+                    
+                    // Then add extra scroll up to account for keyboard
+                    setTimeout(() => {
+                      window.scrollBy(0, -150);
+                    }, 200);
+                  }, 50);
                 }}
                 onClick={handleContainerClick}
                 className="text-center text-base h-12 text-lg tracking-widest border-2 border-primary/20 focus:border-primary mobile-input"

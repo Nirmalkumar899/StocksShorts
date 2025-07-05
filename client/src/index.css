@@ -348,9 +348,31 @@
   @media screen and (max-height: 500px) {
     /* When keyboard is likely open (reduced viewport height) */
     .mobile-input-container {
-      /* Adjust positioning to keep inputs visible */
-      margin-top: auto;
-      margin-bottom: 20px;
+      /* Move container higher when keyboard is open */
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 384px;
+      z-index: 9999;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .dark .mobile-input-container {
+      background: rgba(17, 24, 39, 0.95);
+    }
+  }
+
+  /* Very aggressive positioning for very small screens */
+  @media screen and (max-height: 400px) {
+    .mobile-input-container {
+      top: 10px;
+      padding: 15px;
     }
   }
 
@@ -368,5 +390,28 @@
     .mobile-input-container .space-y-3 > * + * {
       margin-top: 0.5rem;
     }
+  }
+
+  /* Keyboard open state styling */
+  .mobile-input-container.keyboard-open {
+    position: fixed !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100% - 40px) !important;
+    max-width: 384px !important;
+    z-index: 9999 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(15px) !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.3s ease-in-out !important;
+  }
+  
+  .dark .mobile-input-container.keyboard-open {
+    background: rgba(17, 24, 39, 0.98) !important;
+    border: 1px solid rgba(75, 85, 99, 0.3) !important;
   }
 }
