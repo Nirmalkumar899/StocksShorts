@@ -130,13 +130,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 {/* Show only 150 characters with read more for Special articles */}
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
                   <div className="space-y-3 mb-4">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
                       {article.content.substring(0, 150)}...
                     </p>
-                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-3 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
+                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-2.5 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
                       <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-1">
-                        <Lock className="h-4 w-4" />
-                        <span className="text-sm font-bold">🔒 LOGIN REQUIRED</span>
+                        <Lock className="h-3 w-3" />
+                        <span className="text-xs font-bold">🔒 LOGIN REQUIRED</span>
                       </div>
                       <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
                         Go to Profile section to login and read full article
@@ -144,17 +144,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     </div>
                   </div>
                 ) : shouldShowViewMore() ? (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
                     {getTruncatedContent(article.content)}...{' '}
                     <button
                       onClick={handleViewMore}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-xs font-medium underline"
                     >
                       View More
                     </button>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
                     {article.content}
                   </div>
                 )}
@@ -164,9 +164,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </div>
         
         {/* Source and time - positioned at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/98 dark:from-gray-900/98 via-white/90 dark:via-gray-900/90 to-transparent p-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
               <span className="flex items-center space-x-1">
                 {getSentimentIcon()}
                 <span className="capitalize font-medium">{article.sentiment}</span>
@@ -174,7 +174,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               <span className="text-gray-500">•</span>
               <span className="font-medium">{article.source}</span>
               <span className="text-gray-500">•</span>
-              <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+              <span className="font-normal">{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
             </div>
             
             {/* Action buttons */}
@@ -250,7 +250,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               
               {/* Full article content */}
               <div className="prose dark:prose-invert max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-base">
+                <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                   {article.content}
                 </div>
               </div>
@@ -259,18 +259,22 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           
           {/* Fixed footer with actions */}
           <div className="flex-shrink-0 pt-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+            {/* Source and Date Row */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-400">
                 <span className="flex items-center space-x-1">
                   {getSentimentIcon()}
-                  <span className="capitalize">{article.sentiment}</span>
+                  <span className="capitalize font-medium">{article.sentiment}</span>
                 </span>
                 <span>•</span>
-                <span>{article.source}</span>
+                <span className="font-medium">Source: {article.source}</span>
                 <span>•</span>
-                <span>{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+                <span>Published: {formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
               </div>
-              
+            </div>
+            
+            {/* Action Buttons Row */}
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
@@ -284,7 +288,10 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleShare}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShare(e);
+                  }}
                   className="transition-all duration-200 hover:scale-105"
                 >
                   <Share2 className="h-4 w-4 mr-2" />
