@@ -130,13 +130,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         {/* Article Content Container - Inshorts Style */}
         <div className="flex flex-col h-full">
           {/* Image Section (Top - Full Width) */}
-          <div className="w-full h-64 relative bg-gray-50 dark:bg-gray-800">
+          <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
             <img
               src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
               alt={article.title}
-              className="w-full h-full object-cover cursor-pointer"
+              className="w-full h-full object-contain cursor-pointer"
               onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
+              onError={(e) => {
+                setImageError(true);
+                // Force fallback after error
+                e.currentTarget.src = getContextualImage(article);
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsLightboxOpen(true);
