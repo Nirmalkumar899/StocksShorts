@@ -21,7 +21,7 @@ import Disclaimer from '@/pages/disclaimer';
 
 export default function Home() {
   const [location] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState('stocksshorts-special');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
@@ -32,11 +32,11 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Category order for auto-switching - Special → IPO → ... → Educational → US Market → Crypto
+  // Category order for auto-switching - Trending → Special → IPO → ... → Educational → US Market → Crypto
   const categoryOrder = [
+    'all',
     'stocksshorts-special',
     'ipo',
-    'all',
     'breakout-stocks',
     'kalkabazaar',
     'warrants',

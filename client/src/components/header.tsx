@@ -1,5 +1,5 @@
 import { RefreshCw, Moon, Sun, Download, Languages } from "lucide-react";
-import logoImage from "@assets/IMG_4158_1751708051948.png";
+import logoImage from "@assets/IMG_4184_1751708235236.png";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
@@ -133,12 +133,11 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm5-18v4h3V3h-3z"/>
-              </svg>
-            </div>
-            <h1 className="text-xl font-bold text-neutral-800 dark:text-white">StocksShorts</h1>
+            <img 
+              src={logoImage} 
+              alt="StocksShorts" 
+              className="h-8 w-auto object-contain"
+            />
           </div>
           <div className="flex items-center space-x-2">
             {showInstallButton && (
