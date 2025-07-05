@@ -159,7 +159,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     return ultratechImages[imageVariant - 1];
   }
   
-  if (combinedText.includes('grse') || combinedText.includes('cochin shipyard') || combinedText.includes('shipyard')) {
+  if (combinedText.includes('grse') || combinedText.includes('cochin shipyard') || combinedText.includes('shipyard') || combinedText.includes('tug order') || combinedText.includes('marine')) {
     const shipyardImages = [
       'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format&q=80', // Naval ship
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&auto=format&q=80', // Shipbuilding
@@ -323,6 +323,160 @@ export function getContextualImage(article: { title: string; content: string; ty
     return v2RetailImages[imageVariant - 1];
   }
   
+  // Order Win and Research Report specific companies
+  if (combinedText.includes('kalpataru') || combinedText.includes('transmission') || combinedText.includes('t&d order')) {
+    const kalpataruImages = [
+      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Power transmission
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Electrical infrastructure
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Power lines
+    ];
+    return kalpataruImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('reliance') || combinedText.includes('ril')) {
+    const relianceImages = [
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
+      'https://images.unsplash.com/photo-1562792399-9b6f94b6bb01?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemicals
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80'  // Retail/Jio
+    ];
+    return relianceImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('infosys') || combinedText.includes('infy')) {
+    const infosysImages = [
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Software development
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&auto=format&q=80', // Technology consulting
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80'  // Digital services
+    ];
+    return infosysImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('tcs') || combinedText.includes('tata consultancy')) {
+    const tcsImages = [
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&auto=format&q=80', // IT consulting
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // Technology
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80'  // Software
+    ];
+    return tcsImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('wipro')) {
+    const wiproImages = [
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // IT services
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Technology
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&auto=format&q=80'  // Digital transformation
+    ];
+    return wiproImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('larsen') || combinedText.includes('l&t') || combinedText.includes('lt')) {
+    const ltImages = [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80'  // Engineering
+    ];
+    return ltImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('maruti') || combinedText.includes('suzuki')) {
+    const marutiImages = [
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop&auto=format&q=80', // Automobile
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=600&fit=crop&auto=format&q=80', // Car manufacturing
+      'https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=800&h=600&fit=crop&auto=format&q=80'  // Automotive
+    ];
+    return marutiImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('bajaj') && (combinedText.includes('finance') || combinedText.includes('housing'))) {
+    const bajajFinanceImages = [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Finance building
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&auto=format&q=80', // Banking
+      'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop&auto=format&q=80'  // Financial services
+    ];
+    return bajajFinanceImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('adani') && !combinedText.includes('power')) {
+    const adaniImages = [
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format&q=80', // Ports/shipping
+      'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&auto=format&q=80'  // Maritime/logistics
+    ];
+    return adaniImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('hdfc bank') || combinedText.includes('hdfc')) {
+    const hdfcImages = [
+      'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=800&h=600&fit=crop&auto=format&q=80', // Banking
+      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop&auto=format&q=80', // Financial services
+      'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop&auto=format&q=80'  // Banking hall
+    ];
+    return hdfcImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('icici') || combinedText.includes('icici bank')) {
+    const iciciImages = [
+      'https://images.unsplash.com/photo-1565372195458-9de0b320ef04?w=800&h=600&fit=crop&auto=format&q=80', // Modern banking
+      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop&auto=format&q=80', // Digital banking
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&auto=format&q=80'  // Financial institution
+    ];
+    return iciciImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('sun pharma') || combinedText.includes('pharmaceutical')) {
+    const sunPharmaImages = [
+      'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop&auto=format&q=80', // Pharmaceutical
+      'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&h=600&fit=crop&auto=format&q=80', // Medicine/drugs
+      'https://images.unsplash.com/photo-1582560469781-1965b9af903d?w=800&h=600&fit=crop&auto=format&q=80'  // Healthcare
+    ];
+    return sunPharmaImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('titan') || combinedText.includes('jewelry')) {
+    const titanImages = [
+      'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&h=600&fit=crop&auto=format&q=80', // Luxury retail
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80', // Jewelry/watches
+      'https://images.unsplash.com/photo-1544441893-675973e31985?w=800&h=600&fit=crop&auto=format&q=80'  // Premium retail
+    ];
+    return titanImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('bharti airtel') || combinedText.includes('airtel')) {
+    const airtelImages = [
+      'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&h=600&fit=crop&auto=format&q=80', // Telecom towers
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // Digital communication
+      'https://images.unsplash.com/photo-1596522354195-e84ae3c98731?w=800&h=600&fit=crop&auto=format&q=80'  // Network/connectivity
+    ];
+    return airtelImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('servotech') || combinedText.includes('ev charger') || combinedText.includes('electric vehicle')) {
+    const servotechImages = [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // EV charging
+      'https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800&h=600&fit=crop&auto=format&q=80', // Electric vehicle
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80'  // Technology
+    ];
+    return servotechImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('ahluwalia') || combinedText.includes('residential') || combinedText.includes('infra orders')) {
+    const ahluwaliaImages = [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Residential building
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80'  // Real estate
+    ];
+    return ahluwaliaImages[imageVariant - 1];
+  }
+  
+  if (combinedText.includes('parin enterprises') || combinedText.includes('edu deal') || combinedText.includes('education')) {
+    const parinImages = [
+      'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&auto=format&q=80', // Education
+      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop&auto=format&q=80', // Learning
+      'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&h=600&fit=crop&auto=format&q=80'  // Educational technology
+    ];
+    return parinImages[imageVariant - 1];
+  }
+  
   // Move chart patterns to later in the priority order
   
   // Add warrants as a specific category before other checks
@@ -425,12 +579,49 @@ export function getContextualImage(article: { title: string; content: string; ty
     return chartImages[imageVariant - 1];
   }
   
-  // Default market images for general content
-  const defaultImages = [
-    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format', // Business building
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format', // Corporate office
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format'  // Business analytics
+  // Enhanced fallback system based on article type to prevent white/blank images
+  if (article.type === 'Order Win') {
+    const orderWinFallback = [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction/infrastructure
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial projects
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Manufacturing
+    ];
+    return orderWinFallback[imageVariant - 1];
+  }
+
+  if (article.type === 'Research Report' || article.type === 'Research Report ') {
+    const researchFallback = [
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Financial analysis
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Business building
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80'  // Corporate research
+    ];
+    return researchFallback[imageVariant - 1];
+  }
+
+  if (article.type === 'Educational') {
+    const educationalFallback = [
+      'https://images.unsplash.com/photo-1643116774075-acc00caa9a7b?w=800&h=600&fit=crop&auto=format&q=80', // Trading charts
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Financial analysis
+      'https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=800&h=600&fit=crop&auto=format&q=80'  // Learning
+    ];
+    return educationalFallback[imageVariant - 1];
+  }
+
+  if (article.type === 'Crypro') {
+    const cryptoFallback = [
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Cryptocurrency
+      'https://images.unsplash.com/photo-1643116774075-acc00caa9a7b?w=800&h=600&fit=crop&auto=format&q=80', // Digital finance
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&auto=format&q=80'  // Blockchain
+    ];
+    return cryptoFallback[imageVariant - 1];
+  }
+
+  // Strong default fallback to prevent any white/blank images
+  const strongDefaultImages = [
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Business building
+    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80', // Corporate office
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80'  // Business analytics
   ];
   
-  return defaultImages[imageVariant - 1];
+  return strongDefaultImages[imageVariant - 1];
 }
