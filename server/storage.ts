@@ -24,6 +24,15 @@ import {
   type InsertComment
 } from "@shared/schema";
 import { db } from "./db";
+
+// Add deployment timeout wrapper
+const withTimeout = async <T>(promise: Promise<T>, timeout: number = 5000): Promise<T> => {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error('Database operation timed out')), timeout);
+  });
+  
+  return Promise.race([promise, timeoutPromise]);
+};
 import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -56,8 +65,17 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    if (!db) return undefined;
+    try {
+      const [user] = await withTimeout(
+        db.select().from(users).where(eq(users.id, id)),
+        3000
+      );
+      return user || undefined;
+    } catch (error) {
+      console.warn('Database timeout in getUser:', error);
+      return undefined;
+    }
   }
 
   async getUserByPhone(phoneNumber: string): Promise<User | undefined> {
@@ -66,11 +84,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    if (!db) throw new Error('Database not available');
+    try {
+      const [user] = await withTimeout(
+        db.insert(users).values(insertUser).returning(),
+        3000
+      );
+      return user;
+    } catch (error) {
+      console.warn('Database timeout in createUser:', error);
+      throw error;
+    }
   }
 
   async createOtp(insertOtp: InsertOtp): Promise<OtpVerification> {

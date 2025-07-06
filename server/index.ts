@@ -9,12 +9,18 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
-// Add deployment timeout handling
+// Add deployment timeout handling and optimizations
 const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction) {
   // Set shorter timeouts for production deployment
   process.env.DB_TIMEOUT = '3000';
-  process.env.REQUEST_TIMEOUT = '15000';
+  process.env.REQUEST_TIMEOUT = '10000';
+  
+  // Deployment memory optimizations
+  process.env.NODE_OPTIONS = '--max-old-space-size=512';
+  
+  // Disable unnecessary features for deployment
+  process.env.VITE_DEV_TOOLS = 'false';
 }
 
 const app = express();

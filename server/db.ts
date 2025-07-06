@@ -10,6 +10,12 @@ try {
   neonConfig.pipelineTLS = false;
   neonConfig.pipelineConnect = false;
   neonConfig.poolQueryViaFetch = true;
+  
+  // Deployment optimizations
+  if (process.env.NODE_ENV === 'production') {
+    neonConfig.fetchConnectionCache = true;
+    neonConfig.forceDisablePgBouncer = true;
+  }
 } catch (error) {
   console.warn('WebSocket configuration failed, will use fallback mode:', error);
 }

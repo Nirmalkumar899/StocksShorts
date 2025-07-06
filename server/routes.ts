@@ -25,6 +25,21 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add request timeout for deployment stability
+  app.use((req, res, next) => {
+    const timeout = process.env.NODE_ENV === 'production' ? 10000 : 30000;
+    const timer = setTimeout(() => {
+      if (!res.headersSent) {
+        console.warn(`Request timeout: ${req.method} ${req.path}`);
+        res.status(408).json({ error: 'Request timeout' });
+      }
+    }, timeout);
+    
+    res.on('finish', () => clearTimeout(timer));
+    res.on('close', () => clearTimeout(timer));
+    next();
+  });
+
   const googleSheetsService = new GoogleSheetsService();
 
   // Serve sitemap.xml with correct content type
