@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
+import OpenAI from 'openai';
 import { mobileAuth } from "./mobileAuth";
 
 import { stockAI } from "./services/stockAI-new";
@@ -189,25 +190,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Translation API using OpenAI
+  // Translation API using OpenAI SDK
+  const openai = new OpenAI({ 
+    apiKey: process.env.OPENAI_API_KEY 
+  });
+  
   app.post('/api/translate-articles', async (req, res) => {
-    console.log('Translation API called from:', req.headers.origin);
-    console.log('Request body:', req.body ? 'Present' : 'Missing');
+    console.log('🌐 Translation API called from:', req.headers.origin);
+    console.log('📋 Request body:', req.body ? 'Present' : 'Missing');
     
     try {
       const { articles } = req.body;
       
       if (!articles || !Array.isArray(articles)) {
-        console.log('Invalid articles data:', { articles: articles ? articles.length : 'null', isArray: Array.isArray(articles) });
+        console.log('❌ Invalid articles data:', { 
+          articlesExists: !!articles, 
+          isArray: Array.isArray(articles),
+          length: articles?.length 
+        });
         return res.status(400).json({ message: 'Articles array is required' });
       }
 
       if (!process.env.OPENAI_API_KEY) {
-        console.log('OpenAI API key missing');
+        console.log('❌ OpenAI API key missing');
         return res.status(500).json({ message: 'OpenAI API key not configured' });
       }
 
-      console.log(`Starting translation of ${articles.length} articles...`);
+      console.log(`🚀 Starting translation of ${articles.length} articles...`);
       
       // Process articles in smaller batches to avoid timeout
       const batchSize = 5;
@@ -224,79 +233,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const batchTranslatedArticles = await Promise.all(
           batch.map(async (article: any) => {
-            let timeoutId: NodeJS.Timeout | undefined;
             try {
-              console.log(`Translating article ${article.id}: ${article.title.substring(0, 50)}...`);
+              console.log(`🌐 Translating article ${article.id}: ${article.title?.substring(0, 30)}...`);
               
-              // Add timeout for OpenAI API call
-              const controller = new AbortController();
-              timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-            
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              signal: controller.signal,
-              body: JSON.stringify({
-                model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-                messages: [
-                  {
-                    role: 'system',
-                    content: 'You are a professional Hindi translator specializing in financial content. Translate English financial news to natural, fluent Hindi while keeping technical terms, company names, numbers, and currency symbols unchanged. Maintain the professional tone and clarity.'
-                  },
-                  {
-                    role: 'user',
-                    content: `Translate this financial article to Hindi:
+              const prompt = `Translate this stock market article to Hindi. Keep financial terms, company names, and numbers in English/digits.
 
 Title: ${article.title}
-
 Content: ${article.content}
 
-Please provide the translation in this exact format:
+Return in exact format:
 TITLE: [Hindi translation]
-CONTENT: [Hindi translation]`
-                  }
-                ],
-                max_tokens: 1500,
-                temperature: 0.2
-              })
-            });
+CONTENT: [Hindi translation]`;
 
-            if (timeoutId) clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error(`OpenAI API error for article ${article.id}:`, response.status, errorText);
-              throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+              const response = await Promise.race([
+                openai.chat.completions.create({
+                  model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+                  messages: [{ role: 'user', content: prompt }],
+                  temperature: 0.3,
+                  max_tokens: 1000
+                }),
+                new Promise((_, reject) => 
+                  setTimeout(() => reject(new Error('Translation timeout after 30s')), 30000)
+                )
+              ]) as any;
+              
+              const translatedText = response.choices[0].message.content;
+              console.log(`✅ Translation received for article ${article.id}`);
+              
+              // Parse the translated response
+              const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/s);
+              const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/s);
+              
+              return {
+                id: article.id,
+                title: titleMatch ? titleMatch[1].trim() : article.title,
+                content: contentMatch ? contentMatch[1].trim() : article.content
+              };
+              
+            } catch (error) {
+              console.error(`❌ Translation error for article ${article.id}:`, error.message);
+              // Return original article if translation fails
+              return {
+                id: article.id,
+                title: article.title,
+                content: article.content
+              };
             }
-
-            const data = await response.json();
-            const translatedText = data.choices[0].message.content;
-            
-            console.log(`Translation received for article ${article.id}`);
-            
-            // Parse the translated response with more flexible regex
-            const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\n|$)/i);
-            const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*)/i);
-            
-            const translatedTitle = titleMatch ? titleMatch[1].trim() : article.title;
-            const translatedContent = contentMatch ? contentMatch[1].trim() : article.content;
-            
-            return {
-              ...article,
-              title: translatedTitle,
-              content: translatedContent
-            };
-          } catch (error) {
-            console.error(`Translation error for article ${article.id}:`, error);
-            // Clear timeout if error occurs
-            if (timeoutId) clearTimeout(timeoutId);
-            // Return original article if translation fails
-            return article;
-          }
-        }));
+          })
+        );
         
         allTranslatedArticles.push(...batchTranslatedArticles);
         
@@ -306,12 +290,15 @@ CONTENT: [Hindi translation]`
         }
       }
 
-      console.log(`Translation completed for ${allTranslatedArticles.length} articles`);
+      console.log(`🎉 Translation completed for ${allTranslatedArticles.length} articles`);
       res.json(allTranslatedArticles);
+      
     } catch (error) {
-      console.error('Translation API error:', error);
+      console.error('💥 Translation API error:', error);
+      console.error('💥 Error stack:', error.stack);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Translation failed'
+        message: error instanceof Error ? error.message : 'Translation failed',
+        details: error.stack
       });
     }
   });
