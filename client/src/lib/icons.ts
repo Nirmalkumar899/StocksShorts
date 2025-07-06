@@ -24,4 +24,6 @@ export {
   Bitcoin,
   PiggyBank,
   BookOpen,
+  Search,
+  AlertTriangle,
 } from "./custom-icons";
