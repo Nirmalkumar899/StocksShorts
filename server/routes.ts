@@ -877,8 +877,8 @@ Content: [Hindi translation]`
     }
   });
 
-  // Serve attached assets
-  app.get('/assets/:filename', (req, res) => {
+  // Serve attached assets from a different path to avoid conflict with build assets
+  app.get('/attachments/:filename', (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(process.cwd(), 'attached_assets', filename);
     

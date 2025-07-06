@@ -3,6 +3,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupProductionStatic } from "./static-server";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -75,7 +76,7 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    setupProductionStatic(app);
   }
 
   // Use environment port for Replit deployment, fallback to 5000 for local development
