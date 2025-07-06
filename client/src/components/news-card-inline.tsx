@@ -237,10 +237,10 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
               
               <button
                 onClick={onShare}
-                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 transition-colors border border-blue-200 dark:border-blue-700"
                 title="Share article"
               >
-                <Share2 className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+                <Share2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </button>
             </div>
           </div>
