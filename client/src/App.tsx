@@ -66,6 +66,9 @@ function Router() {
       <Route path="/ai-analysis">
         {() => <AISection onBack={() => window.history.back()} />}
       </Route>
+      <Route path="/ai-section">
+        {() => <AISection onBack={() => window.history.back()} />}
+      </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
       <Route path="/disclaimer" component={Home} />
       <Route path="/article/:id" component={ArticlePage} />

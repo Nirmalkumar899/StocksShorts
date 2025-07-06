@@ -124,47 +124,62 @@ export class EnhancedAIService {
             sources.push(docName);
           });
         }
+        
+        // Debug log to check content
+        console.log(`Context length: ${context.length} characters`);
+        console.log(`First 500 characters of context:`, context.substring(0, 500));
       }
 
       // 5. Create enhanced prompt for OpenAI with instructions
       const enhancedPrompt = `
-Answer the user's specific question directly using the provided data.
+CRITICAL: You must ONLY use the information provided in the AVAILABLE DATA section below. Do NOT use any general knowledge about companies.
 
 USER QUERY: ${query}
 
 AVAILABLE DATA:
 ${context}
 
-INSTRUCTIONS:
+STRICT INSTRUCTIONS:
+- Use ONLY the information in the AVAILABLE DATA section above
+- Do NOT use any general knowledge about the company
+- If the specific information is not in the provided documents, respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."
+- Use exact numbers and facts from the provided documents only
 - Answer ONLY the specific question asked
-- Use exact numbers and facts from the provided documents
-- Be specific and factual, not general
-- Keep response focused and direct
-- Do NOT mention storage locations (Google Drive, database, etc.)
-- If information is not available in the provided documents, respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."
 - End with: Sources: [specific document names only]
 
-${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' : 'Answer directly using the provided data.'}
+${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' : 'Base your answer EXCLUSIVELY on the provided document content above.'}
 `;
 
-      // 5. Get OpenAI response
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert financial analyst with access to company research documents. Provide detailed, data-driven analysis based only on the provided information."
-          },
-          {
-            role: "user",
-            content: enhancedPrompt
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.3
-      });
-
-      const response = completion.choices[0].message.content || "Sorry, this information is not available in our current data. We are working on expanding our coverage.";
+      // 5. Get OpenAI response with timeout and error handling
+      let response: string;
+      try {
+        const completion = await Promise.race([
+          openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: "You are a document analysis assistant. You can ONLY use information provided in the user's documents. You have NO access to general knowledge about companies, markets, or finances. If information is not in the provided documents, you must say it's not available."
+              },
+              {
+                role: "user",
+                content: enhancedPrompt
+              }
+            ],
+            max_tokens: 2000,
+            temperature: 0.3
+          }),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('OpenAI request timeout')), 30000)
+          )
+        ]);
+        
+        response = completion.choices[0].message.content || "Sorry, this information is not available in our current data. We are working on expanding our coverage.";
+        console.log('OpenAI response received successfully');
+      } catch (error) {
+        console.error('OpenAI API error:', error);
+        response = "Sorry, I'm experiencing technical difficulties. Please try again in a moment.";
+      }
 
       // 6. Store the query for future reference
       if (userId) {
