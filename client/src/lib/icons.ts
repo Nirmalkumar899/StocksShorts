@@ -57,6 +57,7 @@ export {
   Dot,
   GripVertical,
   Circle,
+  BookmarkCheck,
   ArrowUpDown,
   Filter,
   ArrowRight,

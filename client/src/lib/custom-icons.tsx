@@ -402,6 +402,13 @@ export const Circle = ({ className }: IconProps) => (
   </svg>
 );
 
+export const BookmarkCheck = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    <path d="m9 10 2 2 4-4"/>
+  </svg>
+);
+
 export const ArrowUpDown = ({ className }: IconProps) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="m21 16-4 4-4-4"/>

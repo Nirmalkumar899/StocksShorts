@@ -60,11 +60,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
       return false;
     }
-    return article.content && article.content.length > 350;
+    return article.content && article.content.trim().length > 350;
   };
 
   const getTruncatedContent = (content: string) => {
-    return content?.substring(0, 350) || '';
+    if (!content || content.trim().length === 0) {
+      return 'No content available';
+    }
+    const trimmed = content.trim();
+    return trimmed.length > 350 ? trimmed.substring(0, 350) : trimmed;
   };
 
   const handleViewMore = (e: React.MouseEvent) => {
@@ -184,7 +188,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                   </div>
                 ) : (
                   <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                    {article.content}
+                    {article.content?.trim() || 'No content available.'}
                   </div>
                 )}
               </div>
@@ -296,7 +300,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                   </div>
                 ) : (
                   <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                    {article.content}
+                    {article.content?.trim() || 'No content available.'}
                   </div>
                 )}
               </div>
