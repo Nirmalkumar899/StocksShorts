@@ -92,51 +92,29 @@ export class EnhancedAIService {
     try {
       const companyName = this.extractCompanyName(query);
       
-      // 1. Get data from your database
-      const databaseResults = await this.getCompanyFromDatabase(companyName);
-      const personalizedResults = await this.getPersonalizedArticles(companyName);
-
-      // 2. Try Google Drive (optional - requires service account credentials)
-      let driveData = { folders: [], documents: [], sheets: [], content: [] };
+      // Only use Google Drive data - no database or other sources
+      let driveData = { folders: [], documents: [], sheets: [], content: [], documentNames: [] };
       
       // Only attempt Google Drive if we have proper service account credentials
       if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
         try {
-          console.log(`Searching Google Drive for company: ${companyName}`);
+          console.log(`Searching for company: ${companyName}`);
           driveData = await googleDriveService.searchCompanyData(companyName);
-          console.log(`Google Drive results: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
+          console.log(`Found: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
         } catch (driveError) {
-          console.log('Google Drive access failed, continuing with other sources');
+          console.log('Data access failed');
         }
       } else {
-        console.log('Google Drive credentials not configured, using database and web search instead');
+        console.log('Data credentials not configured');
       }
 
-      // 3. Prepare context for OpenAI
+      // Prepare context for OpenAI using only Google Drive data
       let context = '';
       const sources: string[] = [];
 
-      // Add database content
-      if (databaseResults.length > 0) {
-        context += '\n\n=== FROM YOUR DATABASE ===\n';
-        databaseResults.forEach(article => {
-          context += `Title: ${article.title}\nContent: ${article.content}\nDate: ${article.createdAt}\n\n`;
-        });
-        sources.push(`${databaseResults.length} articles from your database`);
-      }
-
-      // Add personalized articles
-      if (personalizedResults.length > 0) {
-        context += '\n\n=== PERSONALIZED ARTICLES ===\n';
-        personalizedResults.forEach(article => {
-          context += `Title: ${article.title}\nContent: ${article.content}\nInsights: ${article.insights}\n\n`;
-        });
-        sources.push(`${personalizedResults.length} personalized articles`);
-      }
-
-      // Add Google Drive content
+      // Add only Google Drive content
       if (driveData.content.length > 0) {
-        context += '\n\n=== FROM YOUR GOOGLE DRIVE ===\n';
+        context += '\n\n=== AVAILABLE DATA ===\n';
         driveData.content.forEach(content => {
           context += content + '\n\n';
         });
@@ -145,21 +123,10 @@ export class EnhancedAIService {
           driveData.documentNames.forEach(docName => {
             sources.push(docName);
           });
-        } else {
-          sources.push(`${driveData.content.length} documents from Google Drive`);
         }
       }
 
-      // 4. If insufficient data from database and drive, supplement with web search
-      let webSearchNeeded = false;
-      const totalDataSources = databaseResults.length + personalizedResults.length + driveData.content.length;
-      
-      if (totalDataSources < 2) {
-        webSearchNeeded = true;
-        console.log(`Limited data found (${totalDataSources} sources). Web search may be needed for comprehensive analysis.`);
-      }
-
-      // 5. Create enhanced prompt for OpenAI with source priority instructions
+      // 5. Create enhanced prompt for OpenAI with instructions
       const enhancedPrompt = `
 Answer the user's specific question directly using the provided data.
 
@@ -173,10 +140,11 @@ INSTRUCTIONS:
 - Use exact numbers and facts from the provided documents
 - Be specific and factual, not general
 - Keep response focused and direct
-- Do NOT provide general updates or background information unless asked
-- Cite specific document names as sources (not "Google Drive" or "database")
+- Do NOT mention storage locations (Google Drive, database, etc.)
+- If information is not available in the provided documents, respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."
+- End with: Sources: [specific document names only]
 
-Answer directly and end with: Sources: [specific document names]
+${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' : 'Answer directly using the provided data.'}
 `;
 
       // 5. Get OpenAI response
@@ -185,7 +153,7 @@ Answer directly and end with: Sources: [specific document names]
         messages: [
           {
             role: "system",
-            content: "You are an expert financial analyst with access to the user's personal research database and Google Drive company folders. Provide detailed, data-driven analysis."
+            content: "You are an expert financial analyst with access to company research documents. Provide detailed, data-driven analysis based only on the provided information."
           },
           {
             role: "user",
@@ -196,7 +164,7 @@ Answer directly and end with: Sources: [specific document names]
         temperature: 0.3
       });
 
-      const response = completion.choices[0].message.content || "Unable to process your query at this time.";
+      const response = completion.choices[0].message.content || "Sorry, this information is not available in our current data. We are working on expanding our coverage.";
 
       // 6. Store the query for future reference
       if (userId) {
@@ -211,7 +179,7 @@ Answer directly and end with: Sources: [specific document names]
       return {
         response,
         sources,
-        databaseResults: databaseResults.length + personalizedResults.length,
+        databaseResults: 0,
         driveResults: driveData.content.length
       };
 
