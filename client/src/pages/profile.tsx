@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { User, Phone, Plus, Check, BookmarkCheck } from "@/lib/icons";
+import { User, Phone, Plus, Check, BookmarkCheck, LogOut } from "@/lib/icons";
 import MobileLogin from "./mobile-login";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
