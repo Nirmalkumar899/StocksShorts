@@ -191,11 +191,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`Starting translation of ${articles.length} articles...`);
+      
+      // Process articles in smaller batches to avoid timeout
+      const batchSize = 5;
+      const batches = [];
+      for (let i = 0; i < articles.length; i += batchSize) {
+        batches.push(articles.slice(i, i + batchSize));
+      }
+      
+      const allTranslatedArticles = [];
 
-      const translatedArticles = await Promise.all(
-        articles.map(async (article: any) => {
-          try {
-            console.log(`Translating article ${article.id}: ${article.title.substring(0, 50)}...`);
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+        console.log(`Processing batch ${batchIndex + 1}/${batches.length} with ${batch.length} articles...`);
+        
+        const batchTranslatedArticles = await Promise.all(
+          batch.map(async (article: any) => {
+            let timeoutId: NodeJS.Timeout | undefined;
+            try {
+              console.log(`Translating article ${article.id}: ${article.title.substring(0, 50)}...`);
+              
+              // Add timeout for OpenAI API call
+              const controller = new AbortController();
+              timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
             
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
               method: 'POST',
@@ -203,6 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
                 'Content-Type': 'application/json',
               },
+              signal: controller.signal,
               body: JSON.stringify({
                 model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
                 messages: [
@@ -228,6 +247,8 @@ CONTENT: [Hindi translation]`
               })
             });
 
+            if (timeoutId) clearTimeout(timeoutId);
+            
             if (!response.ok) {
               const errorText = await response.text();
               console.error(`OpenAI API error for article ${article.id}:`, response.status, errorText);
@@ -253,14 +274,23 @@ CONTENT: [Hindi translation]`
             };
           } catch (error) {
             console.error(`Translation error for article ${article.id}:`, error);
+            // Clear timeout if error occurs
+            if (timeoutId) clearTimeout(timeoutId);
             // Return original article if translation fails
             return article;
           }
-        })
-      );
+        }));
+        
+        allTranslatedArticles.push(...batchTranslatedArticles);
+        
+        // Add small delay between batches to avoid rate limiting
+        if (batchIndex < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
-      console.log(`Translation completed for ${translatedArticles.length} articles`);
-      res.json(translatedArticles);
+      console.log(`Translation completed for ${allTranslatedArticles.length} articles`);
+      res.json(allTranslatedArticles);
     } catch (error) {
       console.error('Translation API error:', error);
       res.status(500).json({ 
