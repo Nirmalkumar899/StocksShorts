@@ -142,11 +142,16 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
         <div className="w-2/5 relative">
           <div className="absolute inset-0">
             <img
-              src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+              src={article.imageUrl || getContextualImage(article)}
               alt={article.title}
               className="w-full h-full object-contain cursor-pointer"
               onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
+              onError={(e) => {
+                if (!imageError) {
+                  setImageError(true);
+                  e.currentTarget.src = getContextualImage(article);
+                }
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsLightboxOpen(true);
@@ -251,7 +256,7 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
 
       {/* Image Lightbox for Educational and Trader View articles */}
       <ImageLightbox
-        src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+        src={article.imageUrl || getContextualImage(article)}
         alt={article.title}
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}

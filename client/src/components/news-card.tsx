@@ -175,13 +175,16 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           {/* Image Section (Top - Full Width) */}
           <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
             <img
-              src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+              src={article.imageUrl || getContextualImage(article)}
               alt={article.title}
               className="w-full h-full object-contain cursor-pointer"
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
-                setImageError(true);
-                e.currentTarget.src = getContextualImage(article);
+                // Only use fallback image if the provided image fails to load
+                if (!imageError) {
+                  setImageError(true);
+                  e.currentTarget.src = getContextualImage(article);
+                }
               }}
               onClick={(e) => {
                 e.stopPropagation();
