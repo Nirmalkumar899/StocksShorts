@@ -60,15 +60,49 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
       return false;
     }
-    return article.content && article.content.trim().length > 350;
+    if (!article.content) return false;
+    
+    // Count the number of lines by splitting on newlines and wrapping
+    const lines = article.content.trim().split('\n');
+    let totalLines = 0;
+    
+    lines.forEach(line => {
+      // Estimate lines based on character count (assuming ~50 characters per line on mobile)
+      const estimatedLinesForThisText = Math.ceil(line.length / 50) || 1;
+      totalLines += estimatedLinesForThisText;
+    });
+    
+    return totalLines > 12;
   };
 
   const getTruncatedContent = (content: string) => {
     if (!content || content.trim().length === 0) {
       return 'No content available';
     }
+    
     const trimmed = content.trim();
-    return trimmed.length > 350 ? trimmed.substring(0, 350) : trimmed;
+    const lines = trimmed.split('\n');
+    let totalLines = 0;
+    let truncatedContent = '';
+    
+    for (const line of lines) {
+      const estimatedLinesForThisText = Math.ceil(line.length / 50) || 1;
+      
+      if (totalLines + estimatedLinesForThisText <= 12) {
+        truncatedContent += (truncatedContent ? '\n' : '') + line;
+        totalLines += estimatedLinesForThisText;
+      } else {
+        // Add partial line if we can fit some characters
+        const remainingLines = 12 - totalLines;
+        if (remainingLines > 0) {
+          const partialText = line.substring(0, remainingLines * 50);
+          truncatedContent += (truncatedContent ? '\n' : '') + partialText;
+        }
+        break;
+      }
+    }
+    
+    return truncatedContent || trimmed.substring(0, 600); // Fallback to character limit
   };
 
   const handleViewMore = (e: React.MouseEvent) => {
