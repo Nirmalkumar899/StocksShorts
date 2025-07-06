@@ -72,7 +72,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       totalLines += estimatedLinesForThisText;
     });
     
-    return totalLines > 12;
+    return totalLines > 10;
   };
 
   const getTruncatedContent = (content: string) => {
@@ -88,12 +88,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     for (const line of lines) {
       const estimatedLinesForThisText = Math.ceil(line.length / 50) || 1;
       
-      if (totalLines + estimatedLinesForThisText <= 12) {
+      if (totalLines + estimatedLinesForThisText <= 10) {
         truncatedContent += (truncatedContent ? '\n' : '') + line;
         totalLines += estimatedLinesForThisText;
       } else {
         // Add partial line if we can fit some characters
-        const remainingLines = 12 - totalLines;
+        const remainingLines = 10 - totalLines;
         if (remainingLines > 0) {
           const partialText = line.substring(0, remainingLines * 50);
           truncatedContent += (truncatedContent ? '\n' : '') + partialText;
