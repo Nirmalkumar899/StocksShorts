@@ -11,20 +11,22 @@ export function GoogleAnalytics() {
 
     // Add Google Analytics if GA_MEASUREMENT_ID is provided
     const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-49YFSGSMQZ';
-    if (gaMeasurementId) {
+    // Validate GA measurement ID format (G-XXXXXXXXXX or UA-XXXXXXXX-X)
+    const isValidGaId = /^(G-[A-Z0-9]{10}|UA-\d{8}-\d)$/.test(gaMeasurementId);
+    if (gaMeasurementId && isValidGaId) {
       // Load Google Analytics script
       const script1 = document.createElement('script');
       script1.async = true;
-      script1.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`;
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
       document.head.appendChild(script1);
 
       // Initialize Google Analytics
       const script2 = document.createElement('script');
-      script2.innerHTML = `
+      script2.textContent = `
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', '${gaMeasurementId}');
+        gtag('config', '${gaMeasurementId.replace(/['"\\]/g, '')}');
       `;
       document.head.appendChild(script2);
     }
