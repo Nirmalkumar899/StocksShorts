@@ -5,20 +5,12 @@ export class GoogleDriveService {
   private drive: any;
 
   constructor() {
-    // Try to load from JSON file first (more reliable)
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const jsonPath = path.join(process.cwd(), 'attached_assets', 'spartan-perigee-463004-u2-e5ae8eae0c60_1751807506284.json');
-      
-      if (fs.existsSync(jsonPath)) {
-        const serviceAccount = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-        console.log('Google Drive: Using service account from JSON file');
-        
-        const auth = new google.auth.GoogleAuth({
-          credentials: {
-            client_email: "stocksshortsnew@spartan-perigee-463004-u2.iam.gserviceaccount.com",
-            private_key: `-----BEGIN PRIVATE KEY-----
+    // Use the correct credentials from the JSON file directly
+    console.log('Google Drive: Using service account credentials');
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: "stocksshortsnew@spartan-perigee-463004-u2.iam.gserviceaccount.com",
+        private_key: `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDxm4erbCGs0tHQ
 Mri1jp9AcFU6KMEnywtSCFhKtgDS5IhrjtAPnATmeBz9UusIW1omj8/9oMdb75cc
 rdrrcrQSBh3fQ6FmNeAoeJJ/UIaEAJs1hDqmzoMLGC/qinhqn0ZVqcAlRMyI4n2A
@@ -46,57 +38,11 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
 +2hyEr0BnNGEeiNg+ZNiqcLaIIr/yG8qCSsf3LGc4jZD6m7cFAj6qwM491S0M4/v
 0HsI2X6g//ccL7BPi5ZPKRY=
 -----END PRIVATE KEY-----`,
-          },
-          scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-        });
-        this.drive = google.drive({ version: 'v3', auth });
-        return;
-      }
-    } catch (error) {
-      console.log('Failed to load from JSON file, falling back to environment variables:', error.message);
-    }
-
-    // Fallback to environment variables
-    if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-      try {
-        console.log('Google Drive: Using environment variables');
-        let privateKey = process.env.GOOGLE_PRIVATE_KEY;
-        
-        // Handle different private key formats
-        if (privateKey.includes('\\n')) {
-          privateKey = privateKey.replace(/\\n/g, '\n');
-        }
-        
-        // Ensure proper line breaks for the key
-        if (!privateKey.includes('\n') && privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          privateKey = privateKey
-            .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-            .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
-        }
-
-        const auth = new google.auth.GoogleAuth({
-          credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: privateKey,
-          },
-          scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-        });
-        this.drive = google.drive({ version: 'v3', auth });
-        console.log('Google Drive service initialized with service account credentials');
-      } catch (error) {
-        console.error('Error initializing Google Drive service account:', error);
-        this.drive = null;
-      }
-    } else if (process.env.GOOGLE_API_KEY) {
-      // Fallback to API key (only works for public files)
-      this.drive = google.drive({ 
-        version: 'v3', 
-        auth: process.env.GOOGLE_API_KEY 
-      });
-    } else {
-      // No credentials available
-      this.drive = null;
-    }
+      },
+      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    });
+    this.drive = google.drive({ version: 'v3', auth });
+    console.log('Google Drive service initialized with service account credentials');
   }
 
   async findAIDatabaseFolder(): Promise<string | null> {
