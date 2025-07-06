@@ -175,7 +175,7 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
                 disabled={isTranslating}
                 className={`p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors ${isTranslated ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
               >
-                <span className={`text-sm ${isTranslated ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-600 dark:text-neutral-400'} ${isTranslating ? 'animate-pulse' : ''}`}>🌐</span>
+                <span className={`text-sm ${isTranslated ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-600 dark:text-neutral-400'} ${isTranslating ? 'animate-pulse' : ''}`}>हिं</span>
               </Button>
             )}
             <Button
