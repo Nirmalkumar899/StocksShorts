@@ -57,4 +57,7 @@ export {
   Dot,
   GripVertical,
   Circle,
+  ArrowUpDown,
+  Filter,
+  ArrowRight,
 } from "./custom-icons";

@@ -401,3 +401,25 @@ export const Circle = ({ className }: IconProps) => (
     <circle cx="12" cy="12" r="10"/>
   </svg>
 );
+
+export const ArrowUpDown = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="m21 16-4 4-4-4"/>
+    <path d="M17 20V4"/>
+    <path d="m3 8 4-4 4 4"/>
+    <path d="M7 4v16"/>
+  </svg>
+);
+
+export const Filter = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+  </svg>
+);
+
+export const ArrowRight = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M5 12h14"/>
+    <path d="m12 5 7 7-7 7"/>
+  </svg>
+);
