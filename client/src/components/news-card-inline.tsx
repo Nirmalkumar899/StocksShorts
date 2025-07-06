@@ -144,7 +144,7 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
             <img
               src={article.imageUrl || getContextualImage(article)}
               alt={article.title}
-              className="w-full h-full object-contain cursor-pointer"
+              className="w-full h-full object-cover object-center cursor-pointer"
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
                 if (!imageError) {
