@@ -144,7 +144,7 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
             <img
               src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
               alt={article.title}
-              className="w-full h-full object-cover cursor-pointer"
+              className="w-full h-full object-contain cursor-pointer"
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
               onClick={(e) => {
@@ -169,10 +169,10 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
                   <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
                   <button
                     onClick={onShare}
-                    className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 shadow-sm hover:shadow-md transition-all duration-200 border border-blue-200 dark:border-blue-700 flex-shrink-0"
+                    className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0"
                     title="Share article"
                   >
-                    <Share2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <Share2 className="h-4 w-4" />
                   </button>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
