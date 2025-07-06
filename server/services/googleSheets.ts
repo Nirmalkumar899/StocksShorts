@@ -173,11 +173,13 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
           const providedImageUrl = row[8] ? row[8].toString().trim() : '';
           
           // Debug log for articles that should have images but don't
-          if (!providedImageUrl && (title.includes('IPO') || title.includes('Special'))) {
+          if (!providedImageUrl && (title.includes('IPO') || title.includes('Special') || category === 'KalkaBazaar')) {
             console.log(`No image URL found in column I for "${title}":`, {
               rowLength: row.length,
               columnI: row[8] || 'empty',
-              hasColumnI: row.length > 8
+              hasColumnI: row.length > 8,
+              category: category,
+              fullRow: row
             });
           } else if (providedImageUrl) {
             console.log(`Found image URL in column I for article "${title}": ${providedImageUrl}`);
