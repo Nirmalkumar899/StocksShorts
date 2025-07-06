@@ -37,8 +37,8 @@ export default function AISection({ onBack }: AISectionProps) {
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 AI Stock Analysis
               </h2>
-              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full text-xs font-medium">
-                Live
+              <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 px-2 py-1 rounded-full text-xs font-medium">
+                Beta Testing
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm max-w-xl mx-auto">

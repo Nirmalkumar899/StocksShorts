@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { User, Phone } from "@/lib/icons";
+import { User, Phone, Plus, Check } from "@/lib/icons";
 import MobileLogin from "./mobile-login";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -166,7 +166,7 @@ export default function Profile({ onBack }: ProfileProps) {
                       onClick={() => setIsEditing(!isEditing)}
                       disabled={updateProfileMutation.isPending}
                     >
-                      {isEditing ? <Save className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
+                      {isEditing ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     </Button>
                   </div>
 
