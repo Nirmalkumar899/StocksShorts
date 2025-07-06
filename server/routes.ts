@@ -186,9 +186,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Articles array is required' });
       }
 
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: 'OpenAI API key not configured' });
+      }
+
+      console.log(`Starting translation of ${articles.length} articles...`);
+
       const translatedArticles = await Promise.all(
         articles.map(async (article: any) => {
           try {
+            console.log(`Translating article ${article.id}: ${article.title.substring(0, 50)}...`);
+            
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
               method: 'POST',
               headers: {
@@ -196,55 +204,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                model: 'gpt-4o',
+                model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
                 messages: [
                   {
                     role: 'system',
-                    content: 'You are a professional translator. Translate the given financial news content from English to Hindi. Maintain the same tone, meaning, and financial terminology. Keep numbers, company names, and currency symbols as they are.'
+                    content: 'You are a professional Hindi translator specializing in financial content. Translate English financial news to natural, fluent Hindi while keeping technical terms, company names, numbers, and currency symbols unchanged. Maintain the professional tone and clarity.'
                   },
                   {
                     role: 'user',
-                    content: `Please translate this article:
+                    content: `Translate this financial article to Hindi:
+
 Title: ${article.title}
+
 Content: ${article.content}
 
-Return in this exact format:
-Title: [Hindi translation]
-Content: [Hindi translation]`
+Please provide the translation in this exact format:
+TITLE: [Hindi translation]
+CONTENT: [Hindi translation]`
                   }
                 ],
-                max_tokens: 1000,
-                temperature: 0.3
+                max_tokens: 1500,
+                temperature: 0.2
               })
             });
 
             if (!response.ok) {
-              throw new Error(`OpenAI API error: ${response.statusText}`);
+              const errorText = await response.text();
+              console.error(`OpenAI API error for article ${article.id}:`, response.status, errorText);
+              throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
             }
 
             const data = await response.json();
             const translatedText = data.choices[0].message.content;
             
-            // Parse the translated response
-            const titleMatch = translatedText.match(/Title:\s*(.*)/);
-            const contentMatch = translatedText.match(/Content:\s*([\s\S]*)/);
+            console.log(`Translation received for article ${article.id}`);
+            
+            // Parse the translated response with more flexible regex
+            const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\n|$)/i);
+            const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*)/i);
+            
+            const translatedTitle = titleMatch ? titleMatch[1].trim() : article.title;
+            const translatedContent = contentMatch ? contentMatch[1].trim() : article.content;
             
             return {
               ...article,
-              title: titleMatch ? titleMatch[1].trim() : article.title,
-              content: contentMatch ? contentMatch[1].trim() : article.content
+              title: translatedTitle,
+              content: translatedContent
             };
           } catch (error) {
             console.error(`Translation error for article ${article.id}:`, error);
-            return article; // Return original if translation fails
+            // Return original article if translation fails
+            return article;
           }
         })
       );
 
+      console.log(`Translation completed for ${translatedArticles.length} articles`);
       res.json(translatedArticles);
     } catch (error) {
       console.error('Translation API error:', error);
-      res.status(500).json({ message: 'Translation failed' });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Translation failed'
+      });
     }
   });
 
