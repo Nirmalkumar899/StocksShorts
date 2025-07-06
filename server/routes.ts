@@ -512,6 +512,23 @@ Content: [Hindi translation]`
     }
   });
 
+  // List all available company folders in Google Drive
+  app.get("/api/ai/list-folders", async (req: any, res) => {
+    try {
+      const folders = await googleDriveService.listAllFoldersInAIDatabase();
+      res.json({
+        folders,
+        count: folders.length,
+        message: `Found ${folders.length} company folders in AI Database`
+      });
+    } catch (error) {
+      console.error('List folders error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to list folders'
+      });
+    }
+  });
+
 
 
   // Get Investment Advisors

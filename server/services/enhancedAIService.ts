@@ -43,6 +43,34 @@ export class EnhancedAIService {
   }
 
   private extractCompanyName(query: string): string {
+    // Common company name patterns and variations
+    const companyMappings: { [key: string]: string } = {
+      'reliance': 'Reliance Industries',
+      'tcs': 'TCS',
+      'infosys': 'Infosys',
+      'hdfc': 'HDFC Bank',
+      'icici': 'ICICI Bank',
+      'wipro': 'Wipro',
+      'hcl': 'HCL Technologies',
+      'bajaj': 'Bajaj Finance',
+      'sbi': 'SBI',
+      'adani': 'Adani Group',
+      'bharti': 'Bharti Airtel',
+      'itc': 'ITC',
+      'larsen': 'L&T',
+      'mahindra': 'Mahindra',
+      'maruti': 'Maruti Suzuki'
+    };
+
+    const queryLower = query.toLowerCase();
+    
+    // Check for exact mappings first
+    for (const [key, value] of Object.entries(companyMappings)) {
+      if (queryLower.includes(key)) {
+        return value;
+      }
+    }
+
     // Extract potential company names from the query
     const words = query.split(' ');
     const potentialCompanies = words.filter(word => 
@@ -52,7 +80,7 @@ export class EnhancedAIService {
     );
 
     // Return the first potential company name or the whole query if no clear company
-    return potentialCompanies.length > 0 ? potentialCompanies[0] : query.split(' ')[0];
+    return potentialCompanies.length > 0 ? potentialCompanies.join(' ') : query.split(' ')[0];
   }
 
   async processAIQuery(query: string, userId?: number): Promise<{
@@ -69,7 +97,14 @@ export class EnhancedAIService {
       const personalizedResults = await this.getPersonalizedArticles(companyName);
 
       // 2. Get data from Google Drive
+      console.log(`Searching Google Drive for company: ${companyName}`);
+      
+      // First, list all available folders for debugging
+      await googleDriveService.listAllFoldersInAIDatabase();
+      
+      // Then search for the specific company
       const driveData = await googleDriveService.searchCompanyData(companyName);
+      console.log(`Google Drive results: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
 
       // 3. Prepare context for OpenAI
       let context = '';

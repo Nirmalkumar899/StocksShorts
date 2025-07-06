@@ -42,9 +42,12 @@ export default function AISection({ onBack }: AISectionProps) {
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm max-w-2xl mx-auto">
-              Enhanced AI that reads from your database and Google Drive company folders 
+              Enhanced AI that reads from your database and "AI Database" folder in Google Drive 
               to provide personalized stock analysis based on your research data.
             </p>
+            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 p-2 rounded">
+              💡 Create an "AI Database" folder in your Google Drive with company subfolders for best results
+            </div>
             
             {/* Enhanced Features */}
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">

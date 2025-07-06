@@ -17,17 +17,93 @@ export class GoogleDriveService {
     this.drive = google.drive({ version: 'v3', auth: this.auth });
   }
 
+  async findAIDatabaseFolder(): Promise<string | null> {
+    // Use the specific folder ID provided by the user
+    const specificFolderId = '1eqDB7dEOVDHhOA4xMagH0sO4soe6EcMW';
+    
+    try {
+      // Verify the folder exists and is accessible
+      const response = await this.drive.files.get({
+        fileId: specificFolderId,
+        fields: 'id,name,mimeType'
+      });
+
+      if (response.data && response.data.mimeType === 'application/vnd.google-apps.folder') {
+        console.log(`Using specific AI Database folder: ${response.data.name} (${specificFolderId})`);
+        return specificFolderId;
+      } else {
+        console.error('Specified folder ID is not a valid folder');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error accessing specific AI Database folder:', error);
+      return null;
+    }
+  }
+
   async searchCompanyFolders(companyName: string): Promise<any[]> {
     try {
+      // Access the specific AI Database folder
+      const aiDatabaseId = await this.findAIDatabaseFolder();
+      if (!aiDatabaseId) {
+        console.log('Cannot access the specified AI Database folder');
+        return [];
+      }
+      console.log(`Using AI Database folder with ID: ${aiDatabaseId}`);
+
+      // Search for company folder within the specific AI Database folder
+      // Try multiple search patterns to find the company folder
+      const searchPatterns = [
+        companyName, // Exact match
+        companyName.split(' ')[0], // First word only
+        companyName.toLowerCase(),
+        companyName.toUpperCase()
+      ];
+
+      let allFolders: any[] = [];
+      
+      for (const pattern of searchPatterns) {
+        const response = await this.drive.files.list({
+          q: `name contains '${pattern}' and '${aiDatabaseId}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
+          fields: 'files(id,name,parents)',
+          orderBy: 'name'
+        });
+        
+        const folders = response.data.files || [];
+        console.log(`Search pattern "${pattern}" found ${folders.length} folders:`, folders.map(f => f.name));
+        allFolders = allFolders.concat(folders);
+      }
+
+      // Remove duplicates based on folder ID
+      const uniqueFolders = allFolders.filter((folder, index, self) => 
+        index === self.findIndex(f => f.id === folder.id)
+      );
+
+      return uniqueFolders;
+    } catch (error) {
+      console.error('Error searching company folders in AI Database:', error);
+      return [];
+    }
+  }
+
+  async listAllFoldersInAIDatabase(): Promise<any[]> {
+    try {
+      const aiDatabaseId = await this.findAIDatabaseFolder();
+      if (!aiDatabaseId) {
+        return [];
+      }
+
       const response = await this.drive.files.list({
-        q: `name contains '${companyName}' and mimeType = 'application/vnd.google-apps.folder'`,
-        fields: 'files(id,name,parents)',
+        q: `'${aiDatabaseId}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
+        fields: 'files(id,name)',
         orderBy: 'name'
       });
 
-      return response.data.files || [];
+      const folders = response.data.files || [];
+      console.log(`Available company folders in AI Database:`, folders.map(f => f.name));
+      return folders;
     } catch (error) {
-      console.error('Error searching company folders:', error);
+      console.error('Error listing folders in AI Database:', error);
       return [];
     }
   }
@@ -96,19 +172,26 @@ export class GoogleDriveService {
     content: string[]
   }> {
     try {
-      // Search for company folders
+      // First find the AI Database folder
+      const aiDatabaseId = await this.findAIDatabaseFolder();
+      if (!aiDatabaseId) {
+        console.log('AI Database folder not found, returning empty results');
+        return { folders: [], documents: [], sheets: [], content: [] };
+      }
+
+      // Search for company folders within AI Database
       const folders = await this.searchCompanyFolders(companyName);
       
-      // Search for company documents
+      // Search for company documents within AI Database folder
       const docResponse = await this.drive.files.list({
-        q: `name contains '${companyName}' and (mimeType = 'application/vnd.google-apps.document' or mimeType = 'text/plain' or mimeType = 'application/pdf')`,
+        q: `name contains '${companyName}' and '${aiDatabaseId}' in parents and (mimeType = 'application/vnd.google-apps.document' or mimeType = 'text/plain' or mimeType = 'application/pdf')`,
         fields: 'files(id,name,mimeType,modifiedTime)',
         orderBy: 'modifiedTime desc'
       });
 
-      // Search for company spreadsheets
+      // Search for company spreadsheets within AI Database folder
       const sheetResponse = await this.drive.files.list({
-        q: `name contains '${companyName}' and mimeType = 'application/vnd.google-apps.spreadsheet'`,
+        q: `name contains '${companyName}' and '${aiDatabaseId}' in parents and mimeType = 'application/vnd.google-apps.spreadsheet'`,
         fields: 'files(id,name,mimeType,modifiedTime)',
         orderBy: 'modifiedTime desc'
       });

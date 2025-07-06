@@ -4,30 +4,42 @@ Your AI feature now reads from your database and Google Drive to provide persona
 
 ## Quick Setup
 
-### 1. Create Company Folders
+### 1. Create the AI Database Folder Structure
 
-For each company you research, create a dedicated folder structure:
+**IMPORTANT**: The AI looks specifically in your designated Google Drive folder (ID: 1eqDB7dEOVDHhOA4xMagH0sO4soe6EcMW) which contains company subfolders. The structure should be:
 
 ```
-📁 TCS/
-  📁 Financial Reports/
-    📄 Annual Report 2024.pdf
-    📄 Q4 FY24 Results.pdf
-  📁 Research Notes/
-    📄 Company Analysis.docx
-    📄 Competitive Position.txt
-  📁 Conference Calls/
-    📄 Q4 FY24 Transcript.txt
-    📄 Management Guidance.docx
-  📁 News & Updates/
-    📄 Recent Developments.txt
-
-📁 Reliance Industries/
-  📁 Financial Reports/
-  📁 Research Notes/
-  📁 Conference Calls/
-  📁 News & Updates/
+📁 AI Database/
+  📁 Reliance Industries/
+    📁 Financial Reports/
+      📄 Annual Report 2024.pdf
+      📄 Q4 FY24 Results.pdf
+    📁 Research Notes/
+      📄 Company Analysis.docx
+      📄 Competitive Position.txt
+    📁 Conference Calls/
+      📄 Q4 FY24 Transcript.txt
+      📄 Management Guidance.docx
+    📁 News & Updates/
+      📄 Recent Developments.txt
+  
+  📁 TCS/
+    📁 Financial Reports/
+    📁 Research Notes/
+    📁 Conference Calls/
+    📁 News & Updates/
+  
+  📁 HDFC Bank/
+    📁 Financial Reports/
+    📁 Research Notes/
+    📁 Conference Calls/
+    📁 News & Updates/
 ```
+
+**Key Requirements:**
+- Main folder must be named exactly "AI Database"
+- Company folders should use full company names (e.g., "Reliance Industries", not just "Reliance")
+- Place the "AI Database" folder in your Google Drive root directory
 
 ### 2. Supported File Types
 
