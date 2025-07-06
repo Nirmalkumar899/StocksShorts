@@ -34,13 +34,13 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Category order for auto-switching - Trending → Special → IPO → ... → Educational → US Market → Crypto
+  // Category order for auto-switching - Trending → Special → KalkaBazaar → IPO → ... → Educational → US Market → Crypto
   const categoryOrder = [
     'trending',
     'stocksshorts-special',
+    'kalkabazaar',
     'ipo',
     'breakout-stocks',
-    'kalkabazaar',
     'warrants',
     'order-win',
     'research-report',

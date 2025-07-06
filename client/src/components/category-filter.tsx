@@ -19,9 +19,9 @@ interface CategoryFilterProps {
 const categories = [
   { id: 'trending', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500', url: '/', emoji: '📈' },
   { id: 'stocksshorts-special', label: 'Special', icon: null, special: true, gradient: 'from-amber-500 to-orange-500', url: '/special', emoji: '⭐' },
+  { id: 'kalkabazaar', label: 'Kalkabazaar', icon: null, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar', emoji: '📊' },
   { id: 'ipo', label: 'IPO', icon: null, gradient: 'from-red-500 to-pink-500', url: '/ipo', emoji: '🚀' },
   { id: 'breakout-stocks', label: 'Breakout', icon: null, gradient: 'from-green-500 to-emerald-500', url: '/breakout', emoji: '💹' },
-  { id: 'kalkabazaar', label: 'Kalkabazaar', icon: null, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar', emoji: '📊' },
   { id: 'warrants', label: 'Warrants', icon: null, gradient: 'from-purple-500 to-violet-500', url: '/warrants', emoji: '📜' },
 
   { id: 'order-win', label: 'Orders', icon: null, gradient: 'from-orange-500 to-red-500', url: '/orders', emoji: '🎯' },
