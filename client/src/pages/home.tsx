@@ -211,23 +211,41 @@ export default function Home() {
 
   const translateMutation = useMutation({
     mutationFn: async (articles: Article[]) => {
-      console.log("Translation API call starting with", articles.length, "articles");
-      console.log("Sample article for translation:", articles[0]);
+      console.log("🔄 Translation API call starting with", articles.length, "articles");
+      console.log("📄 Sample article for translation:", articles[0]);
       
       try {
-        console.log("Making API request to /api/translate-articles");
-        const response = await apiRequest('POST', '/api/translate-articles', { articles });
-        console.log("API request completed, response status:", response.status);
+        console.log("🌐 Making API request to /api/translate-articles");
+        
+        // Use direct fetch to see exact error response
+        const response = await fetch('/api/translate-articles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ articles })
+        });
+        
+        console.log("📡 Raw response status:", response.status);
+        console.log("📡 Raw response headers:", Object.fromEntries(response.headers.entries()));
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("❌ API Error Response:", errorText);
+          throw new Error(`${response.status}: ${errorText}`);
+        }
         
         const data = await response.json();
-        console.log("Translation API response received", data.length, "translated articles");
-        console.log("Sample translated article:", data[0]);
+        console.log("✅ Translation API response received", data.length, "translated articles");
+        console.log("📝 Sample translated article:", data[0]);
         return data;
       } catch (error) {
-        console.error("Translation API error details:", {
+        console.error("💥 Translation API error details:", {
           message: error.message,
           stack: error.stack,
-          name: error.name
+          name: error.name,
+          cause: error.cause
         });
         throw error;
       }
@@ -261,10 +279,16 @@ export default function Home() {
   };
 
   const handleTranslate = () => {
-    console.log("Translate button clicked", { isTranslated, articlesLength: articles?.length });
-    console.log("Current articles:", articles?.slice(0, 2)); // Log first 2 articles for debugging
+    console.log("🔘 TRANSLATE BUTTON CLICKED!");
+    console.log("📊 Current state:", { 
+      isTranslated, 
+      articlesLength: articles?.length,
+      mutationPending: translateMutation.isPending,
+      mutationError: translateMutation.isError
+    });
     
     if (isTranslated) {
+      console.log("🔄 Switching back to original content");
       setIsTranslated(false);
       setTranslatedArticles({});
       toast({
@@ -273,11 +297,11 @@ export default function Home() {
       });
     } else {
       if (articles && articles.length > 0) {
-        console.log("Starting translation for", articles.length, "articles");
-        console.log("Mutation state:", { isPending: translateMutation.isPending, isError: translateMutation.isError });
+        console.log("🚀 Starting translation for", articles.length, "articles");
+        console.log("📋 First article:", articles[0]?.title);
         translateMutation.mutate(articles);
       } else {
-        console.log("No articles to translate - articles data:", articles);
+        console.log("⚠️ No articles to translate - articles data:", articles);
         toast({
           title: "No articles to translate",
           description: "Please wait for articles to load first.",
