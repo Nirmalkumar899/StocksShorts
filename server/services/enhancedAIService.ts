@@ -148,25 +148,33 @@ ${context}
 INSTRUCTIONS:
 ${!hasData ? 
   'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' : 
-  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis in TABLE FORMAT.
+  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis with clear formatting.
 
 Structure your response as:
 
 ## 📊 Investment Analysis Summary
 
-| **Key Points** | **Details & Explanation** |
-|---|---|
-| **Revenue Growth** | [Extract exact revenue figures, growth percentages, and quarterly comparisons from documents] |
-| **Profit Margins** | [Extract profit margins, EBITDA, PAT figures with explanations of changes] |
-| **Key Ratios** | [Extract ROE, ROA, Debt-to-Equity and other important ratios with context] |
-| **Management Outlook** | [Extract management guidance, future plans, and strategic initiatives] |
-| **Business Highlights** | [Extract key business developments, new products, market expansion] |
-| **Risk Factors** | [Extract specific risks mentioned in documents with explanations] |
-| **Investment Recommendation** | [Based on document analysis, provide investment perspective] |
+### 💰 Financial Performance
+**Revenue Growth:** [Extract exact revenue figures, growth percentages, and quarterly comparisons]
+**Profit Margins:** [Extract profit margins, EBITDA, PAT figures with trend explanations]
+**Key Ratios:** [Extract ROE, ROA, Debt-to-Equity with context and comparisons]
 
-**Sources:** ${sourcesList}
+### 🎯 Management Outlook & Strategy  
+[Extract management guidance, future plans, strategic initiatives, and outlook statements]
 
-IMPORTANT: Use exact numbers, percentages, and dates from the documents. Each table row should have specific data points with clear explanations. Focus on actionable investment insights in table format for easy reading.`
+### 🔍 Business Highlights
+[Extract key business developments, new products, market expansion, competitive advantages]
+
+### ⚠️ Risk Assessment
+[Extract specific risks mentioned in documents with impact explanations]
+
+### 📈 Investment Perspective
+[Provide investment view based on document analysis with clear reasoning]
+
+### 📚 Data Sources
+**Documents Analyzed:** ${sourcesList}
+
+IMPORTANT: Use exact numbers, percentages, and dates from documents. Provide specific data points with clear explanations. Focus on actionable investment insights with professional formatting.`
 }
 `;
 
