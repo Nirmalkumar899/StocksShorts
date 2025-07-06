@@ -1,35 +1,26 @@
 import { useEffect } from 'react';
+import { initGA } from '../lib/analytics';
+import { useAnalytics } from '../hooks/use-analytics';
 
 // Google Analytics and Search Console integration
 export function GoogleAnalytics() {
+  // Track page changes
+  useAnalytics();
+
   useEffect(() => {
+    // Initialize Google Analytics with new tracking system
+    if (import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      initGA();
+      console.log('Google Analytics initialized successfully');
+    } else {
+      console.warn('Google Analytics Measurement ID not found. Please add VITE_GA_MEASUREMENT_ID to environment variables.');
+    }
+
     // Add Google Search Console verification meta tag
     const searchConsoleVerification = document.createElement('meta');
     searchConsoleVerification.name = 'google-site-verification';
     searchConsoleVerification.content = 'YOUR_VERIFICATION_CODE_HERE'; // User will replace this
     document.head.appendChild(searchConsoleVerification);
-
-    // Add Google Analytics if GA_MEASUREMENT_ID is provided
-    const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-49YFSGSMQZ';
-    // Validate GA measurement ID format (G-XXXXXXXXXX or UA-XXXXXXXX-X)
-    const isValidGaId = /^(G-[A-Z0-9]{10}|UA-\d{8}-\d)$/.test(gaMeasurementId);
-    if (gaMeasurementId && isValidGaId) {
-      // Load Google Analytics script
-      const script1 = document.createElement('script');
-      script1.async = true;
-      script1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
-      document.head.appendChild(script1);
-
-      // Initialize Google Analytics
-      const script2 = document.createElement('script');
-      script2.textContent = `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${gaMeasurementId.replace(/['"\\]/g, '')}');
-      `;
-      document.head.appendChild(script2);
-    }
 
     // Clean up on unmount
     return () => {

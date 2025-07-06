@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import ImageLightbox from '@/components/image-lightbox';
+import { trackEvent } from '@/lib/analytics';
 import type { Article } from '@shared/schema';
 
 interface NewsCardProps {
@@ -124,6 +125,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
     e.stopPropagation();
     const url = `${window.location.origin}/article/${article.id}`;
     navigator.clipboard.writeText(url).then(() => {
+      // Track copy link event
+      trackEvent('article_copy_link', 'engagement', article.type, article.id);
       toast({
         title: "Link copied!",
         description: "Article link has been copied to your clipboard.",
@@ -133,11 +136,16 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
 
   const handleOpenArticle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Track article view event
+    trackEvent('article_view', 'engagement', article.type, article.id);
     window.open(`/article/${article.id}`, '_blank');
   };
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Track share event
+    trackEvent('article_share', 'engagement', article.type, article.id);
     
     const shareUrl = `${window.location.origin}/article/${article.id}`;
     const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;

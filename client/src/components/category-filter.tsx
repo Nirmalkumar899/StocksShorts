@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { trackEvent } from "@/lib/analytics";
 import { 
   Globe, 
   TrendingUp, 
@@ -35,6 +36,8 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
   const [, setLocation] = useLocation();
 
   const handleCategoryClick = (category: any) => {
+    // Track category selection
+    trackEvent('category_select', 'navigation', category.label, category.id);
     onCategoryChange(category.id);
     setLocation(category.url);
   };
