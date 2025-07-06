@@ -165,10 +165,20 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
           // Use column D (Type) as primary category source based on user request
           const category = row[3] || 'Index'; // Use Type column (D) as requested
 
-          // Get Image URL from column I, or generate candlestick chart if no URL provided
+          // Get Image URL from column I (index 8), debug thoroughly
           let imageUrl = null;
           const title = row[1] || 'Untitled';
-          const providedImageUrl = row[8] ? row[8].trim() : ''; // Column I (Image URL)
+          
+          // Only log for articles that have potential image URLs or are missing them
+          if (row[8] || title.includes('IPO') || title.includes('Special')) {
+            console.log(`Processing article "${title}":`, {
+              rowLength: row.length,
+              columnI_index8: row[8],
+              hasImageURL: !!row[8]
+            });
+          }
+          
+          const providedImageUrl = row[8] ? row[8].toString().trim() : ''; // Column I (index 8)
           
           // Debug: Log the image URL check
           if (providedImageUrl) {
