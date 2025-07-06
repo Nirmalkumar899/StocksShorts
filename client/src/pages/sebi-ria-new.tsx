@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Filter, SortAsc, AlertTriangle } from "lucide-react";
+import { Phone, Mail, Globe } from "@/lib/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +91,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
       <div className="h-screen flex flex-col bg-white dark:bg-gray-900">
         <div className="flex items-center justify-between p-4 border-b">
           <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft className="h-5 w-5" />
+            <span className="text-lg">←</span>
           </Button>
           <h1 className="text-lg font-semibold">Connect with SEBI RIA</h1>
           <div className="w-10" />
@@ -110,7 +110,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="h-5 w-5" />
+          <span className="text-lg">←</span>
         </Button>
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Connect with SEBI RIA</h1>
         <div className="w-10" />
