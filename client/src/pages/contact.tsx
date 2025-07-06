@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { ArrowLeft, Send, MessageCircle, Plus, ThumbsUp, ThumbsDown, AlertTriangle, Clock } from "@/lib/icons";
+import { ArrowLeft, Send, MessageCircle, Plus, ThumbsUp, ThumbsDown, AlertTriangle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import BottomNavigation from "@/components/bottom-navigation";
 
 interface ContactProps {
   onBack: () => void;
@@ -307,11 +306,6 @@ export default function Contact({ onBack }: ContactProps) {
             </Button>
           </Card>
         )}
-      </div>
-      
-      {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
-        <BottomNavigation activeTab="profile" onTabChange={() => {}} />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Moon, Sun, Download } from "@/lib/icons";
+import { RefreshCw, Moon, Sun, Download, Languages } from "lucide-react";
 import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -165,7 +165,7 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
               disabled={isRefreshing}
               className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
-              <span className={`text-neutral-600 dark:text-neutral-400 text-sm ${isRefreshing ? 'animate-spin' : ''}`}>⟳</span>
+              <RefreshCw className={`h-4 w-4 text-neutral-600 dark:text-neutral-400 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
             {onTranslate && (
               <Button
@@ -175,7 +175,7 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
                 disabled={isTranslating}
                 className={`p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors ${isTranslated ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
               >
-                <span className={`text-sm ${isTranslated ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-600 dark:text-neutral-400'} ${isTranslating ? 'animate-pulse' : ''}`}>🌐</span>
+                <Languages className={`h-4 w-4 ${isTranslated ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-600 dark:text-neutral-400'} ${isTranslating ? 'animate-pulse' : ''}`} />
               </Button>
             )}
             <Button

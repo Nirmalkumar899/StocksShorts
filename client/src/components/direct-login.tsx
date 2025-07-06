@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, LogIn } from "lucide-react";
@@ -14,47 +14,7 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const { toast } = useToast();
-
-  // Detect keyboard appearance by monitoring viewport height changes
-  useEffect(() => {
-    const initialHeight = window.innerHeight;
-    
-    const handleResize = () => {
-      const currentHeight = window.innerHeight;
-      const heightDifference = initialHeight - currentHeight;
-      
-      // If viewport height reduced by more than 150px, keyboard is likely open
-      setIsKeyboardOpen(heightDifference > 150);
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, []);
-
-  // Add viewport change listener for mobile keyboards
-  useEffect(() => {
-    const handleViewportChange = () => {
-      // Update CSS custom property for keyboard height
-      const viewportHeight = window.innerHeight;
-      const documentHeight = document.documentElement.clientHeight;
-      const keyboardHeight = Math.max(0, documentHeight - viewportHeight);
-      
-      document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
-    };
-
-    window.addEventListener('resize', handleViewportChange);
-    
-    return () => {
-      window.removeEventListener('resize', handleViewportChange);
-    };
-  }, []);
 
   const sendOtpMutation = useMutation({
     mutationFn: async (phone: string) => {
@@ -140,201 +100,70 @@ export default function DirectLogin({ onSuccess }: DirectLoginProps) {
   };
 
   return (
-    <div 
-      className={`w-full max-w-sm mx-auto mobile-input-container ${isKeyboardOpen ? 'keyboard-open' : ''}`}
-      onClick={handleContainerClick}
-      style={{
-        position: 'relative',
-        zIndex: 1000,
-        // Ensure the component adapts to viewport changes (keyboard)
-        minHeight: 'fit-content',
-        paddingBottom: 'env(keyboard-inset-height, 0px)',
-        // Use the detected keyboard height
-        marginBottom: isKeyboardOpen ? 'var(--keyboard-height, 0px)' : '0px'
-      }}
-    >
+    <div className="w-full" onClick={handleContainerClick}>
       {step === "phone" ? (
-        <form onSubmit={handlePhoneSubmit} className="mobile-form">
-          <div className="space-y-3" onClick={handleContainerClick}>
-            {/* Larger phone icon and label */}
-            <div className="text-center mb-4">
-              <Phone className="h-6 w-6 text-primary mx-auto mb-1" />
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Enter Mobile Number
-              </p>
-            </div>
-            
-            {/* Enhanced input field with proper spacing */}
-            <div className="space-y-3 mt-4">
-              <input
-                type="tel"
-                placeholder="Enter phone number"
-                value={phoneNumber}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  setPhoneNumber(formatPhoneNumber(e.target.value));
-                }}
-                onFocus={(e) => {
-                  e.stopPropagation();
-                  // Force text visibility styles when keyboard opens
-                  const input = e.target as HTMLInputElement;
-                  input.style.color = '#000000';
-                  input.style.backgroundColor = '#ffffff';
-                  input.style.webkitTextFillColor = '#000000';
-                  input.style.webkitTextStroke = '0.5px #000000';
-                  
-                  // Scroll the input into view when focused
-                  setTimeout(() => {
-                    e.target.scrollIntoView({ 
-                      behavior: 'smooth', 
-                      block: 'center',
-                      inline: 'nearest'
-                    });
-                  }, 100);
-                }}
-                onInput={(e) => {
-                  // Force text visibility during typing
-                  const input = e.target as HTMLInputElement;
-                  input.style.color = '#000000';
-                  input.style.webkitTextFillColor = '#000000';
-                  input.style.zIndex = '99999';
-                }}
-                onClick={handleContainerClick}
-                className="w-full h-14 px-4 py-3 text-center text-xl font-bold border-2 border-blue-500 rounded-lg mobile-input"
-                maxLength={10}
-                autoComplete="tel"
-                inputMode="numeric"
-                style={{
-                  color: '#000000',
-                  backgroundColor: '#ffffff',
-                  fontSize: '20px',
-                  fontWeight: '800',
-                  textAlign: 'center' as const,
-                  WebkitTextFillColor: '#000000',
-                  WebkitAppearance: 'none' as const,
-                  border: '3px solid #1d4ed8',
-                  borderRadius: '12px',
-                  outline: 'none',
-                  boxShadow: 'none',
-                  letterSpacing: '3px',
-                  padding: '16px',
-                  zIndex: 10,
-                  position: 'relative'
-                } as React.CSSProperties}
-              />
-              
-              <Button 
-                type="submit" 
-                onClick={handleContainerClick}
-                className="w-full h-12 text-base font-medium mobile-button" 
-                disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
-                size="lg"
-              >
-                {sendOtpMutation.isPending ? "Sending..." : "Send OTP"}
-              </Button>
-            </div>
+        <form onSubmit={handlePhoneSubmit}>
+          <div className="flex items-center space-x-2" onClick={handleContainerClick}>
+            <Phone className="h-3 w-3 text-primary flex-shrink-0" />
+            <Input
+              type="tel"
+              placeholder="Mobile number"
+              value={phoneNumber}
+              onChange={(e) => {
+                e.stopPropagation();
+                setPhoneNumber(formatPhoneNumber(e.target.value));
+              }}
+              onClick={handleContainerClick}
+              className="text-center text-xs h-7 flex-1"
+              maxLength={10}
+            />
+            <Button 
+              type="submit" 
+              onClick={handleContainerClick}
+              className="h-7 text-xs px-3 flex-shrink-0" 
+              disabled={sendOtpMutation.isPending || phoneNumber.length !== 10}
+            >
+              {sendOtpMutation.isPending ? "..." : "Send"}
+            </Button>
           </div>
         </form>
       ) : (
-        <div className="space-y-3 mobile-form" onClick={handleContainerClick}>
-          {/* OTP step with larger elements */}
-          <div className="text-center mb-4">
-            <LogIn className="h-6 w-6 text-primary mx-auto mb-1" />
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Enter OTP
-            </p>
+        <div className="space-y-2" onClick={handleContainerClick}>
+          <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              Sent to +91 {phoneNumber}
+              OTP sent to +91 {phoneNumber}
             </p>
           </div>
-          
           <form onSubmit={handleOtpSubmit}>
-            <div className="space-y-3 mt-4">
-              <input
+            <div className="flex items-center space-x-2" onClick={handleContainerClick}>
+              <LogIn className="h-3 w-3 text-primary flex-shrink-0" />
+              <Input
                 type="text"
-                placeholder="Enter OTP"
+                placeholder="6-digit OTP"
                 value={otp}
                 onChange={(e) => {
                   e.stopPropagation();
                   setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
                 }}
-                onFocus={(e) => {
-                  e.stopPropagation();
-                  // Force text visibility styles when keyboard opens
-                  const input = e.target as HTMLInputElement;
-                  input.style.color = '#000000';
-                  input.style.backgroundColor = '#ffffff';
-                  input.style.webkitTextFillColor = '#000000';
-                  input.style.webkitTextStroke = '0.5px #000000';
-                  
-                  // More aggressive scrolling for OTP input when keyboard appears
-                  setTimeout(() => {
-                    const element = e.target;
-                    const container = element.closest('.mobile-input-container');
-                    
-                    // First scroll the container to top of viewport
-                    if (container) {
-                      container.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start',
-                        inline: 'nearest'
-                      });
-                    }
-                    
-                    // Then add extra scroll up to account for keyboard
-                    setTimeout(() => {
-                      window.scrollBy(0, -150);
-                    }, 200);
-                  }, 50);
-                }}
-                onInput={(e) => {
-                  // Force text visibility during typing
-                  const input = e.target as HTMLInputElement;
-                  input.style.color = '#000000';
-                  input.style.webkitTextFillColor = '#000000';
-                  input.style.zIndex = '99999';
-                }}
                 onClick={handleContainerClick}
-                className="w-full h-14 px-4 py-3 text-center text-xl font-bold border-2 border-blue-500 rounded-lg mobile-input"
+                className="text-center text-xs h-7 tracking-widest flex-1"
                 maxLength={6}
-                autoComplete="one-time-code"
-                inputMode="numeric"
-                style={{
-                  color: '#000000',
-                  backgroundColor: '#ffffff',
-                  fontSize: '20px',
-                  fontWeight: '800',
-                  textAlign: 'center' as const,
-                  WebkitTextFillColor: '#000000',
-                  WebkitAppearance: 'none' as const,
-                  border: '3px solid #1d4ed8',
-                  borderRadius: '12px',
-                  outline: 'none',
-                  boxShadow: 'none',
-                  letterSpacing: '6px',
-                  padding: '16px',
-                  zIndex: 10,
-                  position: 'relative'
-                } as React.CSSProperties}
               />
-              
               <Button 
                 type="submit" 
                 onClick={handleContainerClick}
-                className="w-full h-12 text-base font-medium mobile-button" 
+                className="h-7 text-xs px-3 flex-shrink-0" 
                 disabled={verifyOtpMutation.isPending || otp.length !== 6}
-                size="lg"
               >
-                {verifyOtpMutation.isPending ? "Logging in..." : "Login"}
+                {verifyOtpMutation.isPending ? "..." : "Login"}
               </Button>
             </div>
           </form>
-          
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="w-full text-sm h-8"
+            className="w-full text-xs h-5"
             onClick={(e) => {
               e.stopPropagation();
               setStep("phone");

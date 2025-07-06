@@ -2,14 +2,25 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { 
   Globe, 
+  BarChart3, 
   TrendingUp, 
+  Rocket, 
   PiggyBank, 
   Bitcoin,
+  FileText,
+  Zap,
+  Award,
   BookOpen,
+  Target,
+  Crown,
+  Activity,
+  Building2,
+  ScrollText,
+  Briefcase,
   Users,
   DollarSign,
   Star
-} from "@/lib/icons";
+} from "lucide-react";
 
 interface CategoryFilterProps {
   selectedCategory: string;
@@ -17,17 +28,17 @@ interface CategoryFilterProps {
 }
 
 const categories = [
-  { id: 'trending', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500', url: '/', emoji: '📈' },
-  { id: 'stocksshorts-special', label: 'Special', icon: null, special: true, gradient: 'from-amber-500 to-orange-500', url: '/special', emoji: '⭐' },
-  { id: 'ipo', label: 'IPO', icon: null, gradient: 'from-red-500 to-pink-500', url: '/ipo', emoji: '🚀' },
-  { id: 'breakout-stocks', label: 'Breakout', icon: null, gradient: 'from-green-500 to-emerald-500', url: '/breakout', emoji: '💹' },
-  { id: 'kalkabazaar', label: 'Kalkabazaar', icon: null, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar', emoji: '📊' },
-  { id: 'warrants', label: 'Warrants', icon: null, gradient: 'from-purple-500 to-violet-500', url: '/warrants', emoji: '📜' },
+  { id: 'all', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500', url: '/' },
+  { id: 'stocksshorts-special', label: 'Special', icon: Crown, special: true, gradient: 'from-amber-500 to-orange-500', url: '/special' },
+  { id: 'ipo', label: 'IPO', icon: Rocket, gradient: 'from-red-500 to-pink-500', url: '/ipo' },
+  { id: 'breakout-stocks', label: 'Breakout', icon: Activity, gradient: 'from-green-500 to-emerald-500', url: '/breakout' },
+  { id: 'kalkabazaar', label: 'Kalkabazaar', icon: BarChart3, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar' },
+  { id: 'warrants', label: 'Warrants', icon: ScrollText, gradient: 'from-purple-500 to-violet-500', url: '/warrants' },
 
-  { id: 'order-win', label: 'Orders', icon: null, gradient: 'from-orange-500 to-red-500', url: '/orders', emoji: '🎯' },
-  { id: 'research-report', label: 'Research', icon: null, gradient: 'from-slate-500 to-gray-500', url: '/research', emoji: '💼' },
-  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational', emoji: '📚' },
-  { id: 'us-market', label: 'US Market', icon: null, gradient: 'from-green-500 to-emerald-500', url: '/us-market', emoji: '💵' },
+  { id: 'order-win', label: 'Orders', icon: Target, gradient: 'from-orange-500 to-red-500', url: '/orders' },
+  { id: 'research-report', label: 'Research', icon: Briefcase, gradient: 'from-slate-500 to-gray-500', url: '/research' },
+  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational' },
+  { id: 'us-market', label: 'US Market', icon: DollarSign, gradient: 'from-green-500 to-emerald-500', url: '/us-market' },
   { id: 'crypto', label: 'Crypto', icon: Bitcoin, gradient: 'from-yellow-500 to-amber-500', url: '/crypto' },
 ];
 
@@ -41,7 +52,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
 
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
+      <div className="grid grid-cols-6 gap-1.5 px-2 py-2">
         {categories.map((category) => {
           const Icon = category.icon;
           const isSelected = selectedCategory === category.id;
@@ -54,7 +65,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
               size="sm"
               onClick={() => handleCategoryClick(category)}
               className={`
-                group relative flex flex-col items-center justify-center p-2 h-16 w-20 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0 flex-shrink-0
+                group relative flex flex-col items-center justify-start p-1 h-14 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0
                 ${isSelected
                   ? isSpecial
                     ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white shadow-2xl transform scale-110 ring-4 ring-amber-200 dark:ring-amber-800'
@@ -75,17 +86,13 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
                   : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
                 }
               `}>
-                {category.emoji ? (
-                  <span className="text-xs">{category.emoji}</span>
-                ) : Icon ? (
-                  <Icon className={`h-3 w-3 transition-all duration-300 ${
-                    isSelected 
-                      ? 'text-white drop-shadow-sm' 
-                      : isSpecial 
-                      ? 'text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300' 
-                      : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-                  }`} />
-                ) : null}
+                <Icon className={`h-3 w-3 transition-all duration-300 ${
+                  isSelected 
+                    ? 'text-white drop-shadow-sm' 
+                    : isSpecial 
+                    ? 'text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300' 
+                    : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                }`} />
               </div>
               
               {/* Label with word wrapping for full visibility */}

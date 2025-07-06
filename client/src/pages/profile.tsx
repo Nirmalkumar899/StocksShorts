@@ -8,12 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { User, Phone } from "@/lib/icons";
+import { User, ArrowLeft, LogOut, Phone, Edit3, Save, BookmarkCheck, MapPin, Briefcase, Calendar, Star } from "lucide-react";
 import MobileLogin from "./mobile-login";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import BottomNavigation from "@/components/bottom-navigation";
 
 interface ProfileProps {
   onBack: () => void;
@@ -110,7 +109,7 @@ export default function Profile({ onBack }: ProfileProps) {
             onClick={onBack}
             className="p-2"
           >
-            <span className="text-sm">←</span>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center space-x-2">
             <User className="h-5 w-5 text-blue-600" />
@@ -381,11 +380,6 @@ export default function Profile({ onBack }: ProfileProps) {
             )}
           </CardContent>
         </Card>
-      </div>
-      
-      {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
-        <BottomNavigation activeTab="profile" onTabChange={() => {}} />
       </div>
     </div>
   );

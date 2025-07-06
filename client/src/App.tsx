@@ -8,33 +8,38 @@ import { GoogleAnalytics } from "@/components/google-analytics";
 import { useSEO } from "@/hooks/useSEO";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
-import SebiRiaNew from "@/pages/sebi-ria-new";
+import SebiRia from "@/pages/sebi-ria-new";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
-import AISection from "@/pages/ai-section";
 import GmailConnect from "@/pages/GmailConnect";
 import SplashScreen from "@/components/splash-screen";
 
 function Router() {
+  useSEO(); // Enable dynamic SEO
   const [location, setLocation] = useLocation();
+  const [showSplash, setShowSplash] = useState(true);
   
-  // Temporarily disable splash screen for debugging
-  // const [showSplash, setShowSplash] = useState(true);
+  // Show splash screen for 3 seconds on first load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
-  // // Show splash screen for 1 second on first load
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setShowSplash(false);
-  //   }, 1000);
-  //   
-  //   return () => clearTimeout(timer);
-  // }, []);
-  
-  // // Show splash screen for first 1 second
-  // if (showSplash) {
-  //   return <SplashScreen />;
-  // }
+  // Auto-navigate to Trending section on app startup
+  useEffect(() => {
+    if (location === "/" && !showSplash) {
+      setLocation("/");
+    }
+  }, [location, setLocation, showSplash]);
+
+  // Show splash screen for first 1 second
+  if (showSplash) {
+    return <SplashScreen />;
+  }
   
   return (
     <Switch>
@@ -55,16 +60,13 @@ function Router() {
       <Route path="/research" component={Home} />
 
       <Route path="/sebi-ria">
-        {() => <SebiRiaNew onBack={() => window.history.back()} />}
+        {() => <SebiRia onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">
         {() => <Contact onBack={() => window.history.back()} />}
       </Route>
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/ai-analysis">
-        {() => <AISection onBack={() => window.history.back()} />}
       </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
       <Route path="/disclaimer" component={Home} />

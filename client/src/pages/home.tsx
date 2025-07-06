@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw } from '@/lib/icons';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { Article } from '@shared/schema';
@@ -12,17 +12,16 @@ import Header from '@/components/header';
 import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
-
+import AskAI from '@/components/ask-ai';
 import { VisitorStats } from '@/components/visitor-stats';
 import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
-import AISection from '@/pages/ai-section';
 
 export default function Home() {
   const [location, setLocation] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState('trending');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
@@ -36,7 +35,7 @@ export default function Home() {
 
   // Category order for auto-switching - Trending → Special → IPO → ... → Educational → US Market → Crypto
   const categoryOrder = [
-    'trending',
+    'all',
     'stocksshorts-special',
     'ipo',
     'breakout-stocks',
@@ -51,9 +50,9 @@ export default function Home() {
 
   // Map URLs to categories for subpage support
   const urlToCategoryMap: { [key: string]: string } = {
-    '/': 'trending',
-    '/home': 'trending',
-    '/trending': 'trending',
+    '/': 'all',
+    '/home': 'all',
+    '/trending': 'all',
     '/special': 'stocksshorts-special',
     '/breakout': 'breakout-stocks',
     '/kalkabazaar': 'kalkabazaar',
@@ -65,12 +64,12 @@ export default function Home() {
     '/research': 'research-report',
     '/us-market': 'us-market',
     '/crypto': 'crypto',
-    '/disclaimer': 'trending'
+    '/disclaimer': 'all'
   };
 
   // Set category based on URL - start with Trending by default
   useEffect(() => {
-    const categoryFromUrl = urlToCategoryMap[location] || 'trending';
+    const categoryFromUrl = urlToCategoryMap[location] || 'all';
     setSelectedCategory(categoryFromUrl);
     
     // Set active section based on URL
@@ -114,11 +113,11 @@ export default function Home() {
     error,
     refetch
   } = useQuery<Article[]>({
-    queryKey: ['/api/articles', selectedCategory === 'trending' ? undefined : selectedCategory],
+    queryKey: ['/api/articles', selectedCategory === 'all' ? 'trending' : selectedCategory],
     queryFn: async () => {
       let url = '/api/articles';
       
-      if (selectedCategory !== 'trending') {
+      if (selectedCategory !== 'all') {
         url = `/api/articles?category=${selectedCategory}`;
       }
       
@@ -141,24 +140,14 @@ export default function Home() {
         return [];
       }
       
-      // Sort articles chronologically when in 'trending' category (latest first)
+      // Sort articles by priority when in 'all' (trending) category
       let processedData = data;
-      if (selectedCategory === 'trending') {
+      if (selectedCategory === 'all') {
         processedData = data.sort((a: Article, b: Article) => {
-          // Parse timestamps, default to 12:01 AM (start of day) if missing
-          const getTimestamp = (article: Article) => {
-            if (!article.time) {
-              // Articles without timestamp are considered uploaded at 12:01 AM start of day
-              return new Date('2025-07-05T00:01:00Z').getTime();
-            }
-            return new Date(article.time).getTime();
-          };
-          
-          const aTime = getTimestamp(a);
-          const bTime = getTimestamp(b);
-          
-          // Sort by most recent first (descending order)
-          return bTime - aTime;
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+          return bPriority - aPriority; // High priority first
         });
       }
       
@@ -314,8 +303,6 @@ export default function Home() {
         return <Profile onBack={() => setActiveSection('home')} />;
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
-      case 'ai-section':
-        return <AISection onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }
@@ -332,6 +319,9 @@ export default function Home() {
           isTranslated={isTranslated}
           isTranslating={translateMutation.isPending}
         />
+        <div className="px-4">
+          <AskAI isHighlighted={true} />
+        </div>
         <CategoryFilter 
           selectedCategory={selectedCategory}
           onCategoryChange={handleCategoryChange}
@@ -395,7 +385,7 @@ export default function Home() {
             }}
           >
             {articles.map((article) => (
-              <div key={article.id} className="min-h-[400px] h-full snap-start">
+              <div key={article.id} className="h-full snap-start">
                 <NewsCard
                   article={article}
                   onClick={() => handleArticleClick(article)}

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, Brain, User } from "@/lib/icons";
+import { Home, ShieldCheck, MessageCircle, User, FileText } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface BottomNavigationProps {
@@ -9,10 +9,10 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: Home, url: '/' },
-  { id: 'sebi-ria', label: 'Connect RIA', icon: null, emoji: '🛡️', url: '/sebi-ria' },
-  { id: 'ai-section', label: 'AI Analysis', icon: Brain, url: '/ai-analysis' },
+  { id: 'sebi-ria', label: 'Connect RIA', icon: ShieldCheck, url: '/sebi-ria' },
   { id: 'profile', label: 'Profile', icon: User, url: '/profile' },
-  { id: 'disclaimer', label: 'Disclaimer', icon: null, emoji: '📄', url: '/disclaimer' },
+  { id: 'contact', label: 'Feed', icon: MessageCircle, url: '/contact' },
+  { id: 'disclaimer', label: 'Disclaimer', icon: FileText, url: '/disclaimer' },
 ];
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
@@ -41,11 +41,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                   : 'text-neutral-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary'
               }`}
             >
-              {item.emoji ? (
-                <span className="text-lg mb-1">{item.emoji}</span>
-              ) : (
-                <Icon className="h-5 w-5 mb-1" />
-              )}
+              <Icon className="h-5 w-5 mb-1" />
               <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
             </Button>
           );

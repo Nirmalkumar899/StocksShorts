@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ZoomIn, ZoomOut } from '@/lib/icons';
+import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 

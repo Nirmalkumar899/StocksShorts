@@ -12,7 +12,7 @@ export function getContextualImage(article: { title: string; content: string; ty
   if (combinedText.includes('reliance') || combinedText.includes('ril')) {
     const relianceImages = [
       'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial/Petrochemical
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemical
       'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
     ];
     return relianceImages[imageVariant - 1];
@@ -57,7 +57,7 @@ export function getContextualImage(article: { title: string; content: string; ty
   if (combinedText.includes('adani')) {
     const adaniImages = [
       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Power plant
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
     ];
     return adaniImages[imageVariant - 1];
@@ -155,7 +155,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     const ultratechImages = [
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
     ];
     return ultratechImages[imageVariant - 1];
   }
@@ -171,7 +171,7 @@ export function getContextualImage(article: { title: string; content: string; ty
   
   if (combinedText.includes('coal india') || combinedText.includes('coal')) {
     const coalImages = [
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Mining
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Mining
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Energy
       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
     ];
@@ -181,7 +181,7 @@ export function getContextualImage(article: { title: string; content: string; ty
   if (combinedText.includes('ongc') || combinedText.includes('oil') || combinedText.includes('gas')) {
     const ongcImages = [
       'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil rig
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemical
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemical
       'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
     ];
     return ongcImages[imageVariant - 1];
@@ -191,7 +191,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     const ntpcImages = [
       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Power plant
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Energy infrastructure
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
     ];
     return ntpcImages[imageVariant - 1];
   }
@@ -218,7 +218,7 @@ export function getContextualImage(article: { title: string; content: string; ty
   if (combinedText.includes('blue star')) {
     const blueStarImages = [
       'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&h=600&fit=crop&auto=format&q=80', // Air conditioning/cooling
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial equipment
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Industrial equipment
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Manufacturing
     ];
     return blueStarImages[imageVariant - 1];
@@ -237,7 +237,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     const kaynesImages = [
       'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Electronics/tech
       'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // EMS manufacturing
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial tech
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial tech
     ];
     return kaynesImages[imageVariant - 1];
   }
@@ -273,7 +273,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     const constructionImages = [
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
     ];
     return constructionImages[imageVariant - 1];
   }
@@ -329,14 +329,14 @@ export function getContextualImage(article: { title: string; content: string; ty
     const kalpataruImages = [
       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Power transmission
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Electrical infrastructure
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Power lines
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Power lines
     ];
     return kalpataruImages[imageVariant - 1];
   }
   
   if (combinedText.includes('reliance') || combinedText.includes('ril')) {
     const relianceImages = [
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
       'https://images.unsplash.com/photo-1562792399-9b6f94b6bb01?w=800&h=600&fit=crop&auto=format&q=80', // Petrochemicals
       'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format&q=80'  // Retail/Jio
     ];
@@ -585,7 +585,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     const orderWinFallback = [
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction/infrastructure
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial projects
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Manufacturing
+      'https://images.unsplash.com/photo-1518709268805-4e9042af2ea0?w=800&h=600&fit=crop&auto=format&q=80'  // Manufacturing
     ];
     return orderWinFallback[imageVariant - 1];
   }
@@ -617,11 +617,11 @@ export function getContextualImage(article: { title: string; content: string; ty
     return cryptoFallback[imageVariant - 1];
   }
 
-  // Ultimate fallback - guaranteed to work with more reliable URLs
+  // Ultimate fallback - guaranteed to work
   const ultimateFallbackImages = [
-    'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format', // Stock charts
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format', // Business analytics
-    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format'  // Financial graphs
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Business building
+    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80', // Corporate office
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80'  // Business analytics
   ];
   
   // Ensure imageVariant is always valid (1, 2, or 3)

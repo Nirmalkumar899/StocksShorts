@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Send, Loader2, MessageSquare, X, AlertTriangle, Database, FileText, FolderOpen } from "@/lib/icons";
+import { Brain, Send, Loader2, MessageSquare, X, AlertTriangle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -11,19 +11,9 @@ interface AskAIProps {
   isHighlighted?: boolean;
 }
 
-interface AIResponse {
-  analysis: string;
-  sources: string[];
-  databaseResults: number;
-  driveResults: number;
-  enhanced: boolean;
-}
-
 export default function AskAI({ isHighlighted = false }: AskAIProps) {
   const [query, setQuery] = useState("");
   const [analysis, setAnalysis] = useState("");
-  const [sources, setSources] = useState<string[]>([]);
-  const [dataStats, setDataStats] = useState({ database: 0, drive: 0 });
   const [showDiscussion, setShowDiscussion] = useState(false);
   const { toast } = useToast();
 
@@ -31,25 +21,21 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
     mutationFn: async (stockQuery: string) => {
       // Show thinking notification immediately
       toast({
-        title: "🧠 Searching...",
-        description: "Reading your database and Google Drive files",
-        duration: 8000,
+        title: "🧠 Thinking...",
+        description: "Analyzing stock data",
+        duration: 6000,
       });
       
       const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
-      const data: AIResponse = await response.json();
-      return data;
+      const data = await response.json();
+      return data.analysis;
     },
     onSuccess: (data) => {
-      setAnalysis(data.analysis);
-      setSources(data.sources || []);
-      setDataStats({ database: data.databaseResults || 0, drive: data.driveResults || 0 });
+      setAnalysis(data);
       setShowDiscussion(true);
-      
-      const sourceCount = data.sources?.length || 0;
       toast({
         title: "Analysis Complete",
-        description: `Found ${sourceCount} data sources from your files`,
+        description: "AI stock analysis finished successfully",
       });
     },
     onError: (error) => {
@@ -158,33 +144,6 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
                   </span>
                 </div>
               </div>
-
-              {/* Data Sources Information */}
-              {(sources.length > 0 || dataStats.database > 0 || dataStats.drive > 0) && (
-                <div className="mb-4 p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Database className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800 dark:text-green-300">
-                      Enhanced AI with Your Data
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-xs text-green-700 dark:text-green-300">
-                    <div className="flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
-                      <span>Database: {dataStats.database} articles</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FolderOpen className="h-3 w-3" />
-                      <span>Google Drive: {dataStats.drive} files</span>
-                    </div>
-                  </div>
-                  {sources.length > 0 && (
-                    <div className="mt-2 text-xs text-green-600 dark:text-green-400">
-                      Sources: {sources.join(', ')}
-                    </div>
-                  )}
-                </div>
-              )}
               
               {/* SEBI Compliance Warning */}
               <div className="mb-6 p-5 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-l-4 border-red-500 rounded-r-xl shadow-sm">

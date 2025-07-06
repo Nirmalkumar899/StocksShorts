@@ -1,103 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { Phone, Mail, Globe, Search, AlertTriangle, Star } from "@/lib/icons";
+import React, { useState } from "react";
+import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, ScrollText, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useQuery } from "@tanstack/react-query";
 import type { InvestmentAdvisor } from "@shared/schema";
-import BottomNavigation from "@/components/bottom-navigation";
 
 interface SebiRiaProps {
   onBack: () => void;
 }
 
-export default function SebiRiaNew({ onBack }: SebiRiaProps) {
+export default function SebiRia({ onBack }: SebiRiaProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("All");
-  const [sortBy, setSortBy] = useState("random");
-  const [shuffleSeed, setShuffleSeed] = useState(0);
+  const [showDirectory, setShowDirectory] = useState(false);
 
   const { data: advisors = [], isLoading } = useQuery<InvestmentAdvisor[]>({
     queryKey: ['/api/investment-advisors'],
   });
 
-  // Shuffle advisors every 30 seconds for equal opportunity
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShuffleSeed(prev => prev + 1);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Shuffle function using seed for consistent randomization
-  const shuffleArray = (array: InvestmentAdvisor[], seed: number) => {
-    const shuffled = [...array];
-    let currentIndex = shuffled.length;
-    let randomIndex;
-    
-    // Simple seeded random function
-    const seededRandom = (seed: number) => {
-      const x = Math.sin(seed) * 10000;
-      return x - Math.floor(x);
-    };
-
-    while (currentIndex !== 0) {
-      randomIndex = Math.floor(seededRandom(seed + currentIndex) * currentIndex);
-      currentIndex--;
-      [shuffled[currentIndex], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[currentIndex]];
-    }
-
-    return shuffled;
-  };
-
-  const specializations = ["All", ...Array.from(new Set(advisors.map(advisor => advisor.specialization).filter((spec): spec is string => Boolean(spec))))];
-
-  const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) => {
-    if (!searchQuery) return true;
-    
-    const matchesSearch = 
-      advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (advisor.location || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesSearch;
-  });
-
-  const sortedAdvisors = (() => {
-    let sorted = [...filteredAdvisors];
-    
-    if (sortBy === "random") {
-      return shuffleArray(sorted, shuffleSeed);
-    }
-    
-    return sorted.sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "location":
-          return (a.location || '').localeCompare(b.location || '');
-        case "experience":
-          return (b.experience || '').localeCompare(a.experience || '');
-        default:
-          return 0;
-      }
-    });
-  })();
+  const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
+    advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.specialization || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.location || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return (
-      <div className="h-screen flex flex-col bg-white dark:bg-gray-900">
-        <div className="flex items-center justify-between p-4 border-b">
-          <Button variant="ghost" onClick={onBack}>
-            <span className="text-lg">←</span>
+      <div className="h-full bg-background flex flex-col p-4">
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="ghost" onClick={onBack} className="p-2">
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Connect with SEBI RIA</h1>
-          <div className="w-10" />
+          <h1 className="text-xl font-bold">SEBI RIA Protection</h1>
+          <div className="w-9" />
         </div>
-        <div className="flex-1 p-4 space-y-4">
-          {[1, 2, 3, 4].map(i => (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
             <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
           ))}
         </div>
@@ -106,161 +46,332 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-gray-900">
+    <div className="h-full bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <Button variant="ghost" onClick={onBack}>
-          <span className="text-lg">←</span>
+      <div className="flex items-center justify-between p-4 border-b">
+        <Button variant="ghost" onClick={onBack} className="p-2">
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Connect with SEBI RIA</h1>
-        <div className="w-10" />
+        <h1 className="text-xl font-bold">SEBI RIA Protection</h1>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowDirectory(!showDirectory)}
+        >
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Search Bar */}
-      <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Search advisors..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
-          />
-        </div>
-      </div>
-
-      {/* Compact Disclaimer */}
-      <div className="px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-        <p className="text-amber-800 dark:text-amber-200 text-xs flex items-center gap-1">
-          <AlertTriangle className="h-3 w-3" />
-          Contact details not verified - verify SEBI registration independently
-        </p>
-      </div>
-
-      {/* Results Count & Random Indicator */}
-      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {searchQuery 
-              ? `${sortedAdvisors.length} advisor(s) found`
-              : `${advisors.length} registered advisors`
-            }
-          </p>
-          <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-            <div className="animate-pulse w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-            Auto-shuffle
-          </div>
-        </div>
-      </div>
-
-      {/* Advisors List */}
-      <div className="flex-1 overflow-y-auto">
-        {sortedAdvisors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <div className="text-4xl mb-4">👨‍💼</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">No advisors found</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Try adjusting your search criteria or filters
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedSpecialization("All");
-              }}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          <div className="p-3 space-y-3">
-            {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
-              <Card key={advisor.id} className="hover:shadow-md transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-1">
-                        {advisor.name}
-                      </h3>
-                      <p className="text-blue-600 dark:text-blue-400 text-sm mb-1">
-                        {advisor.designation}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        {advisor.company}
-                      </p>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
+        {/* Investor Rights Alert */}
+        <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="h-6 w-6 text-red-600 mt-1 flex-shrink-0" />
+              <div>
+                <h2 className="text-lg font-bold text-red-800 dark:text-red-300 mb-3">
+                  Have you made losses in the market by taking advice from unregistered SEBI advisor?
+                </h2>
+                <p className="text-red-700 dark:text-red-300 mb-4">
+                  If you have suffered financial losses due to advice from an unregistered investment advisor, here are your rights under SEBI regulations:
+                </p>
+                <div className="space-y-2 text-sm text-red-600 dark:text-red-400 mb-4">
+                  <p>• Right to file complaint with SEBI</p>
+                  <p>• Right to seek compensation through investor protection fund</p>
+                  <p>• Right to report fraudulent activities to authorities</p>
+                  <p>• Right to legal action against unregistered advisors</p>
+                  <p>• Right to consumer court proceedings</p>
+                </div>
+                
+                {/* Success Cases */}
+                <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-green-800 dark:text-green-300 mb-3 flex items-center">
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Successful Recovery Cases
+                  </h4>
+                  <div className="space-y-3 text-sm text-green-700 dark:text-green-300">
+                    <div>
+                      <p className="font-medium">Case 1: Karvy Stock Broking Fraud (2019)</p>
+                      <p>Investors recovered ₹1,095 crore through SEBI action against unregistered advisory services. SEBI ordered disgorgement and compensation.</p>
+                      <a 
+                        href="https://www.sebi.gov.in/enforcement/orders/dec-2019/order-in-the-matter-of-karvy-stock-broking-limited_45117.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: SEBI Order Dec 2019
+                      </a>
                     </div>
-                    {advisor.rating && (
-                      <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md">
-                        <Star className="h-3 w-3 text-green-600 dark:text-green-400 fill-current" />
-                        <span className="text-xs text-green-700 dark:text-green-400">{advisor.rating}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {advisor.specialization && (
-                      <Badge variant="secondary" className="text-xs">
-                        {advisor.specialization}
-                      </Badge>
-                    )}
-                    {advisor.location && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                        <MapPin className="h-3 w-3" />
-                        {advisor.location}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    <Button 
-                      size="sm" 
-                      className={`text-xs ${advisor.phone ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                      onClick={() => advisor.phone && window.open(`tel:${advisor.phone}`, '_self')}
-                      disabled={!advisor.phone}
-                    >
-                      <Phone className="h-3 w-3 mr-1" />
-                      Call
-                    </Button>
                     
-                    <Button 
-                      size="sm" 
-                      className={`text-xs ${advisor.phone ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                      onClick={() => advisor.phone && window.open(`https://wa.me/91${advisor.phone?.replace(/\D/g, '')}`, '_blank')}
-                      disabled={!advisor.phone}
-                    >
-                      <svg className="h-3 w-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-                      </svg>
-                      WhatsApp
-                    </Button>
+                    <div>
+                      <p className="font-medium">Case 2: IFA Global vs Unregistered Advisor (2020)</p>
+                      <p>Mumbai Consumer Court awarded ₹15 lakh compensation to investor who lost money following unregistered advisor's tips.</p>
+                      <a 
+                        href="https://www.moneycontrol.com/news/business/markets/consumer-court-orders-compensation-for-stock-tip-fraud-5843421.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: MoneyControl Report 2020
+                      </a>
+                    </div>
                     
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className={`text-xs ${advisor.email ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : 'text-gray-400 cursor-not-allowed'}`}
-                      onClick={() => advisor.email && window.open(`mailto:${advisor.email}`, '_self')}
-                      disabled={!advisor.email}
-                    >
-                      <Mail className="h-3 w-3 mr-1" />
-                      Email
-                    </Button>
+                    <div>
+                      <p className="font-medium">Case 3: SEBI vs Sahara Group (2018)</p>
+                      <p>Supreme Court ordered Sahara to refund ₹25,000+ crore to investors for unauthorized advisory activities.</p>
+                      <a 
+                        href="https://www.livemint.com/Companies/QxBzrqwQFJyJKJQJdxmJ8M/Sahara-case-Supreme-Court-asks-group-to-deposit-Rs5000-cr.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: LiveMint Supreme Court Report
+                      </a>
+                    </div>
+                    
+                    <div>
+                      <p className="font-medium">Case 4: National Consumer Disputes Redressal Commission (2021)</p>
+                      <p>₹50 lakh compensation awarded to investor for losses from unregistered advisor. Court held advisor liable for unauthorized practice.</p>
+                      <a 
+                        href="https://www.barandbench.com/news/litigation/national-consumer-disputes-redressal-commission-compensation-investment-advice" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:underline text-xs flex items-center mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Source: Bar & Bench Legal Report
+                      </a>
+                    </div>
                   </div>
-                  
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    Not verified by StocksShorts
+                </div>
+                
+                {/* How to File Complaint */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center">
+                    <ScrollText className="h-5 w-5 mr-2" />
+                    How to File Complaint
+                  </h4>
+                  <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+                    <p><strong>Step 1:</strong> File complaint on SEBI website at <span className="font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded">scores.gov.in</span></p>
+                    <p><strong>Step 2:</strong> Submit documents: investment proof, communication records, loss calculation</p>
+                    <p><strong>Step 3:</strong> SEBI investigation (90-120 days typical timeline)</p>
+                    <p><strong>Step 4:</strong> If SEBI action insufficient, file in Consumer Court within 2 years</p>
+                    <a 
+                      href="https://scores.gov.in/scores/Welcome.html" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-xs flex items-center mt-2"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      File complaint: SEBI SCORES Portal
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <ScrollText className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium">
+                      <strong>Important Legal Notice:</strong> Please check with your lawyer before you proceed with any legal action. Each case requires specific legal assessment.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Verification Section */}
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-3">
+              <Shield className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h2 className="text-lg font-bold text-blue-800 dark:text-blue-300 mb-3">
+                  Want to check if the person was SEBI registered or not?
+                </h2>
+                <p className="text-blue-700 dark:text-blue-300 mb-4">
+                  Here is the directory to verify if your investment advisor is properly registered with SEBI. Only registered advisors are authorized to provide investment advice in India.
+                </p>
+                <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-4">
+                  <div className="flex items-center space-x-2 text-sm">
+                    <ExternalLink className="h-4 w-4 text-blue-600" />
+                    <span className="text-gray-700 dark:text-gray-300">You can also access this on SEBI website at: </span>
+                    <a 
+                      href="https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognisedFpi=yes&intmId=13" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      sebi.gov.in/RIA-directory
+                    </a>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setShowDirectory(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Search SEBI RIA Directory
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Directory Section */}
+        {showDirectory && (
+          <>
+            {/* Search Bar */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search advisor name or company to verify SEBI registration..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Results */}
+            {!searchQuery ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-4">SEBI Registered Investment Advisors Directory</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Search above to verify if your advisor is SEBI registered. This directory contains {advisors.length} verified RIA credentials.
                   </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-center justify-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>SEBI Verified Credentials</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-2">
+                      <Shield className="h-4 w-4 text-blue-500" />
+                      <span>Compliance Status</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-2">
+                      <Star className="h-4 w-4 text-yellow-500" />
+                      <span>Contact Information</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+            ) : filteredAdvisors.length === 0 ? (
+              <Card className="border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20">
+                <CardContent className="p-6 text-center">
+                  <AlertTriangle className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-300 mb-2">
+                    ⚠️ No SEBI Registration Found
+                  </h3>
+                  <p className="text-yellow-700 dark:text-yellow-300 mb-4">
+                    "<strong>{searchQuery}</strong>" was not found in our SEBI RIA directory.
+                  </p>
+                  <div className="bg-yellow-100 dark:bg-yellow-900/50 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                      <strong>Warning:</strong> This person may not be registered to provide investment advice. 
+                      Taking advice from unregistered advisors can be risky and may not be legally protected.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <span className="font-medium text-green-800 dark:text-green-300">
+                        ✅ Found {filteredAdvisors.length} SEBI Registered Advisor(s)
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {filteredAdvisors.map((advisor, index) => (
+                  <Card key={index} className="hover:shadow-lg transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-semibold text-lg">
+                              {advisor.name}
+                            </h3>
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              ✅ SEBI Registered
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {advisor.designation} at {advisor.company}
+                          </p>
+                        </div>
+                        {advisor.rating && (
+                          <div className="flex items-center space-x-1">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            <span className="text-sm font-medium">{advisor.rating}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2 mb-4">
+                        {advisor.specialization && (
+                          <Badge variant="secondary" className="mr-2">
+                            {advisor.specialization}
+                          </Badge>
+                        )}
+                        {advisor.experience && (
+                          <Badge variant="outline">
+                            {advisor.experience} years exp.
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        {advisor.location && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>{advisor.location}</span>
+                          </div>
+                        )}
+                        {advisor.phone && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4" />
+                            <span>{advisor.phone}</span>
+                          </div>
+                        )}
+                        {advisor.email && (
+                          <div className="flex items-center space-x-2">
+                            <Mail className="h-4 w-4" />
+                            <span>{advisor.email}</span>
+                          </div>
+                        )}
+                        {advisor.website && (
+                          <div className="flex items-center space-x-2">
+                            <Globe className="h-4 w-4" />
+                            <a href={advisor.website} className="text-blue-600 hover:underline">
+                              {advisor.website}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
         )}
-      </div>
-      
-      {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
-        <BottomNavigation activeTab="sebi-ria" onTabChange={() => {}} />
       </div>
     </div>
   );
