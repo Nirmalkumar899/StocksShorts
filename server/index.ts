@@ -9,6 +9,14 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
+// Add deployment timeout handling
+const isProduction = process.env.NODE_ENV === 'production';
+if (isProduction) {
+  // Set shorter timeouts for production deployment
+  process.env.DB_TIMEOUT = '3000';
+  process.env.REQUEST_TIMEOUT = '15000';
+}
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

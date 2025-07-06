@@ -26,9 +26,11 @@ if (process.env.DATABASE_URL) {
   try {
     pool = new Pool({ 
       connectionString: process.env.DATABASE_URL,
-      max: 3,
-      idleTimeoutMillis: 20000,
-      connectionTimeoutMillis: 3000,
+      max: 1, // Reduced for deployment stability
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
+      maxUses: 10, // Limit connection reuse
+      keepAlive: false, // Disable keepalive for deployment
     });
 
     db = drizzle({ client: pool, schema });
