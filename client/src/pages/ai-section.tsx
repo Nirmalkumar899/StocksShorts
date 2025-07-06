@@ -1,4 +1,4 @@
-import { ArrowLeft } from '@/lib/icons';
+import { ArrowLeft, Database, FolderOpen, Brain } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import AskAI from '@/components/ask-ai';
 import BottomNavigation from '@/components/bottom-navigation';
@@ -42,9 +42,34 @@ export default function AISection({ onBack }: AISectionProps) {
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm max-w-2xl mx-auto">
-              Get detailed analysis of Indian stocks with authentic financial data, 
-              quarterly performance insights, and investment recommendations.
+              Enhanced AI that reads from your database and Google Drive company folders 
+              to provide personalized stock analysis based on your research data.
             </p>
+            
+            {/* Enhanced Features */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Database className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-800 dark:text-blue-300">Database Integration</span>
+                </div>
+                <p className="text-blue-700 dark:text-blue-400">Reads your saved articles and research</p>
+              </div>
+              <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <FolderOpen className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-green-800 dark:text-green-300">Google Drive Access</span>
+                </div>
+                <p className="text-green-700 dark:text-green-400">Analyzes company-specific folders</p>
+              </div>
+              <div className="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-purple-800 dark:text-purple-300">Smart Analysis</span>
+                </div>
+                <p className="text-purple-700 dark:text-purple-400">Combines your data with AI insights</p>
+              </div>
+            </div>
           </div>
 
           {/* AI Component */}

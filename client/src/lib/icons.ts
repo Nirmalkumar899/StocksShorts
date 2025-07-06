@@ -60,4 +60,7 @@ export {
   ArrowUpDown,
   Filter,
   ArrowRight,
+  Database,
+  FileText,
+  FolderOpen,
 } from "./custom-icons";
