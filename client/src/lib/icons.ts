@@ -64,4 +64,5 @@ export {
   Database,
   FileText,
   FolderOpen,
+  LogOut,
 } from "./custom-icons";
