@@ -169,30 +169,18 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
           let imageUrl = null;
           const title = row[1] || 'Untitled';
           
-          // Check all columns beyond H for image URLs
-          let providedImageUrl = '';
-          let imageColumnFound = '';
-          
-          // Search from column I onwards for image URLs
-          for (let i = 8; i < row.length; i++) {
-            if (row[i] && row[i].toString().trim()) {
-              const cellValue = row[i].toString().trim();
-              // Check if this looks like an image URL
-              if (cellValue.includes('http') || cellValue.includes('replit.com') || cellValue.includes('drive.google.com') || cellValue.includes('imgur.com') || cellValue.includes('.jpg') || cellValue.includes('.png')) {
-                providedImageUrl = cellValue;
-                imageColumnFound = String.fromCharCode(65 + i); // Convert to letter (A, B, C...)
-                console.log(`Found image URL in column ${imageColumnFound} (index ${i}) for article "${title}": ${providedImageUrl}`);
-                break;
-              }
-            }
-          }
+          // Get Image URL from Column I (index 8) ONLY
+          const providedImageUrl = row[8] ? row[8].toString().trim() : '';
           
           // Debug log for articles that should have images but don't
           if (!providedImageUrl && (title.includes('IPO') || title.includes('Special'))) {
-            console.log(`No image URL found for "${title}":`, {
+            console.log(`No image URL found in column I for "${title}":`, {
               rowLength: row.length,
-              allColumns: row.map((val, idx) => `${String.fromCharCode(65 + idx)}:${val || 'empty'}`).slice(8).join(' | ')
+              columnI: row[8] || 'empty',
+              hasColumnI: row.length > 8
             });
+          } else if (providedImageUrl) {
+            console.log(`Found image URL in column I for article "${title}": ${providedImageUrl}`);
           }
           
           // Debug: Log the image URL check
