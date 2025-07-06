@@ -29,11 +29,11 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
 
   const queryMutation = useMutation({
     mutationFn: async (stockQuery: string) => {
-      // Show thinking notification immediately
+      // Show analysis progress notification
       toast({
-        title: "🧠 Searching...",
-        description: "Reading your database and Google Drive files",
-        duration: 8000,
+        title: "AI Analyzing...",
+        description: "Reading quarterly results → investor presentation → call transcript",
+        duration: 10000,
       });
       
       const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });

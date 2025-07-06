@@ -45,34 +45,11 @@ export default function AISection({ onBack }: AISectionProps) {
               Advanced AI that analyzes company research documents 
               to provide personalized stock analysis based on comprehensive data.
             </p>
-            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 p-2 rounded">
-              💡 Ask specific questions about companies for detailed financial insights
+            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30 p-2 rounded">
+              Ask specific questions about companies for detailed financial insights
             </div>
             
-            {/* Enhanced Features */}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Database className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-blue-800 dark:text-blue-300">Document Analysis</span>
-                </div>
-                <p className="text-blue-700 dark:text-blue-400">Reads research documents and reports</p>
-              </div>
-              <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <FolderOpen className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-green-800 dark:text-green-300">Company Data</span>
-                </div>
-                <p className="text-green-700 dark:text-green-400">Analyzes company-specific information</p>
-              </div>
-              <div className="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Brain className="h-4 w-4 text-purple-600" />
-                  <span className="font-medium text-purple-800 dark:text-purple-300">Smart Insights</span>
-                </div>
-                <p className="text-purple-700 dark:text-purple-400">Provides data-driven analysis</p>
-              </div>
-            </div>
+
           </div>
 
           {/* AI Component */}

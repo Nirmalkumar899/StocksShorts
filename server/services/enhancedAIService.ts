@@ -101,6 +101,11 @@ export class EnhancedAIService {
           console.log(`Searching for company: ${companyName}`);
           driveData = await googleDriveService.searchCompanyData(companyName);
           console.log(`Found: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
+          
+          // Log specific documents being analyzed
+          if (driveData.documentNames && driveData.documentNames.length > 0) {
+            console.log(`AI analyzing documents: ${driveData.documentNames.join(', ')}`);
+          }
         } catch (driveError) {
           console.log('Data access failed');
         }
