@@ -5,10 +5,61 @@ export class GoogleDriveService {
   private drive: any;
 
   constructor() {
-    // Check if we have service account credentials (preferred) or API key
+    // Try to load from JSON file first (more reliable)
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const jsonPath = path.join(process.cwd(), 'attached_assets', 'spartan-perigee-463004-u2-e5ae8eae0c60_1751807506284.json');
+      
+      if (fs.existsSync(jsonPath)) {
+        const serviceAccount = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        console.log('Google Drive: Using service account from JSON file');
+        
+        const auth = new google.auth.GoogleAuth({
+          credentials: {
+            client_email: "stocksshortsnew@spartan-perigee-463004-u2.iam.gserviceaccount.com",
+            private_key: `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDxm4erbCGs0tHQ
+Mri1jp9AcFU6KMEnywtSCFhKtgDS5IhrjtAPnATmeBz9UusIW1omj8/9oMdb75cc
+rdrrcrQSBh3fQ6FmNeAoeJJ/UIaEAJs1hDqmzoMLGC/qinhqn0ZVqcAlRMyI4n2A
+1g0ApZTKLI1etmeVRlbvlPmwbLg8hjk89qxSkBKTZevs5870wmgwFx60e+/TPCvn
+3yGmskLUasLKveeW+x0UEmL/GWDYv8e+wXuepCUc4MOIQvMb6u2LhAAcCn5dO8BM
+lDvI1Pr1lRcHE0qk6vmz4wuF5l+FhR0ylhl4wvrhQ/hAuLOgneTLpQWW8f0aXLzM
+wy6VlxbdAgMBAAECggEABYhBGGH6Qf5QYN+OKjBjWGm+pCIRMZ3a0dyLxQK/uoI2
++3bwL/orqSAuQAnZO3UcnCBvUG0RQURy05E3RCNVBqYOfgzmUf139ynXng0dVkIE
+cF8yhpyPy3Th9/8Y/KCXc6Fo7ZGJgkd3GF0OYLwOdH080FBzopkKFP9R7AswHaRX
+Mp2W6CLeZXkRa049NKn/z5cIv0SCcyJOJ/p2v3WhmbNfK0vKXfdVFUjB8FvVs30F
+L2AI3qp4avNbvE8xSWNKVw9ckck8B+lD9V65tgNUhrtgaUUjIgOBLEwM4o1DaotV
+dizo8w62HHNun+0pNVnWXWv3QevRDo09zr6jR1+P0wKBgQD+T9VWv+gRZcbchZhG
+IIIiHtbp8aCuk/aNCVcoOSyYtA2MVpSoFW/qXqXMg7KAOoIjwbES+y+qjZM+IeVc
+2cMii6PT6QLoTG5WQ6qVqf4Vg8zt/lFd4dGADXLpn8b0t1h4+cl/HYjjI0BNYyn+
+yH7ol8DarD0vKZlK+tIetHlA/wKBgQDzNhuBgs4T9VTe0XEN3z5mxQJ9v4KuAzpv
+CuCPH+LY35RyQTWTesVyhwBLxD9TeE6PiP+mF1C2gzRZ5O8THoM6kaAqcZ9GbB3r
+h10/r+XaYcAeM2wJDg1LbcNKQ2+8VUpiexjDjE5aOL+/Aefz3USA1/6dmW4fHeIg
+b+iNfsjMIwKBgBhtZKmTf2AEbaiK8Ihz4OwUGEKaYfvC3KDJb+S+MSltygtb2aWX
+gYt6keRmFgQ5Gn0CwtZ26CoytRz3todHp3WvAgp9zDix9rs0frMng+9fHJUTo48n
+/K6XHB2SqlKhNc9Q9ujN1nMy1J9aUhNWANKomO6oMqxQC5hnJT2ryiXTAoGBAISQ
+94kuTTmfvbT+IEtZZeAKfoMgQhCrfcxM933L+ZAQvg9Q7+0FPF5iq4yg2YubxeaC
+3CYiC0KQXZaqLI4VUZ45Bj5cVF7ES8K3s+Ik9HqGUXukt7xvxltY5tuxylOzgaoQ
+Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
+4ZwoB4O5gQIlCxkeDlWE/2e2x51nUsDZIF4iY7iq8o9phcleFx9AgfgrNZ89MbAr
++2hyEr0BnNGEeiNg+ZNiqcLaIIr/yG8qCSsf3LGc4jZD6m7cFAj6qwM491S0M4/v
+0HsI2X6g//ccL7BPi5ZPKRY=
+-----END PRIVATE KEY-----`,
+          },
+          scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+        });
+        this.drive = google.drive({ version: 'v3', auth });
+        return;
+      }
+    } catch (error) {
+      console.log('Failed to load from JSON file, falling back to environment variables:', error.message);
+    }
+
+    // Fallback to environment variables
     if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
       try {
-        // Use service account credentials for private folder access
+        console.log('Google Drive: Using environment variables');
         let privateKey = process.env.GOOGLE_PRIVATE_KEY;
         
         // Handle different private key formats

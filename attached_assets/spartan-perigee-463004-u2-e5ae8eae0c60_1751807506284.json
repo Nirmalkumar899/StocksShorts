@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "spartan-perigee-463004-u2",
+  "private_key_id": "e5ae8eae0c60c7a97b667c1ba13700b253166aa2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCiRcGKnIBb1qO9\n/34kju164u0J7wPKJk8hZtazAS9uI/Oyg3PZptBqbmgFUnfvh1vw+8CZlP3XKJr2\nYOVU9tpG+XESzpguvwue9wjujjeeV6/5iLnilkISkLLbnQgK8qSPkH36hKNjLE0p\nyqDUNLCZNiyTaGbIn5jTctUMsZpojZBzZf2BIhtbzofkp4cs2uKZapHr/mWkNI7I\nubjvuuPZq/StXXi2UtL/2htZw8MOX7z5bm0a7DJGitsN9FCsc3EwbdgXTQkDUWIL\nRZLA4HOdvMN2UTWF9yKcJq73TMPmxA4vl/t9eVbwt0s6p02b60jFk85KdTg3d9yP\nEJqwK6pRAgMBAAECggEAA+OlnZ+eIPVeQ8/Dk3c8gGE/eqk4n0f3Rg7rruskmqBw\ndxMY+/q4TJC8XAJLvxkwrjAuf8/XHKjLvAN7A6QN+7z/RYrfkWFBU0xK8cLFWP1z\niYjKIcDlsQG4U7SqDG8f3BQDvPUgYGBfshR58dQYdnearmbGbeELXegG7LC2CXLv\nYNEn2YfATib9hJrEWAltUvV3gD59PLK/qpyRDuBR5v0bV9XgYhXE+CDGEuztOHkj\nCsi2C+sgXfD3Q05c33nwBMYBV02+9A2yP5nrs9EZnyHH9enOxZI3hUbbiULLTzIO\n2gkUoC21Udk/WzQ0wtSYkKfm44Kdk2vmq5PC0PxeNQKBgQDSIDY/xoQUmlRNY9cM\nW1+jCmxkzpl+VXxYbuuThMowAAEbxOXfKOnO7OQGAumqKezpFslnXsnAF4+N5fFV\nTZQqcFPd8JiyrzqCsRglODc31z4rAztYsA+JFXOU/ZavaA2uarW49q+T1w/IfoQs\n4iNdT9IRiVqMAQRwOsMD1x0+ZQKBgQDFsw27lHaxkvB7rfQ4rjvUyOzoLk4Meh18\nQELP0nO7vsY26nf4vRj78Rp58lWSNMen7zv4EHK/lnXJtbOpyOvTnJvaZr2/hg8U\n7IvTMb5j3wntiK1c1b5Z180/2U5VCVkZ9TfhGqM3vlWKE7AR7eq7oA4q3HvqqyXe\n6Ey10IK3fQKBgQCLB/s9GXndM/whtLTenTrbYxMzZCvVlnSPAt1mn080kVwqZo5+\nqNCDNOTvQVAgYls6IvSiK+qr6ir3BbU37vvhVK95Qy+V0zGQteK3BcorbYTZ6uqC\nlQPCfWobo+rnJp8ez8ZrmvWziXINBAEqvXoOzLi/F7XMuwOXypmsWdIkrQKBgHST\nqdRjrj31zJLRt8I4k5Vcyb37mBBpbbuX1Q3hJleeHhnB1u646uOdf6RLDsSBFP5k\n5rLXWCK7YUeJOqEylkUZAxodHWSzc28+MRFfMsqHeb40qy2j6HPn+eLdjAA+2+if\nnczCPV6ggKZEB7360kDDF7eUfgmZ1GIGDz3i70GtAoGBAM3ac0Q0ReLiiP78GDTd\nq5t80ZKK/8v6TPjLgOhNKEbk9+gaMF3QdMLDm2F/QPTRHtJ5YqhEcGpFG+9MfYTL\nmmhzWIy+JIeLEG2niJn0we38MFAV1wA21O3hvK1+kE0pc6AmkiaG8wZP1vE8Vrr5\nd2GAl5/tNtf4+q+wE7ll3cIM\n-----END PRIVATE KEY-----\n",
+  "client_email": "stocksshortsnew@spartan-perigee-463004-u2.iam.gserviceaccount.com",
+  "client_id": "103021973842651945662",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/stocksshortsnew%40spartan-perigee-463004-u2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
