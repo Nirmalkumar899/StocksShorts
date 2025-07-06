@@ -169,9 +169,23 @@ export default function Home() {
   });
 
   // Apply translations to articles
-  const articles = isTranslated 
-    ? rawArticles.map(article => translatedArticles[article.id] || article)
-    : rawArticles;
+  const articles = useMemo(() => {
+    if (isTranslated && Object.keys(translatedArticles).length > 0) {
+      console.log("Applying translations to", rawArticles?.length, "articles");
+      console.log("Translation map has", Object.keys(translatedArticles).length, "entries");
+      const result = rawArticles.map(article => {
+        const translated = translatedArticles[article.id];
+        if (translated) {
+          console.log(`Article ${article.id} translated: ${article.title} → ${translated.title}`);
+          return translated;
+        }
+        return article;
+      });
+      return result;
+    }
+    console.log("Showing original articles:", rawArticles?.length);
+    return rawArticles;
+  }, [rawArticles, isTranslated, translatedArticles]);
 
   // Refresh articles mutation
   const refreshMutation = useMutation({
@@ -216,9 +230,6 @@ export default function Home() {
       });
       setTranslatedArticles(translatedMap);
       setIsTranslated(true);
-      
-      // Force refetch to apply translations
-      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
       
       toast({
         title: "Content translated",
