@@ -9,6 +9,12 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
+// Force development mode for Replit preview
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'development';
+  console.log('No NODE_ENV set, defaulting to development mode');
+}
+
 // Add deployment timeout handling and optimizations
 const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction) {
@@ -82,14 +88,25 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
     console.log('Routes registered successfully');
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    console.error('Server error:', err);
+    console.error('Server error details:', {
+      error: err,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      headers: req.headers,
+      timestamp: new Date().toISOString()
+    });
     
     if (!res.headersSent) {
-      res.status(status).json({ message });
+      res.status(status).json({ 
+        message,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
     }
   });
 
