@@ -142,7 +142,7 @@ export default function Profile({ onBack }: ProfileProps) {
             </CardContent>
           </Card>
         </div>
-        <BottomNavigation />
+        <BottomNavigation activeTab="profile" onTabChange={() => {}} />
       </div>
     );
   }
