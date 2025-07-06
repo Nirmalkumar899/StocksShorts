@@ -7,15 +7,35 @@ export class GoogleDriveService {
   constructor() {
     // Check if we have service account credentials (preferred) or API key
     if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-      // Use service account credentials for private folder access
-      const auth = new google.auth.GoogleAuth({
-        credentials: {
-          client_email: process.env.GOOGLE_CLIENT_EMAIL,
-          private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        },
-        scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-      });
-      this.drive = google.drive({ version: 'v3', auth });
+      try {
+        // Use service account credentials for private folder access
+        let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+        
+        // Handle different private key formats
+        if (privateKey.includes('\\n')) {
+          privateKey = privateKey.replace(/\\n/g, '\n');
+        }
+        
+        // Ensure proper line breaks for the key
+        if (!privateKey.includes('\n') && privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+          privateKey = privateKey
+            .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
+            .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+        }
+
+        const auth = new google.auth.GoogleAuth({
+          credentials: {
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: privateKey,
+          },
+          scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+        });
+        this.drive = google.drive({ version: 'v3', auth });
+        console.log('Google Drive service initialized with service account credentials');
+      } catch (error) {
+        console.error('Error initializing Google Drive service account:', error);
+        this.drive = null;
+      }
     } else if (process.env.GOOGLE_API_KEY) {
       // Fallback to API key (only works for public files)
       this.drive = google.drive({ 
