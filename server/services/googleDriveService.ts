@@ -332,7 +332,11 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
         folders,
         documents,
         sheets,
-        content
+        content,
+        documentNames: content.map(c => {
+          const match = c.match(/📁 From .+ folder - (.+?):/);
+          return match ? match[1] : 'Unknown Document';
+        })
       };
     } catch (error) {
       console.error('Error searching company data:', error);

@@ -140,10 +140,14 @@ export class EnhancedAIService {
         driveData.content.forEach(content => {
           context += content + '\n\n';
         });
-        sources.push(`${driveData.content.length} documents from Google Drive`);
-        sources.push(`${driveData.folders.length} folders found`);
-        sources.push(`${driveData.documents.length} documents found`);
-        sources.push(`${driveData.sheets.length} spreadsheets found`);
+        // Use specific document names as sources
+        if (driveData.documentNames && driveData.documentNames.length > 0) {
+          driveData.documentNames.forEach(docName => {
+            sources.push(docName);
+          });
+        } else {
+          sources.push(`${driveData.content.length} documents from Google Drive`);
+        }
       }
 
       // 4. If insufficient data from database and drive, supplement with web search
@@ -157,38 +161,22 @@ export class EnhancedAIService {
 
       // 5. Create enhanced prompt for OpenAI with source priority instructions
       const enhancedPrompt = `
-You are a financial AI assistant with priority access to user's Google Drive research folders and database.
+Answer the user's specific question directly using the provided data.
 
 USER QUERY: ${query}
-
-DATA SOURCES PRIORITY (use in this order):
-1. GOOGLE DRIVE FOLDERS (highest priority)
-2. USER'S DATABASE ARTICLES 
-3. GENERAL FINANCIAL KNOWLEDGE (lowest priority, only if above sources insufficient)
 
 AVAILABLE DATA:
 ${context}
 
-CRITICAL INSTRUCTIONS:
-1. **SOURCE ATTRIBUTION**: Always clearly specify where each piece of information comes from:
-   - "According to your Google Drive folder for [Company]..."
-   - "Based on articles in your database..."
-   - "From general market knowledge..." (only when user's data is insufficient)
+INSTRUCTIONS:
+- Answer ONLY the specific question asked
+- Use exact numbers and facts from the provided documents
+- Be specific and factual, not general
+- Keep response focused and direct
+- Do NOT provide general updates or background information unless asked
+- Cite specific document names as sources (not "Google Drive" or "database")
 
-2. **DATA PRIORITY**: 
-   - If Google Drive has company documents, prioritize that information
-   - Use database articles as supporting evidence
-   - Only supplement with general knowledge if user's sources lack specific details
-
-3. **RESPONSE FORMAT**:
-   - Lead with findings from user's Google Drive folders
-   - Support with database article insights
-   - Clearly mark any general knowledge as "supplemental information"
-   - End each section with explicit source references
-
-4. **TRANSPARENCY**: Make it crystal clear where each fact, figure, and insight originates
-
-Answer the query comprehensively, always citing your sources for maximum transparency.
+Answer directly and end with: Sources: [specific document names]
 `;
 
       // 5. Get OpenAI response
