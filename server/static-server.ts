@@ -4,7 +4,8 @@ import fs from "fs";
 import { log } from "./vite";
 
 export function setupProductionStatic(app: express.Express) {
-  const publicDir = path.join(process.cwd(), "dist", "public");
+  // When running from dist/index.js, the public directory is relative to the built server
+  const publicDir = path.join(process.cwd(), "public");
   
   log(`Setting up production static serving from: ${publicDir}`);
   log(`Directory exists: ${fs.existsSync(publicDir)}`);
