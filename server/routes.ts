@@ -191,14 +191,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Translation API using OpenAI
   app.post('/api/translate-articles', async (req, res) => {
+    console.log('Translation API called from:', req.headers.origin);
+    console.log('Request body:', req.body ? 'Present' : 'Missing');
+    
     try {
       const { articles } = req.body;
       
       if (!articles || !Array.isArray(articles)) {
+        console.log('Invalid articles data:', { articles: articles ? articles.length : 'null', isArray: Array.isArray(articles) });
         return res.status(400).json({ message: 'Articles array is required' });
       }
 
       if (!process.env.OPENAI_API_KEY) {
+        console.log('OpenAI API key missing');
         return res.status(500).json({ message: 'OpenAI API key not configured' });
       }
 

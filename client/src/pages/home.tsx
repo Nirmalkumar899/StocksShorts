@@ -212,13 +212,23 @@ export default function Home() {
   const translateMutation = useMutation({
     mutationFn: async (articles: Article[]) => {
       console.log("Translation API call starting with", articles.length, "articles");
+      console.log("Sample article for translation:", articles[0]);
+      
       try {
+        console.log("Making API request to /api/translate-articles");
         const response = await apiRequest('POST', '/api/translate-articles', { articles });
+        console.log("API request completed, response status:", response.status);
+        
         const data = await response.json();
         console.log("Translation API response received", data.length, "translated articles");
+        console.log("Sample translated article:", data[0]);
         return data;
       } catch (error) {
-        console.error("Translation API error:", error);
+        console.error("Translation API error details:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
         throw error;
       }
     },
@@ -252,6 +262,8 @@ export default function Home() {
 
   const handleTranslate = () => {
     console.log("Translate button clicked", { isTranslated, articlesLength: articles?.length });
+    console.log("Current articles:", articles?.slice(0, 2)); // Log first 2 articles for debugging
+    
     if (isTranslated) {
       setIsTranslated(false);
       setTranslatedArticles({});
@@ -262,9 +274,10 @@ export default function Home() {
     } else {
       if (articles && articles.length > 0) {
         console.log("Starting translation for", articles.length, "articles");
+        console.log("Mutation state:", { isPending: translateMutation.isPending, isError: translateMutation.isError });
         translateMutation.mutate(articles);
       } else {
-        console.log("No articles to translate");
+        console.log("No articles to translate - articles data:", articles);
         toast({
           title: "No articles to translate",
           description: "Please wait for articles to load first.",
