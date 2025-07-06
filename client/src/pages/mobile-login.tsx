@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
-import { Smartphone, ArrowLeft } from "lucide-react";
+import { Smartphone, ArrowLeft } from "@/lib/icons";
 
 interface MobileLoginProps {
   onBack: () => void;

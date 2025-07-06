@@ -1,4 +1,4 @@
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 

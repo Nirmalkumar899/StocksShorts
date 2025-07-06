@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Share2, Copy, ExternalLink, Lock } from "lucide-react";
+import { ArrowLeft, Share2, Copy, ExternalLink, Lock } from "@/lib/icons";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 

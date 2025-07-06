@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { getContextualImage } from '@/lib/imageUtils';
 import { Button } from '@/components/ui/button';

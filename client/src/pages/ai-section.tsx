@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
 import AskAI from '@/components/ask-ai';
 import BottomNavigation from '@/components/bottom-navigation';

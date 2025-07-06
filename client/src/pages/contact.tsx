@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Send, MessageCircle, Plus, ThumbsUp, ThumbsDown, AlertTriangle, Clock } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, Plus, ThumbsUp, ThumbsDown, AlertTriangle, Clock } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";

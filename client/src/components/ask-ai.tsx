@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Send, Loader2, MessageSquare, X, AlertTriangle } from "lucide-react";
+import { Brain, Send, Loader2, MessageSquare, X, AlertTriangle } from "@/lib/icons";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
