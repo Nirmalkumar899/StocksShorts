@@ -250,17 +250,13 @@ Return in exact format:
 TITLE: [Hindi translation]
 CONTENT: [Hindi translation]`;
 
-              const response = await Promise.race([
-                openai.chat.completions.create({
-                  model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-                  messages: [{ role: 'user', content: prompt }],
-                  temperature: 0.3,
-                  max_tokens: 1000
-                }),
-                new Promise((_, reject) => 
-                  setTimeout(() => reject(new Error('Translation timeout after 30s')), 30000)
-                )
-              ]) as any;
+              // Call OpenAI API - SDK handles its own timeouts
+              const response = await openai.chat.completions.create({
+                model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.3,
+                max_tokens: 1000
+              });
               
               const translatedText = response.choices[0].message.content;
               console.log(`✅ Translation received for article ${article.id}`);
@@ -277,7 +273,13 @@ CONTENT: [Hindi translation]`;
               
             } catch (error) {
               console.error(`❌ Translation error for article ${article.id}:`, error.message);
-              // Return original article if translation fails
+              
+              // Check if it's a quota exceeded error
+              if (error.message && error.message.includes('exceeded your current quota')) {
+                throw new Error('Translation service quota exceeded. Please try again later or contact support.');
+              }
+              
+              // Return original article for other errors
               return {
                 id: article.id,
                 title: article.title,

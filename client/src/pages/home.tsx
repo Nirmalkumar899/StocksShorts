@@ -253,6 +253,12 @@ export default function Home() {
           throw new Error('Translation is taking longer than expected. Please try again with fewer articles.');
         }
         
+        // Handle quota exceeded errors with user-friendly message
+        if (error.message && error.message.includes('quota exceeded')) {
+          console.error("💰 OpenAI API quota exceeded");
+          throw new Error('Hindi translation temporarily unavailable due to API limits. Please try again later.');
+        }
+        
         console.error("💥 Translation API error details:", {
           message: error.message,
           stack: error.stack,
