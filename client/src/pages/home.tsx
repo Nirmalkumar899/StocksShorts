@@ -109,7 +109,7 @@ export default function Home() {
 
   // Fetch articles based on selected category
   const {
-    data: articles = [],
+    data: rawArticles = [],
     isLoading,
     error,
     refetch
@@ -162,16 +162,16 @@ export default function Home() {
         });
       }
       
-      // Apply translations if available
-      if (isTranslated) {
-        return processedData.map(article => translatedArticles[article.id] || article);
-      }
-      
       return processedData;
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Apply translations to articles
+  const articles = isTranslated 
+    ? rawArticles.map(article => translatedArticles[article.id] || article)
+    : rawArticles;
 
   // Refresh articles mutation
   const refreshMutation = useMutation({
@@ -216,6 +216,10 @@ export default function Home() {
       });
       setTranslatedArticles(translatedMap);
       setIsTranslated(true);
+      
+      // Force refetch to apply translations
+      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      
       toast({
         title: "Content translated",
         description: "All articles have been translated to Hindi.",
