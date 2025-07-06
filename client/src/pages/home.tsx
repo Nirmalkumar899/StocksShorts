@@ -217,15 +217,21 @@ export default function Home() {
       try {
         console.log("🌐 Making API request to /api/translate-articles");
         
-        // Use direct fetch to see exact error response
+        // Use direct fetch with longer timeout for translation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+        
         const response = await fetch('/api/translate-articles', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           credentials: 'include',
-          body: JSON.stringify({ articles })
+          body: JSON.stringify({ articles }),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         console.log("📡 Raw response status:", response.status);
         console.log("📡 Raw response headers:", Object.fromEntries(response.headers.entries()));
@@ -241,6 +247,12 @@ export default function Home() {
         console.log("📝 Sample translated article:", data[0]);
         return data;
       } catch (error) {
+        // Handle AbortError specifically
+        if (error.name === 'AbortError') {
+          console.error("⏰ Translation request timed out after 2 minutes");
+          throw new Error('Translation is taking longer than expected. Please try again with fewer articles.');
+        }
+        
         console.error("💥 Translation API error details:", {
           message: error.message,
           stack: error.stack,

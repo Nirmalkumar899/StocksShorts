@@ -38,8 +38,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Add request timeout for deployment stability
+  // Add request timeout for deployment stability - except translation endpoint
   app.use((req, res, next) => {
+    // Skip timeout for translation endpoint as it needs more time
+    if (req.path === '/api/translate-articles') {
+      return next();
+    }
+    
     const timeout = process.env.NODE_ENV === 'production' ? 10000 : 30000;
     const timer = setTimeout(() => {
       if (!res.headersSent) {
@@ -291,15 +296,23 @@ CONTENT: [Hindi translation]`;
       }
 
       console.log(`🎉 Translation completed for ${allTranslatedArticles.length} articles`);
-      res.json(allTranslatedArticles);
+      
+      // Check if response has already been sent
+      if (!res.headersSent) {
+        res.json(allTranslatedArticles);
+      }
       
     } catch (error) {
       console.error('💥 Translation API error:', error);
       console.error('💥 Error stack:', error.stack);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Translation failed',
-        details: error.stack
-      });
+      
+      // Only send error response if headers haven't been sent
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          message: error instanceof Error ? error.message : 'Translation failed',
+          details: error.stack
+        });
+      }
     }
   });
 
