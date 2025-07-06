@@ -17,7 +17,6 @@ import GmailConnect from "@/pages/GmailConnect";
 import SplashScreen from "@/components/splash-screen";
 
 function Router() {
-  useSEO(); // Enable dynamic SEO
   const [location, setLocation] = useLocation();
   
   // Temporarily disable splash screen for debugging
