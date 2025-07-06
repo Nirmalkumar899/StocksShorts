@@ -28,23 +28,14 @@ import MemoryStore from "memorystore";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get('/health', (req, res) => {
-    console.log('🔍 Health check accessed from:', req.headers.host);
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       port: process.env.PORT,
       replit_deployment: process.env.REPLIT_DEPLOYMENT || 'false',
-      replit_cluster: process.env.REPLIT_CLUSTER || 'false',
-      host: req.headers.host,
-      user_agent: req.headers['user-agent']
+      replit_cluster: process.env.REPLIT_CLUSTER || 'false'
     });
-  });
-
-  // Simple ping endpoint for quick testing
-  app.get('/ping', (req, res) => {
-    console.log('🏓 Ping from:', req.headers.host);
-    res.send('pong - server is alive');
   });
 
   // Add request timeout for deployment stability - except translation endpoint
@@ -543,46 +534,27 @@ CONTENT: [Hindi translation]`;
 
   // Enhanced AI Query endpoint - Uses Database + Google Drive
   app.post("/api/stock-ai/query", async (req: any, res) => {
-    // Set longer timeout for AI processing
-    req.setTimeout(120000); // 2 minutes
-    res.setTimeout(120000); // 2 minutes
-    
     try {
       const { query } = req.body;
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: 'Query is required' });
       }
 
-      console.log(`🤖 Processing AI query: ${query}`);
+      // Use enhanced AI service that reads from database and Google Drive
+      const result = await enhancedAIService.processAIQuery(query, req.session?.user?.id);
       
-      // Use enhanced AI service with timeout wrapper
-      const result = await Promise.race([
-        enhancedAIService.processAIQuery(query, req.session?.user?.id),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('AI processing timeout after 100 seconds')), 100000)
-        )
-      ]) as any;
-      
-      console.log('✅ AI processing completed successfully');
-      
-      if (!res.headersSent) {
-        res.json({ 
-          analysis: result.response,
-          sources: result.sources,
-          databaseResults: result.databaseResults,
-          driveResults: result.driveResults,
-          enhanced: true
-        });
-      }
+      res.json({ 
+        analysis: result.response,
+        sources: result.sources,
+        databaseResults: result.databaseResults,
+        driveResults: result.driveResults,
+        enhanced: true
+      });
     } catch (error) {
       console.error('Enhanced AI query error:', error);
-      
-      if (!res.headersSent) {
-        res.status(500).json({ 
-          message: error instanceof Error ? error.message : 'Failed to process AI query',
-          details: 'The AI analysis system encountered an error. Please try again.'
-        });
-      }
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to process AI query'
+      });
     }
   });
 

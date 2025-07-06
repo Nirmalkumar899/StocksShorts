@@ -94,16 +94,7 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
         companyName, // Exact match
         companyName.split(' ')[0], // First word only
         companyName.toLowerCase(),
-        companyName.toUpperCase(),
-        // Add common company variations
-        companyName.replace(/\s+/g, ''), // Remove spaces (e.g., "State Bank" -> "StateBank")
-        companyName.replace(/\s+(Ltd|Limited|Inc|Corporation|Corp)$/i, ''), // Remove suffixes
-        companyName.replace(/^(The\s+)/i, ''), // Remove "The" prefix
-        // Add specific mappings for common companies
-        ...(companyName.toLowerCase().includes('infosys') ? ['Infosys', 'INFOSYS', 'Infosys Limited'] : []),
-        ...(companyName.toLowerCase().includes('sbi') ? ['State Bank of India', 'SBI', 'State Bank of India (SBI)'] : []),
-        ...(companyName.toLowerCase().includes('tcs') ? ['TCS', 'Tata Consultancy Services', 'TATA CONSULTANCY SERVICES'] : []),
-        ...(companyName.toLowerCase().includes('reliance') ? ['Reliance', 'Reliance Industries', 'RELIANCE'] : [])
+        companyName.toUpperCase()
       ];
 
       let allFolders: any[] = [];
