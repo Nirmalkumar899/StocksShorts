@@ -58,6 +58,96 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
     window.open(`/article/${article.id}`, '_blank');
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const shareUrl = `${window.location.origin}/article/${article.id}`;
+    const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;
+    
+    // Try native sharing first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        // Fall back to custom sharing if native sharing fails
+      }
+    }
+    
+    // Custom sharing options
+    const shareOptions = [
+      {
+        name: 'WhatsApp',
+        url: `https://wa.me/?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`,
+        color: 'bg-green-500 hover:bg-green-600'
+      },
+      {
+        name: 'Twitter',
+        url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+        color: 'bg-blue-500 hover:bg-blue-600'
+      },
+      {
+        name: 'Telegram',
+        url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+        color: 'bg-blue-400 hover:bg-blue-500'
+      },
+      {
+        name: 'LinkedIn',
+        url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+        color: 'bg-blue-700 hover:bg-blue-800'
+      }
+    ];
+    
+    // Show share options in a temporary dialog
+    const shareDialog = document.createElement('div');
+    shareDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    shareDialog.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Share Article</h3>
+        <div class="space-y-2">
+          ${shareOptions.map(option => `
+            <button 
+              class="w-full ${option.color} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              onclick="window.open('${option.url}', '_blank'); document.body.removeChild(this.closest('.fixed'));"
+            >
+              Share on ${option.name}
+            </button>
+          `).join('')}
+          <button 
+            class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            onclick="navigator.clipboard.writeText('${shareUrl}'); document.body.removeChild(this.closest('.fixed'));"
+          >
+            Copy Link
+          </button>
+          <button 
+            class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            onclick="document.body.removeChild(this.closest('.fixed'));"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(shareDialog);
+    
+    // Close dialog when clicking outside
+    shareDialog.addEventListener('click', (event) => {
+      if (event.target === shareDialog) {
+        document.body.removeChild(shareDialog);
+      }
+    });
+  };
+
+  const handleOpenArticle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(`/article/${article.id}`, '_blank');
+  };
+
   const handleLoginPrompt = (e: React.MouseEvent) => {
     e.stopPropagation();
     toast({
@@ -248,6 +338,14 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
                 title="Open article"
               >
                 <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              </button>
+              
+              <button
+                onClick={handleShare}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Share article"
+              >
+                <Share2 className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
               </button>
             </div>
           </div>
