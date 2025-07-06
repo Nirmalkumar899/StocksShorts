@@ -15,8 +15,11 @@ if (!process.env.NODE_ENV) {
   console.log('No NODE_ENV set, defaulting to development mode');
 }
 
-// Handle Replit environment properly - force development for all Replit environments for now
-if (process.env.REPLIT_DEPLOYMENT || process.env.REPLIT_CLUSTER) {
+// Handle Replit environment properly 
+if (process.env.REPLIT_ENVIRONMENT === 'production') {
+  process.env.NODE_ENV = 'production';
+  console.log('Detected Replit production environment, using production mode');
+} else if (process.env.REPLIT_DEPLOYMENT || process.env.REPLIT_CLUSTER) {
   process.env.NODE_ENV = 'development';
   console.log('Detected Replit environment, forcing development mode for external access');
 }

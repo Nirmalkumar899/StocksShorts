@@ -34,7 +34,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       environment: process.env.NODE_ENV,
       port: process.env.PORT,
       replit_deployment: process.env.REPLIT_DEPLOYMENT || 'false',
-      replit_cluster: process.env.REPLIT_CLUSTER || 'false'
+      replit_cluster: process.env.REPLIT_CLUSTER || 'false',
+      replit_environment: process.env.REPLIT_ENVIRONMENT || 'unknown',
+      host: req.headers.host,
+      url: req.url,
+      user_agent: req.headers['user-agent']
+    });
+  });
+
+  // Test endpoint to diagnose issues
+  app.get('/debug-info', (req, res) => {
+    res.json({
+      server_status: 'running',
+      node_env: process.env.NODE_ENV,
+      replit_env: process.env.REPLIT_ENVIRONMENT,
+      domains: process.env.REPLIT_DOMAINS,
+      dev_domain: process.env.REPLIT_DEV_DOMAIN,
+      host: req.headers.host,
+      url: req.url,
+      timestamp: new Date().toISOString()
     });
   });
 
