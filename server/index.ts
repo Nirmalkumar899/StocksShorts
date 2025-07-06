@@ -15,10 +15,10 @@ if (!process.env.NODE_ENV) {
   console.log('No NODE_ENV set, defaulting to development mode');
 }
 
-// Force development mode for external Replit URLs
+// Handle Replit environment properly - force development for all Replit environments for now
 if (process.env.REPLIT_DEPLOYMENT || process.env.REPLIT_CLUSTER) {
   process.env.NODE_ENV = 'development';
-  console.log('Detected Replit environment, forcing development mode');
+  console.log('Detected Replit environment, forcing development mode for external access');
 }
 
 // Add deployment timeout handling and optimizations
@@ -111,9 +111,19 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
     console.log('Routes registered successfully');
 
+  // Add a health check route for external domains
+  app.get('/health', (req: Request, res: Response) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      port: process.env.PORT || 5000
+    });
+  });
+
   // Add a catch-all route for debugging
   app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`🔍 Request: ${req.method} ${req.path} - Headers:`, req.headers);
+    console.log(`🔍 Request: ${req.method} ${req.path} from ${req.headers.host}`);
     next();
   });
 
