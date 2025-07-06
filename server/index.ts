@@ -111,11 +111,17 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
     console.log('Routes registered successfully');
 
+  // Add a catch-all route for debugging
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    console.log(`🔍 Request: ${req.method} ${req.path} - Headers:`, req.headers);
+    next();
+  });
+
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    console.error('Server error details:', {
+    console.error('🚨 Server error details:', {
       error: err,
       stack: err.stack,
       url: req.url,
@@ -128,7 +134,8 @@ app.use((req, res, next) => {
       res.status(status).json({ 
         message,
         timestamp: new Date().toISOString(),
-        path: req.path
+        path: req.path,
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
       });
     }
   });

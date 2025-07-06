@@ -136,35 +136,62 @@ export class EnhancedAIService {
       }
 
       // 5. Create enhanced prompt for OpenAI with instructions
+      const hasData = context.trim() !== '';
+      const sourcesList = sources.length > 0 ? sources.join(', ') : 'No documents available';
+      
       const enhancedPrompt = `
-CRITICAL: You must ONLY use the information provided in the AVAILABLE DATA section below. Do NOT use any general knowledge about companies.
-
 USER QUERY: ${query}
 
 AVAILABLE DATA:
 ${context}
 
-STRICT INSTRUCTIONS:
-- Use ONLY the information in the AVAILABLE DATA section above
-- Do NOT use any general knowledge about the company
-- If the specific information is not in the provided documents, respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."
-- Use exact numbers and facts from the provided documents only
-- Answer ONLY the specific question asked
-- End with: Sources: [specific document names only]
+INSTRUCTIONS:
+${!hasData ? 
+  'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' : 
+  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis with clear formatting.
 
-${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' : 'Base your answer EXCLUSIVELY on the provided document content above.'}
+Structure your response as:
+
+## 📊 Investment Analysis Summary
+
+### 💰 Financial Performance
+**Revenue Growth:** [Extract exact revenue figures, growth percentages, and quarterly comparisons]
+**Profit Margins:** [Extract profit margins, EBITDA, PAT figures with trend explanations]
+**Key Ratios:** [Extract ROE, ROA, Debt-to-Equity with context and comparisons]
+
+### 🎯 Management Outlook & Strategy  
+[Extract management guidance, future plans, strategic initiatives, and outlook statements]
+
+### 🔍 Business Highlights
+[Extract key business developments, new products, market expansion, competitive advantages]
+
+### ⚠️ Risk Assessment
+[Extract specific risks mentioned in documents with impact explanations]
+
+### 📈 Investment Perspective
+[Provide investment view based on document analysis with clear reasoning]
+
+### 📚 Data Sources
+**Documents Analyzed:** ${sourcesList}
+
+IMPORTANT: Use exact numbers, percentages, and dates from documents. Provide specific data points with clear explanations. Focus on actionable investment insights with professional formatting.`
+}
 `;
 
       // 5. Get OpenAI response with timeout and error handling
       let response: string;
       try {
+        console.log('Sending to OpenAI - hasData:', hasData);
+        console.log('Source list:', sourcesList);
+        console.log('Prompt preview:', enhancedPrompt.substring(0, 300) + '...');
+        
         const completion = await Promise.race([
           openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
               {
                 role: "system",
-                content: "You are a document analysis assistant. You can ONLY use information provided in the user's documents. You have NO access to general knowledge about companies, markets, or finances. If information is not in the provided documents, you must say it's not available."
+                content: "You are an expert financial analyst. Analyze the provided company documents and create comprehensive investment insights based on the available data. Focus on key financial metrics, growth trends, management outlook, and investment implications from the documents."
               },
               {
                 role: "user",
@@ -181,6 +208,7 @@ ${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' 
         
         response = completion.choices[0].message.content || "Sorry, this information is not available in our current data. We are working on expanding our coverage.";
         console.log('OpenAI response received successfully');
+        console.log('Response preview:', response.substring(0, 200) + '...');
       } catch (error) {
         console.error('OpenAI API error:', error);
         response = "Sorry, I'm experiencing technical difficulties. Please try again in a moment.";
