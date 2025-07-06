@@ -56,10 +56,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Add request timeout for deployment stability - except translation endpoint
+  // Add request timeout for deployment stability - except AI and translation endpoints
   app.use((req, res, next) => {
-    // Skip timeout for translation endpoint as it needs more time
-    if (req.path === '/api/translate-articles') {
+    // Skip timeout for AI and translation endpoints as they need more time
+    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query') {
       return next();
     }
     
@@ -553,8 +553,8 @@ CONTENT: [Hindi translation]`;
   // Enhanced AI Query endpoint - Uses Database + Google Drive
   app.post("/api/stock-ai/query", async (req: any, res) => {
     // Set longer timeout for AI processing
-    req.setTimeout(120000); // 2 minutes
-    res.setTimeout(120000); // 2 minutes
+    req.setTimeout(180000); // 3 minutes
+    res.setTimeout(180000); // 3 minutes
     
     try {
       const { query } = req.body;
@@ -564,11 +564,11 @@ CONTENT: [Hindi translation]`;
 
       console.log(`🤖 Processing AI query: ${query}`);
       
-      // Use enhanced AI service with timeout wrapper
+      // Use enhanced AI service with extended timeout
       const result = await Promise.race([
         enhancedAIService.processAIQuery(query, req.session?.user?.id),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('AI processing timeout after 100 seconds')), 100000)
+          setTimeout(() => reject(new Error('AI processing timeout after 150 seconds')), 150000)
         )
       ]) as any;
       
@@ -587,9 +587,12 @@ CONTENT: [Hindi translation]`;
       console.error('Enhanced AI query error:', error);
       
       if (!res.headersSent) {
-        res.status(500).json({ 
-          message: error instanceof Error ? error.message : 'Failed to process AI query',
-          details: 'The AI analysis system encountered an error. Please try again.'
+        const errorMessage = error instanceof Error ? error.message : 'Failed to process AI query';
+        res.status(errorMessage.includes('timeout') ? 408 : 500).json({ 
+          message: errorMessage,
+          details: errorMessage.includes('timeout') ? 
+            'AI analysis is taking longer than expected. Please try a simpler query or try again.' :
+            'The AI analysis system encountered an error. Please try again.'
         });
       }
     }
