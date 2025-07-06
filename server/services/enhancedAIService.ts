@@ -137,22 +137,40 @@ export class EnhancedAIService {
 
       // 5. Create enhanced prompt for OpenAI with instructions
       const enhancedPrompt = `
-CRITICAL: You must ONLY use the information provided in the AVAILABLE DATA section below. Do NOT use any general knowledge about companies.
-
 USER QUERY: ${query}
 
 AVAILABLE DATA:
 ${context}
 
-STRICT INSTRUCTIONS:
-- Use ONLY the information in the AVAILABLE DATA section above
-- Do NOT use any general knowledge about the company
-- If the specific information is not in the provided documents, respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."
-- Use exact numbers and facts from the provided documents only
-- Answer ONLY the specific question asked
-- End with: Sources: [specific document names only]
+INSTRUCTIONS:
+${context.trim() === '' ? 
+  'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' : 
+  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis based on the available data. 
 
-${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' : 'Base your answer EXCLUSIVELY on the provided document content above.'}
+Structure your response as:
+
+## 📊 Investment Analysis Summary
+
+**Key Financial Highlights:**
+- Revenue, profit, and growth metrics from documents
+- Important financial ratios and margins
+
+**Recent Performance:**
+- Latest quarterly results and year-over-year growth
+- Management commentary on performance
+
+**Business Outlook:**
+- Management guidance and forward-looking statements
+- Strategic initiatives and growth plans
+
+**Investment Perspective:**
+- Key strengths and opportunities identified
+- Risk factors mentioned in documents
+
+Sources: ${sources.join(', ')}
+
+Use exact numbers and dates from the documents. Focus on actionable investment insights.`
+}
 `;
 
       // 5. Get OpenAI response with timeout and error handling
@@ -164,7 +182,7 @@ ${context.trim() === '' ? 'NO DATA AVAILABLE - Respond with the sorry message.' 
             messages: [
               {
                 role: "system",
-                content: "You are a document analysis assistant. You can ONLY use information provided in the user's documents. You have NO access to general knowledge about companies, markets, or finances. If information is not in the provided documents, you must say it's not available."
+                content: "You are an expert financial analyst. Analyze the provided company documents and create comprehensive investment insights based on the available data. Focus on key financial metrics, growth trends, management outlook, and investment implications from the documents."
               },
               {
                 role: "user",
