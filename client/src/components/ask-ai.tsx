@@ -32,8 +32,8 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
       // Show analysis progress notification
       toast({
         title: "AI Analyzing...",
-        description: "Reading quarterly results → investor presentation → call transcript",
-        duration: 10000,
+        description: "Reading quarterly results → investor presentation → call transcript (this may take up to 2 minutes)",
+        duration: 15000,
       });
       
       const response = await apiRequest("POST", "/api/stock-ai/query", { query: stockQuery });
@@ -54,10 +54,22 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : "Failed to analyze stock";
+      console.error("AI Query Error:", error);
+      
+      let userMessage = errorMessage;
+      if (errorMessage.includes('timeout') || errorMessage.includes('Request timeout')) {
+        userMessage = "Analysis taking longer than expected. Large documents are being processed. Please try again.";
+      } else if (errorMessage.includes('500')) {
+        userMessage = "Server error during analysis. Please try again in a moment.";
+      } else if (errorMessage.includes('408')) {
+        userMessage = "Request timeout. The AI is processing large documents. Please wait and try again.";
+      }
+      
       toast({
         title: "Analysis Failed",
-        description: errorMessage,
+        description: userMessage,
         variant: "destructive",
+        duration: 8000,
       });
     }
   });
