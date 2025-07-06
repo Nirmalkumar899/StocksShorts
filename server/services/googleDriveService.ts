@@ -1,5 +1,7 @@
 import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 export class GoogleDriveService {
   private drive: any;
@@ -200,6 +202,30 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
     }
   }
 
+  async readPDFFile(fileId: string): Promise<string> {
+    try {
+      console.log(`Reading PDF file with ID: ${fileId}`);
+      
+      // Get the PDF file content as buffer
+      const response = await this.drive.files.get({
+        fileId,
+        alt: 'media'
+      }, { responseType: 'arraybuffer' });
+      
+      // Parse PDF content using require
+      const pdf = require('pdf-parse');
+      const buffer = Buffer.from(response.data);
+      const pdfData = await pdf(buffer);
+      
+      console.log(`Successfully extracted ${pdfData.text.length} characters from PDF`);
+      return pdfData.text;
+    } catch (error) {
+      console.error('Error reading PDF file:', error.message);
+      console.error('Full error:', error);
+      return '';
+    }
+  }
+
   async searchCompanyData(companyName: string): Promise<{
     folders: any[],
     documents: any[],
@@ -260,23 +286,44 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
         }
       }
 
-      // Get content from files in company folders
+      // Get content from files in company folders - ENHANCED
       for (const folder of folders.slice(0, 3)) {
+        console.log(`Searching for files in folder: ${folder.name} (ID: ${folder.id})`);
         const folderFiles = await this.getFilesFromFolder(folder.id);
+        console.log(`Found ${folderFiles.length} files in ${folder.name}:`, folderFiles.map(f => `${f.name} (${f.mimeType})`));
         
-        for (const file of folderFiles.slice(0, 3)) {
+        for (const file of folderFiles.slice(0, 10)) { // Increased limit to check more files
           let fileContent = '';
+          console.log(`Processing file: ${file.name} with mimeType: ${file.mimeType}`);
           
-          if (file.mimeType === 'application/vnd.google-apps.document') {
-            fileContent = await this.exportGoogleDoc(file.id);
-          } else if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
-            fileContent = await this.exportGoogleSheet(file.id);
-          } else if (file.mimeType === 'text/plain') {
-            fileContent = await this.getFileContent(file.id);
-          }
-          
-          if (fileContent) {
-            content.push(`File from ${folder.name}: ${file.name}\n${fileContent}`);
+          try {
+            if (file.mimeType === 'application/vnd.google-apps.document') {
+              console.log(`Exporting Google Doc: ${file.name}`);
+              fileContent = await this.exportGoogleDoc(file.id);
+            } else if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
+              console.log(`Exporting Google Sheet: ${file.name}`);
+              fileContent = await this.exportGoogleSheet(file.id);
+            } else if (file.mimeType === 'text/plain') {
+              console.log(`Reading text file: ${file.name}`);
+              fileContent = await this.getFileContent(file.id);
+            } else if (file.mimeType === 'application/pdf') {
+              console.log(`Reading PDF file: ${file.name}`);
+              fileContent = await this.readPDFFile(file.id);
+            } else if (file.mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+              console.log(`Found Excel file: ${file.name} - Excel files require additional processing`);
+              // Note: Excel reading would require additional setup
+            } else {
+              console.log(`Unsupported file type: ${file.mimeType} for file: ${file.name}`);
+            }
+            
+            if (fileContent && fileContent.trim().length > 0) {
+              console.log(`Successfully read content from ${file.name} (${fileContent.length} characters)`);
+              content.push(`📁 From ${folder.name} folder - ${file.name}:\n${fileContent.substring(0, 5000)}`); // Limit to 5000 chars per file
+            } else {
+              console.log(`No content extracted from ${file.name}`);
+            }
+          } catch (error) {
+            console.error(`Error reading file ${file.name}:`, error.message);
           }
         }
       }

@@ -557,6 +557,58 @@ Content: [Hindi translation]`
     }
   });
 
+  // Debug specific company folder contents
+  app.get("/api/ai/debug-folder/:companyName", async (req: any, res) => {
+    try {
+      const companyName = req.params.companyName;
+      console.log(`DEBUG: Checking folder contents for ${companyName}`);
+      
+      // Find company folders
+      const folders = await googleDriveService.searchCompanyFolders(companyName);
+      console.log(`DEBUG: Found ${folders.length} folders for ${companyName}`);
+      
+      if (folders.length === 0) {
+        return res.json({
+          success: false,
+          message: `No folders found for ${companyName}`,
+          folders: []
+        });
+      }
+      
+      // Check files in each folder
+      const folderContents = [];
+      for (const folder of folders) {
+        console.log(`DEBUG: Checking files in folder ${folder.name} (${folder.id})`);
+        const files = await googleDriveService.getFilesFromFolder(folder.id);
+        console.log(`DEBUG: Found ${files.length} files in ${folder.name}`);
+        
+        folderContents.push({
+          folderName: folder.name,
+          folderId: folder.id,
+          fileCount: files.length,
+          files: files.map(f => ({
+            name: f.name,
+            mimeType: f.mimeType,
+            size: f.size,
+            modifiedTime: f.modifiedTime
+          }))
+        });
+      }
+      
+      res.json({
+        success: true,
+        companyName,
+        folderContents
+      });
+    } catch (error) {
+      console.error('Debug folder error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to debug folder'
+      });
+    }
+  });
+
 
 
   // Get Investment Advisors
