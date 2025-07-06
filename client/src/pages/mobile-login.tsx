@@ -79,20 +79,31 @@ export default function MobileLogin({ onBack, onLoginSuccess }: MobileLoginProps
 
     setIsLoading(true);
     try {
-      await apiRequest('POST', '/api/auth/verify-otp', { 
+      const response = await apiRequest('POST', '/api/auth/verify-otp', { 
         phoneNumber: phoneNumber.replace(/\s/g, ''), 
         otp 
       });
 
-      // Invalidate auth cache to trigger re-fetch
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-
-      toast({
-        title: "Login Successful",
-        description: "Welcome to StocksShorts!",
-      });
-      onLoginSuccess();
+      // Wait for successful response
+      if (response.ok) {
+        // Invalidate auth cache to trigger re-fetch
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
+        // Show success message
+        toast({
+          title: "Login Successful",
+          description: "Welcome to StocksShorts!",
+        });
+        
+        // Small delay to ensure state updates properly
+        setTimeout(() => {
+          onLoginSuccess();
+        }, 200);
+      } else {
+        throw new Error('OTP verification failed');
+      }
     } catch (error) {
+      console.error('OTP verification error:', error);
       toast({
         title: "Invalid OTP",
         description: "Please check the code and try again",

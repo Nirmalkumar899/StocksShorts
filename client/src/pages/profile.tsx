@@ -20,7 +20,7 @@ interface ProfileProps {
 }
 
 export default function Profile({ onBack }: ProfileProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, error } = useAuth();
   const [showMobileLogin, setShowMobileLogin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -82,8 +82,10 @@ export default function Profile({ onBack }: ProfileProps) {
         onBack={() => setShowMobileLogin(false)}
         onLoginSuccess={() => {
           setShowMobileLogin(false);
-          // Don't reload, just let React Query refetch
+          // Force a fresh fetch of user data
           queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+          // Force a re-render by updating local state
+          window.location.reload();
         }}
       />
     );
@@ -96,6 +98,51 @@ export default function Profile({ onBack }: ProfileProps) {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Handle authentication error - show login interface
+  if (error && !isAuthenticated) {
+    return (
+      <div className="h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="p-2"
+            >
+              <span className="text-sm">←</span>
+            </Button>
+            <div className="flex items-center space-x-2">
+              <User className="h-5 w-5 text-blue-600" />
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">Profile</h1>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-6 text-center">
+              <div className="mx-auto mb-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-full w-fit">
+                <User className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Welcome to StocksShorts</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Login with your mobile number for secure access
+              </p>
+              <Button 
+                onClick={() => setShowMobileLogin(true)}
+                className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Login with Mobile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        <BottomNavigation />
       </div>
     );
   }
