@@ -113,8 +113,22 @@ app.use((req, res, next) => {
 
   // Add a catch-all route for debugging
   app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`🔍 Request: ${req.method} ${req.path} - Headers:`, req.headers);
+    // Only log API and special routes to avoid spam
+    if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/ping')) {
+      console.log(`🔍 Request: ${req.method} ${req.path} - Host: ${req.headers.host}`);
+    }
     next();
+  });
+
+  // Add specific route testing
+  app.get('/test-route', (req, res) => {
+    console.log('✅ Test route hit successfully');
+    res.json({ 
+      status: 'success', 
+      message: 'Express routes are working',
+      timestamp: new Date().toISOString(),
+      path: req.path
+    });
   });
 
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {

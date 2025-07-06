@@ -28,14 +28,23 @@ import MemoryStore from "memorystore";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get('/health', (req, res) => {
+    console.log('🔍 Health check accessed from:', req.headers.host);
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       port: process.env.PORT,
       replit_deployment: process.env.REPLIT_DEPLOYMENT || 'false',
-      replit_cluster: process.env.REPLIT_CLUSTER || 'false'
+      replit_cluster: process.env.REPLIT_CLUSTER || 'false',
+      host: req.headers.host,
+      user_agent: req.headers['user-agent']
     });
+  });
+
+  // Simple ping endpoint for quick testing
+  app.get('/ping', (req, res) => {
+    console.log('🏓 Ping from:', req.headers.host);
+    res.send('pong - server is alive');
   });
 
   // Add request timeout for deployment stability - except translation endpoint
