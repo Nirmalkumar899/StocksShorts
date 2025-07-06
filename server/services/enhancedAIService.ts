@@ -148,31 +148,25 @@ ${context}
 INSTRUCTIONS:
 ${!hasData ? 
   'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' : 
-  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis based on the available data. 
+  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis in TABLE FORMAT.
 
 Structure your response as:
 
 ## 📊 Investment Analysis Summary
 
-**Key Financial Highlights:**
-- Revenue, profit, and growth metrics from documents
-- Important financial ratios and margins
+| **Key Points** | **Details & Explanation** |
+|---|---|
+| **Revenue Growth** | [Extract exact revenue figures, growth percentages, and quarterly comparisons from documents] |
+| **Profit Margins** | [Extract profit margins, EBITDA, PAT figures with explanations of changes] |
+| **Key Ratios** | [Extract ROE, ROA, Debt-to-Equity and other important ratios with context] |
+| **Management Outlook** | [Extract management guidance, future plans, and strategic initiatives] |
+| **Business Highlights** | [Extract key business developments, new products, market expansion] |
+| **Risk Factors** | [Extract specific risks mentioned in documents with explanations] |
+| **Investment Recommendation** | [Based on document analysis, provide investment perspective] |
 
-**Recent Performance:**
-- Latest quarterly results and year-over-year growth
-- Management commentary on performance
+**Sources:** ${sourcesList}
 
-**Business Outlook:**
-- Management guidance and forward-looking statements
-- Strategic initiatives and growth plans
-
-**Investment Perspective:**
-- Key strengths and opportunities identified
-- Risk factors mentioned in documents
-
-Sources: ${sourcesList}
-
-Use exact numbers and dates from the documents. Focus on actionable investment insights.`
+IMPORTANT: Use exact numbers, percentages, and dates from the documents. Each table row should have specific data points with clear explanations. Focus on actionable investment insights in table format for easy reading.`
 }
 `;
 

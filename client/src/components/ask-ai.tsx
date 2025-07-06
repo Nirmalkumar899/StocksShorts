@@ -241,8 +241,49 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
                 
                 <div className="p-6">
                   <div className="prose prose-gray dark:prose-invert max-w-none">
-                    <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-base">
-                      {analysis}
+                    <div className="text-gray-800 dark:text-gray-200 leading-relaxed text-base">
+                      {/* Enhanced markdown and table rendering */}
+                      <div 
+                        className="markdown-content"
+                        dangerouslySetInnerHTML={{ 
+                          __html: analysis
+                            // Handle headers with ##
+                            .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">$1</h2>')
+                            // Handle bold text
+                            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
+                            // Handle markdown tables
+                            .replace(/(\|.*\|)\n(\|[-\s\|]*\|)\n((?:\|.*\|\n?)*)/g, (match, header, separator, rows) => {
+                              const headerCells = header.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
+                              const rowData = rows.trim().split('\n').map(row => 
+                                row.split('|').filter(cell => cell.trim()).map(cell => cell.trim())
+                              );
+                              
+                              let tableHTML = '<table class="w-full border-collapse bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 my-4">';
+                              
+                              // Table header
+                              tableHTML += '<thead><tr>';
+                              headerCells.forEach(cell => {
+                                tableHTML += `<th class="bg-blue-600 text-white font-semibold text-left px-4 py-3 border-b-2 border-blue-700">${cell}</th>`;
+                              });
+                              tableHTML += '</tr></thead>';
+                              
+                              // Table body
+                              tableHTML += '<tbody>';
+                              rowData.forEach((row, index) => {
+                                tableHTML += `<tr class="${index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'} hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">`;
+                                row.forEach(cell => {
+                                  tableHTML += `<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200">${cell}</td>`;
+                                });
+                                tableHTML += '</tr>';
+                              });
+                              tableHTML += '</tbody></table>';
+                              
+                              return tableHTML;
+                            })
+                            // Handle line breaks
+                            .replace(/\n/g, '<br/>')
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
