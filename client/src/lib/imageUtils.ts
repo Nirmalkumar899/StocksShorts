@@ -1,15 +1,44 @@
+// Enhanced company extraction from article content
+function extractCompanyFromContent(text: string): string | null {
+  const lowerText = text.toLowerCase();
+  
+  // Major Indian companies - extract the most prominent one mentioned
+  const companies = [
+    'reliance', 'tcs', 'tata consultancy', 'infosys', 'hdfc', 'icici', 'adani', 'bajaj',
+    'maruti', 'suzuki', 'asian paints', 'wipro', 'hcl', 'titan', 'ultratech', 'grse',
+    'cochin shipyard', 'coal india', 'ongc', 'ntpc', 'trent', 'indusind', 'blue star',
+    'zensar', 'kaynes', 'kp green', 'nbcc', 'bharti airtel', 'hindalco', 'jsw steel',
+    'mahindra', 'hero motocorp', 'kotak mahindra', 'axis bank', 'sun pharma', 'dr reddy',
+    'cipla', 'lupin', 'biocon', 'divis', 'aurobindo pharma', 'vedanta', 'hindalco',
+    'tata steel', 'jio', 'airtel', 'vodafone idea', 'bpcl', 'ioc', 'gail', 'power grid',
+    'sail', 'bhel', 'hal', 'irctc', 'irfc', 'rvnl', 'pfc', 'rec', 'sjvn', 'nhpc',
+    'chemkart', 'happy square', 'travel food', 'cryogenic'
+  ];
+  
+  // Find the first company mentioned (most likely the main subject)
+  for (const company of companies) {
+    if (lowerText.includes(company)) {
+      return company;
+    }
+  }
+  
+  return null;
+}
+
 // Dynamic image selection based on article content and type
 export function getContextualImage(article: { title: string; content: string; type: string; id: number }): string {
   try {
     const { title = '', content = '', type = '', id = 1 } = article || {};
     const combinedText = (title + ' ' + content).toLowerCase();
     
+    // Extract the main company being discussed
+    const mainCompany = extractCompanyFromContent(combinedText);
+    
     // Use article ID to ensure different articles get different images even with similar content
     const imageVariant = (id % 3) + 1;
   
-  
-  // Specific company images based on company names
-  if (combinedText.includes('reliance') || combinedText.includes('ril')) {
+  // Generate images based on the main company being discussed
+  if (mainCompany === 'reliance' || combinedText.includes('ril')) {
     const relianceImages = [
       'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial/Petrochemical
@@ -18,7 +47,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     return relianceImages[imageVariant - 1];
   }
   
-  if (combinedText.includes('tcs') || combinedText.includes('tata consultancy')) {
+  if (mainCompany === 'tcs' || mainCompany === 'tata consultancy') {
     const tcsImages = [
       'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop&auto=format&q=80', // Office building
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Business analytics
@@ -27,7 +56,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     return tcsImages[imageVariant - 1];
   }
   
-  if (combinedText.includes('infosys')) {
+  if (mainCompany === 'infosys') {
     const infosysImages = [
       'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Software development
       'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&auto=format&q=80', // Technology
@@ -36,7 +65,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     return infosysImages[imageVariant - 1];
   }
   
-  if (combinedText.includes('hdfc')) {
+  if (mainCompany === 'hdfc') {
     const hdfcImages = [
       'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop&auto=format&q=80', // Bank building
       'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=600&fit=crop&auto=format&q=80', // Banking
@@ -45,7 +74,7 @@ export function getContextualImage(article: { title: string; content: string; ty
     return hdfcImages[imageVariant - 1];
   }
   
-  if (combinedText.includes('icici')) {
+  if (mainCompany === 'icici') {
     const iciciImages = [
       'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&auto=format&q=80', // Banking services
       'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=800&h=600&fit=crop&auto=format&q=80', // Financial
@@ -54,13 +83,50 @@ export function getContextualImage(article: { title: string; content: string; ty
     return iciciImages[imageVariant - 1];
   }
   
-  if (combinedText.includes('adani')) {
+  if (mainCompany === 'adani') {
     const adaniImages = [
       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop&auto=format&q=80', // Power plant
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Infrastructure
       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
     ];
     return adaniImages[imageVariant - 1];
+  }
+
+  // IPO companies
+  if (mainCompany === 'chemkart') {
+    const chemkartImages = [
+      'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&h=600&fit=crop&auto=format&q=80', // Chemical laboratory
+      'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop&auto=format&q=80', // Pharmaceutical/chemical
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Industrial
+    ];
+    return chemkartImages[imageVariant - 1];
+  }
+
+  if (mainCompany === 'travel food') {
+    const travelFoodImages = [
+      'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&h=600&fit=crop&auto=format&q=80', // Food service
+      'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=800&h=600&fit=crop&auto=format&q=80', // Restaurant/catering
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop&auto=format&q=80'  // Food industry
+    ];
+    return travelFoodImages[imageVariant - 1];
+  }
+
+  if (mainCompany === 'happy square') {
+    const happySquareImages = [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&auto=format&q=80', // Construction/real estate
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&auto=format&q=80', // Business/corporate
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80'  // Infrastructure
+    ];
+    return happySquareImages[imageVariant - 1];
+  }
+
+  if (mainCompany === 'cryogenic') {
+    const cryogenicImages = [
+      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial/technology
+      'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80', // Technical equipment
+      'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop&auto=format&q=80'  // Scientific/industrial
+    ];
+    return cryogenicImages[imageVariant - 1];
   }
   
   if (combinedText.includes('bajaj')) {

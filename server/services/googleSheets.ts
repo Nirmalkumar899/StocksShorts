@@ -169,16 +169,31 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
           let imageUrl = null;
           const title = row[1] || 'Untitled';
           
-          // Only log for articles that have potential image URLs or are missing them
-          if (row[8] || title.includes('IPO') || title.includes('Special')) {
-            console.log(`Processing article "${title}":`, {
-              rowLength: row.length,
-              columnI_index8: row[8],
-              hasImageURL: !!row[8]
-            });
+          // Check all columns beyond H for image URLs
+          let providedImageUrl = '';
+          let imageColumnFound = '';
+          
+          // Search from column I onwards for image URLs
+          for (let i = 8; i < row.length; i++) {
+            if (row[i] && row[i].toString().trim()) {
+              const cellValue = row[i].toString().trim();
+              // Check if this looks like an image URL
+              if (cellValue.includes('http') || cellValue.includes('replit.com') || cellValue.includes('drive.google.com') || cellValue.includes('imgur.com') || cellValue.includes('.jpg') || cellValue.includes('.png')) {
+                providedImageUrl = cellValue;
+                imageColumnFound = String.fromCharCode(65 + i); // Convert to letter (A, B, C...)
+                console.log(`Found image URL in column ${imageColumnFound} (index ${i}) for article "${title}": ${providedImageUrl}`);
+                break;
+              }
+            }
           }
           
-          const providedImageUrl = row[8] ? row[8].toString().trim() : ''; // Column I (index 8)
+          // Debug log for articles that should have images but don't
+          if (!providedImageUrl && (title.includes('IPO') || title.includes('Special'))) {
+            console.log(`No image URL found for "${title}":`, {
+              rowLength: row.length,
+              allColumns: row.map((val, idx) => `${String.fromCharCode(65 + idx)}:${val || 'empty'}`).slice(8).join(' | ')
+            });
+          }
           
           // Debug: Log the image URL check
           if (providedImageUrl) {
