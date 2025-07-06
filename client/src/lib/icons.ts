@@ -51,4 +51,10 @@ export {
   ChevronUp,
   ZoomIn,
   ZoomOut,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Dot,
+  GripVertical,
+  Circle,
 } from "./custom-icons";

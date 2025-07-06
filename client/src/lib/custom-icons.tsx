@@ -358,3 +358,46 @@ export const ZoomOut = ({ className }: IconProps) => (
     <line x1="8" x2="14" y1="11" y2="11"/>
   </svg>
 );
+
+export const ChevronLeft = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="m15 18-6-6 6-6"/>
+  </svg>
+);
+
+export const ChevronRight = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="m9 18 6-6-6-6"/>
+  </svg>
+);
+
+export const MoreHorizontal = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="1"/>
+    <circle cx="19" cy="12" r="1"/>
+    <circle cx="5" cy="12" r="1"/>
+  </svg>
+);
+
+export const Dot = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12.1" cy="12.1" r="1"/>
+  </svg>
+);
+
+export const GripVertical = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="9" cy="12" r="1"/>
+    <circle cx="9" cy="5" r="1"/>
+    <circle cx="9" cy="19" r="1"/>
+    <circle cx="15" cy="12" r="1"/>
+    <circle cx="15" cy="5" r="1"/>
+    <circle cx="15" cy="19" r="1"/>
+  </svg>
+);
+
+export const Circle = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10"/>
+  </svg>
+);
