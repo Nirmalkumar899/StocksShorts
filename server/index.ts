@@ -131,13 +131,19 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    console.error('🚨 Server error details:', {
-      error: err,
-      stack: err.stack,
-      url: req.url,
-      method: req.method,
-      headers: req.headers,
-      timestamp: new Date().toISOString()
+    console.error('🚨 DETAILED SERVER ERROR:', {
+      errorName: err.name,
+      errorMessage: err.message,
+      errorCode: err.code,
+      errorStack: err.stack,
+      requestUrl: req.url,
+      requestMethod: req.method,
+      requestHost: req.headers.host,
+      userAgent: req.headers['user-agent'],
+      timestamp: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV,
+      replitDeployment: process.env.REPLIT_DEPLOYMENT,
+      replitCluster: process.env.REPLIT_CLUSTER
     });
     
     if (!res.headersSent) {
@@ -145,7 +151,9 @@ app.use((req, res, next) => {
         message,
         timestamp: new Date().toISOString(),
         path: req.path,
-        error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
+        environment: process.env.NODE_ENV,
+        error: err.message,
+        details: status === 500 ? 'Check server logs for details' : 'Request failed'
       });
     }
   });
