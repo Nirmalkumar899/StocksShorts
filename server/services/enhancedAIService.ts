@@ -146,30 +146,49 @@ export class EnhancedAIService {
         sources.push(`${driveData.sheets.length} spreadsheets found`);
       }
 
-      // 4. Create enhanced prompt for OpenAI
+      // 4. If insufficient data from database and drive, supplement with web search
+      let webSearchNeeded = false;
+      const totalDataSources = databaseResults.length + personalizedResults.length + driveData.content.length;
+      
+      if (totalDataSources < 2) {
+        webSearchNeeded = true;
+        console.log(`Limited data found (${totalDataSources} sources). Web search may be needed for comprehensive analysis.`);
+      }
+
+      // 5. Create enhanced prompt for OpenAI with source priority instructions
       const enhancedPrompt = `
-You are a financial AI assistant with access to the user's personal database and Google Drive company research folders.
+You are a financial AI assistant with priority access to user's Google Drive research folders and database.
 
 USER QUERY: ${query}
 
-AVAILABLE CONTEXT FROM USER'S DATA:
+DATA SOURCES PRIORITY (use in this order):
+1. GOOGLE DRIVE FOLDERS (highest priority)
+2. USER'S DATABASE ARTICLES 
+3. GENERAL FINANCIAL KNOWLEDGE (lowest priority, only if above sources insufficient)
+
+AVAILABLE DATA:
 ${context}
 
-INSTRUCTIONS:
-1. Use the provided context from the user's database and Google Drive to answer the query
-2. If the context contains relevant information, prioritize it over general knowledge
-3. Be specific about which sources you're referencing
-4. If the user's data is insufficient, supplement with your general financial knowledge
-5. Provide actionable insights based on the available data
-6. Always mention which sources you used (database articles, Google Drive documents, etc.)
+CRITICAL INSTRUCTIONS:
+1. **SOURCE ATTRIBUTION**: Always clearly specify where each piece of information comes from:
+   - "According to your Google Drive folder for [Company]..."
+   - "Based on articles in your database..."
+   - "From general market knowledge..." (only when user's data is insufficient)
 
-RESPONSE FORMAT:
-- Start with a direct answer to the query
-- Reference specific data from the user's sources when applicable
-- Provide analysis and insights
-- End with a disclaimer about investment advice
+2. **DATA PRIORITY**: 
+   - If Google Drive has company documents, prioritize that information
+   - Use database articles as supporting evidence
+   - Only supplement with general knowledge if user's sources lack specific details
 
-Answer in a professional, informative manner suitable for financial analysis.
+3. **RESPONSE FORMAT**:
+   - Lead with findings from user's Google Drive folders
+   - Support with database article insights
+   - Clearly mark any general knowledge as "supplemental information"
+   - End each section with explicit source references
+
+4. **TRANSPARENCY**: Make it crystal clear where each fact, figure, and insight originates
+
+Answer the query comprehensively, always citing your sources for maximum transparency.
 `;
 
       // 5. Get OpenAI response
