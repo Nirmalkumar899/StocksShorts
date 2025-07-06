@@ -168,15 +168,34 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
               <span className={`text-neutral-600 dark:text-neutral-400 text-sm ${isRefreshing ? 'animate-spin' : ''}`}>⟳</span>
             </Button>
             {onTranslate && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onTranslate}
-                disabled={isTranslating}
-                className={`p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors ${isTranslated ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
-              >
-                <span className={`text-sm ${isTranslated ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-600 dark:text-neutral-400'} ${isTranslating ? 'animate-pulse' : ''}`}>हिं</span>
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onTranslate}
+                      disabled={isTranslating}
+                      className={`p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors border-2 ${
+                        isTranslated 
+                          ? 'bg-orange-100 dark:bg-orange-900 border-orange-300 dark:border-orange-600' 
+                          : 'border-orange-200 dark:border-orange-700'
+                      }`}
+                    >
+                      <span className={`font-bold ${
+                        isTranslated 
+                          ? 'text-orange-700 dark:text-orange-400' 
+                          : 'text-orange-600 dark:text-orange-500'
+                      } ${isTranslating ? 'animate-pulse' : ''}`}>
+                        हिं
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isTranslated ? 'Switch to English' : 'Translate to Hindi'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             <Button
               variant="ghost"
