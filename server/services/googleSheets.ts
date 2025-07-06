@@ -223,7 +223,7 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
               if (assetMatch) {
                 const filename = assetMatch[1];
                 // Use local asset serving endpoint
-                imageUrl = `/assets/${filename}`;
+                imageUrl = `/attachments/${filename}`;
                 console.log(`Converted Replit asset URL for ${category} article: ${title}`);
                 console.log(`Original URL: ${providedImageUrl}`);
                 console.log(`Converted URL: ${imageUrl}`);
