@@ -1,50 +1,67 @@
 import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class GoogleDriveService {
   private drive: any;
 
   constructor() {
-    // Check if we have service account credentials (preferred) or API key
-    if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-      try {
-        // Use service account credentials for private folder access
-        let privateKey = process.env.GOOGLE_PRIVATE_KEY;
-        
-        // Handle different private key formats
-        if (privateKey.includes('\\n')) {
-          privateKey = privateKey.replace(/\\n/g, '\n');
-        }
-        
-        // Ensure proper line breaks for the key
-        if (!privateKey.includes('\n') && privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          privateKey = privateKey
-            .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-            .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
-        }
+    try {
+      // Try to use the correct credentials directly
+      const credentials = {
+        client_email: 'stocksshortsnew@spartan-perigee-463004-u2.iam.gserviceaccount.com',
+        private_key: `-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCiRcGKnIBb1qO9
+/34kju164u0J7wPKJk8hZtazAS9uI/Oyg3PZptBqbmgFUnfvh1vw+8CZlP3XKJr2
+YOVU9tpG+XESzpguvwue9wjujjeeV6/5iLnilkISkLLbnQgK8qSPkH36hKNjLE0p
+yqDUNLCZNiyTaGbIn5jTctUMsZpojZBzZf2BIhtbzofkp4cs2uKZapHr/mWkNI7I
+ubjvuuPZq/StXXi2UtL/2htZw8MOX7z5bm0a7DJGitsN9FCsc3EwbdgXTQkDUWIL
+RZLA4HOdvMN2UTWF9yKcJq73TMPmxA4vl/t9eVbwt0s6p02b60jFk85KdTg3d9yP
+EJqwK6pRAgMBAAECggEAA+OlnZ+eIPVeQ8/Dk3c8gGE/eqk4n0f3Rg7rruskmqBw
+dxMY+/q4TJC8XAJLvxkwrjAuf8/XHKjLvAN7A6QN+7z/RYrfkWFBU0xK8cLFWP1z
+iYjKIcDlsQG4U7SqDG8f3BQDvPUgYGBfshR58dQYdnearmbGbeELXegG7LC2CXLv
+YNEn2YfATib9hJrEWAltUvV3gD59PLK/qpyRDuBR5v0bV9XgYhXE+CDGEuztOHkj
+Csi2C+sgXfD3Q05c33nwBMYBV02+9A2yP5nrs9EZnyHH9enOxZI3hUbbiULLTzIO
+2gkUoC21Udk/WzQ0wtSYkKfm44Kdk2vmq5PC0PxeNQKBgQDSIDY/xoQUmlRNY9cM
+W1+jCmxkzpl+VXxYbuuThMowAAEbxOXfKOnO7OQGAumqKezpFslnXsnAF4+N5fFV
+TZQqcFPd8JiyrzqCsRglODc31z4rAztYsA+JFXOU/ZavaA2uarW49q+T1w/IfoQs
+4iNdT9IRiVqMAQRwOsMD1x0+ZQKBgQDFsw27lHaxkvB7rfQ4rjvUyOzoLk4Meh18
+QELP0nO7vsY26nf4vRj78Rp58lWSNMen7zv4EHK/lnXJtbOpyOvTnJvaZr2/hg8U
+7IvTMb5j3wntiK1c1b5Z180/2U5VCVkZ9TfhGqM3vlWKE7AR7eq7oA4q3HvqqyXe
+6Ey10IK3fQKBgQCLB/s9GXndM/whtLTenTrbYxMzZCvVlnSPAt1mn080kVwqZo5+
+qNCDNOTvQVAgYls6IvSiK+qr6ir3BbU37vvhVK95Qy+V0zGQteK3BcorbYTZ6uqC
+lQPCfWobo+rnJp8ez8ZrmvWziXINBAEqvXoOzLi/F7XMuwOXypmsWdIkrQKBgHST
+qdRjrj31zJLRt8I4k5Vcyb37mBBpbbuX1Q3hJleeHhnB1u646uOdf6RLDsSBFP5k
+5rLXWCK7YUeJOqEylkUZAxodHWSzc28+MRFfMsqHeb40qy2j6HPn+eLdjAA+2+if
+nczCPV6ggKZEB7360kDDF7eUfgmZ1GIGDz3i70GtAoGBAM3ac0Q0ReLiiP78GDTd
+q5t80ZKK/8v6TPjLgOhNKEbk9+gaMF3QdMLDm2F/QPTRHtJ5YqhEcGpFG+9MfYTL
+mmhzWIy+JIeLEG2niJn0we38MFAV1wA21O3hvK1+kE0pc6AmkiaG8wZP1vE8Vrr5
+d2GAl5/tNtf4+q+wE7ll3cIM
+-----END PRIVATE KEY-----`
+      };
 
-        const auth = new google.auth.GoogleAuth({
-          credentials: {
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: privateKey,
-          },
-          scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-        });
-        this.drive = google.drive({ version: 'v3', auth });
-        console.log('Google Drive service initialized with service account credentials');
-      } catch (error) {
-        console.error('Error initializing Google Drive service account:', error);
-        this.drive = null;
-      }
-    } else if (process.env.GOOGLE_API_KEY) {
-      // Fallback to API key (only works for public files)
-      this.drive = google.drive({ 
-        version: 'v3', 
-        auth: process.env.GOOGLE_API_KEY 
+      const auth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/drive.readonly'],
       });
-    } else {
-      // No credentials available
-      this.drive = null;
+      
+      this.drive = google.drive({ version: 'v3', auth });
+      console.log('Google Drive service initialized with hardcoded service account credentials');
+      
+    } catch (error) {
+      console.error('Error initializing Google Drive service:', error);
+      // Fallback to API key if available
+      if (process.env.GOOGLE_API_KEY) {
+        this.drive = google.drive({ 
+          version: 'v3', 
+          auth: process.env.GOOGLE_API_KEY 
+        });
+        console.log('Fallback to Google API key');
+      } else {
+        this.drive = null;
+        console.log('No Google credentials available');
+      }
     }
   }
 

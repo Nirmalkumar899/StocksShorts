@@ -111,6 +111,10 @@ export class EnhancedAIService {
       } else {
         console.log('Google Drive credentials not configured, using database and web search instead');
       }
+      
+      // Get database content
+      const databaseResults = await this.getCompanyFromDatabase(companyName);
+      const personalizedResults = await this.getPersonalizedArticles(companyName);
 
       // 3. Prepare context for OpenAI
       let context = '';
