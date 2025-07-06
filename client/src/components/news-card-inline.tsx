@@ -135,6 +135,7 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
       } hover:shadow-lg transition-shadow duration-200`}
       onClick={onClick}
     >
+
       {/* Article Content Container */}
       <div className="flex h-full">
         {/* Image Section (40% width) */}
@@ -164,7 +165,16 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
             <div className="h-full flex flex-col justify-center items-center text-center space-y-4">
               <Lock className="h-8 w-8 text-gray-400" />
               <div>
-                <h3 className="font-bold text-lg mb-2">{article.title}</h3>
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
+                  <button
+                    onClick={onShare}
+                    className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 shadow-sm hover:shadow-md transition-all duration-200 border border-blue-200 dark:border-blue-700 flex-shrink-0"
+                    title="Share article"
+                  >
+                    <Share2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </button>
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   🔒 LOGIN REQUIRED TO READ
                 </p>
@@ -233,14 +243,6 @@ export default function NewsCard({ article, onClick, onShare, isExpanded = false
                 title="Open article"
               >
                 <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-              </button>
-              
-              <button
-                onClick={onShare}
-                className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 transition-colors border border-blue-200 dark:border-blue-700"
-                title="Share article"
-              >
-                <Share2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </button>
             </div>
           </div>

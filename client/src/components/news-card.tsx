@@ -170,6 +170,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       >
         {/* Article Content Container - Inshorts Style */}
         <div className="flex flex-col h-full">
+
+
           {/* Image Section (Top - Full Width) */}
           <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
             <img
@@ -192,7 +194,16 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           <div className="flex-1 p-3 pb-16 flex flex-col justify-between">
             <div className="h-full flex flex-col">
               <div className="flex-1">
-                <h3 className="font-bold text-lg mb-2 line-clamp-2">{article.title}</h3>
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
+                  <button
+                    onClick={handleShare}
+                    className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 shadow-sm hover:shadow-md transition-all duration-200 border border-blue-200 dark:border-blue-700 flex-shrink-0"
+                    title="Share article"
+                  >
+                    <Share2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </button>
+                </div>
                 
                 {/* Show only 150 characters with read more for Special articles */}
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
@@ -260,14 +271,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 title="Open article"
               >
                 <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-              </button>
-              
-              <button
-                onClick={handleShare}
-                className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 transition-colors border border-blue-200 dark:border-blue-700"
-                title="Share article"
-              >
-                <Share2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </button>
             </div>
           </div>
