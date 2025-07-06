@@ -43,7 +43,7 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
   };
 
   return (
-    <div className="sticky top-[73px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+    <div className="sticky top-[56px] z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
         {categories.map((category) => {
           const Icon = category.icon;
