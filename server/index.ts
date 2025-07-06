@@ -15,6 +15,12 @@ if (!process.env.NODE_ENV) {
   console.log('No NODE_ENV set, defaulting to development mode');
 }
 
+// Force development mode for external Replit URLs
+if (process.env.REPLIT_DEPLOYMENT || process.env.REPLIT_CLUSTER) {
+  process.env.NODE_ENV = 'development';
+  console.log('Detected Replit environment, forcing development mode');
+}
+
 // Add deployment timeout handling and optimizations
 const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction) {
@@ -30,8 +36,25 @@ if (isProduction) {
 }
 
 const app = express();
+
+// Add comprehensive error catching
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add comprehensive logging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  console.log('Request headers:', req.headers);
+  next();
+});
 
 // Configure session middleware
 const MemStore = MemoryStore(session);

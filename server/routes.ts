@@ -25,6 +25,18 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      port: process.env.PORT,
+      replit_deployment: process.env.REPLIT_DEPLOYMENT || 'false',
+      replit_cluster: process.env.REPLIT_CLUSTER || 'false'
+    });
+  });
+
   // Add request timeout for deployment stability
   app.use((req, res, next) => {
     const timeout = process.env.NODE_ENV === 'production' ? 10000 : 30000;
