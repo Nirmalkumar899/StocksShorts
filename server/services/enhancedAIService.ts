@@ -136,6 +136,9 @@ export class EnhancedAIService {
       }
 
       // 5. Create enhanced prompt for OpenAI with instructions
+      const hasData = context.trim() !== '';
+      const sourcesList = sources.length > 0 ? sources.join(', ') : 'No documents available';
+      
       const enhancedPrompt = `
 USER QUERY: ${query}
 
@@ -143,7 +146,7 @@ AVAILABLE DATA:
 ${context}
 
 INSTRUCTIONS:
-${context.trim() === '' ? 
+${!hasData ? 
   'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' : 
   `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis based on the available data. 
 
@@ -167,7 +170,7 @@ Structure your response as:
 - Key strengths and opportunities identified
 - Risk factors mentioned in documents
 
-Sources: ${sources.join(', ')}
+Sources: ${sourcesList}
 
 Use exact numbers and dates from the documents. Focus on actionable investment insights.`
 }
@@ -176,6 +179,10 @@ Use exact numbers and dates from the documents. Focus on actionable investment i
       // 5. Get OpenAI response with timeout and error handling
       let response: string;
       try {
+        console.log('Sending to OpenAI - hasData:', hasData);
+        console.log('Source list:', sourcesList);
+        console.log('Prompt preview:', enhancedPrompt.substring(0, 300) + '...');
+        
         const completion = await Promise.race([
           openai.chat.completions.create({
             model: "gpt-4o",
@@ -199,6 +206,7 @@ Use exact numbers and dates from the documents. Focus on actionable investment i
         
         response = completion.choices[0].message.content || "Sorry, this information is not available in our current data. We are working on expanding our coverage.";
         console.log('OpenAI response received successfully');
+        console.log('Response preview:', response.substring(0, 200) + '...');
       } catch (error) {
         console.error('OpenAI API error:', error);
         response = "Sorry, I'm experiencing technical difficulties. Please try again in a moment.";
