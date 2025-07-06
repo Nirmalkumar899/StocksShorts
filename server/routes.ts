@@ -6,7 +6,7 @@ import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { mobileAuth } from "./mobileAuth";
 
-import { stockAI } from "./services/stockAI";
+import { stockAI } from "./services/stockAI-new";
 import { realTimeStockService } from "./services/realTimeStockService";
 import { nseService } from "./services/nseService";
 import { stockTester } from "./services/stockTester";
@@ -17,6 +17,8 @@ import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
 import { verifiedNewsService } from "./services/verifiedNewsService";
 import { directExchangeConnector } from "./services/directExchangeConnector";
 import { authenticDataProvider } from "./services/authenticDataProvider";
+import { enhancedAIService } from "./services/enhancedAIService";
+import { googleDriveService } from "./services/googleDriveService";
 
 import { gmailTracker } from "./services/gmailTracker";
 import session from "express-session";
@@ -445,7 +447,7 @@ Content: [Hindi translation]`
     }
   });
 
-  // Stock AI Query endpoint - No Authentication Required
+  // Enhanced AI Query endpoint - Uses Database + Google Drive
   app.post("/api/stock-ai/query", async (req: any, res) => {
     try {
       const { query } = req.body;
@@ -453,27 +455,104 @@ Content: [Hindi translation]`
         return res.status(400).json({ message: 'Query is required' });
       }
 
-      const analysis = await stockAI.analyzeStock(query);
+      // Use enhanced AI service that reads from database and Google Drive
+      const result = await enhancedAIService.processAIQuery(query, req.session?.user?.id);
       
-      // Track the query for analytics (without user association)
-      try {
-        await storage.createAiQuery({
-          userId: 0, // Anonymous user
-          query,
-          response: analysis
-        });
-      } catch (trackingError) {
-        // Continue even if tracking fails
-        console.log('Query tracking failed, continuing with analysis');
-      }
-
       res.json({ 
-        analysis: `**AI STOCK ANALYSIS**\n\n${analysis}`,
+        analysis: result.response,
+        sources: result.sources,
+        databaseResults: result.databaseResults,
+        driveResults: result.driveResults,
+        enhanced: true
       });
     } catch (error) {
-      console.error('Stock AI query error:', error);
+      console.error('Enhanced AI query error:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to analyze stock'
+        message: error instanceof Error ? error.message : 'Failed to process AI query'
+      });
+    }
+  });
+
+  // Get company setup suggestions for Google Drive
+  app.post("/api/ai/company-setup", async (req: any, res) => {
+    try {
+      const { companyName } = req.body;
+      if (!companyName || typeof companyName !== 'string') {
+        return res.status(400).json({ message: 'Company name is required' });
+      }
+
+      const suggestions = await enhancedAIService.suggestCompanySetup(companyName);
+      res.json(suggestions);
+    } catch (error) {
+      console.error('Company setup error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to generate setup suggestions'
+      });
+    }
+  });
+
+  // Search for company data in Google Drive
+  app.post("/api/ai/search-company", async (req: any, res) => {
+    try {
+      const { companyName } = req.body;
+      if (!companyName || typeof companyName !== 'string') {
+        return res.status(400).json({ message: 'Company name is required' });
+      }
+
+      const data = await googleDriveService.searchCompanyData(companyName);
+      res.json({
+        ...data,
+        message: `Found ${data.folders.length} folders, ${data.documents.length} documents, ${data.sheets.length} spreadsheets for ${companyName}`
+      });
+    } catch (error) {
+      console.error('Company search error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to search company data'
+      });
+    }
+  });
+
+  // List all available company folders in Google Drive
+  app.get("/api/ai/list-folders", async (req: any, res) => {
+    try {
+      const folders = await googleDriveService.listAllFoldersInAIDatabase();
+      res.json({
+        folders,
+        count: folders.length,
+        message: `Found ${folders.length} company folders in AI Database`
+      });
+    } catch (error) {
+      console.error('List folders error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to list folders'
+      });
+    }
+  });
+
+  // Test Google Drive access
+  app.get("/api/ai/test-drive", async (req: any, res) => {
+    try {
+      const folderId = await googleDriveService.findAIDatabaseFolder();
+      if (folderId) {
+        const folders = await googleDriveService.listAllFoldersInAIDatabase();
+        res.json({
+          success: true,
+          message: 'Google Drive access successful',
+          folderId,
+          folders: folders.map(f => f.name),
+          count: folders.length
+        });
+      } else {
+        res.json({
+          success: false,
+          message: 'Could not access Google Drive folder. Check if folder is publicly accessible or if service account credentials are needed.'
+        });
+      }
+    } catch (error) {
+      console.error('Test drive error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to test Google Drive access'
       });
     }
   });
@@ -877,8 +956,8 @@ Content: [Hindi translation]`
     }
   });
 
-  // Serve attached assets
-  app.get('/assets/:filename', (req, res) => {
+  // Serve attached assets from a different path to avoid conflict with build assets
+  app.get('/attachments/:filename', (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(process.cwd(), 'attached_assets', filename);
     
