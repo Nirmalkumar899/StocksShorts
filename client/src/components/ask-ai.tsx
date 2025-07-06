@@ -243,47 +243,74 @@ export default function AskAI({ isHighlighted = false }: AskAIProps) {
                   <div className="prose prose-gray dark:prose-invert max-w-none">
                     <div className="text-gray-800 dark:text-gray-200 leading-relaxed text-base">
                       {/* Enhanced markdown and table rendering */}
-                      <div 
-                        className="markdown-content"
-                        dangerouslySetInnerHTML={{ 
-                          __html: analysis
-                            // Handle headers with ##
-                            .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">$1</h2>')
-                            // Handle bold text
-                            .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
-                            // Handle markdown tables
-                            .replace(/(\|.*\|)\n(\|[-\s\|]*\|)\n((?:\|.*\|\n?)*)/g, (match, header, separator, rows) => {
-                              const headerCells = header.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
-                              const rowData = rows.trim().split('\n').map(row => 
-                                row.split('|').filter(cell => cell.trim()).map(cell => cell.trim())
-                              );
+                      <div className="markdown-content">
+                        {(() => {
+                          // Debug: log the raw analysis to see the format
+                          console.log('Raw analysis:', analysis);
+                          
+                          // Process the markdown content
+                          let processedContent = analysis;
+                          
+                          // Handle headers with ##
+                          processedContent = processedContent.replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">$1</h2>');
+                          
+                          // Handle bold text
+                          processedContent = processedContent.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>');
+                          
+                          // Better table handling - look for markdown table patterns
+                          const tablePattern = /\|[\s\S]*?\|/g;
+                          const tableMatches = processedContent.match(tablePattern);
+                          
+                          if (tableMatches) {
+                            console.log('Found table matches:', tableMatches);
+                            
+                            // Process each table
+                            tableMatches.forEach(table => {
+                              const lines = table.split('\n').filter(line => line.trim().includes('|'));
+                              console.log('Table lines:', lines);
                               
-                              let tableHTML = '<table class="w-full border-collapse bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 my-4">';
-                              
-                              // Table header
-                              tableHTML += '<thead><tr>';
-                              headerCells.forEach(cell => {
-                                tableHTML += `<th class="bg-blue-600 text-white font-semibold text-left px-4 py-3 border-b-2 border-blue-700">${cell}</th>`;
-                              });
-                              tableHTML += '</tr></thead>';
-                              
-                              // Table body
-                              tableHTML += '<tbody>';
-                              rowData.forEach((row, index) => {
-                                tableHTML += `<tr class="${index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'} hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">`;
-                                row.forEach(cell => {
-                                  tableHTML += `<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200">${cell}</td>`;
+                              if (lines.length >= 2) {
+                                const headerLine = lines[0];
+                                const separatorLine = lines[1];
+                                const dataLines = lines.slice(2);
+                                
+                                const headerCells = headerLine.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
+                                console.log('Header cells:', headerCells);
+                                
+                                let tableHTML = '<table class="w-full border-collapse bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 my-6">';
+                                
+                                // Table header
+                                tableHTML += '<thead><tr>';
+                                headerCells.forEach(cell => {
+                                  tableHTML += `<th class="bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-left px-4 py-3 border-b-2 border-blue-800">${cell}</th>`;
                                 });
-                                tableHTML += '</tr>';
-                              });
-                              tableHTML += '</tbody></table>';
-                              
-                              return tableHTML;
-                            })
-                            // Handle line breaks
-                            .replace(/\n/g, '<br/>')
-                        }}
-                      />
+                                tableHTML += '</tr></thead>';
+                                
+                                // Table body
+                                tableHTML += '<tbody>';
+                                dataLines.forEach((line, index) => {
+                                  const cells = line.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
+                                  if (cells.length > 0) {
+                                    tableHTML += `<tr class="${index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'} hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">`;
+                                    cells.forEach(cell => {
+                                      tableHTML += `<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200">${cell}</td>`;
+                                    });
+                                    tableHTML += '</tr>';
+                                  }
+                                });
+                                tableHTML += '</tbody></table>';
+                                
+                                processedContent = processedContent.replace(table, tableHTML);
+                              }
+                            });
+                          }
+                          
+                          // Handle line breaks
+                          processedContent = processedContent.replace(/\n/g, '<br/>');
+                          
+                          return <div dangerouslySetInnerHTML={{ __html: processedContent }} />;
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
