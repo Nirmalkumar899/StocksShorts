@@ -96,15 +96,21 @@ export class EnhancedAIService {
       const databaseResults = await this.getCompanyFromDatabase(companyName);
       const personalizedResults = await this.getPersonalizedArticles(companyName);
 
-      // 2. Get data from Google Drive
-      console.log(`Searching Google Drive for company: ${companyName}`);
+      // 2. Try Google Drive (optional - requires service account credentials)
+      let driveData = { folders: [], documents: [], sheets: [], content: [] };
       
-      // First, list all available folders for debugging
-      await googleDriveService.listAllFoldersInAIDatabase();
-      
-      // Then search for the specific company
-      const driveData = await googleDriveService.searchCompanyData(companyName);
-      console.log(`Google Drive results: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
+      // Only attempt Google Drive if we have proper service account credentials
+      if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+        try {
+          console.log(`Searching Google Drive for company: ${companyName}`);
+          driveData = await googleDriveService.searchCompanyData(companyName);
+          console.log(`Google Drive results: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
+        } catch (driveError) {
+          console.log('Google Drive access failed, continuing with other sources');
+        }
+      } else {
+        console.log('Google Drive credentials not configured, using database and web search instead');
+      }
 
       // 3. Prepare context for OpenAI
       let context = '';

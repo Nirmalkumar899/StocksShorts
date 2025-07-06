@@ -529,6 +529,34 @@ Content: [Hindi translation]`
     }
   });
 
+  // Test Google Drive access
+  app.get("/api/ai/test-drive", async (req: any, res) => {
+    try {
+      const folderId = await googleDriveService.findAIDatabaseFolder();
+      if (folderId) {
+        const folders = await googleDriveService.listAllFoldersInAIDatabase();
+        res.json({
+          success: true,
+          message: 'Google Drive access successful',
+          folderId,
+          folders: folders.map(f => f.name),
+          count: folders.length
+        });
+      } else {
+        res.json({
+          success: false,
+          message: 'Could not access Google Drive folder. Check if folder is publicly accessible or if service account credentials are needed.'
+        });
+      }
+    } catch (error) {
+      console.error('Test drive error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to test Google Drive access'
+      });
+    }
+  });
+
 
 
   // Get Investment Advisors

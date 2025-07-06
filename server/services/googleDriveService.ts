@@ -2,19 +2,30 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 export class GoogleDriveService {
-  private auth: JWT;
   private drive: any;
 
   constructor() {
-    this.auth = new JWT({
-      email: process.env.GOOGLE_CLIENT_EMAIL,
-      key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      scopes: [
-        'https://www.googleapis.com/auth/drive.readonly',
-        'https://www.googleapis.com/auth/drive.metadata.readonly'
-      ]
-    });
-    this.drive = google.drive({ version: 'v3', auth: this.auth });
+    // Check if we have service account credentials (preferred) or API key
+    if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+      // Use service account credentials for private folder access
+      const auth = new google.auth.GoogleAuth({
+        credentials: {
+          client_email: process.env.GOOGLE_CLIENT_EMAIL,
+          private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        },
+        scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+      });
+      this.drive = google.drive({ version: 'v3', auth });
+    } else if (process.env.GOOGLE_API_KEY) {
+      // Fallback to API key (only works for public files)
+      this.drive = google.drive({ 
+        version: 'v3', 
+        auth: process.env.GOOGLE_API_KEY 
+      });
+    } else {
+      // No credentials available
+      this.drive = null;
+    }
   }
 
   async findAIDatabaseFolder(): Promise<string | null> {
@@ -22,6 +33,12 @@ export class GoogleDriveService {
     const specificFolderId = '1eqDB7dEOVDHhOA4xMagH0sO4soe6EcMW';
     
     try {
+      // Check if drive is initialized
+      if (!this.drive) {
+        console.log('Google Drive not initialized. Need GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY for private folders, or GOOGLE_API_KEY for public folders.');
+        return null;
+      }
+
       // Verify the folder exists and is accessible
       const response = await this.drive.files.get({
         fileId: specificFolderId,
@@ -29,14 +46,15 @@ export class GoogleDriveService {
       });
 
       if (response.data && response.data.mimeType === 'application/vnd.google-apps.folder') {
-        console.log(`Using specific AI Database folder: ${response.data.name} (${specificFolderId})`);
+        console.log(`Successfully connected to AI Database folder: ${response.data.name} (${specificFolderId})`);
         return specificFolderId;
       } else {
         console.error('Specified folder ID is not a valid folder');
         return null;
       }
     } catch (error) {
-      console.error('Error accessing specific AI Database folder:', error);
+      console.error('Error accessing AI Database folder:', error);
+      console.log('This folder is likely private. You need to provide GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY credentials and share the folder with the service account email.');
       return null;
     }
   }
