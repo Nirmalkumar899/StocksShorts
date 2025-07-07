@@ -20,9 +20,13 @@ import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
 import AISection from '@/pages/ai-section';
 
-export default function Home() {
+interface HomeProps {
+  initialCategory?: string;
+}
+
+export default function Home({ initialCategory }: HomeProps = {}) {
   const [location, setLocation] = useLocation();
-  const [selectedCategory, setSelectedCategory] = useState('trending');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'trending');
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
@@ -70,7 +74,7 @@ export default function Home() {
 
   // Set category based on URL - start with Trending by default
   useEffect(() => {
-    const categoryFromUrl = urlToCategoryMap[location] || 'trending';
+    const categoryFromUrl = urlToCategoryMap[location] || initialCategory || 'trending';
     setSelectedCategory(categoryFromUrl);
     
     // Set active section based on URL
@@ -79,7 +83,7 @@ export default function Home() {
     } else {
       setActiveSection('home');
     }
-  }, [location]);
+  }, [location, initialCategory]);
 
   // Preload investment advisors data for faster navigation
   useQuery({

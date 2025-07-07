@@ -40,7 +40,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/home" component={Home} />
-      <Route path="/trending" component={Home} />
+      <Route path="/trending">
+        {() => <Home initialCategory="trending" />}
+      </Route>
       <Route path="/special" component={Home} />
       <Route path="/breakout" component={Home} />
       <Route path="/kalkabazaar" component={Home} />

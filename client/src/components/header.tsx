@@ -3,6 +3,7 @@ import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 
 interface HeaderProps {
   onRefresh: () => void;
@@ -133,14 +134,21 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img 
-              src={logoImage} 
-              alt="StocksShorts" 
-              className="h-8 w-auto object-contain"
-            />
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-              StocksShorts
-            </span>
+            <Link href="/" className="flex items-center space-x-3">
+              <img 
+                src={logoImage} 
+                alt="StocksShorts" 
+                className="h-8 w-auto object-contain"
+              />
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                StocksShorts
+              </span>
+            </Link>
+            <Link href="/trending">
+              <Button variant="ghost" size="sm" className="text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                Trending
+              </Button>
+            </Link>
           </div>
           <div className="flex items-center space-x-2">
             {showInstallButton && (
