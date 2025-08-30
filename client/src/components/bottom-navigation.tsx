@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Home, Brain, User } from "@/lib/icons";
 import { useLocation } from "wouter";
 
 interface BottomNavigationProps {
@@ -8,11 +7,11 @@ interface BottomNavigationProps {
 }
 
 const navItems = [
-  { id: 'home', label: 'Home', icon: Home, url: '/' },
-  { id: 'sebi-ria', label: 'Connect RIA', icon: null, emoji: '🛡️', url: '/sebi-ria' },
-  { id: 'ai-section', label: 'AI Analysis', icon: Brain, url: '/ai-analysis' },
-  { id: 'profile', label: 'Profile', icon: User, url: '/profile' },
-  { id: 'disclaimer', label: 'Disclaimer', icon: null, emoji: '📄', url: '/disclaimer' },
+  { id: 'home', label: 'Home', icon: null, url: '/' },
+  { id: 'sebi-ria', label: 'Connect RIA', icon: null, url: '/sebi-ria' },
+  { id: 'ai-section', label: 'AI Analysis', icon: null, url: '/ai-analysis' },
+  { id: 'profile', label: 'Profile', icon: null, url: '/profile' },
+  { id: 'disclaimer', label: 'Disclaimer', icon: null, url: '/disclaimer' },
 ];
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
@@ -27,7 +26,6 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-[9999]">
       <div className="flex items-center py-2">
         {navItems.map((item) => {
-          const Icon = item.icon;
           const isActive = activeTab === item.id;
           
           return (
@@ -41,11 +39,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                   : 'text-neutral-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary'
               }`}
             >
-              {item.emoji ? (
-                <span className="text-lg mb-1">{item.emoji}</span>
-              ) : (
-                <Icon className="h-5 w-5 mb-1" />
-              )}
+              {/* Remove all icons and emojis for ultra-clean interface */}
               <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
             </Button>
           );
