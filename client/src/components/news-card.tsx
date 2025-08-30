@@ -326,34 +326,38 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
         
-        {/* Source and time - positioned at bottom */}
+        {/* Date and source - positioned at bottom */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/98 dark:from-gray-900/98 via-white/90 dark:via-gray-900/90 to-transparent p-3">
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                <span className="capitalize font-medium">{article.sentiment}</span>
-                <span className="text-gray-500">•</span>
-                <span className="font-medium">{article.source}</span>
-                <span className="text-gray-500">•</span>
-                <span className="font-normal">{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
-              </div>
+          <div className="flex items-center justify-between text-xs">
+            {/* Left side - Date */}
+            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+              <span className="font-normal">
+                {new Date((article.time || new Date('2025-07-05T00:01:00Z')) as string | Date).toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric'
+                })}
+              </span>
             </div>
             
-            {/* Source link */}
-            {(article as any).sourceUrl && (
-              <div className="flex items-center text-xs">
-                <span className="text-gray-500 mr-2">Source:</span>
+            {/* Right side - Source with link */}
+            <div className="flex items-center">
+              {(article as any).sourceUrl ? (
                 <a 
                   href={(article as any).sourceUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {article.source}
                 </a>
-              </div>
-            )}
+              ) : (
+                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                  {article.source}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

@@ -30,6 +30,12 @@ export class AINewsGenerator {
     { name: 'Zerodha Varsity', url: 'https://zerodha.com/varsity/' }
   ];
 
+  private readonly brokerages: string[] = [
+    'Motilal Oswal', 'ICICI Securities', 'HDFC Securities', 'Kotak Securities', 
+    'Axis Securities', 'Angel Broking', 'Sharekhan', 'Zerodha', '5paisa', 
+    'Upstox', 'Edelweiss Securities', 'IIFL Securities'
+  ];
+
   private getRandomSource(): NewsSource {
     return this.sources[Math.floor(Math.random() * this.sources.length)];
   }
@@ -195,16 +201,19 @@ Required JSON format:
           },
           {
             role: "user",
-            content: `Create 15-20 brokerage reports with realistic data for major Indian companies. Include target prices, buy/sell/hold ratings, and justifications.
+            content: `Create 15-20 brokerage reports with realistic data for major Indian companies. Include target prices, buy/sell/hold ratings, and justifications. Always mention the brokerage firm name in the content.
+
+Use these Indian brokerage firms: Motilal Oswal, ICICI Securities, HDFC Securities, Kotak Securities, Axis Securities, Angel Broking, Sharekhan, Zerodha, 5paisa, Upstox, Edelweiss Securities, IIFL Securities.
 
 JSON format:
 {
   "reports": [
     {
-      "title": "Brokerage report headline",
-      "content": "Detailed report with target price and rating",
+      "title": "Stock Name: Brokerage Rating - Target Price",
+      "content": "Include brokerage firm name, detailed analysis with target price, buy/sell/hold rating, and clear justification",
       "sentiment": "Positive|Negative|Neutral",
-      "priority": "High|Medium|Low"
+      "priority": "High|Medium|Low",
+      "brokerage": "Name of the brokerage firm"
     }
   ]
 }`
