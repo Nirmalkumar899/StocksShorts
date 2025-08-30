@@ -46,13 +46,13 @@ export class AINewsGenerator {
       console.log('🔄 Generating AI-powered stock market news...');
       
       const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+        model: "gpt-4o", // Using GPT-4o model for reliable API calls
         messages: [
           {
             role: "system",
             content: `You are a professional financial news writer for StocksShorts, an Indian stock market news platform. Generate realistic, current stock market news for ${todayStr} and ${yesterdayStr}.
 
-Create 15-20 diverse news articles covering:
+Create 25-30 diverse news articles covering:
 1. Nifty and Sensex movements and analysis
 2. Individual stock performances (focus on Nifty 50 companies)
 3. Sectoral trends (IT, Banking, Auto, Pharma, FMCG, etc.)
@@ -100,8 +100,7 @@ Required JSON format:
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.8,
-        max_tokens: 4000
+        max_completion_tokens: 4000
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"articles":[]}');
@@ -188,7 +187,7 @@ Required JSON format:
   async generateBrokerageReports(): Promise<Article[]> {
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+        model: "gpt-4o", // Using GPT-4o model for reliable API calls
         messages: [
           {
             role: "system",
@@ -196,7 +195,7 @@ Required JSON format:
           },
           {
             role: "user",
-            content: `Create 5-8 brokerage reports with realistic data for major Indian companies. Include target prices, buy/sell/hold ratings, and justifications.
+            content: `Create 15-20 brokerage reports with realistic data for major Indian companies. Include target prices, buy/sell/hold ratings, and justifications.
 
 JSON format:
 {
@@ -212,8 +211,7 @@ JSON format:
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 2000
+        max_completion_tokens: 2000
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"reports":[]}');
@@ -244,7 +242,7 @@ JSON format:
   async generateGlobalNewsImpact(): Promise<Article[]> {
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+        model: "gpt-4o", // Using GPT-4o model for reliable API calls
         messages: [
           {
             role: "system",
@@ -252,7 +250,7 @@ JSON format:
           },
           {
             role: "user",
-            content: `Create 3-5 articles about global events impacting Indian markets today.
+            content: `Create 10-15 articles about global events impacting Indian markets today.
 
 JSON format:
 {
@@ -268,8 +266,7 @@ JSON format:
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 1500
+        max_completion_tokens: 1500
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"global_news":[]}');

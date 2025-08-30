@@ -151,72 +151,7 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
             </Link>
           </div>
           <div className="flex items-center space-x-2">
-            {showInstallButton && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleInstallClick}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-                >
-                  <Download className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                </Button>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                  Click to download
-                </span>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-            >
-              <span className={`text-neutral-600 dark:text-neutral-400 text-sm ${isRefreshing ? 'animate-spin' : ''}`}>⟳</span>
-            </Button>
-            {onTranslate && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onTranslate}
-                      disabled={isTranslating}
-                      className={`p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors border-2 ${
-                        isTranslated 
-                          ? 'bg-orange-100 dark:bg-orange-900 border-orange-300 dark:border-orange-600' 
-                          : 'border-orange-200 dark:border-orange-700'
-                      }`}
-                    >
-                      <span className={`font-bold ${
-                        isTranslated 
-                          ? 'text-orange-700 dark:text-orange-400' 
-                          : 'text-orange-600 dark:text-orange-500'
-                      } ${isTranslating ? 'animate-pulse' : ''}`}>
-                        हिं
-                      </span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isTranslated ? 'Switch to English' : 'Translate to Hindi'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-            >
-              {isDark ? (
-                <Sun className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-              ) : (
-                <Moon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-              )}
-            </Button>
+            {/* Icons removed as requested - cleaner interface with auto-generated news */}
           </div>
         </div>
       </div>

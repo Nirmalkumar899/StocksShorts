@@ -5,6 +5,7 @@ import * as path from "path";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { aiNewsGenerator } from "./services/aiNewsGenerator";
+import { newsCache } from "./services/newsCache";
 import OpenAI from 'openai';
 import { mobileAuth } from "./mobileAuth";
 
@@ -107,55 +108,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Get all articles or filter by category - Now using AI-generated news
+  // Get all articles or filter by category - Using cached AI news with Inshorts-style refresh
   app.get("/api/articles", async (req, res) => {
     try {
       const category = req.query.category as string;
       console.log('🔍 Requested category:', category);
       
-      // Generate fresh AI news
-      const articles = await aiNewsGenerator.generateAllNews();
+      // Get articles from cache (automatically refreshes if needed)
+      const articles = await newsCache.getArticles(category);
       
-      if (category && category !== 'all') {
-        // Filter by category
-        const filteredArticles = articles.filter(article => 
-          article.type === category || 
-          (category === 'trending' && ['trending', 'stocksshorts-special'].includes(article.type))
-        );
-        console.log(`📊 Found ${filteredArticles.length} AI-generated articles for category: ${category}`);
-        res.json(filteredArticles);
-      } else {
-        // Set cache headers for better performance
-        res.set({
-          'Cache-Control': 'public, max-age=300, s-maxage=600', // 5 min cache for AI-generated content
-          'Content-Type': 'application/json; charset=utf-8'
-        });
+      console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
+      
+      // Set cache headers - shorter cache since we handle refresh internally
+      res.set({
+        'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
+        'Content-Type': 'application/json; charset=utf-8'
+      });
+      
+      // Sort by priority (High > Medium > Low) then by time (most recent first)
+      const sortedArticles = articles.sort((a, b) => {
+        // Priority ordering
+        const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+        const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+        const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
         
-        console.log(`📰 Total AI-generated articles: ${articles.length}`);
+        if (priorityA !== priorityB) {
+          return priorityB - priorityA; // Higher priority first
+        }
         
-        // Sort by priority (High > Medium > Low) then by time (most recent first)
-        const sortedArticles = articles.sort((a, b) => {
-          // Priority ordering
-          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-          const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-          const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-          
-          if (priorityA !== priorityB) {
-            return priorityB - priorityA; // Higher priority first
-          }
-          
-          // If same priority, sort by time (most recent first)
-          const timeA = a.time ? new Date(a.time).getTime() : 0;
-          const timeB = b.time ? new Date(b.time).getTime() : 0;
-          return timeB - timeA;
-        });
-        
-        res.json(sortedArticles);
-      }
+        // If same priority, sort by time (most recent first)
+        const timeA = a.time ? new Date(a.time).getTime() : 0;
+        const timeB = b.time ? new Date(b.time).getTime() : 0;
+        return timeB - timeA;
+      });
+      
+      res.json(sortedArticles);
     } catch (error) {
-      console.error('❌ Error generating AI articles:', error);
+      console.error('❌ Error fetching cached articles:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to generate articles'
+        message: error instanceof Error ? error.message : 'Failed to fetch articles'
       });
     }
   });
@@ -168,8 +159,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid article ID' });
       }
 
-      // Generate fresh AI news and find the specific article
-      const articles = await aiNewsGenerator.generateAllNews();
+      // Get articles from cache and find the specific article
+      const articles = await newsCache.getArticles();
       const article = articles.find(a => a.id === id);
       
       if (!article) {
@@ -178,33 +169,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(article);
     } catch (error) {
-      console.error('Error fetching AI article:', error);
+      console.error('Error fetching cached article:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch article'
       });
     }
   });
 
-  // Refresh articles (generate fresh AI news)
+  // Refresh articles (force refresh cached news - Inshorts style)
   app.post("/api/articles/refresh", async (req, res) => {
     try {
-      console.log('🔄 Generating fresh AI news...');
+      console.log('🔄 Force refreshing cached news...');
       
-      const articles = await aiNewsGenerator.generateAllNews();
+      const articles = await newsCache.forceRefresh();
       const uniqueCategories = Array.from(new Set(articles.map(a => a.type)));
+      const cacheStatus = newsCache.getCacheStatus();
       
       res.json({ 
-        message: 'AI news generated successfully', 
+        message: 'News cache refreshed successfully', 
         count: articles.length,
         categories: uniqueCategories,
-        articles 
+        cacheStatus,
+        articles: articles.slice(0, 20) // Return first 20 for verification
       });
     } catch (error) {
-      console.error('Error generating fresh AI news:', error);
+      console.error('Error refreshing news cache:', error);
       res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to generate fresh news'
+        message: error instanceof Error ? error.message : 'Failed to refresh news cache'
       });
     }
+  });
+
+  // Get cache status endpoint
+  app.get("/api/articles/status", (req, res) => {
+    const status = newsCache.getCacheStatus();
+    res.json(status);
   });
 
   // Translation API using OpenAI SDK
@@ -266,8 +265,7 @@ CONTENT: [Hindi translation]`;
               const response = await openai.chat.completions.create({
                 model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
                 messages: [{ role: 'user', content: prompt }],
-                temperature: 0.3,
-                max_tokens: 1000
+                max_completion_tokens: 1000
               });
               
               const translatedText = response.choices[0].message.content;
