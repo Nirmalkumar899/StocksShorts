@@ -29,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **MAJOR UPDATE**: Completely replaced Google Sheets with AI-powered news generation using OpenAI GPT-4o
 - **Interface**: Removed ALL icons, category filters, and visual elements for ultra-clean text-only design like Inshorts
 - **Date Filtering**: Implemented strict 2-day article limit - only shows articles from today and last 2 days
-- **Layout**: Article date and clickable source link positioned at top of each card for immediate visibility without scrolling
+- **Layout**: Article date and time with clickable source link positioned in black header bar at top of each card, showing exact timestamps instead of relative time
 - **Navigation**: Removed all icons from header and bottom navigation, text-only labels for minimal design
 - **Caching**: Automatic refresh every 10 minutes with date-based filtering removing old articles
 - **Brokerage Integration**: Added Indian brokerage firm names (Motilal Oswal, ICICI Securities, etc.) to buy/sell recommendations

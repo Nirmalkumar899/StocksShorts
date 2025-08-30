@@ -327,15 +327,19 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
         </div>
         
         {/* Date and source positioned at absolute top for immediate visibility */}
-        <div className="absolute top-0 left-0 right-0 bg-white/98 dark:bg-gray-900/98 p-2 rounded-t-lg border-b border-gray-200 dark:border-gray-600 z-10">
+        <div className="absolute top-0 left-0 right-0 bg-black/90 dark:bg-black/95 p-2 rounded-t-lg z-10">
           <div className="flex items-center justify-between text-xs">
-            {/* Left - Article Date */}
-            <div className="flex items-center text-gray-600 dark:text-gray-400">
-              <span className="font-medium text-xs">
+            {/* Left - Exact Article Date and Time */}
+            <div className="flex items-center text-white">
+              <span className="font-medium text-xs text-white">
                 {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
                   day: '2-digit',
                   month: 'short',
                   year: 'numeric'
+                })} • {new Date((article.time || new Date()) as string | Date).toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
                 })}
               </span>
             </div>
@@ -345,13 +349,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               {(article as any).sourceUrl ? (
                 <a 
                   href={(article as any).sourceUrl} 
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium text-xs transition-colors"
+                  className="text-blue-300 hover:text-blue-100 underline font-medium text-xs transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {article.source}
                 </a>
               ) : (
-                <span className="text-gray-600 dark:text-gray-400 font-medium text-xs">
+                <span className="text-white font-medium text-xs">
                   {article.source}
                 </span>
               )}
