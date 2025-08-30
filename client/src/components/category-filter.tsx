@@ -17,20 +17,8 @@ interface CategoryFilterProps {
   onCategoryChange: (category: string) => void;
 }
 
-const categories = [
-  { id: 'trending', label: 'Trending', icon: TrendingUp, gradient: 'from-pink-500 to-rose-500', url: '/', emoji: '📈' },
-  { id: 'stocksshorts-special', label: 'Special', icon: null, special: true, gradient: 'from-amber-500 to-orange-500', url: '/special', emoji: '⭐' },
-  { id: 'kalkabazaar', label: 'Kalkabazaar', icon: null, gradient: 'from-blue-500 to-cyan-500', url: '/kalkabazaar', emoji: '📊' },
-  { id: 'ipo', label: 'IPO', icon: null, gradient: 'from-red-500 to-pink-500', url: '/ipo', emoji: '🚀' },
-  { id: 'breakout-stocks', label: 'Breakout', icon: null, gradient: 'from-green-500 to-emerald-500', url: '/breakout', emoji: '💹' },
-  { id: 'warrants', label: 'Warrants', icon: null, gradient: 'from-purple-500 to-violet-500', url: '/warrants', emoji: '📜' },
-
-  { id: 'order-win', label: 'Orders', icon: null, gradient: 'from-orange-500 to-red-500', url: '/orders', emoji: '🎯' },
-  { id: 'research-report', label: 'Research', icon: null, gradient: 'from-slate-500 to-gray-500', url: '/research', emoji: '💼' },
-  { id: 'educational', label: 'Educational', icon: BookOpen, gradient: 'from-indigo-500 to-blue-500', url: '/educational', emoji: '📚' },
-  { id: 'us-market', label: 'US Market', icon: null, gradient: 'from-green-500 to-emerald-500', url: '/us-market', emoji: '💵' },
-  { id: 'crypto', label: 'Crypto', icon: Bitcoin, gradient: 'from-yellow-500 to-amber-500', url: '/crypto' },
-];
+// Remove all category filters for clean Inshorts-style interface
+const categories: any[] = [];
 
 export default function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
   const [, setLocation] = useLocation();
@@ -42,83 +30,6 @@ export default function CategoryFilter({ selectedCategory, onCategoryChange }: C
     setLocation(category.url);
   };
 
-  return (
-    <div className="sticky top-[56px] z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
-      <div className="flex gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
-        {categories.map((category) => {
-          const Icon = category.icon;
-          const isSelected = selectedCategory === category.id;
-          const isSpecial = category.special;
-          
-          return (
-            <Button
-              key={category.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCategoryClick(category)}
-              className={`
-                group relative flex flex-col items-center justify-center p-2 h-16 w-20 text-xs font-semibold transition-all duration-300 overflow-hidden rounded-xl border-0 flex-shrink-0
-                ${isSelected
-                  ? isSpecial
-                    ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 text-white shadow-2xl transform scale-110 ring-4 ring-amber-200 dark:ring-amber-800'
-                    : `bg-gradient-to-br ${category.gradient} text-white shadow-xl transform scale-105 ring-2 ring-white/30`
-                  : isSpecial
-                  ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-950/50 dark:via-orange-950/50 dark:to-red-950/50 text-amber-600 dark:text-amber-300 border-2 border-amber-200 dark:border-amber-700 hover:shadow-lg hover:scale-105 hover:border-amber-300 dark:hover:border-amber-600'
-                  : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 hover:shadow-lg hover:scale-105 hover:border-gray-300 dark:hover:border-gray-600 backdrop-blur-sm'
-                }
-              `}
-            >
-              {/* Icon with enhanced styling */}
-              <div className={`
-                relative flex items-center justify-center w-5 h-5 mb-0.5 rounded-lg transition-all duration-300
-                ${isSelected
-                  ? 'bg-white/20 backdrop-blur-sm'
-                  : isSpecial
-                  ? 'bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40'
-                  : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
-                }
-              `}>
-                {category.emoji ? (
-                  <span className="text-xs">{category.emoji}</span>
-                ) : Icon ? (
-                  <Icon className={`h-3 w-3 transition-all duration-300 ${
-                    isSelected 
-                      ? 'text-white drop-shadow-sm' 
-                      : isSpecial 
-                      ? 'text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300' 
-                      : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-                  }`} />
-                ) : null}
-              </div>
-              
-              {/* Label with word wrapping for full visibility */}
-              <div className={`text-[7px] leading-tight text-center font-medium tracking-tight w-full px-0.5 ${
-                isSelected 
-                  ? 'text-white drop-shadow-sm' 
-                  : isSpecial 
-                  ? 'text-amber-700 dark:text-amber-300' 
-                  : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-              }`}>
-                <span className="break-words hyphens-auto">
-                  {category.label}
-                </span>
-              </div>
-              
-              {/* Special indicator dot */}
-              {isSpecial && !isSelected && (
-                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-lg">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full animate-ping opacity-75"></div>
-                </div>
-              )}
-              
-              {/* Hover gradient overlay */}
-              {!isSelected && !isSpecial && (
-                <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-xl`}></div>
-              )}
-            </Button>
-          );
-        })}
-      </div>
-    </div>
-  );
+  // Hide category filter completely for clean Inshorts-style interface
+  return null;
 }

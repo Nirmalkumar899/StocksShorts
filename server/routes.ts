@@ -185,7 +185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const uniqueCategories = Array.from(new Set(articles.map(a => a.type)));
       const cacheStatus = newsCache.getCacheStatus();
       
-      res.json({ 
+      // Send response immediately to avoid double response issue
+      return res.json({ 
         message: 'News cache refreshed successfully', 
         count: articles.length,
         categories: uniqueCategories,
@@ -194,9 +195,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error refreshing news cache:', error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to refresh news cache'
-      });
+      if (!res.headersSent) {
+        return res.status(500).json({ 
+          message: error instanceof Error ? error.message : 'Failed to refresh news cache'
+        });
+      }
     }
   });
 

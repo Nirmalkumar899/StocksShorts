@@ -25,6 +25,13 @@ Preferred communication style: Simple, everyday language.
 - AskQuery (Contact): Chat interface with instant messaging via email - type message and press Enter or click send
 - Profile: Gmail-only authentication with no additional forms or information required
 
+## Recent Changes (August 30, 2025)
+- **MAJOR UPDATE**: Completely replaced Google Sheets with AI-powered news generation using OpenAI GPT-4o
+- **Interface**: Removed all top header icons and category filters for ultra-clean Inshorts-style design 
+- **Caching**: Implemented automatic refresh system that generates 50+ fresh articles every 10 minutes
+- **Sources**: Added clickable source attribution links at bottom of each news card
+- **Categories**: System now auto-generates comprehensive coverage including brokerage reports, global impact, sectoral analysis
+
 ## System Architecture
 StocksShorts is built with a mobile-first approach, emphasizing performance and user experience.
 
