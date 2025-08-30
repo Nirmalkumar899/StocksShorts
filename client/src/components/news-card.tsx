@@ -345,8 +345,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               {(article as any).sourceUrl ? (
                 <a 
                   href={(article as any).sourceUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium bg-white/95 dark:bg-gray-800/95 px-2 py-1 rounded shadow-md border border-gray-200 dark:border-gray-600 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
