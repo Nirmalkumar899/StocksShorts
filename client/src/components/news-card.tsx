@@ -326,12 +326,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
         
-        {/* Date at bottom left and source with link at bottom right */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/85 dark:via-gray-900/85 to-transparent p-4">
+        {/* Date and source positioned higher up for better visibility */}
+        <div className="absolute bottom-16 left-0 right-0 bg-gradient-to-t from-white/90 dark:from-gray-900/90 via-white/75 dark:via-gray-900/75 to-transparent p-3">
           <div className="flex items-center justify-between text-xs">
-            {/* Bottom Left - Article Date */}
+            {/* Left - Article Date */}
             <div className="flex items-center text-gray-600 dark:text-gray-400">
-              <span className="font-medium bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded">
+              <span className="font-medium bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded shadow-sm">
                 {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
                   day: '2-digit',
                   month: 'short',
@@ -340,20 +340,20 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               </span>
             </div>
             
-            {/* Bottom Right - Source name with clickable link */}
+            {/* Right - Source name with clickable link */}
             <div className="flex items-center">
               {(article as any).sourceUrl ? (
                 <a 
                   href={(article as any).sourceUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded transition-colors"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded shadow-sm transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {article.source}
                 </a>
               ) : (
-                <span className="text-gray-600 dark:text-gray-400 font-medium bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded">
+                <span className="text-gray-600 dark:text-gray-400 font-medium bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded shadow-sm">
                   {article.source}
                 </span>
               )}
