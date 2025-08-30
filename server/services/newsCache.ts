@@ -127,6 +127,9 @@ export class NewsCache {
     cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
     cutoffDate.setHours(0, 0, 0, 0);
 
+    console.log(`🔍 Requested category: ${category}`);
+    console.log(`📊 Returning ${this.cache.articles.length} cached articles`);
+
     let articles = this.cache.articles.filter(article => {
       const articleDate = article.time ? new Date(article.time) : new Date();
       return articleDate >= cutoffDate;
