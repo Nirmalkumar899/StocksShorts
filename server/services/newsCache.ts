@@ -82,6 +82,7 @@ export class NewsCache {
       
       console.log(`✅ News refreshed: ${uniqueArticles.length} articles in cache (last ${this.MAX_DAYS_OLD} days + today)`);
       console.log(`📊 Article categories: ${this.getCategoryCounts()}`);
+      console.log(`🔍 Sample article dates: ${uniqueArticles.slice(0, 3).map(a => new Date(a.time || new Date()).toISOString()).join(', ')}`);
 
     } catch (error) {
       console.error('❌ Error refreshing news:', error);
