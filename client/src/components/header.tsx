@@ -144,11 +144,6 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
                 StocksShorts
               </span>
             </Link>
-            <Link href="/trending">
-              <Button variant="ghost" size="sm" className="text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20">
-                Trending
-              </Button>
-            </Link>
           </div>
           <div className="flex items-center space-x-2">
             {/* Icons removed as requested - cleaner interface with auto-generated news */}
