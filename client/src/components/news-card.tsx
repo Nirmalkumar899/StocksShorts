@@ -326,13 +326,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
         
-        {/* Date and source - positioned at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/98 dark:from-gray-900/98 via-white/90 dark:via-gray-900/90 to-transparent p-3">
+        {/* Date at bottom left and source with link at bottom right */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/85 dark:via-gray-900/85 to-transparent p-4">
           <div className="flex items-center justify-between text-xs">
-            {/* Left side - Date */}
-            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-              <span className="font-normal">
-                {new Date((article.time || new Date('2025-07-05T00:01:00Z')) as string | Date).toLocaleDateString('en-IN', {
+            {/* Bottom Left - Article Date */}
+            <div className="flex items-center text-gray-600 dark:text-gray-400">
+              <span className="font-medium bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded">
+                {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
                   day: '2-digit',
                   month: 'short',
                   year: 'numeric'
@@ -340,20 +340,20 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
               </span>
             </div>
             
-            {/* Right side - Source with link */}
+            {/* Bottom Right - Source name with clickable link */}
             <div className="flex items-center">
               {(article as any).sourceUrl ? (
                 <a 
                   href={(article as any).sourceUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {article.source}
                 </a>
               ) : (
-                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                <span className="text-gray-600 dark:text-gray-400 font-medium bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded">
                   {article.source}
                 </span>
               )}

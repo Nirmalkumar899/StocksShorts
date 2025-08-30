@@ -27,10 +27,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 30, 2025)
 - **MAJOR UPDATE**: Completely replaced Google Sheets with AI-powered news generation using OpenAI GPT-4o
-- **Interface**: Removed all top header icons and category filters for ultra-clean Inshorts-style design 
-- **Caching**: Implemented automatic refresh system that generates 50+ fresh articles every 10 minutes
-- **Sources**: Added clickable source attribution links at bottom of each news card
-- **Categories**: System now auto-generates comprehensive coverage including brokerage reports, global impact, sectoral analysis
+- **Interface**: Removed ALL icons, category filters, and visual elements for ultra-clean text-only design like Inshorts
+- **Date Filtering**: Implemented strict 2-day article limit - only shows articles from today and last 2 days
+- **Layout**: Article date positioned at bottom left, clickable source link at bottom right with rounded backgrounds
+- **Navigation**: Removed all icons from header and bottom navigation, text-only labels for minimal design
+- **Caching**: Automatic refresh every 10 minutes with date-based filtering removing old articles
+- **Brokerage Integration**: Added Indian brokerage firm names (Motilal Oswal, ICICI Securities, etc.) to buy/sell recommendations
 
 ## System Architecture
 StocksShorts is built with a mobile-first approach, emphasizing performance and user experience.
