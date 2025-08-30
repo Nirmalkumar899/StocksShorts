@@ -41,16 +41,28 @@ export class AINewsGenerator {
   }
 
   private getRealisticArticleDate(): Date {
-    // Generate dates from today back to 2 days ago
-    const today = new Date();
-    const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back
+    // Generate dates ONLY from today back to 2 days ago (total 3 days max)
+    const now = new Date(); // Current date and time
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today at 00:00:00
+    
+    const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back from today
     const articleDate = new Date(today);
     articleDate.setDate(today.getDate() - daysBack);
     
-    // Set random hour between 6 AM and 11 PM for realistic publishing times
-    const hour = Math.floor(Math.random() * 17) + 6; // 6-22 (6 AM to 10 PM)
-    const minute = Math.floor(Math.random() * 60);
-    articleDate.setHours(hour, minute, 0, 0);
+    // Set random hour between 6 AM and current time for today, or 6 AM to 11 PM for past days
+    if (daysBack === 0) {
+      // For today, use time up to current hour
+      const currentHour = now.getHours();
+      const maxHour = Math.max(6, currentHour); // At least 6 AM, but not future hours
+      const hour = Math.floor(Math.random() * (maxHour - 6 + 1)) + 6;
+      const minute = Math.floor(Math.random() * 60);
+      articleDate.setHours(hour, minute, 0, 0);
+    } else {
+      // For past days, use full day range
+      const hour = Math.floor(Math.random() * 17) + 6; // 6-22 (6 AM to 10 PM)
+      const minute = Math.floor(Math.random() * 60);
+      articleDate.setHours(hour, minute, 0, 0);
+    }
     
     return articleDate;
   }

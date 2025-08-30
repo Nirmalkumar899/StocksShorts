@@ -47,10 +47,10 @@ export class NewsCache {
 
       const newArticles = await aiNewsGenerator.generateAllNews();
       
-      // Filter articles to only include those from last 2 days + today
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
-      cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago
+      // Filter articles to only include those from last 2 days + today (strict current date filtering)
+      const now = new Date();
+      const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.MAX_DAYS_OLD);
+      cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago from TODAY
       
       const filteredNewArticles = newArticles.filter(article => {
         const articleDate = article.time ? new Date(article.time) : new Date();
@@ -122,10 +122,10 @@ export class NewsCache {
       await this.refreshArticles();
     }
 
-    // Always filter articles to last 2 days + today
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
-    cutoffDate.setHours(0, 0, 0, 0);
+    // Always filter articles to last 2 days + today (strict current date filtering)
+    const now = new Date();
+    const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.MAX_DAYS_OLD);
+    cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago from TODAY
 
     console.log(`🔍 Requested category: ${category}`);
     console.log(`📊 Returning ${this.cache.articles.length} cached articles`);
