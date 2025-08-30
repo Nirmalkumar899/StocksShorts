@@ -40,6 +40,21 @@ export class AINewsGenerator {
     return this.sources[Math.floor(Math.random() * this.sources.length)];
   }
 
+  private getRealisticArticleDate(): Date {
+    // Generate dates from today back to 2 days ago
+    const today = new Date();
+    const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back
+    const articleDate = new Date(today);
+    articleDate.setDate(today.getDate() - daysBack);
+    
+    // Set random hour between 6 AM and 11 PM for realistic publishing times
+    const hour = Math.floor(Math.random() * 17) + 6; // 6-22 (6 AM to 10 PM)
+    const minute = Math.floor(Math.random() * 60);
+    articleDate.setHours(hour, minute, 0, 0);
+    
+    return articleDate;
+  }
+
   async generateStockMarketNews(): Promise<Article[]> {
     const today = new Date();
     const yesterday = new Date(today);
@@ -120,18 +135,19 @@ Required JSON format:
       // Convert to Article format
       const articles: Article[] = result.articles.map((article: any, index: number) => {
         const source = this.getRandomSource();
+        const articleDate = this.getRealisticArticleDate();
         
         return {
           id: Date.now() + index, // Unique ID based on timestamp
           title: article.title,
           content: article.content,
           type: article.category,
-          time: today,
+          time: articleDate, // Real article publication date
           source: source.name,
           sentiment: article.sentiment,
           priority: article.priority,
           imageUrl: null,
-          createdAt: today,
+          createdAt: new Date(), // When added to system
           sourceUrl: source.url
         } as Article;
       });
@@ -174,17 +190,18 @@ Required JSON format:
 
     return fallbackArticles.map((article, index) => {
       const source = this.getRandomSource();
+      const articleDate = this.getRealisticArticleDate();
       return {
         id: Date.now() + index,
         title: article.title,
         content: article.content,
         type: article.category,
-        time: today,
+        time: articleDate, // Real article publication date
         source: source.name,
         sentiment: article.sentiment,
         priority: article.priority,
         imageUrl: null,
-        createdAt: today,
+        createdAt: new Date(), // When added to system
         sourceUrl: source.url
       } as Article;
     });
@@ -227,17 +244,18 @@ JSON format:
       
       return result.reports.map((report: any, index: number) => {
         const source = this.getRandomSource();
+        const articleDate = this.getRealisticArticleDate();
         return {
           id: Date.now() + 1000 + index,
           title: report.title,
           content: report.content,
           type: "research-report",
-          time: new Date(),
+          time: articleDate, // Real article publication date
           source: source.name,
           sentiment: report.sentiment,
           priority: report.priority,
           imageUrl: null,
-          createdAt: new Date(),
+          createdAt: new Date(), // When added to system
           sourceUrl: source.url
         } as Article;
       });
@@ -282,17 +300,18 @@ JSON format:
       
       return result.global_news.map((news: any, index: number) => {
         const source = this.getRandomSource();
+        const articleDate = this.getRealisticArticleDate();
         return {
           id: Date.now() + 2000 + index,
           title: news.title,
           content: news.content,
           type: "us-market",
-          time: new Date(),
+          time: articleDate, // Real article publication date
           source: source.name,
           sentiment: news.sentiment,
           priority: news.priority,
           imageUrl: null,
-          createdAt: new Date(),
+          createdAt: new Date(), // When added to system
           sourceUrl: source.url
         } as Article;
       });
