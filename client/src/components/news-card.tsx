@@ -326,12 +326,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
         
-        {/* Date and source positioned higher up for better visibility */}
-        <div className="absolute bottom-16 left-0 right-0 bg-gradient-to-t from-white/90 dark:from-gray-900/90 via-white/75 dark:via-gray-900/75 to-transparent p-3">
+        {/* Date and source positioned much higher for immediate visibility */}
+        <div className="absolute bottom-32 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
           <div className="flex items-center justify-between text-xs">
             {/* Left - Article Date */}
             <div className="flex items-center text-gray-600 dark:text-gray-400">
-              <span className="font-medium bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded shadow-sm">
+              <span className="font-medium bg-white/95 dark:bg-gray-800/95 px-2 py-1 rounded shadow-md border border-gray-200 dark:border-gray-600">
                 {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
                   day: '2-digit',
                   month: 'short',
@@ -347,13 +347,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                   href={(article as any).sourceUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded shadow-sm transition-colors"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium bg-white/95 dark:bg-gray-800/95 px-2 py-1 rounded shadow-md border border-gray-200 dark:border-gray-600 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {article.source}
                 </a>
               ) : (
-                <span className="text-gray-600 dark:text-gray-400 font-medium bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded shadow-sm">
+                <span className="text-gray-600 dark:text-gray-400 font-medium bg-white/95 dark:bg-gray-800/95 px-2 py-1 rounded shadow-md border border-gray-200 dark:border-gray-600">
                   {article.source}
                 </span>
               )}
