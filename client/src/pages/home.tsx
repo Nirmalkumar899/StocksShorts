@@ -83,9 +83,16 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   } = useQuery<Article[]>({
     queryKey: ['/api/articles'],
     queryFn: async () => {
-      const response = await fetch('/api/articles', {
-        credentials: 'include',
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      try {
+        const response = await fetch('/api/articles', {
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -121,6 +128,13 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       });
       
       return processedData;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out. Please try again.');
+        }
+        throw error;
+      }
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -142,7 +156,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       return result;
     }
     console.log("Showing original articles:", rawArticles?.length);
-    return rawArticles;
+    return rawArticles || [];
   }, [rawArticles, isTranslated, translatedArticles]);
 
   // Refresh articles mutation
@@ -371,7 +385,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
             </div>
           </div>
-        ) : articles.length === 0 ? (
+        ) : !articles || articles.length === 0 ? (
           // Empty State
           <div className="h-full flex flex-col items-center justify-center px-4">
             <div className="text-6xl mb-4">📰</div>
