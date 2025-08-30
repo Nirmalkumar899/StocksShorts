@@ -326,8 +326,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
         </div>
         
-        {/* Date and source positioned much higher for immediate visibility */}
-        <div className="absolute bottom-32 left-0 right-0 bg-gradient-to-t from-white/95 dark:from-gray-900/95 via-white/80 dark:via-gray-900/80 to-transparent p-3">
+        {/* Date and source positioned at top for immediate visibility */}
+        <div className="absolute top-64 left-0 right-0 bg-gradient-to-b from-white/95 dark:from-gray-900/95 via-white/90 dark:via-gray-900/90 to-transparent p-3">
           <div className="flex items-center justify-between text-xs">
             {/* Left - Article Date */}
             <div className="flex items-center text-gray-600 dark:text-gray-400">
