@@ -317,51 +317,51 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     </button>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-3">
                     {article.content?.trim() || 'No content available.'}
                   </div>
                 )}
+                
+                {/* Source and Date in Black Highlighted Section */}
+                <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
+                  <div className="flex items-center justify-between text-sm">
+                    {/* Left - Exact Date and Time */}
+                    <div className="text-white/90">
+                      {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      })} • {new Date((article.time || new Date()) as string | Date).toLocaleTimeString('en-IN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </div>
+                    
+                    {/* Right - Source Link */}
+                    <div>
+                      {(article as any).sourceUrl ? (
+                        <a 
+                          href={(article as any).sourceUrl} 
+                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {article.source}
+                        </a>
+                      ) : (
+                        <span className="text-white font-medium">
+                          {article.source}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Date and source positioned at absolute top for immediate visibility */}
-        <div className="absolute top-0 left-0 right-0 bg-black/90 dark:bg-black/95 p-2 rounded-t-lg z-10">
-          <div className="flex items-center justify-between text-xs">
-            {/* Left - Exact Article Date and Time */}
-            <div className="flex items-center text-white">
-              <span className="font-medium text-xs text-white">
-                {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric'
-                })} • {new Date((article.time || new Date()) as string | Date).toLocaleTimeString('en-IN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true
-                })}
-              </span>
-            </div>
-            
-            {/* Right - Source name with clickable link */}
-            <div className="flex items-center">
-              {(article as any).sourceUrl ? (
-                <a 
-                  href={(article as any).sourceUrl} 
-                  className="text-blue-300 hover:text-blue-100 underline font-medium text-xs transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {article.source}
-                </a>
-              ) : (
-                <span className="text-white font-medium text-xs">
-                  {article.source}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+
 
         {/* Image Lightbox */}
         <ImageLightbox
