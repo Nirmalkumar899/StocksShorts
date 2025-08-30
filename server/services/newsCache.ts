@@ -16,6 +16,7 @@ export class NewsCache {
 
   private readonly REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes like Inshorts
   private readonly MAX_ARTICLES = 120; // Keep 120 articles, show latest 100
+  private readonly MAX_DAYS_OLD = 2; // Only keep articles from last 2 days + today
   private refreshTimer?: NodeJS.Timeout;
 
   constructor() {
@@ -46,8 +47,23 @@ export class NewsCache {
 
       const newArticles = await aiNewsGenerator.generateAllNews();
       
-      // Merge with existing articles, keeping the latest ones
-      const allArticles = [...newArticles, ...this.cache.articles];
+      // Filter articles to only include those from last 2 days + today
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
+      cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago
+      
+      const filteredNewArticles = newArticles.filter(article => {
+        const articleDate = article.time ? new Date(article.time) : new Date();
+        return articleDate >= cutoffDate;
+      });
+      
+      const filteredExistingArticles = this.cache.articles.filter(article => {
+        const articleDate = article.time ? new Date(article.time) : new Date();
+        return articleDate >= cutoffDate;
+      });
+      
+      // Merge filtered articles
+      const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
       
       // Sort by time (newest first) and keep only MAX_ARTICLES
       const sortedArticles = allArticles
@@ -64,7 +80,7 @@ export class NewsCache {
       this.cache.articles = uniqueArticles;
       this.cache.lastRefresh = new Date();
       
-      console.log(`✅ News refreshed: ${uniqueArticles.length} articles in cache`);
+      console.log(`✅ News refreshed: ${uniqueArticles.length} articles in cache (last ${this.MAX_DAYS_OLD} days + today)`);
       console.log(`📊 Article categories: ${this.getCategoryCounts()}`);
 
     } catch (error) {
@@ -105,7 +121,15 @@ export class NewsCache {
       await this.refreshArticles();
     }
 
-    let articles = this.cache.articles;
+    // Always filter articles to last 2 days + today
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
+    cutoffDate.setHours(0, 0, 0, 0);
+
+    let articles = this.cache.articles.filter(article => {
+      const articleDate = article.time ? new Date(article.time) : new Date();
+      return articleDate >= cutoffDate;
+    });
 
     // Filter by category if specified
     if (category && category !== 'all') {
@@ -121,7 +145,18 @@ export class NewsCache {
 
   public async forceRefresh(): Promise<Article[]> {
     await this.refreshArticles();
-    return this.cache.articles.slice(0, 100);
+    
+    // Apply date filter when returning articles
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
+    cutoffDate.setHours(0, 0, 0, 0);
+
+    const filteredArticles = this.cache.articles.filter(article => {
+      const articleDate = article.time ? new Date(article.time) : new Date();
+      return articleDate >= cutoffDate;
+    });
+
+    return filteredArticles.slice(0, 100);
   }
 
   public getCacheStatus() {
