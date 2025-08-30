@@ -22,8 +22,34 @@ export class NewsCache {
   constructor() {
     // Start automatic refresh cycle
     this.startRefreshCycle();
-    // Generate initial articles
-    this.refreshArticles();
+    // Generate initial articles immediately to avoid empty state
+    this.initializeCache();
+  }
+
+  private async initializeCache() {
+    try {
+      console.log('🚀 Initializing news cache...');
+      const articles = await aiNewsGenerator.generateAllNews();
+      
+      // Filter articles to only include those from last 2 days + today
+      const now = new Date();
+      const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.MAX_DAYS_OLD);
+      cutoffDate.setHours(0, 0, 0, 0);
+      
+      const filteredArticles = articles.filter(article => {
+        const articleDate = article.time ? new Date(article.time) : new Date();
+        return articleDate >= cutoffDate;
+      });
+      
+      this.cache.articles = filteredArticles.slice(0, this.MAX_ARTICLES);
+      this.cache.lastRefresh = new Date();
+      this.cache.isRefreshing = false;
+      
+      console.log(`✅ Cache initialized with ${this.cache.articles.length} articles`);
+    } catch (error) {
+      console.error('❌ Failed to initialize cache:', error);
+      this.cache.isRefreshing = false;
+    }
   }
 
   private startRefreshCycle() {
@@ -116,10 +142,15 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty or very old, refresh immediately
-    if (this.cache.articles.length === 0 || 
-        Date.now() - this.cache.lastRefresh.getTime() > this.REFRESH_INTERVAL * 2) {
-      await this.refreshArticles();
+    // If cache is empty and not currently refreshing, initialize it
+    if (this.cache.articles.length === 0 && !this.cache.isRefreshing) {
+      await this.initializeCache();
+    }
+    
+    // Check if we need to refresh (if cache is old)
+    if (Date.now() - this.cache.lastRefresh.getTime() > this.REFRESH_INTERVAL * 2) {
+      // Start background refresh without blocking current request
+      this.refreshArticles();
     }
 
     // Always filter articles to last 2 days + today (strict current date filtering)
