@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, Brain, User } from "@/lib/icons";
+import { Home, User } from "@/lib/icons";
 import { useLocation } from "wouter";
 
 interface BottomNavigationProps {
@@ -10,7 +10,6 @@ interface BottomNavigationProps {
 const navItems = [
   { id: 'home', label: 'Home', icon: Home, url: '/' },
   { id: 'sebi-ria', label: 'Connect RIA', icon: null, emoji: '🛡️', url: '/sebi-ria' },
-  { id: 'ai-section', label: 'AI Analysis', icon: Brain, url: '/ai-analysis' },
   { id: 'profile', label: 'Profile', icon: User, url: '/profile' },
   { id: 'disclaimer', label: 'Disclaimer', icon: null, emoji: '📄', url: '/disclaimer' },
 ];
@@ -43,9 +42,9 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
             >
               {item.emoji ? (
                 <span className="text-lg mb-1">{item.emoji}</span>
-              ) : (
+              ) : Icon ? (
                 <Icon className="h-5 w-5 mb-1" />
-              )}
+              ) : null}
               <span className="text-[10px] font-medium text-center leading-tight">{item.label}</span>
             </Button>
           );

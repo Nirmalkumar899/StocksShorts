@@ -61,36 +61,78 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
   const featuredAdvisor = advisors[featuredAdvisorIndex];
 
   return (
-    <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col p-4">
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" onClick={onBack} className="p-2">
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          SEBI RIA Directory
-        </h1>
-        <Button 
-          variant="ghost" 
-          onClick={() => setShowSearch(!showSearch)}
-          className="p-2"
-        >
-          <Search className="h-5 w-5" />
-        </Button>
-      </div>
+    <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col">
+      {/* Hero Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white p-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="ghost" onClick={onBack} className="p-2 text-white hover:bg-white/20">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-2">
+              <Shield className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold">
+                Connect with SEBI RIA
+              </h1>
+            </div>
+            <p className="text-blue-100 text-lg max-w-2xl mx-auto leading-relaxed">
+              Find & Connect with <span className="font-semibold text-white">SEBI Registered Investment Advisors</span> for personalized investment guidance
+            </p>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <CheckCircle className="h-5 w-5 text-green-300" />
+              <span className="text-sm text-blue-100">Verified • Regulated • Trustworthy</span>
+            </div>
+          </div>
 
-      {/* Search Bar */}
-      <div className="mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Search advisors by name, company, specialization, or location..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full"
-          />
+          {/* Enhanced Search Section */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-3">
+                <Search className="h-5 w-5 text-blue-200" />
+                <span className="text-white font-medium">Find Your Perfect Investment Advisor</span>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type="text"
+                  placeholder="Search by name, company, location, or specialization..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 pr-4 py-3 w-full bg-white/95 backdrop-blur-sm border-0 rounded-xl text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-white/30 shadow-lg"
+                  data-testid="advisor-search-input"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {['Mutual Funds', 'Equity', 'Tax Planning', 'Portfolio Management'].map((tag) => (
+                  <Button
+                    key={tag}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSearchQuery(tag.toLowerCase())}
+                    className="bg-white/20 text-white hover:bg-white/30 rounded-full text-xs px-3 py-1"
+                    data-testid={`search-tag-${tag.toLowerCase().replace(' ', '-')}`}
+                  >
+                    {tag}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+
 
       {/* Featured Advisor Section */}
       {featuredAdvisor && !searchQuery && (
@@ -218,18 +260,6 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         </div>
       </div>
 
-      {/* Search Section */}
-      {showSearch && (
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search advisors, companies, specializations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-blue-200 dark:border-gray-600"
-          />
-        </div>
-      )}
 
       {/* SEBI RIA Directory Overview */}
       <Card className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -371,10 +401,15 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         )}
       </div>
 
-      <div className="text-center mt-8 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          All advisors are SEBI registered. Always verify credentials before investing.
-        </p>
+        <div className="text-center mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-blue-200 dark:border-gray-600">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Shield className="h-5 w-5 text-blue-600" />
+            <span className="font-semibold text-blue-800 dark:text-blue-300">SEBI Verified Network</span>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            All advisors are SEBI registered and verified. Always check credentials before investing.
+          </p>
+        </div>
       </div>
       </div>
     </div>
