@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import * as fs from "fs";
 import * as path from "path";
 import { storage } from "./storage";
+import { insertInvestmentAdvisorSchema, type InsertInvestmentAdvisor } from "@shared/schema";
 import { GoogleSheetsService } from "./services/googleSheets";
 import OpenAI from 'openai';
 import { mobileAuth } from "./mobileAuth";
@@ -745,6 +746,44 @@ CONTENT: [Hindi translation]`;
       console.error('Error fetching investment advisors:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
+      });
+    }
+  });
+
+  // Create Investment Advisor Registration
+  app.post("/api/investment-advisors", async (req, res) => {
+    try {
+      // Validate request body against schema
+      const validatedData = insertInvestmentAdvisorSchema.parse(req.body);
+      
+      // Create the advisor in database
+      const newAdvisor = await storage.createInvestmentAdvisor(validatedData);
+      
+      res.status(201).json({
+        success: true,
+        message: 'Investment advisor registration submitted successfully',
+        advisor: {
+          id: newAdvisor.id,
+          name: `${newAdvisor.firstName} ${newAdvisor.lastName}`,
+          email: newAdvisor.email,
+          registrationStatus: newAdvisor.registrationStatus
+        }
+      });
+    } catch (error) {
+      console.error('Error creating investment advisor:', error);
+      
+      // Handle validation errors
+      if (error.name === 'ZodError') {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: (error as any).issues
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to create investment advisor registration'
       });
     }
   });

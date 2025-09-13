@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -136,41 +137,155 @@ export type AiArticleReport = typeof aiArticleReports.$inferSelect;
 // Investment Advisor table
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  // Personal Information
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  
+  // Professional Information
+  sebiRegistrationNumber: text("sebi_registration_number").notNull(),
+  companyName: text("company_name").default(''),
+  qualification: text("qualification").default(''),
+  experience: integer("experience").notNull(), // Years as integer
+  yearsInBusiness: integer("years_in_business").default(0),
+  
+  // Office Contact Information
+  officeAddress: text("office_address").default(''),
+  city: text("city").default(''),
+  state: text("state").default(''),
+  pincode: text("pincode").default(''),
+  professionalPhone: text("professional_phone").default(''),
+  
+  // Online Presence
+  websiteUrl: text("website_url").default(''),
+  linkedinProfile: text("linkedin_profile").default(''),
+  articleLinks: text("article_links").array(),
+  socialMediaLinks: text("social_media_links").array(),
+  
+  // Professional Services
+  specializations: text("specializations").array(),
+  servicesOffered: text("services_offered").array(),
+  languagesSpoken: text("languages_spoken").array(),
+  aboutYou: text("about_you").default(''),
+  consultationFee: integer("consultation_fee").notNull(), // Fee in rupees as integer
+  
+  // Legal Requirements (stored as booleans for validation)
+  acceptTerms: boolean("accept_terms").default(false),
+  acceptPrivacy: boolean("accept_privacy").default(false),
+  acceptDisclaimer: boolean("accept_disclaimer").default(false),
+  
+  // Availability
+  availableForConsultations: boolean("available_for_consultations").default(true),
+  
+  // Legacy fields for compatibility (keeping these for existing data)
+  name: text("name").default(''), // Will be computed from firstName + lastName
   company: text("company").default(''),
   designation: text("designation").default(''),
-  phone: text("phone").notNull(),
-  email: text("email").notNull(),
+  phone: text("phone").default(''),
   website: text("website").default(''),
   specialization: text("specialization").default(''),
-  experience: text("experience").default(''),
   location: text("location").default(''),
   rating: text("rating").default('4.0'),
-  // New fields for registration
-  sebiRegistrationNumber: text("sebi_registration_number"),
   profilePictureUrl: text("profile_picture_url"),
   linkedinUrl: text("linkedin_url"),
   twitterUrl: text("twitter_url"),
   facebookUrl: text("facebook_url"),
-  whatsappNumber: text("whatsapp_number"), // For direct WhatsApp chat
+  whatsappNumber: text("whatsapp_number"),
   videoCallAvailable: boolean("video_call_available").default(false),
   whatsappAvailable: boolean("whatsapp_available").default(false),
-  consultationFee: text("consultation_fee").default(''),
   bio: text("bio").default(''),
   languages: text("languages").default('English'),
   availabilityHours: text("availability_hours").default('9 AM - 6 PM'),
-  isVerified: boolean("is_verified").default(false), // For admin approval
-  registrationStatus: text("registration_status").default('pending'), // pending, approved, rejected
+  isVerified: boolean("is_verified").default(false),
+  registrationStatus: text("registration_status").default('pending'),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdvisors).omit({
-  id: true,
-  createdAt: true,
-});
+// Create insert schema with proper validation
+export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdvisors)
+  .omit({
+    id: true,
+    createdAt: true,
+    name: true, // Will be computed from firstName + lastName
+    company: true, // Legacy field
+    designation: true, // Legacy field
+    phone: true, // Legacy field
+    website: true, // Legacy field
+    specialization: true, // Legacy field
+    location: true, // Legacy field
+    rating: true, // Legacy field
+    profilePictureUrl: true, // Legacy field
+    linkedinUrl: true, // Legacy field
+    twitterUrl: true, // Legacy field
+    facebookUrl: true, // Legacy field
+    whatsappNumber: true, // Legacy field
+    videoCallAvailable: true, // Legacy field
+    whatsappAvailable: true, // Legacy field
+    bio: true, // Legacy field
+    languages: true, // Legacy field
+    availabilityHours: true, // Legacy field
+    isVerified: true, // Admin controlled
+    registrationStatus: true, // Admin controlled
+  })
+  .extend({
+    // Add custom validation rules
+    email: z.string().email("Please enter a valid email address"),
+    sebiRegistrationNumber: z.string().min(1, "SEBI registration number is required"),
+    experience: z.number().min(1, "Experience must be at least 1 year").max(50, "Experience cannot exceed 50 years"),
+    consultationFee: z.number().min(0, "Fee must be at least ₹0").max(10000, "Fee cannot exceed ₹10,000"),
+    specializations: z.array(z.string()).min(1, "Please select at least one specialization"),
+    servicesOffered: z.array(z.string()).min(1, "Please select at least one service"),
+    languagesSpoken: z.array(z.string()).min(1, "Please select at least one language"),
+    aboutYou: z.string().min(10, "Please provide at least 10 characters about yourself").max(1000, "Description cannot exceed 1000 characters"),
+    acceptTerms: z.boolean().refine(val => val === true, "You must accept the terms and conditions"),
+    acceptPrivacy: z.boolean().refine(val => val === true, "You must accept the privacy policy"),
+    acceptDisclaimer: z.boolean().refine(val => val === true, "You must acknowledge the professional disclaimer"),
+    websiteUrl: z.string().url("Please enter a valid website URL").optional().or(z.literal('')),
+    linkedinProfile: z.string().url("Please enter a valid LinkedIn URL").optional().or(z.literal('')),
+    pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits").optional().or(z.literal('')),
+    professionalPhone: z.string().regex(/^\d{10}$/, "Phone number must be 10 digits").optional().or(z.literal('')),
+  });
 
 export type InsertInvestmentAdvisor = z.infer<typeof insertInvestmentAdvisorSchema>;
 export type InvestmentAdvisor = typeof investmentAdvisors.$inferSelect;
+
+// Constants for form dropdowns
+export const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan',
+  'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh',
+  'Uttarakhand', 'West Bengal', 'Jammu and Kashmir', 'Ladakh'
+] as const;
+
+export const QUALIFICATIONS = [
+  'SEBI Registered Investment Advisor',
+  'CFA (Chartered Financial Analyst)',
+  'CFP (Certified Financial Planner)',
+  'CA (Chartered Accountant)',
+  'CS (Company Secretary)',
+  'CMA (Cost and Management Accountant)',
+  'MBA Finance',
+  'Other'
+] as const;
+
+export const SPECIALIZATIONS = [
+  'Equity Markets', 'Mutual Funds', 'Fixed Deposits', 'Insurance Planning',
+  'Retirement Planning', 'Tax Planning', 'Portfolio Management', 'Risk Assessment',
+  'Commodity Trading', 'Debt Securities', 'Real Estate Investment', 'Financial Planning'
+] as const;
+
+export const SERVICES_OFFERED = [
+  'Investment Planning', 'Portfolio Review', 'Risk Assessment', 'Retirement Planning',
+  'Tax Planning', 'Insurance Consultation', 'Estate Planning', 'Debt Management',
+  'Goal-based Planning', 'SIP Advisory', 'Mutual Fund Selection', 'Stock Research'
+] as const;
+
+export const INDIAN_LANGUAGES = [
+  'English', 'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil',
+  'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi', 'Assamese'
+] as const;
 
 // Google Sheets row structure
 export interface GoogleSheetsRow {
