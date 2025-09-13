@@ -69,10 +69,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
   // Registration mutation
   const registrationMutation = useMutation({
     mutationFn: async (data: InsertInvestmentAdvisor) => {
-      return apiRequest('/api/investment-advisors', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('/api/investment-advisors', 'POST', data);
     },
     onSuccess: (data) => {
       toast({
@@ -297,7 +294,8 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                             <Input 
                               placeholder="Enter your company name" 
                               data-testid="input-company-name"
-                              {...field} 
+                              {...field}
+                              value={field.value || ''}
                             />
                           </FormControl>
                           <p className="text-xs text-gray-500">Name of your advisory firm (if applicable)</p>
@@ -361,7 +359,8 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                                 type="number" 
                                 placeholder="Enter years in business" 
                                 data-testid="input-years-business"
-                                {...field} 
+                                {...field}
+                                value={field.value?.toString() || ''}
                               />
                             </FormControl>
                             <p className="text-xs text-gray-500">How long have you been running your advisory business</p>
@@ -390,7 +389,8 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                             <Input 
                               placeholder="Enter your office street address" 
                               data-testid="input-office-address"
-                              {...field} 
+                              {...field}
+                              value={field.value || ''}
                             />
                           </FormControl>
                           <p className="text-xs text-gray-500">Complete street address of your office</p>
@@ -409,7 +409,8 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                               <Input 
                                 placeholder="Enter your city" 
                                 data-testid="input-city"
-                                {...field} 
+                                {...field}
+                                value={field.value || ''}
                               />
                             </FormControl>
                             <FormMessage />
