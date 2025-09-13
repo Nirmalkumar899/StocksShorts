@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, Video, MessageCircle, Plus, Upload, User, ExternalLink, Clock, Users } from "@/lib/icons";
+import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, Video, MessageCircle, Plus, Upload, User, ExternalLink, Clock, Users, X } from "@/lib/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +25,9 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedSpecialization, setSelectedSpecialization] = useState("all");
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [articleLinks, setArticleLinks] = useState<string[]>(['']);
+  const [socialLinks, setSocialLinks] = useState<string[]>(['']);
+  const [availableForConsultations, setAvailableForConsultations] = useState(true);
   const { toast } = useToast();
 
   const { data: advisors = [], isLoading } = useQuery<InvestmentAdvisor[]>({
@@ -98,7 +103,11 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
             <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400">
               Login
             </Button>
-            <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+            <Button 
+              size="sm" 
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+              onClick={() => setShowRegistrationForm(true)}
+            >
               Sign Up
             </Button>
           </div>
@@ -109,101 +118,373 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                 Join as RIA
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Join as SEBI Registered Investment Advisor</DialogTitle>
+                <DialogTitle className="text-xl font-bold">Register as an Investment Advisor</DialogTitle>
                 <DialogDescription>
-                  Create your professional profile and start connecting with investors
+                  Join our platform and start connecting with investors looking for professional guidance.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" placeholder="Your full name" />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" placeholder="+91 9876543210" />
-                  </div>
-                  <div>
-                    <Label htmlFor="sebi">SEBI RIA Registration Number *</Label>
-                    <Input id="sebi" placeholder="INA000000000" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="company">Company Name *</Label>
-                    <Input id="company" placeholder="Your company" />
-                  </div>
-                  <div>
-                    <Label htmlFor="designation">Designation *</Label>
-                    <Input id="designation" placeholder="Investment Advisor" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="specialization">Specialization *</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select specialization" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="equity">Equity</SelectItem>
-                        <SelectItem value="mutual-funds">Mutual Funds</SelectItem>
-                        <SelectItem value="insurance">Insurance</SelectItem>
-                        <SelectItem value="tax-planning">Tax Planning</SelectItem>
-                        <SelectItem value="retirement">Retirement Planning</SelectItem>
-                        <SelectItem value="portfolio">Portfolio Management</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="location">Location *</Label>
-                    <Input id="location" placeholder="Mumbai, Delhi, etc." />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="experience">Experience (Years)</Label>
-                    <Input id="experience" placeholder="5" />
-                  </div>
-                  <div>
-                    <Label htmlFor="website">Website</Label>
-                    <Input id="website" placeholder="https://yourwebsite.com" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="linkedin">LinkedIn Profile</Label>
-                    <Input id="linkedin" placeholder="https://linkedin.com/in/yourprofile" />
-                  </div>
-                  <div>
-                    <Label htmlFor="twitter">Twitter Profile</Label>
-                    <Input id="twitter" placeholder="https://twitter.com/yourhandle" />
-                  </div>
-                </div>
+              <div className="space-y-6 py-4">
+                {/* Personal Information */}
                 <div>
-                  <Label htmlFor="qualification">Professional Qualifications</Label>
-                  <Input id="qualification" placeholder="CFA, CFP, etc." />
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Personal Information
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="firstName">First Name *</Label>
+                        <Input id="firstName" placeholder="Enter your first name" />
+                        <p className="text-xs text-gray-500 mt-1">Your legal first name as per official documents</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Input id="lastName" placeholder="Enter your last name" />
+                        <p className="text-xs text-gray-500 mt-1">Your legal last name as per official documents</p>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email Address *</Label>
+                      <Input id="email" type="email" placeholder="Enter your email address" />
+                      <p className="text-xs text-gray-500 mt-1">We'll use this email to communicate about your registration and account</p>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Professional Information */}
                 <div>
-                  <Label htmlFor="about">About You</Label>
-                  <Textarea id="about" placeholder="Brief description about your expertise and investment philosophy..." rows={3} />
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Professional Information
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="sebiNumber">SEBI Registration Number *</Label>
+                      <Input id="sebiNumber" placeholder="Enter your SEBI registration number" />
+                      <p className="text-xs text-gray-500 mt-1">Your unique SEBI registration identifier</p>
+                    </div>
+                    <div>
+                      <Label htmlFor="companyName">Company/Firm Name</Label>
+                      <Input id="companyName" placeholder="Enter your company name" />
+                      <p className="text-xs text-gray-500 mt-1">Name of your advisory firm (if applicable)</p>
+                    </div>
+                    <div>
+                      <Label htmlFor="qualification">Qualification</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="SEBI Registered Investment Advisor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sebi-ria">SEBI Registered Investment Advisor</SelectItem>
+                          <SelectItem value="cfa">CFA</SelectItem>
+                          <SelectItem value="cfp">CFP</SelectItem>
+                          <SelectItem value="ca">Chartered Accountant</SelectItem>
+                          <SelectItem value="cs">Company Secretary</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 mt-1">Your professional qualifications and certifications</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="experience">Experience (Years) *</Label>
+                        <Input id="experience" type="number" placeholder="1" />
+                        <p className="text-xs text-gray-500 mt-1">Total years of experience in financial advisory</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="yearsInBusiness">Years in Business</Label>
+                        <Input id="yearsInBusiness" type="number" placeholder="Enter years in business" />
+                        <p className="text-xs text-gray-500 mt-1">How long have you been running your advisory business</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Office Contact Information */}
                 <div>
-                  <Label htmlFor="profile-pic">Profile Picture</Label>
-                  <Input id="profile-pic" type="file" accept="image/*" />
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Office Contact Information
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="officeAddress">Office Address</Label>
+                      <Input id="officeAddress" placeholder="Enter your office street address" />
+                      <p className="text-xs text-gray-500 mt-1">Complete street address of your office</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" placeholder="Enter your city" />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your state" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="andhra-pradesh">Andhra Pradesh</SelectItem>
+                            <SelectItem value="delhi">Delhi</SelectItem>
+                            <SelectItem value="gujarat">Gujarat</SelectItem>
+                            <SelectItem value="karnataka">Karnataka</SelectItem>
+                            <SelectItem value="maharashtra">Maharashtra</SelectItem>
+                            <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
+                            <SelectItem value="telangana">Telangana</SelectItem>
+                            <SelectItem value="west-bengal">West Bengal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="pincode">Pincode</Label>
+                        <Input id="pincode" placeholder="Enter 6-digit pincode" maxLength={6} />
+                      </div>
+                      <div>
+                        <Label htmlFor="professionalPhone">Professional Phone</Label>
+                        <Input id="professionalPhone" placeholder="Enter 10-digit phone number" />
+                        <p className="text-xs text-gray-500 mt-1">Professional contact number for client communication</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                  Submit Application
-                </Button>
+
+                {/* Online Presence */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    Online Presence
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="website">Website URL</Label>
+                      <Input id="website" placeholder="https://your-website.com" />
+                      <p className="text-xs text-gray-500 mt-1">Your professional website or business page</p>
+                    </div>
+                    <div>
+                      <Label htmlFor="linkedin">LinkedIn Profile</Label>
+                      <Input id="linkedin" placeholder="https://linkedin.com/in/yourprofile" />
+                      <p className="text-xs text-gray-500 mt-1">Your LinkedIn professional profile</p>
+                    </div>
+                    <div>
+                      <Label>Articles/Blog Links</Label>
+                      <p className="text-xs text-gray-500 mb-2">Add links to your published articles, blog posts, or research papers</p>
+                      {articleLinks.map((link, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={link}
+                            onChange={(e) => {
+                              const newLinks = [...articleLinks];
+                              newLinks[index] = e.target.value;
+                              setArticleLinks(newLinks);
+                            }}
+                            placeholder="https://example.com/your-article"
+                          />
+                          {articleLinks.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newLinks = articleLinks.filter((_, i) => i !== index);
+                                setArticleLinks(newLinks);
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setArticleLinks([...articleLinks, ''])}
+                      >
+                        Add Article Link
+                      </Button>
+                    </div>
+                    <div>
+                      <Label>Other Social Media Links</Label>
+                      <p className="text-xs text-gray-500 mb-2">Add links to your professional social media profiles (Twitter, YouTube, etc.)</p>
+                      {socialLinks.map((link, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            value={link}
+                            onChange={(e) => {
+                              const newLinks = [...socialLinks];
+                              newLinks[index] = e.target.value;
+                              setSocialLinks(newLinks);
+                            }}
+                            placeholder="https://example.com/your-profile"
+                          />
+                          {socialLinks.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newLinks = socialLinks.filter((_, i) => i !== index);
+                                setSocialLinks(newLinks);
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSocialLinks([...socialLinks, ''])}
+                      >
+                        Add Social Media Link
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Services */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Star className="h-5 w-5" />
+                    Professional Services
+                  </h3>
+                  <div className="space-y-6">
+                    <div>
+                      <Label className="text-base font-medium">Specializations *</Label>
+                      <p className="text-xs text-gray-500 mb-3">Select all areas where you provide advisory services</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          'Equity Markets', 'Mutual Funds', 'Fixed Deposits', 'Insurance Planning',
+                          'Retirement Planning', 'Tax Planning', 'Portfolio Management', 'Risk Assessment',
+                          'Commodity Trading', 'Debt Securities', 'Real Estate Investment', 'Financial Planning'
+                        ].map((spec) => (
+                          <div key={spec} className="flex items-center space-x-2">
+                            <Checkbox id={`spec-${spec}`} />
+                            <Label htmlFor={`spec-${spec}`} className="text-sm">{spec}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-base font-medium">Services Offered *</Label>
+                      <p className="text-xs text-gray-500 mb-3">Select all types of services you provide to clients</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          'Investment Planning', 'Portfolio Review', 'Risk Assessment', 'Retirement Planning',
+                          'Tax Planning', 'Insurance Consultation', 'Estate Planning', 'Debt Management',
+                          'Goal-based Planning', 'SIP Advisory', 'Mutual Fund Selection', 'Stock Research'
+                        ].map((service) => (
+                          <div key={service} className="flex items-center space-x-2">
+                            <Checkbox id={`service-${service}`} />
+                            <Label htmlFor={`service-${service}`} className="text-sm">{service}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-base font-medium">Languages Spoken *</Label>
+                      <p className="text-xs text-gray-500 mb-3">Select all languages you can communicate in with clients</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          'English', 'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil',
+                          'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi', 'Assamese'
+                        ].map((language) => (
+                          <div key={language} className="flex items-center space-x-2">
+                            <Checkbox id={`lang-${language}`} />
+                            <Label htmlFor={`lang-${language}`} className="text-sm">{language}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="aboutYou">About You *</Label>
+                      <Textarea 
+                        id="aboutYou" 
+                        placeholder="Tell potential clients about your expertise, approach, and what makes you unique..." 
+                        rows={4}
+                        maxLength={1000}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Describe your investment philosophy and services (10-1000 characters)</p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="consultationFee">Consultation Fee (₹) *</Label>
+                      <Input id="consultationFee" type="number" placeholder="100.00" min="0" max="10000" />
+                      <p className="text-xs text-gray-500 mt-1">Your fee per consultation session (₹0-10,000)</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Legal Requirements */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Legal Requirements
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-2">
+                      <Checkbox id="terms" className="mt-1" />
+                      <div>
+                        <Label htmlFor="terms" className="text-sm font-medium">I accept the Terms & Conditions *</Label>
+                        <p className="text-xs text-gray-500">By checking this box, you agree to our platform's terms of service and user agreement.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <Checkbox id="privacy" className="mt-1" />
+                      <div>
+                        <Label htmlFor="privacy" className="text-sm font-medium">I accept the Data Processing/Privacy Policy *</Label>
+                        <p className="text-xs text-gray-500">You consent to the collection, processing, and storage of your personal and professional data for platform operations.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <Checkbox id="disclaimer" className="mt-1" />
+                      <div>
+                        <Label htmlFor="disclaimer" className="text-sm font-medium">I acknowledge the Professional Disclaimer *</Label>
+                        <p className="text-xs text-gray-500">I understand that all investment advice should be personalized and that past performance does not guarantee future results. I will provide advice in accordance with SEBI guidelines.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Availability
+                  </h3>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <Label className="text-base font-medium">Available for Consultations</Label>
+                      <p className="text-xs text-gray-500">Toggle your availability for new consultation requests</p>
+                    </div>
+                    <Switch 
+                      checked={availableForConsultations} 
+                      onCheckedChange={setAvailableForConsultations}
+                    />
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex gap-4 pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => setShowRegistrationForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white">
+                    Register as Advisor
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
