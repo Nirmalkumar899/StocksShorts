@@ -1,21 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle } from "@/lib/icons";
+import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, Video, MessageCircle, Plus, Upload, User, ExternalLink } from "@/lib/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import type { InvestmentAdvisor } from "@shared/schema";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { InvestmentAdvisor, InsertInvestmentAdvisor } from "@shared/schema";
 
 interface SebiRiaProps {
   onBack: () => void;
 }
 
 export default function SebiRia({ onBack }: SebiRiaProps) {
-  console.log('🎯 SEBI RIA v5.0 ULTIMATE SIMPLE DESIGN FORCE CACHE CLEAR! 🚀');
+  console.log('🎯 SEBI RIA v6.0 WITH ADVISOR REGISTRATION & CONSULTATIONS! 🚀');
   const [searchQuery, setSearchQuery] = useState("");
   const [featuredAdvisorIndex, setFeaturedAdvisorIndex] = useState(0);
   const [showAllAdvisors, setShowAllAdvisors] = useState(false);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    designation: "",
+    sebiRegNumber: "",
+    specialization: "",
+    location: "",
+    experience: "",
+    website: "",
+    linkedin: "",
+    twitter: "",
+    qualification: "",
+    about: "",
+    profilePicture: null as File | null
+  });
+
+  const { toast } = useToast();
 
   const { data: advisors = [], isLoading } = useQuery<InvestmentAdvisor[]>({
     queryKey: ['/api/investment-advisors'],

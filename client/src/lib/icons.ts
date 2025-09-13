@@ -65,4 +65,7 @@ export {
   FileText,
   FolderOpen,
   LogOut,
+  Video,
+  Upload,
+  UserPlus,
 } from "./custom-icons";
