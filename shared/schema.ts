@@ -146,6 +146,21 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   experience: text("experience").default(''),
   location: text("location").default(''),
   rating: text("rating").default('4.0'),
+  // New fields for registration
+  sebiRegistrationNumber: text("sebi_registration_number"),
+  profilePictureUrl: text("profile_picture_url"),
+  linkedinUrl: text("linkedin_url"),
+  twitterUrl: text("twitter_url"),
+  facebookUrl: text("facebook_url"),
+  whatsappNumber: text("whatsapp_number"), // For direct WhatsApp chat
+  videoCallAvailable: boolean("video_call_available").default(false),
+  whatsappAvailable: boolean("whatsapp_available").default(false),
+  consultationFee: text("consultation_fee").default(''),
+  bio: text("bio").default(''),
+  languages: text("languages").default('English'),
+  availabilityHours: text("availability_hours").default('9 AM - 6 PM'),
+  isVerified: boolean("is_verified").default(false), // For admin approval
+  registrationStatus: text("registration_status").default('pending'), // pending, approved, rejected
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
