@@ -206,39 +206,42 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
       <div className="flex-1 overflow-y-auto">
         
         {/* Hero Section - InvestConnect Style */}
-        <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-teal-500 text-white p-6 relative overflow-hidden">
-          <div className="relative z-10 text-center">
-            <h1 className="text-3xl font-bold mb-2">
+        <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-teal-500 text-white p-4 relative overflow-hidden">
+          <div className="relative z-10 text-center max-w-full">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 px-2">
               Talk to India's Top
             </h1>
-            <h1 className="text-3xl font-bold text-orange-400 mb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-orange-400 mb-4 px-2">
               Investment Advisors
             </h1>
-            <p className="text-blue-100 text-lg mb-2">
+            <p className="text-blue-100 text-base sm:text-lg mb-2 px-2">
               Get expert advice from SEBI-registered professionals.
             </p>
-            <p className="text-orange-300 font-semibold text-xl mb-6">
+            <p className="text-orange-300 font-semibold text-lg sm:text-xl mb-4 px-2">
               First consultation FREE!
             </p>
             
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 text-base font-semibold rounded-full shadow-lg mb-6 max-w-full break-words">
-              <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span className="leading-tight">Start Consulting Now!</span>
-            </Button>
+            <div className="px-2 mb-4">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 text-sm font-semibold rounded-full shadow-lg w-auto min-w-0 whitespace-nowrap">
+                <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span>Start Now!</span>
+              </Button>
+            </div>
 
             {/* Search Section */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 max-w-sm mx-auto w-full px-4">
-              <div className="space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
-                  <Input
-                    type="text"
-                    placeholder="Search advisors..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-3 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30 text-sm"
-                  />
-                </div>
+            <div className="mx-2">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 max-w-xs mx-auto">
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
+                    <Input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-3 py-2 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30 text-sm w-full"
+                    />
+                  </div>
                 
                 <Select value={selectedCity} onValueChange={setSelectedCity}>
                   <SelectTrigger className="bg-white/20 border-white/30 text-white">
@@ -254,12 +257,13 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                   </SelectContent>
                 </Select>
 
-                <Button 
-                  onClick={() => {}}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 font-semibold"
-                >
-                  Search Advisors
-                </Button>
+                  <Button 
+                    onClick={() => {}}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 font-semibold text-sm"
+                  >
+                    Search
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
