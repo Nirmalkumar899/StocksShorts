@@ -91,12 +91,20 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
           <Button variant="ghost" onClick={onBack} className="p-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Join as SEBI registered investment advisor
+          <div className="text-sm text-gray-600 dark:text-gray-400 text-center flex-1">
+            Join as SEBI registered investor advisor
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400">
+              Login
+            </Button>
+            <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+              Sign Up
+            </Button>
           </div>
           <Dialog open={showRegistrationForm} onOpenChange={setShowRegistrationForm}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hidden">
                 <Plus className="h-4 w-4 mr-1" />
                 Join as RIA
               </Button>
@@ -224,7 +232,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
             <div className="px-2 mb-4">
               <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 text-sm font-semibold rounded-full shadow-lg w-auto min-w-0 whitespace-nowrap">
                 <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span>Start Now!</span>
+                <span>Available Now - Start Consulting in 2 Minutes!</span>
               </Button>
             </div>
 
@@ -236,7 +244,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
                     <Input
                       type="text"
-                      placeholder="Search..."
+                      placeholder="Search by advisor name, specialization..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10 pr-3 py-2 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30 text-sm w-full"
