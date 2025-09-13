@@ -4,8 +4,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
-import { aiNewsGenerator } from "./services/aiNewsGenerator";
-import { newsCache } from "./services/newsCache";
 import OpenAI from 'openai';
 import { mobileAuth } from "./mobileAuth";
 
@@ -108,43 +106,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Get all articles or filter by category - Using cached AI news with Inshorts-style refresh
+  // Get all articles or filter by category
   app.get("/api/articles", async (req, res) => {
     try {
       const category = req.query.category as string;
-      console.log('🔍 Requested category:', category);
+      console.log('Requested category:', category);
       
-      // Get articles from cache (automatically refreshes if needed)
-      const articles = await newsCache.getArticles(category);
-      
-      console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
-      
-      // Set cache headers - shorter cache since we handle refresh internally
-      res.set({
-        'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
-        'Content-Type': 'application/json; charset=utf-8'
-      });
-      
-      // Sort by priority (High > Medium > Low) then by time (most recent first)
-      const sortedArticles = articles.sort((a, b) => {
-        // Priority ordering
-        const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-        const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-        const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+      if (category && category !== 'all') {
+        const articles = await googleSheetsService.getArticlesByCategory(category);
+        console.log(`Found ${articles.length} articles for category: ${category}`);
+        console.log('Article types found:', articles.map(a => a.type));
+        res.json(articles);
+      } else {
+        // Set cache headers for better performance
+        res.set({
+          'Cache-Control': 'public, max-age=30, s-maxage=60',
+          'Content-Type': 'application/json; charset=utf-8'
+        });
         
-        if (priorityA !== priorityB) {
-          return priorityB - priorityA; // Higher priority first
-        }
+        const articles = await googleSheetsService.fetchArticles();
+        console.log(`Total articles: ${articles.length}`);
+        // Log unique article types for debugging
+        const typeSet = new Set(articles.map(a => a.type));
+        const uniqueTypes: string[] = [];
+        typeSet.forEach(type => uniqueTypes.push(type));
+        console.log('All article categories in sheets:', uniqueTypes);
         
-        // If same priority, sort by time (most recent first)
-        const timeA = a.time ? new Date(a.time).getTime() : 0;
-        const timeB = b.time ? new Date(b.time).getTime() : 0;
-        return timeB - timeA;
-      });
-      
-      res.json(sortedArticles);
+        // Sort by date (most recent first) - articles without timestamp are treated as beginning of today
+        const sortedArticles = articles.sort((a, b) => {
+          // Helper function to get sortable timestamp
+          const getTimestamp = (article: any) => {
+            if (article.time) {
+              const timestamp = new Date(article.time).getTime();
+              if (!isNaN(timestamp)) return timestamp;
+            }
+            
+            // If no timestamp, treat as beginning of today (very recent)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Start of today
+            return today.getTime();
+          };
+          
+          const timestampA = getTimestamp(a);
+          const timestampB = getTimestamp(b);
+          
+          // Sort by most recent first (higher timestamp first)
+          return timestampB - timestampA;
+        });
+        
+        // Return full articles without truncation
+        res.json(sortedArticles);
+      }
     } catch (error) {
-      console.error('❌ Error fetching cached articles:', error);
+      console.error('Error fetching articles:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch articles'
       });
@@ -159,8 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid article ID' });
       }
 
-      // Get articles from cache and find the specific article
-      const articles = await newsCache.getArticles();
+      const articles = await googleSheetsService.fetchArticles();
       const article = articles.find(a => a.id === id);
       
       if (!article) {
@@ -169,44 +182,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(article);
     } catch (error) {
-      console.error('Error fetching cached article:', error);
+      console.error('Error fetching article:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch article'
       });
     }
   });
 
-  // Refresh articles (force refresh cached news - Inshorts style)
+  // Refresh articles (force fetch from Google Sheets)
   app.post("/api/articles/refresh", async (req, res) => {
     try {
-      console.log('🔄 Force refreshing cached news...');
+      // Clear cache first to force fresh fetch
+      googleSheetsService.clearCache();
+      console.log('Cache cleared - forcing fresh fetch from Google Sheets');
       
-      const articles = await newsCache.forceRefresh();
+      const articles = await googleSheetsService.fetchArticles();
       const uniqueCategories = Array.from(new Set(articles.map(a => a.type)));
-      const cacheStatus = newsCache.getCacheStatus();
       
-      // Send response immediately to avoid double response issue
-      return res.json({ 
-        message: 'News cache refreshed successfully', 
+      res.json({ 
+        message: 'Articles refreshed successfully', 
         count: articles.length,
         categories: uniqueCategories,
-        cacheStatus,
-        articles: articles.slice(0, 20) // Return first 20 for verification
+        articles 
       });
     } catch (error) {
-      console.error('Error refreshing news cache:', error);
-      if (!res.headersSent) {
-        return res.status(500).json({ 
-          message: error instanceof Error ? error.message : 'Failed to refresh news cache'
-        });
-      }
+      console.error('Error refreshing articles:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to refresh articles'
+      });
     }
-  });
-
-  // Get cache status endpoint
-  app.get("/api/articles/status", (req, res) => {
-    const status = newsCache.getCacheStatus();
-    res.json(status);
   });
 
   // Translation API using OpenAI SDK
@@ -268,7 +272,8 @@ CONTENT: [Hindi translation]`;
               const response = await openai.chat.completions.create({
                 model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
                 messages: [{ role: 'user', content: prompt }],
-                max_completion_tokens: 1000
+                temperature: 0.3,
+                max_tokens: 1000
               });
               
               const translatedText = response.choices[0].message.content;

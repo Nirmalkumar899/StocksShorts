@@ -35,8 +35,14 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   };
 
   const getSentimentIcon = () => {
-    // Icons removed as requested - returning empty for cleaner interface
-    return null;
+    switch (article.sentiment) {
+      case 'Positive':
+        return <TrendingUp className="h-3 w-3 text-green-500" />;
+      case 'Negative':
+        return <TrendingDown className="h-3 w-3 text-red-500" />;
+      default:
+        return <Minus className="h-3 w-3 text-gray-500" />;
+    }
   };
 
   const getSentimentBorderColor = () => {
@@ -317,51 +323,49 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     </button>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-3">
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                     {article.content?.trim() || 'No content available.'}
                   </div>
                 )}
-                
-                {/* Source and Date in Black Highlighted Section */}
-                <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
-                  <div className="flex items-center justify-between text-sm">
-                    {/* Left - Exact Date and Time */}
-                    <div className="text-white/90">
-                      {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })} • {new Date((article.time || new Date()) as string | Date).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </div>
-                    
-                    {/* Right - Source Link */}
-                    <div>
-                      {(article as any).sourceUrl ? (
-                        <a 
-                          href={(article as any).sourceUrl} 
-                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {article.source}
-                        </a>
-                      ) : (
-                        <span className="text-white font-medium">
-                          {article.source}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         </div>
         
-
+        {/* Source and time - positioned at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/98 dark:from-gray-900/98 via-white/90 dark:via-gray-900/90 to-transparent p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
+              <span className="flex items-center space-x-1">
+                {getSentimentIcon()}
+                <span className="capitalize font-medium">{article.sentiment}</span>
+              </span>
+              <span className="text-gray-500">•</span>
+              <span className="font-medium">{article.source}</span>
+              <span className="text-gray-500">•</span>
+              <span className="font-normal">{formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleCopyLink}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Copy link"
+              >
+                <Copy className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              </button>
+              
+              <button
+                onClick={handleOpenArticle}
+                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Open article"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Image Lightbox */}
         <ImageLightbox

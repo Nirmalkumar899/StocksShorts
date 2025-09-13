@@ -9,6 +9,7 @@ import type { Article } from '@shared/schema';
 import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
+import CategoryFilter from '@/components/category-filter';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
 
@@ -25,7 +26,7 @@ interface HomeProps {
 
 export default function Home({ initialCategory }: HomeProps = {}) {
   const [location, setLocation] = useLocation();
-  // Remove category selection - show all articles in clean interface
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'trending');
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
@@ -37,16 +38,52 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Remove all category logic for clean Inshorts-style interface
+  // Category order for auto-switching - Trending → Special → KalkaBazaar → IPO → ... → Educational → US Market → Crypto
+  const categoryOrder = [
+    'trending',
+    'stocksshorts-special',
+    'kalkabazaar',
+    'ipo',
+    'breakout-stocks',
+    'warrants',
+    'order-win',
+    'research-report',
+    'educational',
+    'us-market',
+    'crypto'
+  ];
 
-  // Set active section based on URL
+  // Map URLs to categories for subpage support
+  const urlToCategoryMap: { [key: string]: string } = {
+    '/': 'trending',
+    '/home': 'trending',
+    '/trending': 'trending',
+    '/special': 'stocksshorts-special',
+    '/breakout': 'breakout-stocks',
+    '/kalkabazaar': 'kalkabazaar',
+    '/warrants': 'warrants',
+    '/educational': 'educational',
+    '/ipo': 'ipo',
+    '/global': 'global',
+    '/orders': 'order-win',
+    '/research': 'research-report',
+    '/us-market': 'us-market',
+    '/crypto': 'crypto',
+    '/disclaimer': 'trending'
+  };
+
+  // Set category based on URL - start with Trending by default
   useEffect(() => {
+    const categoryFromUrl = urlToCategoryMap[location] || initialCategory || 'trending';
+    setSelectedCategory(categoryFromUrl);
+    
+    // Set active section based on URL
     if (location === '/disclaimer') {
       setActiveSection('disclaimer');
     } else {
       setActiveSection('home');
     }
-  }, [location]);
+  }, [location, initialCategory]);
 
   // Preload investment advisors data for faster navigation
   useQuery({
@@ -74,25 +111,24 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     }
   }, []);
 
-  // Fetch all articles without category filtering
+  // Fetch articles based on selected category
   const {
     data: rawArticles = [],
     isLoading,
     error,
     refetch
   } = useQuery<Article[]>({
-    queryKey: ['/api/articles'],
+    queryKey: ['/api/articles', selectedCategory === 'trending' ? undefined : selectedCategory],
     queryFn: async () => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      let url = '/api/articles';
       
-      try {
-        const response = await fetch('/api/articles', {
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        
-        clearTimeout(timeoutId);
+      if (selectedCategory !== 'trending') {
+        url = `/api/articles?category=${selectedCategory}`;
+      }
+      
+      const response = await fetch(url, {
+        credentials: 'include',
+      });
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -109,32 +145,28 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return [];
       }
       
-      // Sort articles chronologically (latest first)
-      const processedData = data.sort((a: Article, b: Article) => {
-        // Parse timestamps, default to 12:01 AM (start of day) if missing
-        const getTimestamp = (article: Article) => {
-          if (!article.time) {
-            // Articles without timestamp are considered uploaded at 12:01 AM start of day
-            return new Date('2025-07-05T00:01:00Z').getTime();
-          }
-          return new Date(article.time).getTime();
-        };
-        
-        const aTime = getTimestamp(a);
-        const bTime = getTimestamp(b);
-        
-        // Sort by most recent first (descending order)
-        return bTime - aTime;
-      });
+      // Sort articles chronologically when in 'trending' category (latest first)
+      let processedData = data;
+      if (selectedCategory === 'trending') {
+        processedData = data.sort((a: Article, b: Article) => {
+          // Parse timestamps, default to 12:01 AM (start of day) if missing
+          const getTimestamp = (article: Article) => {
+            if (!article.time) {
+              // Articles without timestamp are considered uploaded at 12:01 AM start of day
+              return new Date('2025-07-05T00:01:00Z').getTime();
+            }
+            return new Date(article.time).getTime();
+          };
+          
+          const aTime = getTimestamp(a);
+          const bTime = getTimestamp(b);
+          
+          // Sort by most recent first (descending order)
+          return bTime - aTime;
+        });
+      }
       
       return processedData;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
-          throw new Error('Request timed out. Please try again.');
-        }
-        throw error;
-      }
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -156,7 +188,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       return result;
     }
     console.log("Showing original articles:", rawArticles?.length);
-    return rawArticles || [];
+    return rawArticles;
   }, [rawArticles, isTranslated, translatedArticles]);
 
   // Refresh articles mutation
@@ -301,7 +333,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     }
   };
 
-  // Remove category handler for clean interface
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
 
 
 
@@ -372,7 +406,10 @@ export default function Home({ initialCategory }: HomeProps = {}) {
           isTranslated={isTranslated}
           isTranslating={translateMutation.isPending}
         />
-        {/* Category filter removed for clean Inshorts-style interface */}
+        <CategoryFilter 
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
       </div>
 
       {/* Main Content Area */}
@@ -385,7 +422,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
             </div>
           </div>
-        ) : !articles || articles.length === 0 ? (
+        ) : articles.length === 0 ? (
           // Empty State
           <div className="h-full flex flex-col items-center justify-center px-4">
             <div className="text-6xl mb-4">📰</div>
@@ -393,7 +430,10 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               No articles found
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
-              There are no articles available at the moment.
+              {selectedCategory === 'all' 
+                ? "There are no articles available at the moment." 
+                : `No articles found in the ${selectedCategory} category.`
+              }
             </p>
             <div className="space-y-3">
               <Button 

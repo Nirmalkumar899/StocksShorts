@@ -58,7 +58,6 @@ export const articles = pgTable("articles", {
   sentiment: text("sentiment").notNull(), // Positive, Negative, Neutral
   priority: text("priority").notNull(), // High, Medium, Low
   imageUrl: text("image_url"), // URL for article image
-  sourceUrl: text("source_url"), // URL to the original source
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
