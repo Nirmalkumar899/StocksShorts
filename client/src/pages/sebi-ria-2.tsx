@@ -23,7 +23,7 @@ interface SebiRiaProps {
   onBack: () => void;
 }
 
-export default function SebiRia({ onBack }: SebiRiaProps) {
+export default function SebiRia2({ onBack }: SebiRiaProps) {
   console.log('🎯 SEBI RIA v6.0 INVESTCONNECT STYLE INTERFACE! 🚀');
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("all");
@@ -130,7 +130,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
   ];
 
   const getAdvisorInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return (name || 'Unknown').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const getRandomColor = () => {
@@ -519,21 +519,21 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                           <FormLabel>LinkedIn Profile</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="https://linkedin.com/in/yourprofile" 
+                              placeholder="https://linkedin.com/in/your-profile" 
                               data-testid="input-linkedin"
                               {...field} 
                             />
                           </FormControl>
-                          <p className="text-xs text-gray-500">Your LinkedIn professional profile</p>
+                          <p className="text-xs text-gray-500">Your professional LinkedIn profile URL</p>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     <div>
-                      <Label>Articles/Blog Links</Label>
-                      <p className="text-xs text-gray-500 mb-2">Add links to your published articles, blog posts, or research papers</p>
+                      <Label className="text-base font-medium">Article Links</Label>
+                      <p className="text-xs text-gray-500 mb-3">Add links to your published articles, blogs, or research papers</p>
                       {articleLinks.map((link, index) => (
-                        <div key={index} className="flex gap-2">
+                        <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={link}
                             onChange={(e) => {
@@ -568,10 +568,10 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                       </Button>
                     </div>
                     <div>
-                      <Label>Other Social Media Links</Label>
-                      <p className="text-xs text-gray-500 mb-2">Add links to your professional social media profiles (Twitter, YouTube, etc.)</p>
+                      <Label className="text-base font-medium">Social Media Links</Label>
+                      <p className="text-xs text-gray-500 mb-3">Add links to your professional social media profiles</p>
                       {socialLinks.map((link, index) => (
-                        <div key={index} className="flex gap-2">
+                        <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={link}
                             onChange={(e) => {
@@ -778,7 +778,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                         <FormItem className="flex items-start space-x-2">
                           <FormControl>
                             <Checkbox 
-                              checked={field.value}
+                              checked={field.value || false}
                               onCheckedChange={field.onChange}
                               className="mt-1"
                               data-testid="checkbox-accept-terms"
@@ -799,7 +799,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                         <FormItem className="flex items-start space-x-2">
                           <FormControl>
                             <Checkbox 
-                              checked={field.value}
+                              checked={field.value || false}
                               onCheckedChange={field.onChange}
                               className="mt-1"
                               data-testid="checkbox-accept-privacy"
@@ -820,7 +820,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                         <FormItem className="flex items-start space-x-2">
                           <FormControl>
                             <Checkbox 
-                              checked={field.value}
+                              checked={field.value || false}
                               onCheckedChange={field.onChange}
                               className="mt-1"
                               data-testid="checkbox-accept-disclaimer"
@@ -960,145 +960,119 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         </div>
 
         {/* Features Bar */}
-        <div className="bg-teal-600 text-white py-4">
-          <div className="flex justify-around items-center max-w-md mx-auto">
-            <div className="text-center">
-              <Shield className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm font-medium">SEBI</p>
+        <div className="bg-white dark:bg-gray-900 p-3">
+          <div className="flex items-center justify-between text-center">
+            <div className="flex-1">
+              <div className="bg-green-50 dark:bg-green-900 p-2 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto mb-1" />
+                <p className="text-xs font-medium text-green-800 dark:text-green-200">SEBI Verified</p>
+              </div>
             </div>
-            <div className="text-center">
-              <CheckCircle className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm font-medium">Verified</p>
+            <div className="flex-1 mx-2">
+              <div className="bg-blue-50 dark:bg-blue-900 p-2 rounded-lg">
+                <Video className="h-5 w-5 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
+                <p className="text-xs font-medium text-blue-800 dark:text-blue-200">Video Calls</p>
+              </div>
             </div>
-            <div className="text-center">
-              <Clock className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm font-medium">24/7</p>
+            <div className="flex-1">
+              <div className="bg-orange-50 dark:bg-orange-900 p-2 rounded-lg">
+                <MessageCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mx-auto mb-1" />
+                <p className="text-xs font-medium text-orange-800 dark:text-orange-200">WhatsApp Chat</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-          <div className="p-4">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Start Your Free Consultation
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Chat with these verified experts right now!
-              </p>
-            </div>
+        {/* Advisors List */}
+        <div className="flex-1 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Available Advisors ({filteredAdvisors.length})
+            </h2>
+          </div>
 
-            {/* Filter Tags */}
-            <div className="flex flex-wrap gap-2 mb-6 justify-center">
-              {specializations.map((spec) => (
-                <Button
-                  key={spec}
-                  variant={selectedSpecialization === spec.toLowerCase().replace(' ', '-') ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedSpecialization(spec === "All Specializations" ? "all" : spec.toLowerCase().replace(' ', '-'))}
-                  className={`rounded-full text-sm ${
-                    selectedSpecialization === (spec === "All Specializations" ? "all" : spec.toLowerCase().replace(' ', '-'))
-                      ? "bg-blue-500 text-white" 
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {spec}
-                </Button>
-              ))}
-            </div>
-
-            {/* Results Count */}
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-              {filteredAdvisors.length} advisors found
-            </p>
-
-            {/* Advisor Cards */}
-            <div className="space-y-4 max-w-2xl mx-auto">
-              {filteredAdvisors.length === 0 ? (
-                <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  <CardContent className="p-8 text-center">
-                    <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-1">No advisors found</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Try adjusting your search criteria
-                    </p>
+          <div className="space-y-3">
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-4">
+                    <div className="flex gap-3">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              ) : (
-                filteredAdvisors.slice(0, 20).map((advisor: InvestmentAdvisor) => (
-                  <Card key={advisor.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        {/* Profile Picture */}
-                        <div className={`w-16 h-16 rounded-full ${getRandomColor()} flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}>
-                          {getAdvisorInitials(advisor.name || 'Unknown')}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1 min-w-0 pr-2">
-                              <h3 className="font-bold text-lg text-gray-900 dark:text-white truncate">
-                                {advisor.name}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight truncate">
-                                {advisor.company}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center">
-                                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                                  {advisor.rating || "0.0"}
-                                </span>
-                              </div>
-                              <Badge variant="default" className="bg-blue-500 text-white text-xs">
-                                Available
-                              </Badge>
-                            </div>
+              ))
+            ) : filteredAdvisors.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400">No advisors found matching your criteria</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">Try adjusting your search filters</p>
+              </div>
+            ) : (
+              filteredAdvisors.map((advisor: InvestmentAdvisor) => (
+                <Card key={advisor.id} className="border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
+                  <CardContent className="p-3">
+                    <div className="flex gap-3">
+                      <div className={`w-12 h-12 ${getRandomColor()} rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
+                        {getAdvisorInitials(advisor.name || 'Unknown')}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate mb-1">
+                            {advisor.name}
+                          </h3>
+                          <div className="flex items-center gap-1 mb-1">
+                            <Shield className="h-3 w-3 text-green-600 dark:text-green-400 flex-shrink-0" />
+                            <span className="text-xs text-green-600 dark:text-green-400 font-medium">SEBI Registered</span>
                           </div>
-
-                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {advisor.experience || "0"} years exp
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {advisor.location || "Remote"}
-                            </div>
-                          </div>
-
-                          {advisor.specialization && (
-                            <div className="mb-3">
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Specializes in:</p>
-                              <Badge variant="secondary" className="text-xs truncate max-w-full">
-                                {advisor.specialization}
-                              </Badge>
+                          {advisor.location && (
+                            <div className="flex items-center gap-1 mb-1">
+                              <MapPin className="h-3 w-3 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                              <span className="text-xs text-gray-600 dark:text-gray-300 truncate">{advisor.location}</span>
                             </div>
                           )}
+                          {advisor.experience && (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-yellow-500 flex-shrink-0" />
+                              <span className="text-xs text-gray-600 dark:text-gray-300">{advisor.experience} years exp</span>
+                            </div>
+                          )}
+                        </div>
 
-                          <div className="flex gap-2 pt-2">
-                            <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white flex-1 min-w-0">
-                              <MessageCircle className="h-3 w-3 mr-1 flex-shrink-0" />
-                              <span className="truncate">WhatsApp Chat</span>
-                            </Button>
-                            <Button size="sm" variant="outline" className="flex-1 min-w-0">
-                              <Video className="h-3 w-3 mr-1 flex-shrink-0" />
-                              <span className="truncate">Video Call</span>
-                            </Button>
+                        {advisor.specialization && (
+                          <div className="mb-3">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Specializes in:</p>
+                            <Badge variant="secondary" className="text-xs truncate max-w-full">
+                              {advisor.specialization}
+                            </Badge>
                           </div>
+                        )}
+
+                        <div className="flex gap-2 pt-2">
+                          <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white flex-1 min-w-0">
+                            <MessageCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">WhatsApp Chat</span>
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1 min-w-0">
+                            <Video className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">Video Call</span>
+                          </Button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-
-            {/* Bottom spacing for navigation */}
-            <div className="pb-20"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
+
+          {/* Bottom spacing for navigation */}
+          <div className="pb-20"></div>
         </div>
       </div>
     </div>
