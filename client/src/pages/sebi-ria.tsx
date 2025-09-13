@@ -472,7 +472,6 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
         {/* Bottom spacing for navigation */}
         <div className="pb-20"></div>
       </div>
-      </div>
     </div>
   );
 }
