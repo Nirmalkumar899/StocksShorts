@@ -171,12 +171,12 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
           </div>
           <Button 
             size="sm" 
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
             onClick={() => setShowRegistrationForm(true)}
             data-testid="button-join-as-advisor"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            Join as Advisor
+            <Plus className="h-4 w-4 mr-2" />
+            Join as Investment Advisor
           </Button>
         </div>
       </div>
