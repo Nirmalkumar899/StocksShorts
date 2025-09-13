@@ -221,22 +221,22 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
               First consultation FREE!
             </p>
             
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg font-semibold rounded-full shadow-lg mb-6">
-              <Clock className="h-5 w-5 mr-2" />
-              Available Now - Start Consulting in 2 Minutes!
+            <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 text-base font-semibold rounded-full shadow-lg mb-6 max-w-full break-words">
+              <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="leading-tight">Start Consulting Now!</span>
             </Button>
 
             {/* Search Section */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 max-w-md mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 max-w-sm mx-auto w-full px-4">
               <div className="space-y-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
                   <Input
                     type="text"
-                    placeholder="Search by advisor name, specialization..."
+                    placeholder="Search advisors..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-3 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30"
+                    className="pl-10 pr-4 py-3 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30 text-sm"
                   />
                 </div>
                 
