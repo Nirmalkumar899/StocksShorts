@@ -71,7 +71,6 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
     mutationFn: async (data: InsertInvestmentAdvisor) => {
       return apiRequest('/api/investment-advisors', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
     },
@@ -109,7 +108,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
 
   const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) => {
     const matchesSearch = !searchQuery || 
-      advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (advisor.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (advisor.specialization || '').toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -163,34 +162,29 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
 
   return (
     <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
-      {/* Header - InvestConnect Style */}
+      {/* Header - Clean Design */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between p-4">
           <Button variant="ghost" onClick={onBack} className="p-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="text-sm text-gray-600 dark:text-gray-400 text-center flex-1">
-            Join as SEBI registered investor advisor
+          <div className="flex-1 text-center">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">SEBI Registered Investment Advisors</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Connect with qualified financial experts</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-gray-600 dark:text-gray-400">
-              Login
-            </Button>
-            <Button 
-              size="sm" 
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-              onClick={() => setShowRegistrationForm(true)}
-            >
-              Sign Up
-            </Button>
-          </div>
-          <Dialog open={showRegistrationForm} onOpenChange={setShowRegistrationForm}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="hidden">
-                <Plus className="h-4 w-4 mr-1" />
-                Join as RIA
-              </Button>
-            </DialogTrigger>
+          <Button 
+            size="sm" 
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            onClick={() => setShowRegistrationForm(true)}
+            data-testid="button-join-as-advisor"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Join as Advisor
+          </Button>
+        </div>
+      </div>
+      
+      <Dialog open={showRegistrationForm} onOpenChange={setShowRegistrationForm}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-xl font-bold">Register as an Investment Advisor</DialogTitle>
@@ -339,7 +333,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="experienceYears"
+                        name="experience"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Experience (Years) *</FormLabel>
@@ -500,7 +494,7 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="website"
+                      name="websiteUrl"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Website URL</FormLabel>
