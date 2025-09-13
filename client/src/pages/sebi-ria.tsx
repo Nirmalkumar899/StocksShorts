@@ -343,11 +343,11 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                            <div className="flex-1 min-w-0 pr-2">
+                              <h3 className="font-bold text-lg text-gray-900 dark:text-white truncate">
                                 {advisor.name}
                               </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight truncate">
                                 {advisor.company}
                               </p>
                             </div>
@@ -378,20 +378,20 @@ export default function SebiRia({ onBack }: SebiRiaProps) {
                           {advisor.specialization && (
                             <div className="mb-3">
                               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Specializes in:</p>
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge variant="secondary" className="text-xs truncate max-w-full">
                                 {advisor.specialization}
                               </Badge>
                             </div>
                           )}
 
                           <div className="flex gap-2 pt-2">
-                            <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white flex-1">
-                              <MessageCircle className="h-3 w-3 mr-1" />
-                              WhatsApp Chat
+                            <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white flex-1 min-w-0">
+                              <MessageCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+                              <span className="truncate">WhatsApp Chat</span>
                             </Button>
-                            <Button size="sm" variant="outline" className="flex-1">
-                              <Video className="h-3 w-3 mr-1" />
-                              Video Call
+                            <Button size="sm" variant="outline" className="flex-1 min-w-0">
+                              <Video className="h-3 w-3 mr-1 flex-shrink-0" />
+                              <span className="truncate">Video Call</span>
                             </Button>
                           </div>
                         </div>
