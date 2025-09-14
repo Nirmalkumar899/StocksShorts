@@ -167,7 +167,7 @@ export const mobileAuth = {
       // Check if user exists, if not create new user
       let user = await storage.getUserByPhone(normalizedPhone);
       if (!user) {
-        user = await storage.createUser({
+        user = await storage.upsertUser({
           id: crypto.randomUUID(), // Generate UUID for new user
           phoneNumber: normalizedPhone,
           isVerified: true

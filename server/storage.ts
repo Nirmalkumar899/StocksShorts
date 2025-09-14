@@ -8,6 +8,7 @@ import {
   personalizedArticles,
   comments,
   investmentAdvisors,
+  messages,
   type User, 
   type InsertUser, 
   type OtpVerification, 
@@ -24,7 +25,9 @@ import {
   type Comment,
   type InsertComment,
   type InvestmentAdvisor,
-  type InsertInvestmentAdvisor
+  type InsertInvestmentAdvisor,
+  type Message,
+  type InsertMessage
 } from "@shared/schema";
 import { db } from "./db";
 
@@ -36,7 +39,7 @@ const withTimeout = async <T>(promise: Promise<T>, timeout: number = 5000): Prom
   
   return Promise.race([promise, timeoutPromise]);
 };
-import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
+import { eq, and, gt, gte, sql, desc, like, or } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -67,6 +70,16 @@ export interface IStorage {
   // Investment Advisors
   listInvestmentAdvisors(): Promise<InvestmentAdvisor[]>;
   createInvestmentAdvisor(advisor: InsertInvestmentAdvisor): Promise<InvestmentAdvisor>;
+  // Advisor Status Management
+  setAdvisorStatus(advisorId: number, status: 'active' | 'offline'): Promise<void>;
+  heartbeatAdvisor(advisorId: number): Promise<void>;
+  listAdvisors(filters?: {city?: string, state?: string, status?: string, search?: string}): Promise<InvestmentAdvisor[]>;
+  getAdvisor(id: number): Promise<InvestmentAdvisor | undefined>;
+  // Contact Preferences
+  updateContactPreferences(advisorId: number, prefs: {displayPhone?: boolean, whatsappNumber?: string}): Promise<void>;
+  // Messaging System
+  createMessage(message: InsertMessage): Promise<Message>;
+  getConversation(advisorId: number, userId: string, limit?: number): Promise<Message[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -394,6 +407,179 @@ export class DatabaseStorage implements IStorage {
       .values(advisor)
       .returning();
     return newAdvisor;
+  }
+
+  // Advisor Status Management methods
+  async setAdvisorStatus(advisorId: number, status: 'active' | 'offline'): Promise<void> {
+    try {
+      await db.update(investmentAdvisors)
+        .set({ 
+          status, 
+          statusUpdatedAt: new Date(),
+          // Update lastActiveAt if setting to active
+          ...(status === 'active' && { lastActiveAt: new Date() })
+        })
+        .where(eq(investmentAdvisors.id, advisorId));
+    } catch (error) {
+      console.error('Error setting advisor status:', error);
+      throw error;
+    }
+  }
+
+  async heartbeatAdvisor(advisorId: number): Promise<void> {
+    try {
+      // Only update lastActiveAt if the advisor is currently active
+      await db.update(investmentAdvisors)
+        .set({ lastActiveAt: new Date() })
+        .where(and(
+          eq(investmentAdvisors.id, advisorId),
+          eq(investmentAdvisors.status, 'active')
+        ));
+    } catch (error) {
+      console.error('Error updating advisor heartbeat:', error);
+      throw error;
+    }
+  }
+
+  async listAdvisors(filters?: {city?: string, state?: string, status?: string, search?: string}): Promise<InvestmentAdvisor[]> {
+    try {
+      let query = db.select().from(investmentAdvisors);
+      
+      const conditions = [];
+      
+      // Add filter conditions
+      if (filters?.city) {
+        conditions.push(like(investmentAdvisors.city, `%${filters.city}%`));
+      }
+      
+      if (filters?.state) {
+        conditions.push(like(investmentAdvisors.state, `%${filters.state}%`));
+      }
+      
+      if (filters?.status === 'active') {
+        // Show as active only if status is 'active' AND lastActiveAt is within last 2 minutes
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        conditions.push(and(
+          eq(investmentAdvisors.status, 'active'),
+          gt(investmentAdvisors.lastActiveAt, twoMinutesAgo)
+        ));
+      } else if (filters?.status === 'offline') {
+        // Show as offline if status is 'offline' OR lastActiveAt is older than 2 minutes
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        conditions.push(or(
+          eq(investmentAdvisors.status, 'offline'),
+          sql`${investmentAdvisors.lastActiveAt} IS NULL`,
+          sql`${investmentAdvisors.lastActiveAt} <= ${twoMinutesAgo}`
+        ));
+      }
+      
+      if (filters?.search) {
+        const searchTerm = `%${filters.search}%`;
+        conditions.push(or(
+          like(investmentAdvisors.firstName, searchTerm),
+          like(investmentAdvisors.lastName, searchTerm),
+          like(investmentAdvisors.company, searchTerm),
+          like(investmentAdvisors.city, searchTerm),
+          like(investmentAdvisors.state, searchTerm)
+        ));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      const advisors = await query.orderBy(desc(investmentAdvisors.lastActiveAt), desc(investmentAdvisors.createdAt));
+      
+      return advisors.map((advisor: InvestmentAdvisor) => ({
+        ...advisor,
+        // Add derived status based on activity
+        derivedStatus: this.getDerivedAdvisorStatus(advisor)
+      }));
+    } catch (error) {
+      console.error('Error listing advisors with filters:', error);
+      return [];
+    }
+  }
+
+  async getAdvisor(id: number): Promise<InvestmentAdvisor | undefined> {
+    try {
+      const [advisor] = await db.select().from(investmentAdvisors)
+        .where(eq(investmentAdvisors.id, id));
+      
+      if (!advisor) return undefined;
+      
+      return {
+        ...advisor,
+        derivedStatus: this.getDerivedAdvisorStatus(advisor)
+      };
+    } catch (error) {
+      console.error('Error fetching advisor:', error);
+      return undefined;
+    }
+  }
+
+  // Helper method to calculate derived status
+  private getDerivedAdvisorStatus(advisor: InvestmentAdvisor): 'active' | 'offline' {
+    if (advisor.status !== 'active') return 'offline';
+    if (!advisor.lastActiveAt) return 'offline';
+    
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    return advisor.lastActiveAt > twoMinutesAgo ? 'active' : 'offline';
+  }
+
+  // Contact Preferences methods
+  async updateContactPreferences(advisorId: number, prefs: {displayPhone?: boolean, whatsappNumber?: string}): Promise<void> {
+    try {
+      const updateData: any = {};
+      
+      if (prefs.displayPhone !== undefined) {
+        updateData.displayPhone = prefs.displayPhone;
+      }
+      
+      if (prefs.whatsappNumber !== undefined) {
+        updateData.whatsappNumber = prefs.whatsappNumber;
+      }
+      
+      await db.update(investmentAdvisors)
+        .set(updateData)
+        .where(eq(investmentAdvisors.id, advisorId));
+    } catch (error) {
+      console.error('Error updating contact preferences:', error);
+      throw error;
+    }
+  }
+
+  // Messaging System methods
+  async createMessage(message: InsertMessage): Promise<Message> {
+    try {
+      const [newMessage] = await db.insert(messages)
+        .values({
+          ...message,
+          createdAt: new Date(),
+        })
+        .returning();
+      return newMessage;
+    } catch (error) {
+      console.error('Error creating message:', error);
+      throw error;
+    }
+  }
+
+  async getConversation(advisorId: number, userId: string, limit: number = 50): Promise<Message[]> {
+    try {
+      const conversationKey = `${advisorId}:${userId}`;
+      
+      const conversation = await db.select().from(messages)
+        .where(eq(messages.conversationKey, conversationKey))
+        .orderBy(desc(messages.createdAt))
+        .limit(limit);
+      
+      // Return in chronological order (oldest first)
+      return conversation.reverse();
+    } catch (error) {
+      console.error('Error fetching conversation:', error);
+      return [];
+    }
   }
 }
 
