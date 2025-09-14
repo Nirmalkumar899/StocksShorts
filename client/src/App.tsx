@@ -9,7 +9,6 @@ import { useSEO } from "@/hooks/useSEO";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import SebiRia from "@/pages/sebi-ria";
-import SebiRia2 from "@/pages/sebi-ria-2";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
@@ -58,9 +57,6 @@ function Router() {
 
       <Route path="/sebi-ria">
         {() => <SebiRia onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/sebi-ria-2">
-        {() => <SebiRia2 onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">
         {() => <Contact onBack={() => window.history.back()} />}
