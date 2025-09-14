@@ -1,4 +1,5 @@
-import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean, real, numeric, unique, check } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -251,7 +252,13 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   
   // Additional Information
   aboutYou: text("about_you").default(''),
-  consultationFee: real("consultation_fee").default(100.0),
+  consultationFee: numeric("consultation_fee", { precision: 10, scale: 2 }).default("100.00"),
+  
+  // Teleconsultation Configuration
+  consultationFee15min: numeric("consultation_fee_15min", { precision: 10, scale: 2 }).default("100.00"),
+  consultationFee30min: numeric("consultation_fee_30min", { precision: 10, scale: 2 }).default("200.00"),
+  freeConsultationsPerUser: integer("free_consultations_per_user").default(1), // -1 for unlimited
+  consultationEnabled: boolean("consultation_enabled").default(false),
   
   // File Uploads
   profileImageUrl: text("profile_image_url").default(''),
@@ -279,7 +286,11 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   rating: text("rating").default('4.0'),
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  // Database-level validation for advisor status and free consultations
+  check("CHK_advisor_status", sql`status IN ('active', 'offline')`),
+  check("CHK_advisor_free_consultations", sql`free_consultations_per_user = -1 OR free_consultations_per_user >= 0`),
+]);
 
 // Conversations table for managing chat sessions between advisors and users
 export const conversations = pgTable("conversations", {
@@ -314,6 +325,50 @@ export const messages = pgTable("messages", {
   index("IDX_messages_created_at").on(table.createdAt),
 ]);
 
+// Teleconsultations table for booking and managing video consultations
+export const teleconsultations = pgTable("teleconsultations", {
+  id: serial("id").primaryKey(),
+  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  duration: text("duration").notNull(), // "15min" | "30min"
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  status: text("status").notNull().default("scheduled"), // "scheduled" | "completed" | "cancelled" | "in_progress"
+  fee: numeric("fee", { precision: 10, scale: 2 }).notNull().default("0.00"), // Actual fee charged (0 for free consultations)
+  roomId: varchar("room_id", { length: 100 }).notNull().unique(), // Unique identifier for video call room
+  notes: text("notes"), // Optional notes from advisor or user
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("IDX_teleconsultations_advisor").on(table.advisorId),
+  index("IDX_teleconsultations_user").on(table.userId),
+  index("IDX_teleconsultations_scheduled").on(table.scheduledAt),
+  index("IDX_teleconsultations_status").on(table.status),
+  // Prevent double-booking: same advisor cannot have overlapping consultations
+  unique("UNQ_teleconsultations_no_overlap").on(table.advisorId, table.scheduledAt, table.duration),
+  // Database-level validation constraints
+  check("CHK_teleconsultations_status", sql`status IN ('scheduled', 'in_progress', 'completed', 'cancelled')`),
+  check("CHK_teleconsultations_duration", sql`duration IN ('15min', '30min')`),
+  check("CHK_teleconsultations_fee_positive", sql`fee >= 0`),
+]);
+
+// User consultation usage tracking table
+export const userConsultationUsage = pgTable("user_consultation_usage", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
+  freeConsultationsUsed: integer("free_consultations_used").notNull().default(0),
+  lastUsed: timestamp("last_used"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("IDX_consultation_usage_user").on(table.userId),
+  index("IDX_consultation_usage_advisor").on(table.advisorId),
+  // Proper UNIQUE constraint to ensure one record per user-advisor pair
+  unique("UNQ_consultation_usage_user_advisor").on(table.userId, table.advisorId),
+  // Database-level validation
+  check("CHK_consultation_usage_free_count", sql`free_consultations_used >= 0`),
+]);
+
 // Enhanced Investment Advisor schema with status validation
 export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdvisors).omit({
   id: true,
@@ -321,6 +376,12 @@ export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdviso
   statusUpdatedAt: true,
 }).extend({
   status: z.enum(["active", "offline"]).default("offline"),
+  consultationFee: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
+  consultationFee15min: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
+  consultationFee30min: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
+  freeConsultationsPerUser: z.number().refine((val) => val === -1 || val >= 0, {
+    message: "Free consultations must be -1 (unlimited) or >= 0",
+  }).optional(),
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).omit({
@@ -344,6 +405,35 @@ export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+
+// Teleconsultation schemas with validation
+export const insertTeleconsultationSchema = createInsertSchema(teleconsultations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  duration: z.enum(["15min", "30min"]),
+  status: z.enum(["scheduled", "completed", "cancelled", "in_progress"]).default("scheduled"),
+  fee: z.string().regex(/^\d+(\.\d{1,2})?$/, "Fee must be a valid decimal with up to 2 decimal places").transform((val) => parseFloat(val)).refine((val) => val >= 0 && val <= 10000, {
+    message: "Fee must be between 0 and 10,000 INR",
+  }),
+  scheduledAt: z.date().refine((date) => date > new Date(), {
+    message: "Consultation must be scheduled for a future date",
+  }),
+});
+
+export const insertUserConsultationUsageSchema = createInsertSchema(userConsultationUsage).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  freeConsultationsUsed: z.number().min(0).max(100), // Reasonable limit validation
+});
+
+export type InsertTeleconsultation = z.infer<typeof insertTeleconsultationSchema>;
+export type Teleconsultation = typeof teleconsultations.$inferSelect;
+export type InsertUserConsultationUsage = z.infer<typeof insertUserConsultationUsageSchema>;
+export type UserConsultationUsage = typeof userConsultationUsage.$inferSelect;
 
 // Google Sheets row structure
 export interface GoogleSheetsRow {

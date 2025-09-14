@@ -10,6 +10,8 @@ import {
   investmentAdvisors,
   conversations,
   messages,
+  teleconsultations,
+  userConsultationUsage,
   type User, 
   type InsertUser, 
   type OtpVerification, 
@@ -30,7 +32,11 @@ import {
   type Conversation,
   type InsertConversation,
   type Message,
-  type InsertMessage
+  type InsertMessage,
+  type Teleconsultation,
+  type InsertTeleconsultation,
+  type UserConsultationUsage,
+  type InsertUserConsultationUsage
 } from "@shared/schema";
 import { db } from "./db";
 
@@ -91,6 +97,14 @@ export interface IStorage {
   updateConversationLastMessage(conversationId: number, messagePreview: string): Promise<void>;
   markMessagesAsRead(conversationId: number, userId: string): Promise<void>;
   getUnreadMessageCount(userId: string): Promise<number>;
+  // Teleconsultation methods
+  createTeleconsultation(data: InsertTeleconsultation): Promise<Teleconsultation>;
+  getUserTeleconsultations(userId: string): Promise<Teleconsultation[]>;
+  getAdvisorTeleconsultations(advisorId: number): Promise<Teleconsultation[]>;
+  updateTeleconsultationStatus(id: number, status: string): Promise<void>;
+  getUserConsultationUsage(userId: string, advisorId: number): Promise<UserConsultationUsage | undefined>;
+  incrementFreeConsultationUsage(userId: string, advisorId: number): Promise<void>;
+  canBookFreeConsultation(userId: string, advisorId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -657,8 +671,8 @@ export class DatabaseStorage implements IStorage {
         lastMessagePreview: conversations.lastMessagePreview,
         unreadCount: conversations.unreadCount,
         createdAt: conversations.createdAt,
-        advisorName: investmentAdvisors.fullName,
-        advisorCompany: investmentAdvisors.companyName,
+        advisorName: sql<string>`CONCAT(${investmentAdvisors.firstName}, ' ', ${investmentAdvisors.lastName})`,
+        advisorCompany: investmentAdvisors.company,
       })
         .from(conversations)
         .innerJoin(investmentAdvisors, eq(conversations.advisorId, investmentAdvisors.id))
@@ -730,6 +744,126 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching unread message count:', error);
       return 0;
+    }
+  }
+
+  // Teleconsultation method implementations
+  async createTeleconsultation(data: InsertTeleconsultation): Promise<Teleconsultation> {
+    try {
+      const [teleconsultation] = await db
+        .insert(teleconsultations)
+        .values(data)
+        .returning();
+      return teleconsultation;
+    } catch (error) {
+      console.error('Error creating teleconsultation:', error);
+      throw error;
+    }
+  }
+
+  async getUserTeleconsultations(userId: string): Promise<Teleconsultation[]> {
+    try {
+      return await db
+        .select()
+        .from(teleconsultations)
+        .where(eq(teleconsultations.userId, userId))
+        .orderBy(desc(teleconsultations.scheduledAt));
+    } catch (error) {
+      console.error('Error fetching user teleconsultations:', error);
+      return [];
+    }
+  }
+
+  async getAdvisorTeleconsultations(advisorId: number): Promise<Teleconsultation[]> {
+    try {
+      return await db
+        .select()
+        .from(teleconsultations)
+        .where(eq(teleconsultations.advisorId, advisorId))
+        .orderBy(desc(teleconsultations.scheduledAt));
+    } catch (error) {
+      console.error('Error fetching advisor teleconsultations:', error);
+      return [];
+    }
+  }
+
+  async updateTeleconsultationStatus(id: number, status: string): Promise<void> {
+    try {
+      await db
+        .update(teleconsultations)
+        .set({ 
+          status: status as any,
+          updatedAt: new Date()
+        })
+        .where(eq(teleconsultations.id, id));
+    } catch (error) {
+      console.error('Error updating teleconsultation status:', error);
+      throw error;
+    }
+  }
+
+  async getUserConsultationUsage(userId: string, advisorId: number): Promise<UserConsultationUsage | undefined> {
+    try {
+      const [usage] = await db
+        .select()
+        .from(userConsultationUsage)
+        .where(and(
+          eq(userConsultationUsage.userId, userId),
+          eq(userConsultationUsage.advisorId, advisorId)
+        ));
+      return usage;
+    } catch (error) {
+      console.error('Error fetching user consultation usage:', error);
+      return undefined;
+    }
+  }
+
+  async incrementFreeConsultationUsage(userId: string, advisorId: number): Promise<void> {
+    try {
+      // Use atomic upsert to prevent race conditions with the unique constraint
+      await db
+        .insert(userConsultationUsage)
+        .values({
+          userId,
+          advisorId,
+          freeConsultationsUsed: 1,
+          lastUsed: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [userConsultationUsage.userId, userConsultationUsage.advisorId],
+          set: {
+            freeConsultationsUsed: sql`${userConsultationUsage.freeConsultationsUsed} + 1`,
+            lastUsed: new Date(),
+            updatedAt: new Date()
+          }
+        });
+    } catch (error) {
+      console.error('Error incrementing free consultation usage:', error);
+      throw error;
+    }
+  }
+
+  async canBookFreeConsultation(userId: string, advisorId: number): Promise<boolean> {
+    try {
+      // Get advisor's free consultation policy
+      const advisor = await this.getAdvisor(advisorId);
+      if (!advisor || !advisor.consultationEnabled) {
+        return false;
+      }
+
+      // If unlimited free consultations (-1), always allow
+      if (advisor.freeConsultationsPerUser === -1) {
+        return true;
+      }
+
+      // Check current usage
+      const usage = await this.getUserConsultationUsage(userId, advisorId);
+      const used = usage?.freeConsultationsUsed || 0;
+      
+      return used < (advisor.freeConsultationsPerUser ?? 1);
+    } catch (error) {
+      console.error('Error checking free consultation eligibility:', error);
+      return false;
     }
   }
 }
