@@ -22,8 +22,7 @@ export class NewsCache {
   constructor() {
     // Start automatic refresh cycle
     this.startRefreshCycle();
-    // Generate initial articles immediately to avoid empty state
-    this.initializeCache();
+    // Cache will be lazily initialized on first request to avoid startup delay
   }
 
   private async initializeCache() {

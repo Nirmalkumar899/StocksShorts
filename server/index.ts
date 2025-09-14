@@ -4,6 +4,7 @@ import MemoryStore from "memorystore";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupProductionStatic } from "./static-server";
+import { newsCache } from "./services/newsCache";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -174,6 +175,14 @@ app.use((req, res, next) => {
     const port = process.env.PORT || 5000;
     server.listen(port, "0.0.0.0", () => {
       log(`serving on port ${port}`);
+      
+      // Start background news ingestion after server is listening
+      setImmediate(() => {
+        console.log('🔄 Starting background news cache warm-up...');
+        newsCache.forceRefresh().catch(error => {
+          console.error('❌ Background news warm-up failed:', error);
+        });
+      });
     });
   } catch (error) {
     console.error('Failed to start server:', error);
