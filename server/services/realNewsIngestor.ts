@@ -14,16 +14,16 @@ interface VerifiedArticle {
   title: string;
   content: string;
   type: string;
-  time: string;
+  time: Date | null;
   source: string;
   sentiment: string;
   priority: string;
   imageUrl: string | null;
-  createdAt: string;
+  createdAt: Date;
   sourceUrl: string | null;
   primarySourceUrl: string | null;
   primarySourceTitle: string | null;
-  primarySourcePublishedAt: string | null;
+  primarySourcePublishedAt: Date | null;
   sources: string | null;
   contentType: string | null;
   provenanceScore: number;
@@ -52,10 +52,10 @@ export class RealNewsIngestor {
     'sebi', 'banking', 'finance', 'insurance', 'fii', 'dii', 'broker', 'analyst'
   ];
 
-  public async ingestTodaysNews(): Promise<VerifiedArticle[]> {
+  public async ingestTodaysNews(): Promise<Article[]> {
     console.log('📰 Starting real news ingestion for today...');
     
-    const allArticles: VerifiedArticle[] = [];
+    const allArticles: Article[] = [];
     const todayIST = this.getTodayInIST();
     
     for (const feed of this.RSS_FEEDS) {
@@ -76,7 +76,7 @@ export class RealNewsIngestor {
     
     // Sort by published time (newest first) and take top 20
     const sortedArticles = uniqueArticles
-      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
       .slice(0, 20);
 
     console.log(`✅ Ingested ${sortedArticles.length} unique articles from today`);
@@ -127,21 +127,21 @@ export class RealNewsIngestor {
         // const isValidUrl = await this.verifyUrl(link);
         // if (!isValidUrl) continue;
         
-        const verifiedArticle: VerifiedArticle = {
+        const verifiedArticle: Article = {
           id: Date.now() + Math.random(),
           title: this.cleanText(title),
           content: this.generateSummary(description),
           type: this.categorizeArticle(title, description),
-          time: articleDate.toISOString(),
+          time: articleDate,
           source: feed.source,
           sentiment: this.analyzeSentiment(title, description),
           priority: this.assignPriority(title, description),
           imageUrl: this.getContextualImage(title, description, this.categorizeArticle(title, description), Date.now() + Math.random()),
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
           sourceUrl: link,
           primarySourceUrl: link,
           primarySourceTitle: title,
-          primarySourcePublishedAt: articleDate.toISOString(),
+          primarySourcePublishedAt: articleDate,
           sources: feed.source,
           contentType: 'original-report',
           provenanceScore: this.calculateProvenanceScore(feed.domain, articleDate)
@@ -276,7 +276,7 @@ export class RealNewsIngestor {
       .trim();
   }
 
-  private removeDuplicates(articles: VerifiedArticle[]): VerifiedArticle[] {
+  private removeDuplicates(articles: Article[]): Article[] {
     const seen = new Set<string>();
     return articles.filter(article => {
       const key = article.title.toLowerCase().replace(/[^a-z0-9]/g, '');
