@@ -8,10 +8,11 @@ import { GoogleAnalytics } from "@/components/google-analytics";
 import { useSEO } from "@/hooks/useSEO";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
-import SebiRia from "@/pages/sebi-ria";
+import SebiRiaNew from "@/pages/sebi-ria-new";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
+import AISection from "@/pages/ai-section";
 import GmailConnect from "@/pages/GmailConnect";
 import SplashScreen from "@/components/splash-screen";
 
@@ -56,13 +57,19 @@ function Router() {
       <Route path="/research" component={Home} />
 
       <Route path="/sebi-ria">
-        {() => <SebiRia onBack={() => window.history.back()} />}
+        {() => <SebiRiaNew onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">
         {() => <Contact onBack={() => window.history.back()} />}
       </Route>
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/ai-analysis">
+        {() => <AISection onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/ai-section">
+        {() => <AISection onBack={() => window.history.back()} />}
       </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
       <Route path="/disclaimer" component={Home} />

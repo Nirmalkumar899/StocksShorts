@@ -1,411 +1,381 @@
 import React, { useState, useEffect } from "react";
-import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, Video, MessageCircle, Plus, Upload, User, ExternalLink, Clock, Users } from "@/lib/icons";
+import { Search, MapPin, Star, Phone, Mail, Globe, ArrowLeft, Shield, AlertTriangle, CheckCircle, ScrollText, Shuffle } from "@/lib/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import type { InvestmentAdvisor, InsertInvestmentAdvisor } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import type { InvestmentAdvisor } from "@shared/schema";
 
 interface SebiRiaProps {
   onBack: () => void;
 }
 
 export default function SebiRia({ onBack }: SebiRiaProps) {
-  console.log('🎯 SEBI RIA v6.0 INVESTCONNECT STYLE INTERFACE! 🚀');
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCity, setSelectedCity] = useState("all");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("all");
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
-  const { toast } = useToast();
+  const [showSearch, setShowSearch] = useState(false);
+  const [featuredAdvisorIndex, setFeaturedAdvisorIndex] = useState(0);
 
   const { data: advisors = [], isLoading } = useQuery<InvestmentAdvisor[]>({
     queryKey: ['/api/investment-advisors'],
   });
 
-  const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) => {
-    const matchesSearch = !searchQuery || 
-      advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (advisor.specialization || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCity = selectedCity === "all" || 
-      (advisor.location || '').toLowerCase().includes(selectedCity.toLowerCase());
-    
-    const matchesSpecialization = selectedSpecialization === "all" || 
-      (advisor.specialization || '').toLowerCase().includes(selectedSpecialization.toLowerCase());
+  // Rotate featured advisor every 5 seconds
+  useEffect(() => {
+    if (advisors.length > 0) {
+      const interval = setInterval(() => {
+        setFeaturedAdvisorIndex(prev => (prev + 1) % Math.min(advisors.length, 10));
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [advisors.length]);
 
-    return matchesSearch && matchesCity && matchesSpecialization;
-  });
 
-  const specializations = [
-    "All Specializations",
-    "Equity",
-    "Mutual Funds", 
-    "Insurance",
-    "Tax Planning",
-    "Retirement",
-    "Portfolio Management",
-    "Wealth Management"
-  ];
 
-  const getAdvisorInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
-  const getRandomColor = () => {
-    const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-teal-500', 'bg-indigo-500'];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
+  const filteredAdvisors = advisors.filter((advisor: InvestmentAdvisor) =>
+    advisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.company || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.specialization || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (advisor.location || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return (
-      <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col p-4">
+        <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={onBack} className="p-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Loading...</h1>
+          <h1 className="text-xl font-bold">SEBI RIA Directory</h1>
           <div className="w-9" />
         </div>
-        <div className="flex-1 p-4 space-y-3">
+        <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
     );
   }
 
+  const featuredAdvisor = advisors[featuredAdvisorIndex];
+
   return (
-    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
-      {/* Header - InvestConnect Style */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between p-4">
-          <Button variant="ghost" onClick={onBack} className="p-2">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Join as SEBI registered investment advisor
-          </div>
-          <Dialog open={showRegistrationForm} onOpenChange={setShowRegistrationForm}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-1" />
-                Join as RIA
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Join as SEBI Registered Investment Advisor</DialogTitle>
-                <DialogDescription>
-                  Create your professional profile and start connecting with investors
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" placeholder="Your full name" />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" placeholder="+91 9876543210" />
-                  </div>
-                  <div>
-                    <Label htmlFor="sebi">SEBI RIA Registration Number *</Label>
-                    <Input id="sebi" placeholder="INA000000000" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="company">Company Name *</Label>
-                    <Input id="company" placeholder="Your company" />
-                  </div>
-                  <div>
-                    <Label htmlFor="designation">Designation *</Label>
-                    <Input id="designation" placeholder="Investment Advisor" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="specialization">Specialization *</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select specialization" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="equity">Equity</SelectItem>
-                        <SelectItem value="mutual-funds">Mutual Funds</SelectItem>
-                        <SelectItem value="insurance">Insurance</SelectItem>
-                        <SelectItem value="tax-planning">Tax Planning</SelectItem>
-                        <SelectItem value="retirement">Retirement Planning</SelectItem>
-                        <SelectItem value="portfolio">Portfolio Management</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="location">Location *</Label>
-                    <Input id="location" placeholder="Mumbai, Delhi, etc." />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="experience">Experience (Years)</Label>
-                    <Input id="experience" placeholder="5" />
-                  </div>
-                  <div>
-                    <Label htmlFor="website">Website</Label>
-                    <Input id="website" placeholder="https://yourwebsite.com" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="linkedin">LinkedIn Profile</Label>
-                    <Input id="linkedin" placeholder="https://linkedin.com/in/yourprofile" />
-                  </div>
-                  <div>
-                    <Label htmlFor="twitter">Twitter Profile</Label>
-                    <Input id="twitter" placeholder="https://twitter.com/yourhandle" />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="qualification">Professional Qualifications</Label>
-                  <Input id="qualification" placeholder="CFA, CFP, etc." />
-                </div>
-                <div>
-                  <Label htmlFor="about">About You</Label>
-                  <Textarea id="about" placeholder="Brief description about your expertise and investment philosophy..." rows={3} />
-                </div>
-                <div>
-                  <Label htmlFor="profile-pic">Profile Picture</Label>
-                  <Input id="profile-pic" type="file" accept="image/*" />
-                </div>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                  Submit Application
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+    <div className="h-full bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 flex flex-col p-4">
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="ghost" onClick={onBack} className="p-2">
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          SEBI RIA Directory
+        </h1>
+        <Button 
+          variant="ghost" 
+          onClick={() => setShowSearch(!showSearch)}
+          className="p-2"
+        >
+          <Search className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search advisors by name, company, specialization, or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full"
+          />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        
-        {/* Hero Section - InvestConnect Style */}
-        <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-teal-500 text-white p-6 relative overflow-hidden">
-          <div className="relative z-10 text-center">
-            <h1 className="text-3xl font-bold mb-2">
-              Talk to India's Top
-            </h1>
-            <h1 className="text-3xl font-bold text-orange-400 mb-4">
-              Investment Advisors
-            </h1>
-            <p className="text-blue-100 text-lg mb-2">
-              Get expert advice from SEBI-registered professionals.
-            </p>
-            <p className="text-orange-300 font-semibold text-xl mb-6">
-              First consultation FREE!
-            </p>
-            
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg font-semibold rounded-full shadow-lg mb-6">
-              <Clock className="h-5 w-5 mr-2" />
-              Available Now - Start Consulting in 2 Minutes!
-            </Button>
-
-            {/* Search Section */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 max-w-md mx-auto">
-              <div className="space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
-                  <Input
-                    type="text"
-                    placeholder="Search by advisor name, specialization..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-3 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30"
-                  />
+      {/* Featured Advisor Section */}
+      {featuredAdvisor && !searchQuery && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Shuffle className="h-5 w-5 text-blue-600" />
+              Featured SEBI RIA
+            </h2>
+            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
+              Auto-rotating
+            </div>
+          </div>
+          <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold mb-1">{featuredAdvisor.name}</h3>
+                  <p className="text-blue-100 text-sm">{featuredAdvisor.company}</p>
+                  <p className="text-blue-200 text-xs">{featuredAdvisor.designation}</p>
                 </div>
-                
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger className="bg-white/20 border-white/30 text-white">
-                    <SelectValue placeholder="All Cities" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    <SelectItem value="mumbai">Mumbai</SelectItem>
-                    <SelectItem value="delhi">Delhi</SelectItem>
-                    <SelectItem value="bangalore">Bangalore</SelectItem>
-                    <SelectItem value="pune">Pune</SelectItem>
-                    <SelectItem value="chennai">Chennai</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button 
-                  onClick={() => {}}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 font-semibold"
-                >
-                  Search Advisors
-                </Button>
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  SEBI RIA
+                </Badge>
               </div>
-            </div>
-          </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-xs text-blue-200 mb-1">Specialization</p>
+                  <p className="text-sm font-medium">{featuredAdvisor.specialization || 'Investment Advisory'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-blue-200 mb-1">Experience</p>
+                  <p className="text-sm font-medium">{featuredAdvisor.experience || 'Professional'}</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {featuredAdvisor.location && (
+                  <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
+                    <MapPin className="h-3 w-3" />
+                    {featuredAdvisor.location}
+                  </div>
+                )}
+                {featuredAdvisor.rating && (
+                  <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
+                    <Star className="h-3 w-3 fill-current" />
+                    {featuredAdvisor.rating}
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                {featuredAdvisor.phone && (
+                  <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs">
+                    <Phone className="h-3 w-3 mr-1" />
+                    Call
+                  </Button>
+                )}
+                {featuredAdvisor.email && (
+                  <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs">
+                    <Mail className="h-3 w-3 mr-1" />
+                    Email
+                  </Button>
+                )}
+                {featuredAdvisor.website && (
+                  <Button variant="secondary" size="sm" className="bg-white/20 text-white border-white/30 hover:bg-white/30 text-xs">
+                    <Globe className="h-3 w-3 mr-1" />
+                    Website
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
+      )}
 
-        {/* Features Bar */}
-        <div className="bg-teal-600 text-white py-4">
-          <div className="flex justify-around items-center max-w-md mx-auto">
-            <div className="text-center">
-              <Shield className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm font-medium">SEBI</p>
+      {/* SEBI RIA Education Section */}
+      <div className="flex-1 overflow-y-auto pb-20">
+        <div className="mb-6 space-y-4">
+          <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
+          <CardContent className="p-6">
+            <div className="flex items-center mb-3">
+              <Shield className="h-6 w-6 mr-3" />
+              <h2 className="text-lg font-bold">What is SEBI RIA?</h2>
             </div>
-            <div className="text-center">
-              <CheckCircle className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm font-medium">Verified</p>
-            </div>
-            <div className="text-center">
-              <Clock className="h-8 w-8 mx-auto mb-1" />
-              <p className="text-sm font-medium">24/7</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-          <div className="p-4">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Start Your Free Consultation
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Chat with these verified experts right now!
-              </p>
-            </div>
-
-            {/* Filter Tags */}
-            <div className="flex flex-wrap gap-2 mb-6 justify-center">
-              {specializations.map((spec) => (
-                <Button
-                  key={spec}
-                  variant={selectedSpecialization === spec.toLowerCase().replace(' ', '-') ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedSpecialization(spec === "All Specializations" ? "all" : spec.toLowerCase().replace(' ', '-'))}
-                  className={`rounded-full text-sm ${
-                    selectedSpecialization === (spec === "All Specializations" ? "all" : spec.toLowerCase().replace(' ', '-'))
-                      ? "bg-blue-500 text-white" 
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {spec}
-                </Button>
-              ))}
-            </div>
-
-            {/* Results Count */}
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-              {filteredAdvisors.length} advisors found
+            <p className="text-blue-100 leading-relaxed">
+              SEBI Registered Investment Advisors (RIA) are certified professionals regulated by Securities and Exchange Board of India. 
+              They provide personalized investment advice based on your financial goals and risk profile.
             </p>
+          </CardContent>
+        </Card>
 
-            {/* Advisor Cards */}
-            <div className="space-y-4 max-w-2xl mx-auto">
-              {filteredAdvisors.length === 0 ? (
-                <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  <CardContent className="p-8 text-center">
-                    <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-1">No advisors found</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Try adjusting your search criteria
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredAdvisors.slice(0, 20).map((advisor: InvestmentAdvisor) => (
-                  <Card key={advisor.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        {/* Profile Picture */}
-                        <div className={`w-16 h-16 rounded-full ${getRandomColor()} flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}>
-                          {getAdvisorInitials(advisor.name)}
-                        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+            <CardContent className="p-4">
+              <div className="flex items-center mb-2">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                <h3 className="font-semibold text-green-800 dark:text-green-200">Why Choose SEBI RIA?</h3>
+              </div>
+              <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                <li>• SEBI regulated and monitored</li>
+                <li>• Fiduciary duty to clients</li>
+                <li>• Transparent fee structure</li>
+                <li>• Professional qualifications</li>
+              </ul>
+            </CardContent>
+          </Card>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                                {advisor.name}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 leading-tight">
-                                {advisor.company}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center">
-                                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                                  {advisor.rating || "0.0"}
-                                </span>
-                              </div>
-                              <Badge variant="default" className="bg-blue-500 text-white text-xs">
-                                Available
-                              </Badge>
-                            </div>
-                          </div>
+          <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+            <CardContent className="p-4">
+              <div className="flex items-center mb-2">
+                <AlertTriangle className="h-5 w-5 text-orange-600 mr-2" />
+                <h3 className="font-semibold text-orange-800 dark:text-orange-200">Investor Rights</h3>
+              </div>
+              <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                <li>• Right to unbiased advice</li>
+                <li>• Clear fee disclosure</li>
+                <li>• Complaint redressal</li>
+                <li>• Investment suitability</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              {advisor.experience || "0"} years exp
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {advisor.location || "Remote"}
-                            </div>
-                          </div>
+      {/* Search Section */}
+      {showSearch && (
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search advisors, companies, specializations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-blue-200 dark:border-gray-600"
+          />
+        </div>
+      )}
 
-                          {advisor.specialization && (
-                            <div className="mb-3">
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Specializes in:</p>
-                              <Badge variant="secondary" className="text-xs">
-                                {advisor.specialization}
-                              </Badge>
-                            </div>
-                          )}
+      {/* SEBI RIA Directory Overview */}
+      <Card className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6">
+          <div className="flex items-center mb-4">
+            <Shield className="h-5 w-5 mr-2 text-blue-600" />
+            <h2 className="text-lg font-semibold">SEBI RIA Directory</h2>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+            <div className="text-2xl font-bold mb-1 text-gray-800 dark:text-white">{advisors.length}</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Registered Investment Advisors</p>
+            <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+              All advisors are SEBI verified. Use search to find specific advisors.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-                          <div className="flex gap-2 pt-2">
-                            <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white flex-1">
-                              <MessageCircle className="h-3 w-3 mr-1" />
-                              WhatsApp Chat
-                            </Button>
-                            <Button size="sm" variant="outline" className="flex-1">
-                              <Video className="h-3 w-3 mr-1" />
-                              Video Call
-                            </Button>
-                          </div>
+      {/* Advisory Directory */}
+      <div className="space-y-6">
+        {searchQuery && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Found {filteredAdvisors.length} advisor(s) matching "{searchQuery}"
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {searchQuery ? (
+          // Show search results
+          <div className="space-y-4">
+            {filteredAdvisors.length === 0 ? (
+              <Card className="p-8 text-center">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="text-lg font-semibold mb-2">No advisors found</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Try searching by name, company, location, or specialization
+                </p>
+              </Card>
+            ) : (
+              filteredAdvisors.slice(0, 10).map((advisor: InvestmentAdvisor) => (
+                <Card key={advisor.id} className="hover:shadow-lg transition-shadow border-blue-100 dark:border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-1">
+                          {advisor.name}
+                        </h3>
+                        <p className="text-blue-600 dark:text-blue-400 font-medium">
+                          {advisor.designation} at {advisor.company}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                          {advisor.specialization}
+                        </Badge>
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          {advisor.location}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-
-            {/* Bottom spacing for navigation */}
-            <div className="pb-20"></div>
+                      <div className="space-y-2">
+                        {advisor.phone && (
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <Phone className="h-4 w-4 mr-2" />
+                            <a href={`tel:${advisor.phone}`} className="hover:text-blue-600 transition-colors">
+                              {advisor.phone}
+                            </a>
+                          </div>
+                        )}
+                        {advisor.email && (
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <Mail className="h-4 w-4 mr-2" />
+                            <a href={`mailto:${advisor.email}`} className="hover:text-blue-600 transition-colors">
+                              {advisor.email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+            {filteredAdvisors.length > 10 && (
+              <Card className="p-4 text-center bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Showing first 10 results. Refine your search for more specific results.
+                </p>
+              </Card>
+            )}
           </div>
-        </div>
+        ) : (
+          // Show guidance when no search
+          <div className="space-y-6">
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-6 text-center">
+                <h2 className="text-lg font-semibold mb-3">Find Your Investment Advisor</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Search through {advisors.length} SEBI registered advisors to find the right match for your investment needs.
+                </p>
+                <Button 
+                  onClick={() => setShowSearch(true)}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Start Searching
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-4">How to Choose the Right Advisor</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-200">Check Credentials</h4>
+                    <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                      <li>• SEBI registration number</li>
+                      <li>• Valid license status</li>
+                      <li>• Professional qualifications</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-200">Understand Fees</h4>
+                    <ul className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                      <li>• Fee structure transparency</li>
+                      <li>• No hidden charges</li>
+                      <li>• Written fee agreement</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      <div className="text-center mt-8 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          All advisors are SEBI registered. Always verify credentials before investing.
+        </p>
+      </div>
       </div>
     </div>
   );

@@ -1,14 +1,14 @@
 # StocksShorts - Indian Stock Market News Platform
 
 ## Overview
-StocksShorts is a news aggregation platform delivering concise, "Inshorts"-style Indian stock market news. It fetches financial news from Google Sheets, providing a mobile-first, user-friendly interface with real-time updates and category-based filtering. The platform aims to be a primary source for quick, authenticated market intelligence, integrating AI for stock analysis and connecting users with SEBI Registered Investment Advisors. Its ambition is to become the leading platform for Indian stock market news and analysis, recognized for its accuracy, conciseness, and user-centric design.
+StocksShorts is a news aggregation platform designed for the Indian stock market, providing concise news updates in an "Inshorts" style format. It aims to offer a mobile-first, user-friendly interface with real-time updates and category-based filtering, leveraging Google Sheets as its content management system. The platform focuses on delivering high-quality, verified financial news and analysis to its users, with ambitions to become a primary source for Indian stock market insights.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
 ### Category Structure (Priority Order)
 1. Trending (priority-based sorting: High > Medium > Low)
-2. StocksShorts Special
+2. StocksShorts Special  
 3. IPO
 4. Breakout Stocks
 5. Kalkabazaar (renamed from Index)
@@ -25,59 +25,64 @@ Preferred communication style: Simple, everyday language.
 - AskQuery (Contact): Chat interface with instant messaging via email - type message and press Enter or click send
 - Profile: Gmail-only authentication with no additional forms or information required
 
+## Recent Changes (August 30, 2025)
+- **MAJOR UPDATE**: Completely replaced Google Sheets with AI-powered news generation using OpenAI GPT-4o
+- **Interface**: Removed ALL icons, category filters, and visual elements for ultra-clean text-only design like Inshorts
+- **Date Filtering**: Implemented strict 2-day article limit - only shows articles from today and last 2 days
+- **Layout**: Article date and time with clickable source link positioned in black highlighted section at bottom of article content, showing exact timestamps instead of relative time
+- **Navigation**: Removed all icons from header and bottom navigation, text-only labels for minimal design
+- **Caching**: Automatic refresh every 10 minutes with date-based filtering removing old articles
+- **Brokerage Integration**: Added Indian brokerage firm names (Motilal Oswal, ICICI Securities, etc.) to buy/sell recommendations
+
 ## System Architecture
+StocksShorts is built with a mobile-first approach, emphasizing performance and user experience.
+
 ### Frontend
-- **Framework**: React 18 with TypeScript
-- **Routing**: Wouter
-- **State Management**: TanStack Query (React Query)
-- **UI Framework**: Tailwind CSS with shadcn/ui
-- **Build Tool**: Vite
-- **Styling**: Custom CSS variables, dark mode support
+- **Framework**: React 18 with TypeScript.
+- **Routing**: Wouter.
+- **State Management**: TanStack Query (React Query).
+- **UI Framework**: Tailwind CSS with shadcn/ui and Radix UI.
+- **Build Tool**: Vite.
+- **Styling**: Custom CSS variables for theming with dark mode support.
+- **Design Principles**: Responsive layout, bottom navigation, clean and professional appearance with subtle animations and gradients where appropriate. UI components include Header, CategoryFilter (horizontal scrollable row), NewsCard, BottomNavigation, SebiRia, Contact, and Profile sections.
 
 ### Backend
-- **Runtime**: Node.js with Express.js
-- **Language**: TypeScript with ES modules
-- **API Style**: RESTful API
-- **Session Storage**: In-memory for user management
-- **External Integration**: Google Sheets API for content management
+- **Runtime**: Node.js with Express.js.
+- **Language**: TypeScript with ES modules.
+- **API Style**: RESTful API.
+- **Session Storage**: In-memory.
+- **Content Management**: Google Sheets API.
+- **AI Integration**: OpenAI (GPT-4o) for Hindi translation and stock analysis, and Perplexity API for financial data verification.
+- **Authentication**: Mobile number OTP verification via SMS (MSG91/Fast2SMS).
 
-### Data Storage
-- **Primary Data Source**: Google Sheets (CMS)
-- **Database**: PostgreSQL with Drizzle ORM (configured)
-- **Caching**: Client-side via React Query
-
-### Core Features
-- **News Aggregation**: Real-time article fetching from Google Sheets.
-- **Category Filtering**: Nifty, Sensex, IPOs, Mutual Funds, Crypto, etc.
-- **Sentiment & Priority**: Articles classified by sentiment (Positive, Negative, Neutral) and priority (High, Medium, Low).
-- **Mobile-First Design**: Responsive layout with bottom navigation.
-- **Dark Mode**: Theme toggle.
-- **AI Stock Analysis**: OpenAI-powered, fundamentals-first approach, document-only analysis from Google Drive, cross-verified data.
-- **Hindi Translation**: OpenAI-powered translation for article content.
-- **OTP Authentication**: Mobile number-based login.
-- **SEBI RIA Directory**: Platform for connecting with SEBI Registered Investment Advisors.
-- **SEO Optimization**: Dynamic titles, structured data, sitemap, Open Graph.
-
-### UI/UX Decisions
-- Clean, professional design with consistent styling.
-- Responsive components with shadcn/ui and Radix UI.
-- Intuitive navigation with a sticky header and bottom navigation bar.
-- TikTok-style infinite scroll with seamless category switching.
-- Splash screen with branding and loading animations.
-
-### Technical Implementations
-- **Asset Hosting**: Replit asset hosting with automatic URL conversion.
-- **Image Optimization**: `object-contain` for full image display, fallback systems.
-- **Deployment**: Vite for client, esbuild for server, deployed on Replit.
-- **Authentic Data**: Integration with Yahoo Finance, Screener.in, NSE, BSE APIs for verified market data.
+### Data Flow & Features
+- **Content Management**: Articles are managed in Google Sheets with detailed metadata (Title, Content, Type, Time, Source, Sentiment, Priority).
+- **News Aggregation**: Fetches articles from Google Sheets with real-time refresh.
+- **Category Filtering**: Supports various categories including Nifty, Sensex, IPOs, Mutual Funds, and Crypto, with priority-based sorting.
+- **Sentiment & Priority**: Articles are tagged with sentiment (Positive, Negative, Neutral) and priority (High, Medium, Low).
+- **AI Stock Analysis**: Provides detailed investment analysis using official company documents (PDFs from Google Drive), quarterly results, conference call transcripts, and investor presentations. Features cross-verification of financial data from multiple authentic sources (NSE, BSE, Screener.in, MoneyControl, Yahoo Finance) and provides transparent "testing phase" messages if data cannot be verified. Analysis includes business model, PE vs industry, quarterly performance, management commentary, and technical analysis.
+- **Hindi Translation**: OpenAI-powered translation of articles with batch processing and robust error handling.
+- **Mobile Authentication**: OTP-based login/registration with profile management.
+- **Infinite Scroll**: TikTok-style infinite vertical scroll with automatic URL updates and bidirectional category switching for a seamless browsing experience.
+- **Image Handling**: Optimized image display with `object-contain`, intelligent company-specific image matching, and fallbacks.
+- **SEO & Analytics**: Google Search Console integration, dynamic page titles, structured data, sitemap.xml, robots.txt, Open Graph tags, Twitter Cards, and Google Analytics 4 tracking.
+- **Individual Article Pages**: Unique shareable URLs for each article with auto-refresh functionality.
+- **SEBI RIA Section**: Educational content on SEBI RIAs, investor rights, complaint filing process, fraud awareness, and a directory of advisors.
 
 ## External Dependencies
-- **Google Sheets API**: For news content management.
-- **Google Drive API**: For AI document analysis.
-- **OpenAI API**: For AI stock analysis and Hindi translation (GPT-4o, GPT-3.5-turbo).
-- **MSG91/Fast2SMS**: For mobile OTP authentication.
-- **PostgreSQL**: Database for Drizzle ORM.
+- **Google Sheets API**: For primary content management (CMS).
+  - `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `GOOGLE_SHEETS_ID`
+- **Google Drive API**: For accessing company research documents (PDFs) for AI analysis.
+- **OpenAI API**: For Hindi translation and advanced AI stock analysis (GPT-4o).
+- **Perplexity API**: Used for authentic market data and financial data verification.
+- **PostgreSQL**: Configured with Drizzle ORM (present in setup but not actively used for core news articles).
+  - `DATABASE_URL`
+- **MSG91 / Fast2SMS**: For mobile OTP authentication via SMS.
 - **Yahoo Finance API**: For real-time stock data.
-- **Screener.in (unofficial scraper)**: For financial data extraction.
-- **Google Analytics 4**: For user tracking and analytics.
-- **Google Search Console**: For SEO monitoring.
+- **Screener.in**: For scraping authentic quarterly data and financial metrics.
+- **Alpha Vantage / Financial Modeling Prep**: Additional financial data sources for cross-verification.
+- **shadcn/ui**: UI component library.
+- **Radix UI**: Accessible component primitives.
+- **Tailwind CSS**: Utility-first styling.
+- **Lucide React**: Icon library.
+- **Google Analytics 4**: For comprehensive user tracking and analytics.
