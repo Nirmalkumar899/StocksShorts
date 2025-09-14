@@ -27,6 +27,9 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { z } from "zod";
 import { insertMessageSchema } from "@shared/schema";
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import { nanoid } from "nanoid";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
@@ -108,6 +111,393 @@ export async function registerRoutes(app: Express): Promise<Server> {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
     }
   }));
+
+  // Initialize Razorpay for payment processing
+  let razorpay: Razorpay | null = null;
+  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+    console.log('✅ Razorpay initialized successfully');
+  } else {
+    console.warn('⚠️  Razorpay credentials not found. Payment functionality will be disabled.');
+  }
+
+  // Teleconsultation and Payment Routes
+
+  // Create Razorpay order for teleconsultation payment
+  app.post('/api/create-razorpay-order', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      if (!razorpay) {
+        return res.status(500).json({ 
+          message: 'Payment service not available. Please check Razorpay configuration.' 
+        });
+      }
+
+      const { advisorId, duration, scheduledAt } = req.body;
+      const userId = (req.session as any).userId;
+
+      // Validate input
+      const orderSchema = z.object({
+        advisorId: z.number().int().positive(),
+        duration: z.enum(['15min', '30min']),
+        scheduledAt: z.string().datetime()
+      });
+
+      const validationResult = orderSchema.safeParse({ advisorId, duration, scheduledAt });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid order data',
+          errors: validationResult.error.errors
+        });
+      }
+
+      // Check if advisor exists and get consultation fees
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+
+      if (!advisor.consultationEnabled) {
+        return res.status(400).json({ message: 'Advisor is not available for consultations' });
+      }
+
+      // Check user's consultation usage for this advisor
+      const usage = await storage.getUserConsultationUsage(userId, advisorId);
+      const freeConsultationsUsed = usage?.freeConsultationsUsed || 0;
+      const freeConsultationsLimit = advisor.freeConsultationsPerUser || 0;
+
+      let consultationFee = 0;
+      let isFreeTier = false;
+
+      // Check if user is eligible for free consultation
+      if (freeConsultationsUsed < freeConsultationsLimit) {
+        isFreeTier = true;
+        consultationFee = 0;
+      } else {
+        // User must pay
+        if (duration === '15min') {
+          consultationFee = parseFloat(advisor.consultationFee15min || '0');
+        } else {
+          consultationFee = parseFloat(advisor.consultationFee30min || '0');
+        }
+      }
+
+      // If it's a free consultation, create the booking directly
+      if (isFreeTier) {
+        const roomId = nanoid(12);
+        const teleconsultation = await storage.createTeleconsultation({
+          advisorId,
+          userId: userId.toString(),
+          duration,
+          scheduledAt: new Date(scheduledAt),
+          fee: 0.00,
+          roomId,
+          status: 'scheduled'
+        });
+
+        // Increment free consultation usage
+        await storage.incrementFreeConsultationUsage(userId.toString(), advisorId);
+
+        return res.json({
+          success: true,
+          isFreeConsultation: true,
+          teleconsultation,
+          message: 'Free consultation booked successfully'
+        });
+      }
+
+      // Create Razorpay order for paid consultation
+      const amountInPaise = Math.round(consultationFee * 100); // Convert to paise (smallest currency unit)
+      
+      const order = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: `consult_${advisorId}_${userId}_${Date.now()}`,
+        notes: {
+          advisorId: advisorId.toString(),
+          userId: userId.toString(),
+          duration,
+          scheduledAt,
+          advisorName: `${advisor.firstName || ''} ${advisor.lastName || ''}`.trim()
+        }
+      });
+
+      res.json({
+        success: true,
+        isFreeConsultation: false,
+        orderId: order.id,
+        amount: amountInPaise,
+        currency: 'INR',
+        advisorName: `${advisor.firstName || ''} ${advisor.lastName || ''}`.trim(),
+        consultationFee,
+        duration,
+        scheduledAt,
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID
+      });
+
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to create payment order'
+      });
+    }
+  });
+
+  // Verify Razorpay payment and complete teleconsultation booking
+  app.post('/api/verify-razorpay-payment', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      if (!razorpay) {
+        return res.status(500).json({ 
+          message: 'Payment service not available. Please check Razorpay configuration.' 
+        });
+      }
+
+      const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+      const userId = (req.session as any).userId;
+
+      // Validate input
+      const paymentSchema = z.object({
+        razorpay_payment_id: z.string().min(1),
+        razorpay_order_id: z.string().min(1),
+        razorpay_signature: z.string().min(1)
+      });
+
+      const validationResult = paymentSchema.safeParse({
+        razorpay_payment_id,
+        razorpay_order_id,
+        razorpay_signature
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid payment data',
+          errors: validationResult.error.errors
+        });
+      }
+
+      // Verify payment signature
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+        .update(body.toString())
+        .digest('hex');
+
+      if (expectedSignature !== razorpay_signature) {
+        return res.status(400).json({
+          message: 'Payment verification failed. Invalid signature.'
+        });
+      }
+
+      // Fetch order details to get consultation information
+      const order = await razorpay.orders.fetch(razorpay_order_id);
+      if (!order || !order.notes) {
+        return res.status(400).json({
+          message: 'Order details not found'
+        });
+      }
+
+      const advisorId = parseInt(String(order.notes.advisorId) || '0');
+      const orderUserId = order.notes.userId || '';
+      const duration = (order.notes.duration as '15min' | '30min') || '15min';
+      const scheduledAt = order.notes.scheduledAt || new Date().toISOString();
+
+      // Verify the user matches
+      if (orderUserId !== userId) {
+        return res.status(403).json({
+          message: 'Unauthorized: User mismatch'
+        });
+      }
+
+      // Payment is verified - create the teleconsultation
+      const roomId = nanoid(12);
+      const consultationFee = (Number(order.amount || 0) / 100).toString(); // Convert back to rupees
+
+      const teleconsultation = await storage.createTeleconsultation({
+        advisorId,
+        userId: userId.toString(),
+        duration,
+        scheduledAt: new Date(scheduledAt),
+        fee: parseFloat(consultationFee),
+        roomId,
+        status: 'scheduled'
+      });
+
+      res.json({
+        success: true,
+        message: 'Payment verified and consultation booked successfully',
+        teleconsultation,
+        paymentId: razorpay_payment_id,
+        orderId: razorpay_order_id
+      });
+
+    } catch (error) {
+      console.error('Error verifying Razorpay payment:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Payment verification failed'
+      });
+    }
+  });
+
+  // Get user's teleconsultations
+  app.get('/api/teleconsultations', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const teleconsultations = await storage.getUserTeleconsultations(userId);
+
+      res.json({
+        teleconsultations,
+        total: teleconsultations.length,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error fetching teleconsultations:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch teleconsultations'
+      });
+    }
+  });
+
+  // Get advisor's teleconsultations (for advisor dashboard)
+  app.get('/api/advisor-teleconsultations/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.advisorId);
+      const sessionUser = (req.session as any).user;
+
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+
+      // Verify advisor ownership - only advisors can view their own consultations
+      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
+        return res.status(403).json({ 
+          message: 'Forbidden: You can only view your own consultations' 
+        });
+      }
+
+      const teleconsultations = await storage.getAdvisorTeleconsultations(advisorId);
+
+      res.json({
+        teleconsultations,
+        total: teleconsultations.length,
+        advisorId,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error fetching advisor teleconsultations:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch advisor teleconsultations'
+      });
+    }
+  });
+
+  // Update teleconsultation status
+  app.patch('/api/teleconsultations/:id/status', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const teleconsultationId = parseInt(req.params.id);
+      const { status } = req.body;
+      const userId = (req.session as any).userId;
+
+      if (isNaN(teleconsultationId)) {
+        return res.status(400).json({ message: 'Invalid teleconsultation ID' });
+      }
+
+      // Validate status
+      const statusSchema = z.object({
+        status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled'])
+      });
+
+      const validationResult = statusSchema.safeParse({ status });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid status',
+          errors: validationResult.error.errors
+        });
+      }
+
+      // TODO: Add authorization check - only participants can update status
+      await storage.updateTeleconsultationStatus(teleconsultationId, status);
+
+      res.json({
+        success: true,
+        message: 'Teleconsultation status updated successfully',
+        teleconsultationId,
+        status,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error updating teleconsultation status:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to update teleconsultation status'
+      });
+    }
+  });
+
+  // Check consultation eligibility and pricing
+  app.get('/api/consultation-eligibility/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.advisorId);
+      const userId = (req.session as any).userId;
+
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+
+      if (!advisor.consultationEnabled) {
+        return res.status(400).json({ 
+          message: 'Advisor is not available for consultations',
+          available: false
+        });
+      }
+
+      // Get user's consultation usage
+      const usage = await storage.getUserConsultationUsage(userId, advisorId);
+      const freeConsultationsUsed = usage?.freeConsultationsUsed || 0;
+      const freeConsultationsLimit = advisor.freeConsultationsPerUser || 0;
+      const hasFreeTier = freeConsultationsUsed < freeConsultationsLimit;
+
+      res.json({
+        available: true,
+        advisorName: `${advisor.firstName || ''} ${advisor.lastName || ''}`.trim(),
+        freeConsultationsUsed,
+        freeConsultationsLimit,
+        hasFreeTier,
+        freeConsultationsRemaining: Math.max(0, freeConsultationsLimit - freeConsultationsUsed),
+        pricing: {
+          fee15min: parseFloat(advisor.consultationFee15min || '0'),
+          fee30min: parseFloat(advisor.consultationFee30min || '0')
+        },
+        advisorDetails: {
+          specialization: advisor.specialization,
+          experience: advisor.experience,
+          location: advisor.location,
+          bio: advisor.bio
+        }
+      });
+
+    } catch (error) {
+      console.error('Error checking consultation eligibility:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to check consultation eligibility'
+      });
+    }
+  });
 
   // Force refresh news cache (for testing and manual refresh)
   app.post("/api/refresh-news", async (req, res) => {
@@ -1008,7 +1398,8 @@ CONTENT: [Hindi translation]`;
         userId,
         sender: 'user',
         content: validationResult.data.content,
-        conversationKey: `${validationResult.data.advisorId}:${userId}`
+        conversationKey: `${validationResult.data.advisorId}:${userId}`,
+        conversationId: 0 // Will be set automatically by storage method
       });
       
       res.status(201).json({
