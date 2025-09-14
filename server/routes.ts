@@ -697,11 +697,37 @@ CONTENT: [Hindi translation]`;
   app.get("/api/investment-advisors", async (req, res) => {
     try {
       const advisors = await googleSheetsService.fetchInvestmentAdvisors();
+      console.log(`Fetched ${advisors.length} advisors from Google Sheets IA tab`);
       res.json(advisors);
     } catch (error) {
       console.error('Error fetching investment advisors:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
+      });
+    }
+  });
+
+  // Refresh Investment Advisors (force refresh from Google Sheets)
+  app.post("/api/investment-advisors/refresh", async (req, res) => {
+    try {
+      console.log('🔄 Force refreshing investment advisors data...');
+      
+      // Clear the cache to force fresh data fetch
+      googleSheetsService.clearCache();
+      
+      // Fetch fresh data
+      const advisors = await googleSheetsService.fetchInvestmentAdvisors();
+      console.log(`✅ Refreshed ${advisors.length} advisors from Google Sheets`);
+      
+      res.json({ 
+        message: 'Investment advisors data refreshed successfully', 
+        count: advisors.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error refreshing investment advisors:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to refresh investment advisors'
       });
     }
   });
