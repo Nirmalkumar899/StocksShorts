@@ -29,17 +29,33 @@ export class BSEAnnouncementProcessor {
   private readonly BSE_API_URL = 'https://api.bseindia.com/BseIndiaAPI/api/CorporateAnnouncement/getCorporateAnnouncement';
   
   private readonly TARGET_KEYWORDS = [
+    // Original keywords
     'order', 'warrant', 'unaudited', 'result', 'block', 'fine',
-    'penalty', 'suspension', 'trading halt', 'regulatory action',
-    'compliance', 'violation', 'enforcement', 'investigation'
+    
+    // Circuit and trading actions
+    'circuit', 'circuit breaker', 'trading halt', 'halt', 'suspension',
+    
+    // Regulatory and compliance
+    'penalty', 'violation', 'breach', 'compliance', 'enforcement', 
+    'investigation', 'probe', 'inquiry', 'surveillance',
+    
+    // Market integrity
+    'delisting', 'default', 'insider trading', 'price manipulation',
+    'market manipulation', 'disclosure', 'non-compliance',
+    
+    // Critical actions
+    'cease and desist', 'show cause', 'adjudication', 'settlement',
+    'consent order', 'regulatory action', 'disciplinary action'
   ];
 
   private readonly CATEGORY_KEYWORDS = {
-    'regulatory': ['order', 'fine', 'penalty', 'violation', 'enforcement', 'compliance'],
-    'warrants': ['warrant', 'trading halt', 'suspension', 'block'],
+    'regulatory': ['order', 'fine', 'penalty', 'violation', 'enforcement', 'compliance', 'breach', 'disciplinary action', 'cease and desist', 'show cause'],
+    'trading-action': ['circuit', 'circuit breaker', 'trading halt', 'halt', 'suspension', 'block', 'delisting'],
+    'warrants': ['warrant', 'rights issue', 'preferential allotment'],
     'financial-results': ['unaudited', 'result', 'quarterly', 'annual', 'earnings'],
     'order-win': ['order win', 'contract', 'awarded', 'tender'],
-    'investigation': ['investigation', 'inquiry', 'probe', 'action']
+    'investigation': ['investigation', 'inquiry', 'probe', 'surveillance', 'insider trading', 'price manipulation', 'market manipulation'],
+    'disclosure': ['disclosure', 'non-compliance', 'default', 'settlement', 'consent order']
   };
 
   public async fetchAndProcessBSEAnnouncements(): Promise<ProcessedAnnouncement[]> {
@@ -209,6 +225,12 @@ export class BSEAnnouncementProcessor {
       summary = this.createResultsSummary(text);
     } else if (category === 'warrants') {
       summary = this.createWarrantsSummary(text);
+    } else if (category === 'trading-action') {
+      summary = this.createTradingActionSummary(text);
+    } else if (category === 'investigation') {
+      summary = this.createInvestigationSummary(text);
+    } else if (category === 'disclosure') {
+      summary = this.createDisclosureSummary(text);
     } else if (category === 'order-win') {
       summary = this.createOrderWinSummary(text);
     } else {
@@ -230,6 +252,18 @@ export class BSEAnnouncementProcessor {
     return `BSE has announced important trading information regarding warrants or trading restrictions. ${text}. This announcement may affect trading activity and investor decisions. Market participants should review the details carefully before making any trading decisions.`;
   }
 
+  private createTradingActionSummary(text: string): string {
+    return `BSE has implemented critical trading measures including circuit breakers or trading halts. ${text}. These actions are designed to maintain market stability and protect investors during periods of excessive volatility. Trading restrictions may significantly impact stock prices and investor strategies.`;
+  }
+
+  private createInvestigationSummary(text: string): string {
+    return `BSE has announced surveillance or investigation actions related to market integrity. ${text}. These measures are part of BSE's commitment to maintaining fair and transparent markets. Investors should be aware that such actions may lead to further regulatory consequences.`;
+  }
+
+  private createDisclosureSummary(text: string): string {
+    return `BSE has highlighted disclosure or compliance issues affecting market participants. ${text}. Proper disclosure is essential for market transparency and investor protection. Non-compliance with disclosure norms may result in regulatory action and penalties.`;
+  }
+
   private createOrderWinSummary(text: string): string {
     return `A significant business development has been announced on BSE. ${text}. This order win or contract award represents a positive development for the company and may impact its financial performance and stock price. Investors should consider this development in their investment decisions.`;
   }
@@ -246,10 +280,12 @@ export class BSEAnnouncementProcessor {
   private mapCategoryToType(category: string): string {
     const typeMap: { [key: string]: string } = {
       'regulatory': 'regulatory',
+      'trading-action': 'trading-action',
       'warrants': 'warrants',
       'financial-results': 'earnings',
       'order-win': 'order-win',
-      'investigation': 'regulatory'
+      'investigation': 'investigation',
+      'disclosure': 'regulatory'
     };
     
     return typeMap[category] || 'regulatory';
@@ -272,8 +308,8 @@ export class BSEAnnouncementProcessor {
   private assignPriority(announcement: BSEAnnouncement): string {
     const text = `${announcement.title} ${announcement.content}`.toLowerCase();
     
-    const highPriorityKeywords = ['fine', 'penalty', 'suspension', 'investigation', 'order'];
-    const mediumPriorityKeywords = ['warrant', 'result', 'unaudited'];
+    const highPriorityKeywords = ['fine', 'penalty', 'suspension', 'investigation', 'circuit', 'halt', 'delisting', 'enforcement', 'violation', 'breach'];
+    const mediumPriorityKeywords = ['warrant', 'result', 'unaudited', 'disclosure', 'compliance', 'surveillance'];
     
     if (highPriorityKeywords.some(keyword => text.includes(keyword))) return 'High';
     if (mediumPriorityKeywords.some(keyword => text.includes(keyword))) return 'Medium';
@@ -283,8 +319,11 @@ export class BSEAnnouncementProcessor {
   private getContextualImage(category: string): string | null {
     const imageMap: { [key: string]: string } = {
       'regulatory': 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=600&fit=crop&auto=format&q=80',
+      'trading-action': 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80',
       'financial-results': 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format&q=80',
       'warrants': 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80',
+      'investigation': 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=600&fit=crop&auto=format&q=80',
+      'disclosure': 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&h=600&fit=crop&auto=format&q=80',
       'order-win': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format&q=80'
     };
     
