@@ -12,8 +12,8 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Set longer timeout for AI requests
-  const timeout = url.includes('/api/stock-ai/query') || url.includes('/api/translate-articles') ? 180000 : 30000;
+  // Set longer timeout for translation requests
+  const timeout = url.includes('/api/translate-articles') ? 180000 : 30000;
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -33,7 +33,7 @@ export async function apiRequest(
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new Error('Request timeout - AI analysis is taking longer than expected. Please try again.');
+      throw new Error('Request timeout - the request is taking longer than expected. Please try again.');
     }
     throw error;
   }
