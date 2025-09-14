@@ -964,6 +964,22 @@ CONTENT: [Hindi translation]`;
 
       const advisorData = validationResult.data;
       
+      // Handle teleconsultation logic - set consultationEnabled based on fee values
+      const hasConsultationFees = (
+        (advisorData.consultationFee15min !== null && advisorData.consultationFee15min !== undefined) ||
+        (advisorData.consultationFee30min !== null && advisorData.consultationFee30min !== undefined)
+      );
+      
+      // Explicitly set consultationEnabled based on whether advisor offers any consultation fees
+      advisorData.consultationEnabled = hasConsultationFees;
+      
+      console.log('💰 Teleconsultation setup:', {
+        consultationFee15min: advisorData.consultationFee15min,
+        consultationFee30min: advisorData.consultationFee30min,
+        consultationEnabled: advisorData.consultationEnabled,
+        freeConsultationsPerUser: advisorData.freeConsultationsPerUser
+      });
+      
       // Normalize phone number - ensure it has proper format
       if (advisorData.professionalPhone && !advisorData.professionalPhone.startsWith('+')) {
         // If it's a 10-digit Indian number, add +91 prefix

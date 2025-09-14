@@ -99,6 +99,11 @@ const registerSchema = z.object({
   servicesOffered: z.array(z.string()).min(1, "Please select at least one service"),
   languagesSpoken: z.array(z.string()).min(1, "Please select at least one language"),
   
+  // Teleconsultation Services
+  consultationFee15min: z.coerce.number().min(0, "Fee cannot be negative").max(10000, "Fee cannot exceed ₹10,000").optional(),
+  consultationFee30min: z.coerce.number().min(0, "Fee cannot be negative").max(10000, "Fee cannot exceed ₹10,000").optional(),
+  freeConsultationsPerUser: z.coerce.number().refine(val => [-1, 0, 1].includes(val), "Invalid free consultation option"),
+
   // Additional Information
   aboutYou: z.string().min(10, "Please write at least 10 characters about yourself").max(1000, "Description too long"),
   consultationFee: z.coerce.number().min(0, "Fee cannot be negative").max(10000, "Fee cannot exceed ₹10,000"),
@@ -166,6 +171,11 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
       servicesOffered: [],
       languagesSpoken: [],
       
+      // Teleconsultation Services
+      consultationFee15min: undefined,
+      consultationFee30min: undefined,
+      freeConsultationsPerUser: 1,
+
       // Additional Information
       aboutYou: "",
       consultationFee: 100,
@@ -1035,6 +1045,141 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
                             />
                           ))}
                         </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* TELECONSULTATION SERVICES SECTION */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                    <Phone className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Teleconsultation Services (Optional)
+                    </h3>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Configure your consultation pricing and free tier options. These settings can be updated later in your dashboard.
+                  </p>
+
+                  {/* Consultation Fee Settings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="consultationFee15min"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>15-Minute Consultation Fee</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="10000"
+                                placeholder="0"
+                                className="pl-8"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                data-testid="input-consultation-fee-15min"
+                              />
+                            </div>
+                          </FormControl>
+                          <p className="text-xs text-gray-500">
+                            Leave empty if not offering 15-minute consultations
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="consultationFee30min"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>30-Minute Consultation Fee</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="10000"
+                                placeholder="0"
+                                className="pl-8"
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                                data-testid="input-consultation-fee-30min"
+                              />
+                            </div>
+                          </FormControl>
+                          <p className="text-xs text-gray-500">
+                            Leave empty if not offering 30-minute consultations
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Free Consultation Settings */}
+                  <FormField
+                    control={form.control}
+                    name="freeConsultationsPerUser"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Free Consultation Policy</FormLabel>
+                        <FormControl>
+                          <div className="space-y-3">
+                            <label className="flex items-start space-x-3 cursor-pointer">
+                              <input
+                                type="radio"
+                                value={1}
+                                checked={field.value === 1}
+                                onChange={() => field.onChange(1)}
+                                className="mt-0.5"
+                                data-testid="radio-free-consultation-one"
+                              />
+                              <div>
+                                <div className="text-sm font-medium">1 free consultation per user</div>
+                                <div className="text-xs text-gray-500">Each new user gets one free consultation with you</div>
+                              </div>
+                            </label>
+                            
+                            <label className="flex items-start space-x-3 cursor-pointer">
+                              <input
+                                type="radio"
+                                value={-1}
+                                checked={field.value === -1}
+                                onChange={() => field.onChange(-1)}
+                                className="mt-0.5"
+                                data-testid="radio-free-consultation-unlimited"
+                              />
+                              <div>
+                                <div className="text-sm font-medium">Unlimited free consultations</div>
+                                <div className="text-xs text-gray-500">All consultations are free for users</div>
+                              </div>
+                            </label>
+                            
+                            <label className="flex items-start space-x-3 cursor-pointer">
+                              <input
+                                type="radio"
+                                value={0}
+                                checked={field.value === 0}
+                                onChange={() => field.onChange(0)}
+                                className="mt-0.5"
+                                data-testid="radio-free-consultation-none"
+                              />
+                              <div>
+                                <div className="text-sm font-medium">No free consultations</div>
+                                <div className="text-xs text-gray-500">All consultations are paid</div>
+                              </div>
+                            </label>
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

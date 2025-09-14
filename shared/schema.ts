@@ -255,8 +255,8 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   consultationFee: numeric("consultation_fee", { precision: 10, scale: 2 }).default("100.00"),
   
   // Teleconsultation Configuration
-  consultationFee15min: numeric("consultation_fee_15min", { precision: 10, scale: 2 }).default("100.00"),
-  consultationFee30min: numeric("consultation_fee_30min", { precision: 10, scale: 2 }).default("200.00"),
+  consultationFee15min: numeric("consultation_fee_15min", { precision: 10, scale: 2 }), // nullable - null means not offering 15min consultations
+  consultationFee30min: numeric("consultation_fee_30min", { precision: 10, scale: 2 }), // nullable - null means not offering 30min consultations
   freeConsultationsPerUser: integer("free_consultations_per_user").default(1), // -1 for unlimited
   consultationEnabled: boolean("consultation_enabled").default(false),
   
@@ -377,11 +377,21 @@ export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdviso
 }).extend({
   status: z.enum(["active", "offline"]).default("offline"),
   consultationFee: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
-  consultationFee15min: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
-  consultationFee30min: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
+  // Teleconsultation fields - nullable means not offering that service
+  consultationFee15min: z.union([
+    z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val === '' ? null : val),
+    z.number().transform(val => val.toString()),
+    z.null()
+  ]).optional().nullable(),
+  consultationFee30min: z.union([
+    z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val === '' ? null : val),
+    z.number().transform(val => val.toString()),
+    z.null()
+  ]).optional().nullable(),
   freeConsultationsPerUser: z.number().refine((val) => val === -1 || val >= 0, {
     message: "Free consultations must be -1 (unlimited) or >= 0",
   }).optional(),
+  consultationEnabled: z.boolean().default(false).optional(),
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).omit({
