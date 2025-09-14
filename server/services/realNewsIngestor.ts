@@ -32,6 +32,11 @@ interface VerifiedArticle {
 export class RealNewsIngestor {
   private readonly RSS_FEEDS = [
     {
+      url: 'https://www.bseindia.com/data/xml/notices.xml',
+      source: 'BSE Official',
+      domain: 'bseindia.com'
+    },
+    {
       url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
       source: 'Economic Times',
       domain: 'economictimes.indiatimes.com'
@@ -52,21 +57,11 @@ export class RealNewsIngestor {
       domain: 'economictimes.indiatimes.com'
     },
     {
-      url: 'https://www.business-standard.com/rss/markets-106.rss',
-      source: 'Business Standard',
-      domain: 'business-standard.com'
-    },
-    {
-      url: 'https://www.moneycontrol.com/rss/MCtopstories.xml',
-      source: 'MoneyControl',
-      domain: 'moneycontrol.com'
-    },
-    {
       url: 'https://www.livemint.com/rss/markets',
       source: 'LiveMint',
       domain: 'livemint.com'
     }
-    // Note: Some RSS feeds block automated requests, keeping only working ones
+    // Note: Added BSE official feed, removed failing Business Standard and MoneyControl
   ];
 
   private readonly MARKET_KEYWORDS = [
@@ -87,7 +82,7 @@ export class RealNewsIngestor {
     
     for (const feed of this.RSS_FEEDS) {
       try {
-        console.log(`🔍 Fetching from ${feed.source} for enhanced categorization...`);
+        console.log(`🔍 Fetching from ${feed.source} (${feed.domain}) for enhanced categorization...`);
         const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
         const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
         allArticles.push(...todaysArticles, ...yesterdaysArticles);
@@ -95,7 +90,7 @@ export class RealNewsIngestor {
         // Add delay between requests to be respectful
         await this.delay(1000);
       } catch (error: any) {
-        console.error(`❌ Error fetching from ${feed.source} (enhanced system):`, error?.message || error);
+        console.error(`❌ Error fetching from ${feed.source} (${feed.domain}):`, error?.message || error);
       }
     }
 
@@ -327,8 +322,9 @@ export class RealNewsIngestor {
 
   private calculateProvenanceScore(domain: string, publishedAt: Date): number {
     const domainScores: Record<string, number> = {
+      'bseindia.com': 1.0,
+      'nseindia.com': 1.0,
       'economictimes.indiatimes.com': 0.9,
-      'moneycontrol.com': 0.85,
       'livemint.com': 0.8,
       'cnbctv18.com': 0.75,
       'financialexpress.com': 0.7
