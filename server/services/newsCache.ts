@@ -121,16 +121,21 @@ export class NewsCache {
       // Merge filtered articles
       const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
       
-      // Sort by priority (Breakout Stocks & Analyst first), then by time (newest first)
+      // Sort by priority (enhanced categories), randomize IPO, then by time
       const sortedArticles = allArticles
         .sort((a, b) => {
-          // Priority categories: breakout-stocks and research-report (analyst)
-          const isPriorityA = ['breakout-stocks', 'research-report'].includes(a.type);
-          const isPriorityB = ['breakout-stocks', 'research-report'].includes(b.type);
+          // Priority categories: breakout-stocks, research-report, order-win, multibagger, block-deal, high-volume
+          const isPriorityA = ['breakout-stocks', 'research-report', 'order-win', 'multibagger', 'block-deal', 'high-volume'].includes(a.type);
+          const isPriorityB = ['breakout-stocks', 'research-report', 'order-win', 'multibagger', 'block-deal', 'high-volume'].includes(b.type);
           
           // If one is priority and other isn't, priority comes first
           if (isPriorityA && !isPriorityB) return -1;
           if (!isPriorityA && isPriorityB) return 1;
+          
+          // For IPO articles, randomize order instead of chronological
+          if (a.type === 'ipo' && b.type === 'ipo') {
+            return Math.random() - 0.5; // Random order for IPO articles
+          }
           
           // If both are same priority level, sort by time (newest first)
           const timeA = a.time ? new Date(a.time).getTime() : 0;

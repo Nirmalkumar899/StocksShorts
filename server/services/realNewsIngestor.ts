@@ -87,7 +87,7 @@ export class RealNewsIngestor {
     
     for (const feed of this.RSS_FEEDS) {
       try {
-        console.log(`🔍 Fetching from ${feed.source}...`);
+        console.log(`🔍 Fetching from ${feed.source} for enhanced categorization...`);
         const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
         const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
         allArticles.push(...todaysArticles, ...yesterdaysArticles);
@@ -95,7 +95,7 @@ export class RealNewsIngestor {
         // Add delay between requests to be respectful
         await this.delay(1000);
       } catch (error: any) {
-        console.error(`❌ Error fetching from ${feed.source}:`, error?.message || error);
+        console.error(`❌ Error fetching from ${feed.source} (enhanced system):`, error?.message || error);
       }
     }
 
@@ -107,7 +107,7 @@ export class RealNewsIngestor {
       .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
       .slice(0, 50);
 
-    console.log(`✅ Ingested ${sortedArticles.length} unique articles from today`);
+    console.log(`✅ Ingested ${sortedArticles.length} unique articles from today with enhanced categories`);
     return sortedArticles;
   }
 
@@ -233,10 +233,40 @@ export class RealNewsIngestor {
   private categorizeArticle(title: string, description: string): string {
     const text = (title + ' ' + description).toLowerCase();
     
-    // Breakout stocks detection
+    // Multibagger detection (separate high-priority category)
+    if (text.includes('multibagger') || text.includes('multi-bagger') || text.includes('10x return') ||
+        text.includes('100% return') || text.includes('250% rally') || text.includes('265% rally') ||
+        text.includes('penny stock') || text.includes('smallcap rally')) return 'multibagger';
+    
+    // Breakout stocks detection (enhanced)
     if (text.includes('breakout') || text.includes('chart pattern') || text.includes('technical breakout') || 
         text.includes('breakage') || text.includes('resistance break') || text.includes('support break') ||
-        text.includes('momentum') || text.includes('surge above')) return 'breakout-stocks';
+        text.includes('momentum') || text.includes('surge above') || text.includes('rally') ||
+        text.includes('explosive') || text.includes('surge')) return 'breakout-stocks';
+    
+    // Order Win detection
+    if (text.includes('order win') || text.includes('order book') || text.includes('order received') ||
+        text.includes('contract win') || text.includes('tender win') || text.includes('order secured')) return 'order-win';
+    
+    // Warrant Issue detection  
+    if (text.includes('warrant') || text.includes('preferential') || text.includes('rights issue') ||
+        text.includes('warrant exercise') || text.includes('warrant trading')) return 'warrants';
+    
+    // Block Deal detection
+    if (text.includes('block deal') || text.includes('bulk deal') || text.includes('large trade') ||
+        text.includes('institutional sale') || text.includes('promoter sale')) return 'block-deal';
+    
+    // High Volume Stock detection
+    if (text.includes('high volume') || text.includes('volume surge') || text.includes('trading volume') ||
+        text.includes('heavy volume') || text.includes('unusual volume') || text.includes('volume spike')) return 'high-volume';
+    
+    // Next Day Market / Tomorrow Market detection
+    if (text.includes('tomorrow') || text.includes('next day') || text.includes('monday') ||
+        text.includes('next week') || text.includes('week ahead') || text.includes('market outlook')) return 'market-outlook';
+    
+    // IPO detection (enhanced to include SME)
+    if (text.includes('ipo') || text.includes('listing') || text.includes('sme ipo') || 
+        text.includes('public issue') || text.includes('allotment') || text.includes('subscription')) return 'ipo';
     
     // Crypto detection
     if (text.includes('crypto') || text.includes('bitcoin') || text.includes('ethereum') || 
@@ -248,10 +278,12 @@ export class RealNewsIngestor {
         text.includes('federal reserve') || text.includes('fed') || text.includes('dow jones') ||
         text.includes('nasdaq') || text.includes('s&p 500') || text.includes('american')) return 'us-market';
     
-    if (text.includes('ipo') || text.includes('listing')) return 'ipo';
-    if (text.includes('earnings') || text.includes('results') || text.includes('quarterly')) return 'research-report';
+    // Research Report / Analyst detection
+    if (text.includes('earnings') || text.includes('results') || text.includes('quarterly') ||
+        text.includes('analysis') || text.includes('outlook') || text.includes('target') ||
+        text.includes('recommendation') || text.includes('buy') || text.includes('sell')) return 'research-report';
+    
     if (text.includes('breaking') || text.includes('alert') || text.includes('urgent')) return 'trending';
-    if (text.includes('analysis') || text.includes('outlook') || text.includes('target')) return 'research-report';
     
     return 'trending';
   }
@@ -273,7 +305,8 @@ export class RealNewsIngestor {
   private assignPriority(title: string, description: string): 'High' | 'Medium' | 'Low' {
     const text = (title + ' ' + description).toLowerCase();
     
-    const highPriorityWords = ['breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant'];
+    const highPriorityWords = ['breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant', 
+                              'multibagger', 'breakout', 'order win', 'block deal', 'high volume', 'warrant'];
     const highPriorityCount = highPriorityWords.filter(word => text.includes(word)).length;
     
     if (highPriorityCount >= 2) return 'High';
