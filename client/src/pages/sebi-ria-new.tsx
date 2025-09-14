@@ -35,12 +35,12 @@ function HeroSection({ onPrimaryClick, advisorCount }: HeroSectionProps) {
         </p>
         <Button 
           onClick={onPrimaryClick}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg font-semibold rounded-full mb-6"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-8 py-3 text-lg font-semibold rounded-full mb-6 w-full sm:w-auto whitespace-normal break-words leading-snug text-center"
           data-testid="hero-start-consulting"
         >
           🎯 Available Now - Start Consulting!
         </Button>
-        <div className="flex justify-center items-center gap-8 text-sm">
+        <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 text-sm">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
             <span>SEBI Registered</span>
@@ -132,7 +132,7 @@ function SearchFilters({
 function TopAdvisorsBadge() {
   return (
     <div className="flex justify-center mb-6">
-      <Badge className="bg-green-500 text-white px-4 py-2 text-sm font-medium">
+      <Badge className="bg-green-500 text-white px-3 py-2 text-sm font-medium max-w-full whitespace-normal break-words text-center">
         🔥 Top SEBI Advisors Available Now
       </Badge>
     </div>
@@ -248,7 +248,7 @@ function EnhancedAdvisorCard({ advisor, index }: EnhancedAdvisorCardProps) {
         
         <div className="space-y-2">
           <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-medium"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-medium whitespace-normal break-words leading-snug"
             onClick={() => handleContact('phone', advisor)}
             disabled={!advisor.phone}
             data-testid={`start-consultation-${index}`}
@@ -257,7 +257,7 @@ function EnhancedAdvisorCard({ advisor, index }: EnhancedAdvisorCardProps) {
           </Button>
           <Button 
             variant="outline"
-            className="w-full py-2 text-sm"
+            className="w-full py-2 text-sm whitespace-normal break-words leading-snug"
             onClick={() => handleContact('whatsapp', advisor)}
             disabled={!advisor.phone}
             data-testid={`chat-advisor-${index}`}
@@ -326,7 +326,7 @@ function HowItWorksSection() {
         
         <div className="text-center mt-8">
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-8 py-3 text-lg font-semibold w-full sm:w-auto whitespace-normal break-words leading-snug text-center"
             data-testid="how-it-works-cta"
           >
             Start Your Investment Journey
