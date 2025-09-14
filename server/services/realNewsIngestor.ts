@@ -40,6 +40,31 @@ export class RealNewsIngestor {
       url: 'https://www.financialexpress.com/market/rss/',
       source: 'Financial Express',
       domain: 'financialexpress.com'
+    },
+    {
+      url: 'https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms',
+      source: 'Economic Times Stocks',
+      domain: 'economictimes.indiatimes.com'
+    },
+    {
+      url: 'https://economictimes.indiatimes.com/markets/ipo/rssfeeds/67840.cms',
+      source: 'Economic Times IPO',
+      domain: 'economictimes.indiatimes.com'
+    },
+    {
+      url: 'https://www.business-standard.com/rss/markets-106.rss',
+      source: 'Business Standard',
+      domain: 'business-standard.com'
+    },
+    {
+      url: 'https://www.moneycontrol.com/rss/MCtopstories.xml',
+      source: 'MoneyControl',
+      domain: 'moneycontrol.com'
+    },
+    {
+      url: 'https://www.livemint.com/rss/markets',
+      source: 'LiveMint',
+      domain: 'livemint.com'
     }
     // Note: Some RSS feeds block automated requests, keeping only working ones
   ];
@@ -53,16 +78,19 @@ export class RealNewsIngestor {
   ];
 
   public async ingestTodaysNews(): Promise<Article[]> {
-    console.log('📰 Starting real news ingestion for today...');
+    console.log('📰 Starting real news ingestion for recent days...');
     
     const allArticles: Article[] = [];
     const todayIST = this.getTodayInIST();
+    const yesterdayIST = new Date(todayIST);
+    yesterdayIST.setDate(yesterdayIST.getDate() - 1);
     
     for (const feed of this.RSS_FEEDS) {
       try {
         console.log(`🔍 Fetching from ${feed.source}...`);
-        const articles = await this.fetchRSSFeed(feed, todayIST);
-        allArticles.push(...articles);
+        const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
+        const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
+        allArticles.push(...todaysArticles, ...yesterdaysArticles);
         
         // Add delay between requests to be respectful
         await this.delay(1000);
