@@ -197,6 +197,15 @@ export class NewsCache {
     cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago from TODAY
 
     console.log(`🔍 Requested category: ${category}`);
+    
+    // List of valid categories from RSS news
+    const validCategories = ['trending', 'ipo', 'research-report', 'us-market', 'crypto'];
+    
+    // If category is provided and invalid, ignore it and return all articles
+    if (category && !validCategories.includes(category)) {
+      console.log(`⚠️ Invalid category "${category}", returning all articles`);
+      category = undefined;
+    }
     console.log(`📊 Returning ${this.cache.articles.length} cached articles`);
 
     let articles = this.cache.articles.filter(article => {

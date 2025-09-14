@@ -101,6 +101,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       
       const data = await response.json();
       console.log('Fetched articles:', data);
+      console.log('URL called:', '/api/articles');
+      console.log('Response status:', response.status);
+      console.log('Array length:', Array.isArray(data) ? data.length : 'Not an array');
       
       // Ensure data is an array
       if (!Array.isArray(data)) {
