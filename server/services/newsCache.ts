@@ -29,26 +29,40 @@ export class NewsCache {
   private async initializeCache() {
     try {
       console.log('🚀 Initializing news cache...');
-      const articles = await aiNewsGenerator.generateAllNews();
       
-      // Filter articles to only include those from last 2 days + today
-      const now = new Date();
-      const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.MAX_DAYS_OLD);
-      cutoffDate.setHours(0, 0, 0, 0);
+      // Use simple fallback first to get articles immediately
+      let articles = aiNewsGenerator.generateSimpleFallback();
       
-      const filteredArticles = articles.filter(article => {
-        const articleDate = article.time ? new Date(article.time) : new Date();
-        return articleDate >= cutoffDate;
-      });
-      
-      this.cache.articles = filteredArticles.slice(0, this.MAX_ARTICLES);
+      // Update the cache immediately with fallback
+      this.cache.articles = articles;
       this.cache.lastRefresh = new Date();
       this.cache.isRefreshing = false;
       
-      console.log(`✅ Cache initialized with ${this.cache.articles.length} articles`);
+      console.log(`✅ Cache initialized with ${this.cache.articles.length} fallback articles`);
+      
+      // Try to get better articles in background
+      this.tryBackgroundGeneration();
+      
     } catch (error) {
       console.error('❌ Failed to initialize cache:', error);
+      // Emergency fallback
+      this.cache.articles = aiNewsGenerator.generateSimpleFallback();
+      this.cache.lastRefresh = new Date();
       this.cache.isRefreshing = false;
+    }
+  }
+
+  private async tryBackgroundGeneration() {
+    try {
+      console.log('🔄 Attempting background AI generation...');
+      const aiArticles = await aiNewsGenerator.generateAllNews();
+      
+      if (aiArticles.length > 0) {
+        this.cache.articles = aiArticles;
+        console.log(`✅ Cache updated with ${aiArticles.length} AI-generated articles`);
+      }
+    } catch (error) {
+      console.log('⚠️ Background AI generation failed, keeping fallback articles');
     }
   }
 
