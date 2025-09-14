@@ -11,6 +11,7 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: null, url: '/' },
+  { id: 'special', label: 'Special', icon: null, url: '/special' },
   { id: 'messages', label: 'Messages', icon: null, url: '/conversations' },
   { id: 'sebi-ria', label: 'Connect RIA', icon: null, url: '/sebi-ria' },
   { id: 'profile', label: 'Profile', icon: null, url: '/profile' },

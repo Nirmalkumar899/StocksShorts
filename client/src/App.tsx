@@ -19,6 +19,7 @@ import GmailConnect from "@/pages/GmailConnect";
 import Conversations from "@/pages/conversations";
 import Chat from "@/pages/chat";
 import BookConsultation from "@/pages/book-consultation";
+import Special from "@/pages/special";
 import SplashScreen from "@/components/splash-screen";
 
 function Router() {
@@ -53,7 +54,7 @@ function Router() {
         {() => <Home initialCategory="trending" />}
       </Route>
       <Route path="/special">
-        {() => <Home />}
+        {() => <Special onBack={() => window.history.back()} />}
       </Route>
       <Route path="/breakout">
         {() => <Home />}

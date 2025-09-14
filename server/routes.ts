@@ -769,6 +769,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // StocksShorts Special Articles endpoint (fetches from news tab in Google Sheets)
+  // Note: This must come BEFORE the parameterized route /api/articles/:id
+  app.get("/api/articles/stocks-special", async (req, res) => {
+    try {
+      console.log('📰 Fetching StocksShorts Special articles from news tab...');
+      
+      const specialArticles = await googleSheetsService.fetchStocksShortsSpecialArticles();
+      
+      console.log(`📊 Returning ${specialArticles.length} StocksShorts Special articles`);
+      
+      // Set cache headers for faster loading
+      if (!res.headersSent) {
+        res.set({
+          'Cache-Control': 'public, max-age=300, s-maxage=600', // 5-10 min browser cache
+          'Content-Type': 'application/json; charset=utf-8'
+        });
+      }
+      
+      return res.json(specialArticles);
+    } catch (error) {
+      console.error('❌ Error fetching StocksShorts Special articles:', error);
+      if (!res.headersSent) {
+        return res.status(500).json({ 
+          message: error instanceof Error ? error.message : 'Failed to fetch StocksShorts Special articles'
+        });
+      }
+    }
+  });
+
   // Get specific article by ID
   app.get("/api/articles/:id", async (req, res) => {
     try {
@@ -826,6 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const status = newsCache.getCacheStatus();
     res.json(status);
   });
+
 
   // Translation API using OpenAI SDK
   const openai = new OpenAI({ 
