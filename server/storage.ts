@@ -39,7 +39,7 @@ const withTimeout = async <T>(promise: Promise<T>, timeout: number = 5000): Prom
 import { eq, and, gt, gte, sql, desc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByPhone(phoneNumber: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   createOtp(otp: InsertOtp): Promise<OtpVerification>;
@@ -70,7 +70,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     if (!db) return undefined;
     try {
       const result = await withTimeout(
@@ -121,7 +121,7 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(otpVerifications.phoneNumber, phoneNumber),
           eq(otpVerifications.otp, otpCode),
-          eq(otpVerifications.isUsed, "false"),
+          eq(otpVerifications.isUsed, false),
           gt(otpVerifications.expiresAt, new Date())
         )
       );
@@ -131,14 +131,14 @@ export class DatabaseStorage implements IStorage {
   async markOtpAsUsed(id: number): Promise<void> {
     await db
       .update(otpVerifications)
-      .set({ isUsed: "true" })
+      .set({ isUsed: true })
       .where(eq(otpVerifications.id, id));
   }
 
   async verifyUser(phoneNumber: string): Promise<void> {
     await db
       .update(users)
-      .set({ isVerified: "true" })
+      .set({ isVerified: true })
       .where(eq(users.phoneNumber, phoneNumber));
   }
 

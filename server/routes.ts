@@ -551,55 +551,48 @@ CONTENT: [Hindi translation]`;
   app.post("/api/investment-advisors", async (req, res) => {
     try {
       console.log('📝 SEBI Advisor registration request received');
+      console.log('Request body keys:', Object.keys(req.body));
       
-      // Validate required fields
-      const {
-        name,
-        sebiRegNo,
-        email,
-        phone,
-        specialization = '',
-        experience = '',
-        company = '',
-        location = '',
-        bio = ''
-      } = req.body;
-
-      if (!name || !sebiRegNo || !email || !phone) {
+      // Import the validation schema
+      const { insertInvestmentAdvisorSchema } = await import("@shared/schema");
+      
+      // Validate the comprehensive form data
+      const validationResult = insertInvestmentAdvisorSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        console.log('❌ Validation errors:', validationResult.error.issues);
         return res.status(400).json({
-          message: 'Required fields missing',
-          required: ['name', 'sebiRegNo', 'email', 'phone']
+          message: 'Validation failed',
+          errors: validationResult.error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message
+          }))
         });
       }
 
-      // Basic email validation
-      if (!email.includes('@') || email.length < 5) {
-        return res.status(400).json({
-          message: 'Please provide a valid email address'
-        });
+      const advisorData = validationResult.data;
+      
+      // Normalize phone number - ensure it has proper format
+      if (advisorData.professionalPhone && !advisorData.professionalPhone.startsWith('+')) {
+        // If it's a 10-digit Indian number, add +91 prefix
+        if (/^\d{10}$/.test(advisorData.professionalPhone)) {
+          advisorData.professionalPhone = `+91${advisorData.professionalPhone}`;
+        }
       }
 
-      // Basic SEBI registration number validation
-      if (sebiRegNo.length < 5) {
-        return res.status(400).json({
-          message: 'SEBI registration number must be at least 5 characters'
-        });
+      // Set legacy fields for backward compatibility with Google Sheets integration
+      if (advisorData.firstName && advisorData.lastName) {
+        advisorData.designation = advisorData.qualification || 'SEBI Registered Investment Advisor';
+        advisorData.phone = advisorData.professionalPhone;
+        advisorData.specialization = Array.isArray(advisorData.specializations) 
+          ? advisorData.specializations.join(', ') 
+          : '';
+        advisorData.experience = `${advisorData.experienceYears || 0} years`;
+        advisorData.location = [advisorData.city, advisorData.state].filter(Boolean).join(', ');
+        advisorData.bio = advisorData.aboutYou || '';
       }
 
-      const advisorData = {
-        name: name.trim(),
-        sebiRegNo: sebiRegNo.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone.trim(),
-        specialization: specialization.trim(),
-        experience: experience.trim(),
-        company: company.trim(),
-        location: location.trim(),
-        bio: bio.trim(),
-        rating: '4.0'
-      };
-
-      // Create the advisor
+      // Create the advisor using the comprehensive schema
       const newAdvisor = await storage.createInvestmentAdvisor(advisorData);
       
       console.log('✅ SEBI Advisor registered successfully:', newAdvisor.id);
@@ -608,12 +601,15 @@ CONTENT: [Hindi translation]`;
         message: 'Investment advisor registered successfully',
         advisor: {
           id: newAdvisor.id,
-          name: newAdvisor.name,
+          firstName: newAdvisor.firstName,
+          lastName: newAdvisor.lastName,
           sebiRegNo: newAdvisor.sebiRegNo,
           email: newAdvisor.email,
-          specialization: newAdvisor.specialization,
+          professionalPhone: newAdvisor.professionalPhone,
           company: newAdvisor.company,
-          location: newAdvisor.location
+          specializations: newAdvisor.specializations,
+          experienceYears: newAdvisor.experienceYears,
+          location: [newAdvisor.city, newAdvisor.state].filter(Boolean).join(', ')
         }
       });
 
