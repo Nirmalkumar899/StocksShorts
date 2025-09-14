@@ -233,11 +233,25 @@ export class RealNewsIngestor {
   private categorizeArticle(title: string, description: string): string {
     const text = (title + ' ' + description).toLowerCase();
     
+    // Breakout stocks detection
+    if (text.includes('breakout') || text.includes('chart pattern') || text.includes('technical breakout') || 
+        text.includes('breakage') || text.includes('resistance break') || text.includes('support break') ||
+        text.includes('momentum') || text.includes('surge above')) return 'breakout-stocks';
+    
+    // Crypto detection
+    if (text.includes('crypto') || text.includes('bitcoin') || text.includes('ethereum') || 
+        text.includes('cryptocurrency') || text.includes('blockchain') || text.includes('digital currency') ||
+        text.includes('btc') || text.includes('eth') || text.includes('defi')) return 'crypto';
+    
+    // US Market detection (enhanced)
+    if (text.includes('global') || text.includes('us market') || text.includes('wall street') ||
+        text.includes('federal reserve') || text.includes('fed') || text.includes('dow jones') ||
+        text.includes('nasdaq') || text.includes('s&p 500') || text.includes('american')) return 'us-market';
+    
     if (text.includes('ipo') || text.includes('listing')) return 'ipo';
     if (text.includes('earnings') || text.includes('results') || text.includes('quarterly')) return 'research-report';
     if (text.includes('breaking') || text.includes('alert') || text.includes('urgent')) return 'trending';
     if (text.includes('analysis') || text.includes('outlook') || text.includes('target')) return 'research-report';
-    if (text.includes('global') || text.includes('us market') || text.includes('wall street')) return 'us-market';
     
     return 'trending';
   }
