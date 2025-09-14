@@ -236,6 +236,7 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   state: text("state").default(''),
   pincode: text("pincode").default(''),
   professionalPhone: text("professional_phone").notNull(),
+  whatsappNumber: varchar("whatsapp_number", { length: 15 }),
   
   // Online Presence
   website: text("website").default(''),
@@ -262,6 +263,12 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   professionalDisclaimerAccepted: boolean("professional_disclaimer_accepted").notNull().default(false),
   availableForConsultations: boolean("available_for_consultations").notNull().default(true),
   
+  // Advisor Status and Activity Tracking
+  status: text("status").notNull().default("offline"), // 'active' | 'offline'
+  lastActiveAt: timestamp("last_active_at"),
+  statusUpdatedAt: timestamp("status_updated_at").defaultNow().notNull(),
+  displayPhone: boolean("display_phone").notNull().default(false),
+  
   // Legacy fields for backward compatibility
   designation: text("designation").default(''),
   phone: text("phone").default(''),
@@ -274,13 +281,41 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Messages table for in-app communication between advisors and users
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sender: text("sender").notNull(), // 'user' | 'advisor'
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  readAt: timestamp("read_at"),
+  conversationKey: varchar("conversation_key").notNull(), // Format: advisorId:userId for indexing
+}, (table) => [
+  index("IDX_messages_conversation").on(table.conversationKey),
+  index("IDX_messages_created_at").on(table.createdAt),
+]);
+
+// Enhanced Investment Advisor schema with status validation
 export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdvisors).omit({
   id: true,
   createdAt: true,
+  statusUpdatedAt: true,
+}).extend({
+  status: z.enum(["active", "offline"]).default("offline"),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  sender: z.enum(["user", "advisor"]),
 });
 
 export type InsertInvestmentAdvisor = z.infer<typeof insertInvestmentAdvisorSchema>;
 export type InvestmentAdvisor = typeof investmentAdvisors.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
 
 // Google Sheets row structure
 export interface GoogleSheetsRow {
