@@ -249,10 +249,30 @@ JSON format:
           }
         ],
         response_format: { type: "json_object" },
-        max_completion_tokens: 2000
+        max_completion_tokens: 4000
       });
 
-      const result = JSON.parse(response.choices[0].message.content || '{"reports":[]}');
+      const responseContent = response.choices[0].message.content || '{"reports":[]}';
+      
+      // Validate and safely parse JSON
+      let result;
+      try {
+        result = JSON.parse(responseContent);
+      } catch (parseError) {
+        console.error('❌ JSON parsing failed, attempting to fix:', parseError);
+        // Try to fix common JSON issues
+        const fixedContent = responseContent
+          .replace(/\n/g, '\\n')
+          .replace(/\t/g, '\\t')
+          .replace(/\r/g, '\\r');
+        
+        try {
+          result = JSON.parse(fixedContent);
+        } catch (secondError) {
+          console.error('❌ JSON fix failed, using fallback');
+          result = { reports: [] };
+        }
+      }
       
       return result.reports.map((report: any, index: number) => {
         const source = this.getRandomSource();
