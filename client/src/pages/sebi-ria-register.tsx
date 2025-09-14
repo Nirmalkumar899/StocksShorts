@@ -673,6 +673,7 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
                               {...field}
                               data-testid="input-professional-phone"
                               disabled={otpVerified}
+                              autoComplete="off"
                             />
                             {field.value && !otpVerified && (
                               <Button
