@@ -38,7 +38,7 @@ function HeroSection({ onPrimaryClick, advisorCount }: HeroSectionProps) {
           className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg font-semibold rounded-full mb-6"
           data-testid="hero-start-consulting"
         >
-          🎯 Available Now - Start Consulting in 2 Minutes!
+          🎯 Available Now - Start Consulting!
         </Button>
         <div className="flex justify-center items-center gap-8 text-sm">
           <div className="flex items-center gap-2">
