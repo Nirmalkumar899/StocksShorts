@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -58,7 +58,14 @@ export const articles = pgTable("articles", {
   sentiment: text("sentiment").notNull(), // Positive, Negative, Neutral
   priority: text("priority").notNull(), // High, Medium, Low
   imageUrl: text("image_url"), // URL for article image
-  sourceUrl: text("source_url"), // URL to the original source
+  sourceUrl: text("source_url"), // URL to the original source - DEPRECATED, use primarySourceUrl
+  // New source tracking fields for copyright compliance
+  primarySourceUrl: text("primary_source_url"), // Required HTTPS URL to actual article
+  primarySourceTitle: text("primary_source_title"), // Title of the primary source article
+  primarySourcePublishedAt: timestamp("primary_source_published_at"), // When the original article was published
+  sources: jsonb("sources"), // Array of source objects: {name, url, title, publishedAt}
+  provenanceScore: real("provenance_score").default(0.0), // 0-1 score of how well sources match content
+  contentType: text("content_type").default("summary").notNull(), // 'summary'|'analysis'|'original-report'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -93,6 +100,41 @@ export type AiQuery = typeof aiQueries.$inferSelect;
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
+// Source tracking interfaces
+export interface NewsSource {
+  name: string;
+  url: string;
+  title?: string;
+  publishedAt?: string;
+}
+
+// Enhanced article validation with source requirements
+export const sourceValidatedArticleSchema = insertArticleSchema.extend({
+  contentType: z.enum(["summary", "analysis", "original-report"]).default("summary"),
+  provenanceScore: z.number().min(0).max(1).default(0.0),
+  sources: z.array(z.object({
+    name: z.string(),
+    url: z.string().url(),
+    title: z.string().optional(),
+    publishedAt: z.string().optional()
+  })).optional(),
+}).refine(
+  (data) => {
+    // Require primarySourceUrl unless it's an original analysis
+    return data.contentType === "analysis" || (
+      data.primarySourceUrl && 
+      data.primarySourceUrl.startsWith("https://") &&
+      data.primarySourceUrl.length > 20
+    );
+  },
+  {
+    message: "Articles must have a valid primarySourceUrl (HTTPS) unless contentType is 'analysis'",
+    path: ["primarySourceUrl"]
+  }
+);
+
+export type SourceValidatedArticle = z.infer<typeof sourceValidatedArticleSchema>;
+
 // AI Articles table - separate from Google Sheets articles
 export const aiArticles = pgTable("ai_articles", {
   id: serial("id").primaryKey(),
@@ -104,6 +146,13 @@ export const aiArticles = pgTable("ai_articles", {
   priority: text("priority").default("Medium"),
   imageUrl: text("image_url"),
   newsDate: timestamp("news_date").notNull(), // Date when the news actually happened
+  // Source tracking fields for copyright compliance
+  primarySourceUrl: text("primary_source_url"), // Required HTTPS URL to actual article
+  primarySourceTitle: text("primary_source_title"), // Title of the primary source article
+  primarySourcePublishedAt: timestamp("primary_source_published_at"), // When the original article was published
+  sources: jsonb("sources"), // Array of source objects: {name, url, title, publishedAt}
+  provenanceScore: real("provenance_score").default(0.0), // 0-1 score of how well sources match content
+  contentType: text("content_type").default("summary").notNull(), // 'summary'|'analysis'|'original-report'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -114,6 +163,33 @@ export const insertAiArticleSchema = createInsertSchema(aiArticles).omit({
 
 export type InsertAiArticle = z.infer<typeof insertAiArticleSchema>;
 export type AiArticle = typeof aiArticles.$inferSelect;
+
+// Enhanced AI article validation with source requirements
+export const sourceValidatedAiArticleSchema = insertAiArticleSchema.extend({
+  contentType: z.enum(["summary", "analysis", "original-report"]).default("summary"),
+  provenanceScore: z.number().min(0).max(1).default(0.0),
+  sources: z.array(z.object({
+    name: z.string(),
+    url: z.string().url(),
+    title: z.string().optional(),
+    publishedAt: z.string().optional()
+  })).optional(),
+}).refine(
+  (data) => {
+    // Require primarySourceUrl unless it's an original analysis
+    return data.contentType === "analysis" || (
+      data.primarySourceUrl && 
+      data.primarySourceUrl.startsWith("https://") &&
+      data.primarySourceUrl.length > 20
+    );
+  },
+  {
+    message: "AI Articles must have a valid primarySourceUrl (HTTPS) unless contentType is 'analysis'",
+    path: ["primarySourceUrl"]
+  }
+);
+
+export type SourceValidatedAiArticle = z.infer<typeof sourceValidatedAiArticleSchema>;
 
 // AI Article Reports table for flagging system
 export const aiArticleReports = pgTable("ai_article_reports", {

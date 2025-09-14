@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
-import { Article } from '../../shared/schema';
+import { Article, SourceValidatedAiArticle } from '../../shared/schema';
+import { realNewsSearchService } from './realNewsSearchService';
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -68,111 +69,122 @@ export class AINewsGenerator {
   }
 
   async generateStockMarketNews(): Promise<Article[]> {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    const todayStr = today.toDateString();
-    const yesterdayStr = yesterday.toDateString();
-
     try {
-      console.log('🔄 Generating AI-powered stock market news...');
+      console.log('🔄 Starting source-first news generation...');
       
+      // Use the new source-first approach
+      await realNewsSearchService.generateAndStoreVerifiedNews();
+      
+      // The realNewsSearchService stores articles in the database
+      // For this method, we'll generate a hybrid approach:
+      // 1. Some articles from real sources (via realNewsSearchService)
+      // 2. Some analysis articles (original content with proper attribution)
+      
+      const hybridArticles = await this.generateHybridContent();
+      
+      console.log(`✅ Generated ${hybridArticles.length} hybrid source-first articles`);
+      return hybridArticles;
+    } catch (error) {
+      console.error('❌ Error in source-first generation:', error);
+      return this.generateFallbackNews();
+    }
+  }
+
+  private async generateHybridContent(): Promise<Article[]> {
+    const articles: Article[] = [];
+    
+    // Generate analysis articles with proper attribution
+    const analysisTopics = [
+      'Indian market technical analysis trends',
+      'Sectoral rotation patterns in Indian markets', 
+      'FII investment flows impact analysis',
+      'Rupee movement effects on export stocks',
+      'Interest rate outlook for banking sector'
+    ];
+    
+    for (const topic of analysisTopics) {
+      const analysisArticle = await this.generateAnalysisArticle(topic);
+      if (analysisArticle) {
+        articles.push(analysisArticle);
+      }
+    }
+    
+    return articles;
+  }
+  
+  private async generateAnalysisArticle(topic: string): Promise<Article | null> {
+    try {
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // Using GPT-4o model for reliable API calls
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are a professional financial news writer for StocksShorts, an Indian stock market news platform. Generate realistic, current stock market news for ${todayStr} and ${yesterdayStr}.
+            content: `You are a financial analyst writing original market analysis. Create insightful analysis based on general market trends and patterns, not specific news events.
 
-Create 25-30 diverse news articles covering:
-1. Nifty and Sensex movements and analysis
-2. Individual stock performances (focus on Nifty 50 companies)
-3. Sectoral trends (IT, Banking, Auto, Pharma, FMCG, etc.)
-4. IPO news and updates
-5. Brokerage reports and recommendations
-6. Global market impact on Indian markets
-7. Open Interest analysis for Nifty
-8. Corporate earnings and results
-9. Regulatory news from SEBI
-10. Economic data releases
-11. FII/DII activity
-12. Currency and commodity impact
-13. Technical analysis insights
-14. Market outlook and expert views
-15. Breakout stocks and momentum plays
-
-For each article, provide:
-- Catchy, engaging headline (max 60 characters)
-- Detailed summary (150-300 words)
-- Appropriate category
-- Sentiment analysis
-- Priority level
-- Realistic market data and numbers
-
-Use current market context and make the news feel authentic and timely. Include specific price levels, percentage changes, and volumes where relevant.
-
-Respond with JSON format only:`
+IMPORTANT RULES:
+1. This is ANALYSIS content (contentType: 'analysis')
+2. Focus on trends, patterns, and market dynamics
+3. Use general market knowledge, not specific recent events
+4. Include data-driven insights and technical analysis
+5. Make it educational and insightful
+6. Keep under 300 characters
+7. No specific stock tips or recommendations`
           },
           {
-            role: "user",
-            content: `Generate comprehensive Indian stock market news for ${todayStr} and ${yesterdayStr}. Make it realistic and engaging with proper market data.
+            role: "user", 
+            content: `Write an original analysis article about: ${topic}
 
-Required JSON format:
+Provide insights on market patterns, trends, and dynamics. Focus on educational content that helps readers understand market mechanics.
+
+Return JSON format:
 {
-  "articles": [
-    {
-      "title": "Engaging headline",
-      "content": "Detailed news content with market data",
-      "category": "trending|stocksshorts-special|ipo|breakout-stocks|kalkabazaar|warrants|trader-view|order-win|research-report|educational|us-market|crypto",
-      "sentiment": "Positive|Negative|Neutral",
-      "priority": "High|Medium|Low"
-    }
-  ]
+  "title": "Analysis headline (60 chars max)",
+  "content": "Original analysis content (250 chars max)",
+  "category": "educational|research-report|trending",
+  "sentiment": "Positive|Negative|Neutral",
+  "priority": "Medium|Low"
 }`
           }
         ],
         response_format: { type: "json_object" },
-        max_completion_tokens: 4000
+        max_completion_tokens: 300
       });
 
-      const result = JSON.parse(response.choices[0].message.content || '{"articles":[]}');
+      const result = JSON.parse(response.choices[0].message.content || '{}');
       
-      if (!result.articles || !Array.isArray(result.articles)) {
-        throw new Error('Invalid response format from OpenAI');
+      if (!result.title || !result.content) {
+        return null;
       }
 
-      console.log(`✅ Generated ${result.articles.length} news articles`);
-
-      // Convert to Article format
-      const articles: Article[] = result.articles.map((article: any, index: number) => {
-        const source = this.getRandomSource();
-        const articleDate = this.getRealisticArticleDate();
-        
-        return {
-          id: Date.now() + index, // Unique ID based on timestamp
-          title: article.title,
-          content: article.content,
-          type: article.category,
-          time: articleDate, // Real article publication date
-          source: source.name,
-          sentiment: article.sentiment,
-          priority: article.priority,
-          imageUrl: null,
-          createdAt: new Date(), // When added to system
-          sourceUrl: source.url
-        } as Article;
-      });
-
-      return articles;
+      const articleDate = this.getRealisticArticleDate();
+      
+      return {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        title: result.title,
+        content: result.content,
+        type: result.category || 'educational',
+        time: articleDate,
+        source: 'StocksShorts Analysis',
+        sentiment: result.sentiment || 'Neutral',
+        priority: result.priority || 'Medium',
+        imageUrl: null,
+        sourceUrl: null, // No sourceUrl for analysis content
+        // New source tracking fields
+        primarySourceUrl: null, // Not required for analysis
+        primarySourceTitle: null,
+        primarySourcePublishedAt: null,
+        sources: null,
+        provenanceScore: 1.0, // High score for original analysis
+        contentType: 'analysis',
+        createdAt: new Date()
+      } as Article;
 
     } catch (error) {
-      console.error('❌ Error generating AI news:', error);
-      
-      // Fallback: Generate basic news structure
-      return this.generateFallbackNews();
+      console.error('Error generating analysis article:', error);
+      return null;
     }
   }
+
 
   private generateFallbackNews(): Article[] {
     const today = new Date();

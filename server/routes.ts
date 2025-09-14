@@ -119,12 +119,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
       
-      // Set cache headers - shorter cache since we handle refresh internally
-      res.set({
-        'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
-        'Content-Type': 'application/json; charset=utf-8'
-      });
-      
       // Sort by priority (High > Medium > Low) then by time (most recent first)
       const sortedArticles = articles.sort((a, b) => {
         // Priority ordering
@@ -142,12 +136,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return timeB - timeA;
       });
       
-      res.json(sortedArticles);
+      // Set cache headers and respond (avoid duplicate headers)
+      res.set({
+        'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
+        'Content-Type': 'application/json; charset=utf-8'
+      });
+      
+      return res.json(sortedArticles);
     } catch (error) {
       console.error('❌ Error fetching cached articles:', error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : 'Failed to fetch articles'
-      });
+      if (!res.headersSent) {
+        return res.status(500).json({ 
+          message: error instanceof Error ? error.message : 'Failed to fetch articles'
+        });
+      }
     }
   });
 
