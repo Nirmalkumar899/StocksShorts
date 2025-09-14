@@ -454,7 +454,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
           onClick={() => window.location.href = '/sebi-ria/register'}
           data-testid="register-sebi-analyst"
         >
-          Register
+          Join as SEBI Registered Analyst
         </Button>
       </div>
 
