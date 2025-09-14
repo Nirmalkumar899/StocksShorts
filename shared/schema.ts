@@ -213,18 +213,59 @@ export type AiArticleReport = typeof aiArticleReports.$inferSelect;
 // Investment Advisor table
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  // Personal Information
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull().unique(),
+  
+  // Professional Information  
   sebiRegNo: text("sebi_reg_no").notNull().unique(),
   company: text("company").default(''),
-  designation: text("designation").default(''),
-  phone: text("phone").notNull(),
-  email: text("email").notNull().unique(),
+  qualification: text("qualification").default('SEBI Registered Investment Advisor'),
+  experienceYears: integer("experience_years").default(0),
+  yearsInBusiness: integer("years_in_business").default(0),
+  
+  // Office Contact Information
+  officeAddress: text("office_address").default(''),
+  city: text("city").default(''),
+  state: text("state").default(''),
+  pincode: text("pincode").default(''),
+  professionalPhone: text("professional_phone").notNull(),
+  
+  // Online Presence
   website: text("website").default(''),
+  linkedinProfile: text("linkedin_profile").default(''),
+  articleLinks: jsonb("article_links").default([]),
+  socialMediaLinks: jsonb("social_media_links").default([]),
+  
+  // Professional Services
+  specializations: jsonb("specializations").default([]),
+  servicesOffered: jsonb("services_offered").default([]),
+  languagesSpoken: jsonb("languages_spoken").default([]),
+  
+  // Additional Information
+  aboutYou: text("about_you").default(''),
+  consultationFee: real("consultation_fee").default(100.0),
+  
+  // File Uploads
+  profileImageUrl: text("profile_image_url").default(''),
+  sebiCertificateUrl: text("sebi_certificate_url").default(''),
+  
+  // Legal Requirements & Availability
+  termsAccepted: boolean("terms_accepted").notNull().default(false),
+  privacyPolicyAccepted: boolean("privacy_policy_accepted").notNull().default(false),
+  professionalDisclaimerAccepted: boolean("professional_disclaimer_accepted").notNull().default(false),
+  availableForConsultations: boolean("available_for_consultations").notNull().default(true),
+  
+  // Legacy fields for backward compatibility
+  designation: text("designation").default(''),
+  phone: text("phone").default(''),
   specialization: text("specialization").default(''),
   experience: text("experience").default(''),
   location: text("location").default(''),
   bio: text("bio").default(''),
   rating: text("rating").default('4.0'),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
