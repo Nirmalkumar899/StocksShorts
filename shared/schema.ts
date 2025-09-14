@@ -13,29 +13,34 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for mobile authentication
+// User storage table for mobile authentication  
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  phoneNumber: varchar("phone_number").unique().notNull(),
+  id: varchar("id").primaryKey(),
+  username: text("username"),
+  password: text("password"),
+  email: varchar("email"),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
-  age: integer("age"),
-  gender: varchar("gender"),
-  city: varchar("city"),
-  occupation: varchar("occupation"),
-  investmentExperience: varchar("investment_experience"),
-  isVerified: varchar("is_verified").default("false"),
+  profileImageUrl: varchar("profile_image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  phoneNumber: varchar("phone_number", { length: 15 }),
+  age: integer("age"),
+  gender: varchar("gender", { length: 20 }),
+  city: varchar("city", { length: 100 }),
+  occupation: varchar("occupation", { length: 100 }),
+  investmentExperience: varchar("investment_experience", { length: 50 }),
+  name: varchar("name", { length: 100 }),
+  isVerified: boolean("is_verified").default(false),
 });
 
 // OTP verification table
 export const otpVerifications = pgTable("otp_verifications", {
   id: serial("id").primaryKey(),
-  phoneNumber: varchar("phone_number").notNull(),
-  otp: varchar("otp").notNull(),
+  phoneNumber: varchar("phone_number", { length: 15 }).notNull(),
+  otp: varchar("otp", { length: 6 }).notNull(),
+  isUsed: boolean("is_used").default(false),
   expiresAt: timestamp("expires_at").notNull(),
-  isUsed: varchar("is_used").default("false"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
