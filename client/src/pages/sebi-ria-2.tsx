@@ -169,15 +169,26 @@ export default function SebiRia2({ onBack }: SebiRiaProps) {
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">SEBI Registered Investment Advisors</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">Connect with qualified financial experts</p>
           </div>
-          <Button 
-            size="sm" 
-            className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
-            onClick={() => setShowRegistrationForm(true)}
-            data-testid="button-join-as-advisor"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Join as Investment Advisor
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="bg-white hover:bg-gray-50 text-blue-600 border-blue-600 font-semibold px-3 py-2 rounded-lg"
+              onClick={() => window.location.href = '/sebi-ria'}
+              data-testid="button-original-page"
+            >
+              View Page 1
+            </Button>
+            <Button 
+              size="sm" 
+              className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+              onClick={() => setShowRegistrationForm(true)}
+              data-testid="button-join-as-advisor"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Join as Investment Advisor
+            </Button>
+          </div>
         </div>
       </div>
       
