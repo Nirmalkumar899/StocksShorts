@@ -673,7 +673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         duration: validDuration,
         scheduledAt: validScheduledAt,
         status: 'scheduled',
-        fee: calculatedFee.toFixed(2), // Convert to string with 2 decimal places as expected by schema
+        fee: calculatedFee, // Keep as number as expected by schema
         roomId,
         notes: validNotes || null
       });
