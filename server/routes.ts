@@ -25,6 +25,8 @@ import { googleDriveService } from "./services/googleDriveService";
 import { gmailTracker } from "./services/gmailTracker";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import { z } from "zod";
+import { insertMessageSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
@@ -657,6 +659,373 @@ CONTENT: [Hindi translation]`;
       console.error('Error refreshing investment advisors:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to refresh investment advisors'
+      });
+    }
+  });
+
+  // ===== ADVISOR POST-REGISTRATION SYSTEM API ROUTES =====
+  
+  // Advisor Status Management
+  app.patch('/api/advisors/:id/status', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+      
+      // Validate status
+      const statusSchema = z.object({
+        status: z.enum(['active', 'offline'])
+      });
+      
+      const validationResult = statusSchema.safeParse({ status });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid status value',
+          errors: validationResult.error.errors
+        });
+      }
+      
+      // Check if advisor exists and get advisor info for validation
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Verify advisor ownership - only advisors can modify their own status
+      const sessionUserId = (req.session as any).userId;
+      const sessionUser = await storage.getUser(sessionUserId);
+      
+      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
+        return res.status(403).json({ 
+          message: 'Forbidden: You can only update your own advisor status' 
+        });
+      }
+      
+      // Update advisor status
+      await storage.setAdvisorStatus(advisorId, validationResult.data.status);
+      
+      res.json({
+        message: `Advisor status updated to ${validationResult.data.status}`,
+        advisorId,
+        status: validationResult.data.status,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error updating advisor status:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to update advisor status'
+      });
+    }
+  });
+  
+  app.post('/api/advisors/:id/heartbeat', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.id);
+      
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+      
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Verify advisor ownership - only advisors can update their own heartbeat
+      const sessionUserId = (req.session as any).userId;
+      const sessionUser = await storage.getUser(sessionUserId);
+      
+      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
+        return res.status(403).json({ 
+          message: 'Forbidden: You can only update your own advisor heartbeat' 
+        });
+      }
+      
+      // Only update heartbeat if advisor is active
+      if (advisor.status !== 'active') {
+        return res.status(400).json({ 
+          message: 'Heartbeat only allowed for active advisors',
+          currentStatus: advisor.status 
+        });
+      }
+      
+      // Update last active timestamp
+      await storage.heartbeatAdvisor(advisorId);
+      
+      res.json({
+        message: 'Heartbeat recorded',
+        advisorId,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error recording advisor heartbeat:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to record heartbeat'
+      });
+    }
+  });
+  
+  // Contact Preferences
+  app.patch('/api/advisors/:id/contact-prefs', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.id);
+      const { displayPhone, whatsappNumber } = req.body;
+      
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+      
+      // Validate contact preferences
+      const contactPrefsSchema = z.object({
+        displayPhone: z.boolean().optional(),
+        whatsappNumber: z.string().max(15).optional()
+      });
+      
+      const validationResult = contactPrefsSchema.safeParse({ displayPhone, whatsappNumber });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid contact preferences',
+          errors: validationResult.error.errors
+        });
+      }
+      
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Verify advisor ownership - only advisors can update their own contact preferences
+      const sessionUserId = (req.session as any).userId;
+      const sessionUser = await storage.getUser(sessionUserId);
+      
+      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
+        return res.status(403).json({ 
+          message: 'Forbidden: You can only update your own advisor contact preferences' 
+        });
+      }
+      
+      // Update contact preferences
+      await storage.updateContactPreferences(advisorId, validationResult.data);
+      
+      res.json({
+        message: 'Contact preferences updated successfully',
+        advisorId,
+        preferences: validationResult.data,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error updating contact preferences:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to update contact preferences'
+      });
+    }
+  });
+  
+  // Advisor Directory
+  app.get('/api/advisors', async (req, res) => {
+    try {
+      const { city, state, status, search } = req.query;
+      
+      // Validate query parameters
+      const filtersSchema = z.object({
+        city: z.string().optional(),
+        state: z.string().optional(),
+        status: z.enum(['active', 'offline']).optional(),
+        search: z.string().optional()
+      });
+      
+      const validationResult = filtersSchema.safeParse({ city, state, status, search });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid filter parameters',
+          errors: validationResult.error.errors
+        });
+      }
+      
+      // Get filtered advisors
+      const advisors = await storage.listAdvisors(validationResult.data);
+      
+      // Apply privacy controls - hide contact info when displayPhone is false
+      const filteredAdvisors = advisors.map(advisor => {
+        if (!advisor.displayPhone) {
+          const { professionalPhone, phone, whatsappNumber, ...filtered } = advisor;
+          return filtered;
+        }
+        return advisor;
+      });
+      
+      res.json({
+        advisors: filteredAdvisors,
+        total: filteredAdvisors.length,
+        filters: validationResult.data,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error listing advisors:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to list advisors'
+      });
+    }
+  });
+  
+  app.get('/api/advisors/:id', async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.id);
+      
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+      
+      // Get specific advisor
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Apply privacy controls - hide contact info when displayPhone is false
+      const filteredAdvisor = advisor.displayPhone 
+        ? advisor 
+        : (() => {
+            const { professionalPhone, phone, whatsappNumber, ...filtered } = advisor;
+            return filtered;
+          })();
+      
+      res.json({
+        advisor: filteredAdvisor,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error fetching advisor:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch advisor'
+      });
+    }
+  });
+  
+  // Simple in-memory rate limiter for messaging
+  const messageRateLimit = new Map<string, { count: number; resetAt: number }>();
+  const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+  const MAX_MESSAGES_PER_MINUTE = 10;
+
+  // Messaging System
+  app.post('/api/messages', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const { advisorId, content } = req.body;
+      const userId = (req.session as any).userId;
+      
+      // Rate limiting check
+      const now = Date.now();
+      const userRateKey = `user_${userId}`;
+      const userRateData = messageRateLimit.get(userRateKey);
+      
+      if (userRateData) {
+        if (now < userRateData.resetAt) {
+          if (userRateData.count >= MAX_MESSAGES_PER_MINUTE) {
+            return res.status(429).json({
+              message: `Rate limit exceeded. Maximum ${MAX_MESSAGES_PER_MINUTE} messages per minute allowed.`,
+              retryAfter: Math.ceil((userRateData.resetAt - now) / 1000)
+            });
+          }
+          userRateData.count += 1;
+        } else {
+          messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        }
+      } else {
+        messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+      }
+      
+      // Validate message data
+      const messageSchema = z.object({
+        advisorId: z.number().int().positive(),
+        content: z.string().min(1).max(1000)
+      });
+      
+      const validationResult = messageSchema.safeParse({ advisorId, content });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid message data',
+          errors: validationResult.error.errors
+        });
+      }
+      
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(validationResult.data.advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Create message with user as sender
+      const newMessage = await storage.createMessage({
+        advisorId: validationResult.data.advisorId,
+        userId,
+        sender: 'user',
+        content: validationResult.data.content,
+        conversationKey: `${validationResult.data.advisorId}:${userId}`
+      });
+      
+      res.status(201).json({
+        message: 'Message sent successfully',
+        messageData: newMessage,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error creating message:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to send message'
+      });
+    }
+  });
+  
+  app.get('/api/messages/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.advisorId);
+      const userId = (req.session as any).userId;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+      
+      // Validate limit parameter
+      if (limit < 1 || limit > 100) {
+        return res.status(400).json({ 
+          message: 'Limit must be between 1 and 100' 
+        });
+      }
+      
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(advisorId);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Get conversation messages
+      const messages = await storage.getConversation(advisorId, userId, limit);
+      
+      res.json({
+        messages,
+        advisorId,
+        userId,
+        total: messages.length,
+        limit,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch messages'
       });
     }
   });
