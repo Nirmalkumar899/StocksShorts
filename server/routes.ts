@@ -108,6 +108,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Force refresh news cache (for testing and manual refresh)
+  app.post("/api/refresh-news", async (req, res) => {
+    try {
+      console.log('🔄 Manual news refresh requested');
+      const refreshedArticles = await newsCache.forceRefresh();
+      console.log(`✅ Manual refresh completed with ${refreshedArticles.length} articles`);
+      res.json({ 
+        success: true, 
+        message: `Refreshed ${refreshedArticles.length} articles`,
+        articleCount: refreshedArticles.length
+      });
+    } catch (error: any) {
+      console.error('❌ Manual refresh failed:', error);
+      res.status(500).json({ error: error.message || 'Failed to refresh news' });
+    }
+  });
+
   // Get all articles or filter by category - Using cached AI news with Inshorts-style refresh
   app.get("/api/articles", async (req, res) => {
     try {
