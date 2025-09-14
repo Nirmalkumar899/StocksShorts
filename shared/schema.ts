@@ -214,14 +214,16 @@ export type AiArticleReport = typeof aiArticleReports.$inferSelect;
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  sebiRegNo: text("sebi_reg_no").notNull().unique(),
   company: text("company").default(''),
   designation: text("designation").default(''),
   phone: text("phone").notNull(),
-  email: text("email").notNull(),
+  email: text("email").notNull().unique(),
   website: text("website").default(''),
   specialization: text("specialization").default(''),
   experience: text("experience").default(''),
   location: text("location").default(''),
+  bio: text("bio").default(''),
   rating: text("rating").default('4.0'),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

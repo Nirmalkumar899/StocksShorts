@@ -296,8 +296,8 @@ CONTENT: [Hindi translation]`;
               console.log(`✅ Translation received for article ${article.id}`);
               
               // Parse the translated response
-              const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/s);
-              const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/s);
+              const titleMatch = translatedText?.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/);
+              const contentMatch = translatedText?.match(/CONTENT:\s*([\s\S]*?)$/);
               
               return {
                 id: article.id,
@@ -306,10 +306,11 @@ CONTENT: [Hindi translation]`;
               };
               
             } catch (error) {
-              console.error(`❌ Translation error for article ${article.id}:`, error.message);
+              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+              console.error(`❌ Translation error for article ${article.id}:`, errorMessage);
               
               // Check if it's a quota exceeded error
-              if (error.message && error.message.includes('exceeded your current quota')) {
+              if (error instanceof Error && error.message.includes('exceeded your current quota')) {
                 throw new Error('Translation service quota exceeded. Please try again later or contact support.');
               }
               
@@ -340,13 +341,14 @@ CONTENT: [Hindi translation]`;
       
     } catch (error) {
       console.error('💥 Translation API error:', error);
-      console.error('💥 Error stack:', error.stack);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      console.error('💥 Error stack:', errorStack);
       
       // Only send error response if headers haven't been sent
       if (!res.headersSent) {
         res.status(500).json({ 
           message: error instanceof Error ? error.message : 'Translation failed',
-          details: error.stack
+          details: errorStack
         });
       }
     }
@@ -724,6 +726,99 @@ CONTENT: [Hindi translation]`;
       console.error('Error fetching investment advisors:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
+      });
+    }
+  });
+
+  // Register as SEBI Investment Advisor
+  app.post("/api/investment-advisors", async (req, res) => {
+    try {
+      console.log('📝 SEBI Advisor registration request received');
+      
+      // Validate required fields
+      const {
+        name,
+        sebiRegNo,
+        email,
+        phone,
+        specialization = '',
+        experience = '',
+        company = '',
+        location = '',
+        bio = ''
+      } = req.body;
+
+      if (!name || !sebiRegNo || !email || !phone) {
+        return res.status(400).json({
+          message: 'Required fields missing',
+          required: ['name', 'sebiRegNo', 'email', 'phone']
+        });
+      }
+
+      // Basic email validation
+      if (!email.includes('@') || email.length < 5) {
+        return res.status(400).json({
+          message: 'Please provide a valid email address'
+        });
+      }
+
+      // Basic SEBI registration number validation
+      if (sebiRegNo.length < 5) {
+        return res.status(400).json({
+          message: 'SEBI registration number must be at least 5 characters'
+        });
+      }
+
+      const advisorData = {
+        name: name.trim(),
+        sebiRegNo: sebiRegNo.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        specialization: specialization.trim(),
+        experience: experience.trim(),
+        company: company.trim(),
+        location: location.trim(),
+        bio: bio.trim(),
+        rating: '4.0'
+      };
+
+      // Create the advisor
+      const newAdvisor = await storage.createInvestmentAdvisor(advisorData);
+      
+      console.log('✅ SEBI Advisor registered successfully:', newAdvisor.id);
+
+      res.status(201).json({
+        message: 'Investment advisor registered successfully',
+        advisor: {
+          id: newAdvisor.id,
+          name: newAdvisor.name,
+          sebiRegNo: newAdvisor.sebiRegNo,
+          email: newAdvisor.email,
+          specialization: newAdvisor.specialization,
+          company: newAdvisor.company,
+          location: newAdvisor.location
+        }
+      });
+
+    } catch (error: any) {
+      console.error('❌ Error registering SEBI advisor:', error);
+
+      // Handle duplicate email or sebiRegNo
+      if (error.code === '23505') { // Postgres unique violation
+        if (error.detail?.includes('email')) {
+          return res.status(409).json({
+            message: 'An advisor with this email address already exists'
+          });
+        }
+        if (error.detail?.includes('sebi_reg_no')) {
+          return res.status(409).json({
+            message: 'An advisor with this SEBI registration number already exists'
+          });
+        }
+      }
+
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to register advisor'
       });
     }
   });

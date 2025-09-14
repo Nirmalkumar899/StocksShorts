@@ -130,7 +130,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       return processedData;
       } catch (error) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('Request timed out. Please try again.');
         }
         throw error;
@@ -220,22 +220,22 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return data;
       } catch (error) {
         // Handle AbortError specifically
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           console.error("⏰ Translation request timed out after 2 minutes");
           throw new Error('Translation is taking longer than expected. Please try again with fewer articles.');
         }
         
         // Handle quota exceeded errors with user-friendly message
-        if (error.message && error.message.includes('quota exceeded')) {
+        if (error instanceof Error && error.message.includes('quota exceeded')) {
           console.error("💰 OpenAI API quota exceeded");
           throw new Error('Hindi translation temporarily unavailable due to API limits. Please try again later.');
         }
         
         console.error("💥 Translation API error details:", {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
-          cause: error.cause
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          name: error instanceof Error ? error.name : 'Unknown',
+          cause: error instanceof Error ? error.cause : undefined
         });
         throw error;
       }

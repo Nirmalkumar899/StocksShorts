@@ -7,6 +7,7 @@ import {
   emailInsights, 
   personalizedArticles,
   comments,
+  investmentAdvisors,
   type User, 
   type InsertUser, 
   type OtpVerification, 
@@ -21,7 +22,9 @@ import {
   type PersonalizedArticle,
   type InsertPersonalizedArticle,
   type Comment,
-  type InsertComment
+  type InsertComment,
+  type InvestmentAdvisor,
+  type InsertInvestmentAdvisor
 } from "@shared/schema";
 import { db } from "./db";
 
@@ -61,16 +64,20 @@ export interface IStorage {
   getCommentsByArticle(articleId: number): Promise<Comment[]>;
   getCommentById(id: number): Promise<Comment | undefined>;
   deleteComment(id: number, userId: number): Promise<boolean>;
+  // Investment Advisors
+  listInvestmentAdvisors(): Promise<InvestmentAdvisor[]>;
+  createInvestmentAdvisor(advisor: InsertInvestmentAdvisor): Promise<InvestmentAdvisor>;
 }
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     if (!db) return undefined;
     try {
-      const [user] = await withTimeout(
+      const result = await withTimeout(
         db.select().from(users).where(eq(users.id, id)),
         3000
-      );
+      ) as User[];
+      const [user] = result;
       return user || undefined;
     } catch (error) {
       console.warn('Database timeout in getUser:', error);
@@ -86,10 +93,11 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     if (!db) throw new Error('Database not available');
     try {
-      const [user] = await withTimeout(
+      const result = await withTimeout(
         db.insert(users).values(insertUser).returning(),
         3000
-      );
+      ) as User[];
+      const [user] = result;
       return user;
     } catch (error) {
       console.warn('Database timeout in createUser:', error);
@@ -367,6 +375,25 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(comments)
       .where(and(eq(comments.id, id), eq(comments.userId, userId)));
     return result.rowCount > 0;
+  }
+
+  // Investment Advisors methods
+  async listInvestmentAdvisors(): Promise<InvestmentAdvisor[]> {
+    try {
+      const advisors = await db.select().from(investmentAdvisors)
+        .orderBy(desc(investmentAdvisors.createdAt));
+      return advisors;
+    } catch (error) {
+      console.error('Error fetching investment advisors:', error);
+      return [];
+    }
+  }
+
+  async createInvestmentAdvisor(advisor: InsertInvestmentAdvisor): Promise<InvestmentAdvisor> {
+    const [newAdvisor] = await db.insert(investmentAdvisors)
+      .values(advisor)
+      .returning();
+    return newAdvisor;
   }
 }
 

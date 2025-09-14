@@ -9,6 +9,7 @@ import { useSEO } from "@/hooks/useSEO";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import SebiRiaNew from "@/pages/sebi-ria-new";
+import SebiRiaRegister from "@/pages/sebi-ria-register";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
@@ -38,26 +39,55 @@ function Router() {
   
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/home" component={Home} />
+      <Route path="/">
+        {() => <Home />}
+      </Route>
+      <Route path="/home">
+        {() => <Home />}
+      </Route>
       <Route path="/trending">
         {() => <Home initialCategory="trending" />}
       </Route>
-      <Route path="/special" component={Home} />
-      <Route path="/breakout" component={Home} />
-      <Route path="/kalkabazaar" component={Home} />
-      <Route path="/warrants" component={Home} />
-      <Route path="/educational" component={Home} />
-      <Route path="/ipo" component={Home} />
+      <Route path="/special">
+        {() => <Home />}
+      </Route>
+      <Route path="/breakout">
+        {() => <Home />}
+      </Route>
+      <Route path="/kalkabazaar">
+        {() => <Home />}
+      </Route>
+      <Route path="/warrants">
+        {() => <Home />}
+      </Route>
+      <Route path="/educational">
+        {() => <Home />}
+      </Route>
+      <Route path="/ipo">
+        {() => <Home />}
+      </Route>
 
-      <Route path="/others" component={Home} />
-      <Route path="/crypto" component={Home} />
-      <Route path="/us-market" component={Home} />
-      <Route path="/orders" component={Home} />
-      <Route path="/research" component={Home} />
+      <Route path="/others">
+        {() => <Home />}
+      </Route>
+      <Route path="/crypto">
+        {() => <Home />}
+      </Route>
+      <Route path="/us-market">
+        {() => <Home />}
+      </Route>
+      <Route path="/orders">
+        {() => <Home />}
+      </Route>
+      <Route path="/research">
+        {() => <Home />}
+      </Route>
 
       <Route path="/sebi-ria">
         {() => <SebiRiaNew onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/sebi-ria/register">
+        {() => <SebiRiaRegister onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">
         {() => <Contact onBack={() => window.history.back()} />}
@@ -72,7 +102,9 @@ function Router() {
         {() => <AISection onBack={() => window.history.back()} />}
       </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
-      <Route path="/disclaimer" component={Home} />
+      <Route path="/disclaimer">
+        {() => <Home />}
+      </Route>
       <Route path="/article/:id" component={ArticlePage} />
       <Route component={NotFound} />
     </Switch>

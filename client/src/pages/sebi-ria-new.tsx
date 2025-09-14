@@ -447,7 +447,15 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">SEBI RIA Directory</h1>
-        <div className="w-10" />
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800"
+          onClick={() => window.location.href = '/sebi-ria/register'}
+          data-testid="register-sebi-analyst"
+        >
+          Register
+        </Button>
       </div>
 
       {/* Hero Section */}
