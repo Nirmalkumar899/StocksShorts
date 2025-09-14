@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { Phone, Mail, Globe, Search, AlertTriangle, Star, MapPin, CheckCircle, Shield, Clock, Users, MessageCircle, TrendingUp } from "@/lib/icons";
+import { Phone, Mail, Globe, Search, AlertTriangle, Star, MapPin, CheckCircle, Shield, Clock, Users, MessageCircle, TrendingUp, ArrowLeft } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Target } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { InvestmentAdvisor } from "@shared/schema";
 import { useSEO } from "@/hooks/useSEO";
@@ -302,7 +301,7 @@ function HowItWorksSection() {
           
           <div className="text-center">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Target className="h-8 w-8 text-white" />
+              <TrendingUp className="h-8 w-8 text-white" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
               2. Complete Risk Assessment
