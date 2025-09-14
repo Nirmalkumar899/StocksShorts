@@ -32,11 +32,6 @@ interface VerifiedArticle {
 export class RealNewsIngestor {
   private readonly RSS_FEEDS = [
     {
-      url: 'https://www.bseindia.com/data/xml/notices.xml',
-      source: 'BSE Official',
-      domain: 'bseindia.com'
-    },
-    {
       url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
       source: 'Economic Times',
       domain: 'economictimes.indiatimes.com'
@@ -58,10 +53,25 @@ export class RealNewsIngestor {
     },
     {
       url: 'https://www.livemint.com/rss/markets',
-      source: 'LiveMint',
+      source: 'LiveMint Markets',
       domain: 'livemint.com'
+    },
+    {
+      url: 'https://www.livemint.com/rss/companies',
+      source: 'LiveMint Companies',
+      domain: 'livemint.com'
+    },
+    {
+      url: 'https://economictimes.indiatimes.com/news/company/corporate-trends/rssfeeds/13358478.cms',
+      source: 'Economic Times Corporate',
+      domain: 'economictimes.indiatimes.com'
+    },
+    {
+      url: 'https://www.bseindia.com/data/xml/notices.xml',
+      source: 'BSE Official',
+      domain: 'bseindia.com'
     }
-    // Note: Added BSE official feed, removed failing Business Standard and MoneyControl
+    // Note: Using verified working RSS feeds only
   ];
 
   private readonly MARKET_KEYWORDS = [
@@ -82,7 +92,7 @@ export class RealNewsIngestor {
     
     for (const feed of this.RSS_FEEDS) {
       try {
-        console.log(`🔍 Fetching from ${feed.source} (${feed.domain}) for enhanced categorization...`);
+        console.log(`🔍 Fetching from ${feed.source} (${feed.domain})...`);
         const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
         const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
         allArticles.push(...todaysArticles, ...yesterdaysArticles);
@@ -322,9 +332,11 @@ export class RealNewsIngestor {
 
   private calculateProvenanceScore(domain: string, publishedAt: Date): number {
     const domainScores: Record<string, number> = {
+      'moneycontrol.com': 1.0,
       'bseindia.com': 1.0,
       'nseindia.com': 1.0,
       'economictimes.indiatimes.com': 0.9,
+      'business-standard.com': 0.85,
       'livemint.com': 0.8,
       'cnbctv18.com': 0.75,
       'financialexpress.com': 0.7
