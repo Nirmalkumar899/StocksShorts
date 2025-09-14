@@ -73,26 +73,6 @@ function Router() {
 }
 
 function App() {
-  // Kill service worker and clear all caches to show updated UI
-  useEffect(() => {
-    (async () => {
-      try {
-        if ('serviceWorker' in navigator) {
-          const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map(r => r.unregister()));
-        }
-        if (window.caches && window.caches.keys) {
-          const names = await caches.keys();
-          await Promise.all(names.map(n => caches.delete(n)));
-        }
-        if (!sessionStorage.getItem('sw-killed')) {
-          sessionStorage.setItem('sw-killed', '1');
-          window.location.reload();
-        }
-      } catch {}
-    })();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

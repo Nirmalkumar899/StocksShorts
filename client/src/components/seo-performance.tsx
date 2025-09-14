@@ -17,12 +17,12 @@ export function SEOPerformanceOptimizer() {
     // Preload Inter font variants
     preloadFont('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2');
 
-    // Service worker disabled to prevent caching issues
-    // if ('serviceWorker' in navigator) {
-    //   navigator.serviceWorker.register('/sw.js')
-    //     .then(() => console.log('SW registered'))
-    //     .catch(() => console.log('SW registration failed'));
-    // }
+    // Implement service worker for caching
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('SW registered'))
+        .catch(() => console.log('SW registration failed'));
+    }
 
     // Critical resource hints
     const addResourceHint = (rel: string, href: string, as?: string) => {

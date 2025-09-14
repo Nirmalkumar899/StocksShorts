@@ -7,7 +7,6 @@ import {
   emailInsights, 
   personalizedArticles,
   comments,
-  investmentAdvisors,
   type User, 
   type InsertUser, 
   type OtpVerification, 
@@ -22,9 +21,7 @@ import {
   type PersonalizedArticle,
   type InsertPersonalizedArticle,
   type Comment,
-  type InsertComment,
-  type InvestmentAdvisor,
-  type InsertInvestmentAdvisor
+  type InsertComment
 } from "@shared/schema";
 import { db } from "./db";
 
@@ -64,10 +61,6 @@ export interface IStorage {
   getCommentsByArticle(articleId: number): Promise<Comment[]>;
   getCommentById(id: number): Promise<Comment | undefined>;
   deleteComment(id: number, userId: number): Promise<boolean>;
-  // Investment Advisors
-  createInvestmentAdvisor(advisor: InsertInvestmentAdvisor): Promise<InvestmentAdvisor>;
-  getInvestmentAdvisors(): Promise<InvestmentAdvisor[]>;
-  getInvestmentAdvisorById(id: number): Promise<InvestmentAdvisor | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -374,58 +367,6 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(comments)
       .where(and(eq(comments.id, id), eq(comments.userId, userId)));
     return result.rowCount > 0;
-  }
-
-  // Investment Advisor methods
-  async createInvestmentAdvisor(advisor: InsertInvestmentAdvisor): Promise<InvestmentAdvisor> {
-    try {
-      // Set computed name field for compatibility
-      const advisorData = {
-        ...advisor,
-        name: `${advisor.firstName} ${advisor.lastName}`,
-        company: advisor.companyName || '',
-        phone: advisor.professionalPhone || '',
-        website: advisor.websiteUrl || '',
-        location: `${advisor.city}, ${advisor.state}`.replace(', ,', '').replace(/^,\s*|,\s*$/g, '') || '',
-        bio: advisor.aboutYou || '',
-        languages: advisor.languagesSpoken?.join(', ') || 'English',
-      };
-      
-      const [newAdvisor] = await withTimeout(
-        db.insert(investmentAdvisors).values(advisorData).returning(),
-        3000
-      );
-      return newAdvisor;
-    } catch (error) {
-      console.error('Error creating investment advisor:', error);
-      throw error;
-    }
-  }
-
-  async getInvestmentAdvisors(): Promise<InvestmentAdvisor[]> {
-    try {
-      const advisors = await withTimeout(
-        db.select().from(investmentAdvisors).orderBy(desc(investmentAdvisors.createdAt)),
-        3000
-      );
-      return advisors;
-    } catch (error) {
-      console.warn('Database timeout in getInvestmentAdvisors:', error);
-      return [];
-    }
-  }
-
-  async getInvestmentAdvisorById(id: number): Promise<InvestmentAdvisor | undefined> {
-    try {
-      const [advisor] = await withTimeout(
-        db.select().from(investmentAdvisors).where(eq(investmentAdvisors.id, id)),
-        3000
-      );
-      return advisor || undefined;
-    } catch (error) {
-      console.warn('Database timeout in getInvestmentAdvisorById:', error);
-      return undefined;
-    }
   }
 }
 
