@@ -389,7 +389,7 @@ export default function Profile({ onBack }: ProfileProps) {
 
                 {/* App Features */}
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>• Stock market news & analysis</p>
+                  <p>• AI Stock Analysis (Beta Testing)</p>
                   <p>• Personalized investment insights</p>
                   <p>• Real-time market updates</p>
                 </div>
@@ -414,7 +414,7 @@ export default function Profile({ onBack }: ProfileProps) {
               <>
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   <p>• Secure mobile OTP authentication</p>
-                  <p>• Stock market analysis and insights</p>
+                  <p>• AI stock analysis with daily limits</p>
                   <p>• Personalized profile and saved articles</p>
                 </div>
                 <Button 

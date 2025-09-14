@@ -17,6 +17,7 @@ import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
+import AISection from '@/pages/ai-section';
 
 interface HomeProps {
   initialCategory?: string;
@@ -101,9 +102,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       
       const data = await response.json();
       console.log('Fetched articles:', data);
-      console.log('URL called:', '/api/articles');
-      console.log('Response status:', response.status);
-      console.log('Array length:', Array.isArray(data) ? data.length : 'Not an array');
       
       // Ensure data is an array
       if (!Array.isArray(data)) {
@@ -356,6 +354,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return <Profile onBack={() => setActiveSection('home')} />;
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
+      case 'ai-section':
+        return <AISection onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }

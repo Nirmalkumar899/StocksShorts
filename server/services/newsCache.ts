@@ -15,13 +15,15 @@ export class NewsCache {
   };
 
   private readonly REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes like Inshorts
-  private readonly MAX_ARTICLES = 200; // Keep 200 articles, minimum 50 guaranteed
+  private readonly MAX_ARTICLES = 120; // Keep 120 articles, show latest 100
   private readonly MAX_DAYS_OLD = 2; // Only keep articles from last 2 days + today
   private refreshTimer?: NodeJS.Timeout;
 
   constructor() {
-    // Cache will be lazily initialized on first request to avoid startup delay
-    // Refresh cycle will be started manually after server startup
+    // Start automatic refresh cycle
+    this.startRefreshCycle();
+    // Generate initial articles immediately to avoid empty state
+    this.initializeCache();
   }
 
   private async initializeCache() {
@@ -80,7 +82,7 @@ export class NewsCache {
     ];
   }
 
-  public startRefreshCycle() {
+  private startRefreshCycle() {
     // Refresh articles every 10 minutes
     this.refreshTimer = setInterval(() => {
       this.refreshArticles();
@@ -195,15 +197,6 @@ export class NewsCache {
     cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago from TODAY
 
     console.log(`🔍 Requested category: ${category}`);
-    
-    // List of valid categories from RSS news
-    const validCategories = ['trending', 'ipo', 'research-report', 'us-market', 'crypto'];
-    
-    // If category is provided and invalid, ignore it and return all articles
-    if (category && !validCategories.includes(category)) {
-      console.log(`⚠️ Invalid category "${category}", returning all articles`);
-      category = undefined;
-    }
     console.log(`📊 Returning ${this.cache.articles.length} cached articles`);
 
     let articles = this.cache.articles.filter(article => {

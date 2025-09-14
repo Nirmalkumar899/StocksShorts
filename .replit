@@ -10,6 +10,22 @@ deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3000
+
+[[ports]]
+localPort = 43303
+externalPort = 3001
+
+[[ports]]
+localPort = 44615
+externalPort = 3002
+
 [workflows]
 runButton = "Project"
 
@@ -33,7 +49,3 @@ waitForPort = 5000
 
 [agent]
 integrations = ["javascript_google_analytics==1.0.0", "javascript_openai==1.0.0"]
-
-[[ports]]
-localPort = 33139
-externalPort = 80
