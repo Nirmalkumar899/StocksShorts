@@ -148,8 +148,8 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
             }
           </p>
           <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-            <div className="animate-pulse w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-            Auto-shuffle
+            <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="font-medium">Live shuffle • Updates every 30s</span>
           </div>
         </div>
       </div>
@@ -174,9 +174,9 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
             </Button>
           </div>
         ) : (
-          <div className="p-3 space-y-3">
+          <div className="p-3 space-y-4">
             {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
-              <Card key={advisor.id} className="hover:shadow-md transition-shadow bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <Card key={advisor.id} className="hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -215,7 +215,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     <Button 
                       size="sm" 
-                      className={`text-xs ${advisor.phone ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                      className={`text-xs ${advisor.phone ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'}`}
                       onClick={() => advisor.phone && window.open(`tel:${advisor.phone}`, '_self')}
                       disabled={!advisor.phone}
                     >
@@ -225,8 +225,16 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
                     
                     <Button 
                       size="sm" 
-                      className={`text-xs ${advisor.phone ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                      onClick={() => advisor.phone && window.open(`https://wa.me/91${advisor.phone?.replace(/\D/g, '')}`, '_blank')}
+                      className={`text-xs ${advisor.phone ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'}`}
+                      onClick={() => {
+                        if (advisor.phone) {
+                          // Clean phone number and handle Indian numbers properly
+                          const cleanPhone = advisor.phone.replace(/\D/g, '');
+                          // Add country code only if not already present
+                          const phoneWithCountry = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+                          window.open(`https://wa.me/${phoneWithCountry}`, '_blank');
+                        }
+                      }}
                       disabled={!advisor.phone}
                     >
                       <svg className="h-3 w-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
