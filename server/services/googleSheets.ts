@@ -92,27 +92,48 @@ export class GoogleSheetsService {
       normalizedKey = normalizedKey.slice(1, -1);
     }
     
-    // Handle base64 encoded private key (if GOOGLE_PRIVATE_KEY_BASE64 was used)
-    if (!normalizedKey.includes('-----BEGIN') && normalizedKey.length > 100) {
-      try {
-        normalizedKey = Buffer.from(normalizedKey, 'base64').toString('utf-8');
-      } catch (error) {
-        // Not base64, continue with original
-      }
-    }
-    
-    // Convert escaped newlines to real newlines
+    // Convert escaped newlines to real newlines FIRST
     normalizedKey = normalizedKey.replace(/\\n/g, '\n');
     
     // Normalize line endings (CRLF to LF)
     normalizedKey = normalizedKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     
-    // Extract the key body between BEGIN/END markers
-    const beginMatch = normalizedKey.match(/-----BEGIN (?:RSA )?PRIVATE KEY-----/);
-    const endMatch = normalizedKey.match(/-----END (?:RSA )?PRIVATE KEY-----/);
+    // Handle base64 encoded private key (if GOOGLE_PRIVATE_KEY_BASE64 was used)
+    if (!normalizedKey.includes('-----BEGIN') && normalizedKey.length > 100) {
+      try {
+        normalizedKey = Buffer.from(normalizedKey, 'base64').toString('utf-8');
+        // After decoding, convert escaped newlines again
+        normalizedKey = normalizedKey.replace(/\\n/g, '\n');
+      } catch (error) {
+        // Not base64, continue with original
+      }
+    }
+    
+    // Debug: Log first and last 50 characters to troubleshoot format issues
+    console.log('🔍 Private key format check - first 50 chars:', normalizedKey.substring(0, 50));
+    console.log('🔍 Private key format check - last 50 chars:', normalizedKey.substring(normalizedKey.length - 50));
+    
+    // More flexible BEGIN/END marker detection
+    let beginMatch = normalizedKey.match(/-----BEGIN[^-]*PRIVATE KEY-----/);
+    let endMatch = normalizedKey.match(/-----END[^-]*PRIVATE KEY-----/);
     
     if (!beginMatch || !endMatch) {
-      throw new Error('Invalid private key format: missing BEGIN/END markers');
+      // Try to find just the key content and reconstruct
+      if (normalizedKey.includes('BEGIN') && normalizedKey.includes('END')) {
+        console.log('🔧 Attempting to reconstruct private key format');
+        // Extract everything between BEGIN and END
+        const beginIdx = normalizedKey.indexOf('BEGIN');
+        const endIdx = normalizedKey.indexOf('END');
+        if (beginIdx < endIdx) {
+          const keyContent = normalizedKey.substring(beginIdx, endIdx + 3);
+          // Try to fix the format
+          const reconstructed = keyContent
+            .replace(/BEGIN[^-]*PRIVATE KEY[^-]*/, '-----BEGIN PRIVATE KEY-----\n')
+            .replace(/END[^-]*PRIVATE KEY[^-]*/, '\n-----END PRIVATE KEY-----');
+          return reconstructed;
+        }
+      }
+      throw new Error(`Invalid private key format: missing proper BEGIN/END markers. Key starts with: ${normalizedKey.substring(0, 100)}`);
     }
     
     const beginMarker = beginMatch[0];
@@ -128,8 +149,9 @@ export class GoogleSheetsService {
     const keyBody = normalizedKey.substring(beginIndex, endIndex);
     const cleanBody = keyBody.replace(/\s/g, ''); // Remove all whitespace
     
-    // Validate base64 content
-    if (!/^[A-Za-z0-9+/=]+$/.test(cleanBody)) {
+    // Validate base64 content (allow some flexibility)
+    if (cleanBody.length < 100 || !/^[A-Za-z0-9+/=]+$/.test(cleanBody)) {
+      console.log('🔧 Key body appears invalid, length:', cleanBody.length, 'first 50 chars:', cleanBody.substring(0, 50));
       throw new Error('Invalid private key format: invalid base64 characters');
     }
     
@@ -139,6 +161,7 @@ export class GoogleSheetsService {
     // Reconstruct the private key with proper formatting
     const reconstructedKey = `${beginMarker}\n${wrappedBody}\n${endMarker}\n`;
     
+    console.log('✅ Private key normalized successfully');
     return reconstructedKey;
   }
 
