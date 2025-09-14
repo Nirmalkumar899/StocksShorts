@@ -22,8 +22,17 @@ export class NewsCache {
   constructor() {
     // Start automatic refresh cycle
     this.startRefreshCycle();
-    // Generate initial articles immediately to avoid empty state
-    this.initializeCache();
+    // Initialize cache asynchronously to avoid blocking server startup
+    this.initializeCacheAsync();
+  }
+
+  private initializeCacheAsync() {
+    // Don't await this - let it run in background
+    setImmediate(() => {
+      this.initializeCache().catch(err => {
+        console.error('Background cache initialization failed:', err);
+      });
+    });
   }
 
   private async initializeCache() {
@@ -249,4 +258,11 @@ export class NewsCache {
 }
 
 // Export singleton instance
-export const newsCache = new NewsCache();
+let _newsCache: NewsCache | null = null;
+
+export function getNewsCache(): NewsCache {
+  if (!_newsCache) {
+    _newsCache = new NewsCache();
+  }
+  return _newsCache;
+}

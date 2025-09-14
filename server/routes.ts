@@ -5,7 +5,7 @@ import * as path from "path";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { aiNewsGenerator } from "./services/aiNewsGenerator";
-import { newsCache } from "./services/newsCache";
+import { getNewsCache } from "./services/newsCache";
 import OpenAI from 'openai';
 import { mobileAuth } from "./mobileAuth";
 
@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/refresh-news", async (req, res) => {
     try {
       console.log('🔄 Manual news refresh requested');
-      const refreshedArticles = await newsCache.forceRefresh();
+      const refreshedArticles = await getNewsCache().forceRefresh();
       console.log(`✅ Manual refresh completed with ${refreshedArticles.length} articles`);
       res.json({ 
         success: true, 
@@ -132,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔍 Requested category:', category);
       
       // Get articles from cache (automatically refreshes if needed)
-      const articles = await newsCache.getArticles(category);
+      const articles = await getNewsCache().getArticles(category);
       
       console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
       
@@ -181,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get articles from cache and find the specific article
-      const articles = await newsCache.getArticles();
+      const articles = await getNewsCache().getArticles();
       const article = articles.find(a => a.id === id);
       
       if (!article) {
@@ -202,9 +202,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🔄 Force refreshing cached news...');
       
-      const articles = await newsCache.forceRefresh();
+      const articles = await getNewsCache().forceRefresh();
       const uniqueCategories = Array.from(new Set(articles.map(a => a.type)));
-      const cacheStatus = newsCache.getCacheStatus();
+      const cacheStatus = getNewsCache().getCacheStatus();
       
       // Send response immediately to avoid double response issue
       return res.json({ 
@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get cache status endpoint
   app.get("/api/articles/status", (req, res) => {
-    const status = newsCache.getCacheStatus();
+    const status = getNewsCache().getCacheStatus();
     res.json(status);
   });
 
@@ -295,9 +295,13 @@ CONTENT: [Hindi translation]`;
               const translatedText = response.choices[0].message.content;
               console.log(`✅ Translation received for article ${article.id}`);
               
+              if (!translatedText) {
+                throw new Error('No translation content received');
+              }
+              
               // Parse the translated response
-              const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/s);
-              const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/s);
+              const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/);
+              const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/);
               
               return {
                 id: article.id,
@@ -306,10 +310,11 @@ CONTENT: [Hindi translation]`;
               };
               
             } catch (error) {
-              console.error(`❌ Translation error for article ${article.id}:`, error.message);
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              console.error(`❌ Translation error for article ${article.id}:`, errorMessage);
               
               // Check if it's a quota exceeded error
-              if (error.message && error.message.includes('exceeded your current quota')) {
+              if (errorMessage && errorMessage.includes('exceeded your current quota')) {
                 throw new Error('Translation service quota exceeded. Please try again later or contact support.');
               }
               
@@ -339,14 +344,15 @@ CONTENT: [Hindi translation]`;
       }
       
     } catch (error) {
-      console.error('💥 Translation API error:', error);
-      console.error('💥 Error stack:', error.stack);
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      console.error('💥 Translation API error:', errorObj);
+      console.error('💥 Error stack:', errorObj.stack);
       
       // Only send error response if headers haven't been sent
       if (!res.headersSent) {
         res.status(500).json({ 
-          message: error instanceof Error ? error.message : 'Translation failed',
-          details: error.stack
+          message: errorObj.message || 'Translation failed',
+          details: errorObj.stack
         });
       }
     }
