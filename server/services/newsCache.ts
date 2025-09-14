@@ -34,7 +34,11 @@ export class NewsCache {
       const realNews = await realNewsIngestor.ingestTodaysNews();
       
       if (realNews.length > 0) {
-        this.cache.articles = realNews;
+        // Ensure imageUrl is always present (normalize undefined to null)
+      this.cache.articles = realNews.map(article => ({
+        ...article,
+        imageUrl: article.imageUrl ?? null
+      }));
         this.cache.lastRefresh = new Date();
         this.cache.isRefreshing = false;
         console.log(`✅ Cache initialized with ${realNews.length} real news articles`);
@@ -61,7 +65,7 @@ export class NewsCache {
         title: "Indian Stock Markets Show Strong Performance Today",
         content: "Indian equity markets displayed robust performance with both Nifty and Sensex posting gains. Banking and IT sectors led the rally supported by positive global cues.",
         type: "trending",
-        time: now.toISOString(),
+        time: now,
         source: "Market Update",
         sentiment: "Positive",
         priority: "High",
@@ -69,7 +73,7 @@ export class NewsCache {
         sourceUrl: "https://economictimes.indiatimes.com/markets",
         primarySourceUrl: "https://economictimes.indiatimes.com/markets",
         primarySourceTitle: "Indian Stock Markets Show Strong Performance Today",
-        primarySourcePublishedAt: now.toISOString(),
+        primarySourcePublishedAt: now,
         sources: "Market Data",
         contentType: "summary",
         provenanceScore: 0.7,
@@ -129,7 +133,11 @@ export class NewsCache {
       // Remove duplicates based on title similarity
       const uniqueArticles = this.removeDuplicates(sortedArticles);
 
-      this.cache.articles = uniqueArticles;
+      // Ensure imageUrl is always present (normalize undefined to null)
+      this.cache.articles = uniqueArticles.map(article => ({
+        ...article,
+        imageUrl: article.imageUrl ?? null
+      }));
       this.cache.lastRefresh = new Date();
       
       console.log(`✅ News refreshed: ${uniqueArticles.length} articles in cache (last ${this.MAX_DAYS_OLD} days + today)`);

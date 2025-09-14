@@ -136,7 +136,7 @@ export class RealNewsIngestor {
           source: feed.source,
           sentiment: this.analyzeSentiment(title, description),
           priority: this.assignPriority(title, description),
-          imageUrl: this.getContextualImage(title, description, this.categorizeArticle(title, description), Date.now() + Math.random()),
+          imageUrl: this.getContextualImage(title, description, this.categorizeArticle(title, description), Date.now() + Math.random()) ?? null,
           createdAt: new Date(),
           sourceUrl: link,
           primarySourceUrl: link,
@@ -293,12 +293,14 @@ export class RealNewsIngestor {
   private getContextualImage(title: string, content: string, type: string, id: number): string {
     try {
       const combinedText = (title + ' ' + content).toLowerCase();
+      console.log(`🖼️ DEBUG: Generating image for "${title.substring(0, 50)}..." with text: "${combinedText.substring(0, 100)}..."`);
       
       // Extract the main company being discussed
       const mainCompany = this.extractCompanyFromContent(combinedText);
+      console.log(`🖼️ DEBUG: Extracted company: ${mainCompany}, type: ${type}`);
       
-      // Use article ID to ensure different articles get different images
-      const imageVariant = (id % 3) + 1;
+      // Use article ID to ensure different articles get different images (ensure integer 1-3)
+      const imageVariant = (Math.abs(Math.floor(id)) % 3) + 1;
     
       // Generate images based on the main company being discussed
       if (mainCompany === 'reliance' || combinedText.includes('ril')) {
@@ -362,7 +364,9 @@ export class RealNewsIngestor {
         'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Financial charts
         'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=800&h=600&fit=crop&auto=format&q=80'  // Business
       ];
-      return defaultImages[imageVariant - 1];
+      const selectedImage = defaultImages[imageVariant - 1];
+      console.log(`🖼️ DEBUG: Using default image (variant ${imageVariant}, type: integer=${Number.isInteger(imageVariant)}): ${selectedImage}`);
+      return selectedImage;
       
     } catch (error) {
       console.error('Error generating contextual image:', error);
