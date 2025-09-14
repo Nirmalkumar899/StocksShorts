@@ -153,7 +153,7 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
       city: "",
       state: "",
       pincode: "",
-      professionalPhone: "",
+      professionalPhone: "", // Force empty phone number
       
       // Online Presence
       website: "",
@@ -669,11 +669,13 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
                           <div className="space-y-3">
                             <Input
                               type="tel"
-                              placeholder="+91 9876543210"
+                              placeholder="Enter your mobile number"
                               {...field}
                               data-testid="input-professional-phone"
                               disabled={otpVerified}
-                              autoComplete="off"
+                              autoComplete="new-password"
+                              name="professional-phone-unique"
+                              key={`phone-${Date.now()}`}
                             />
                             {field.value && !otpVerified && (
                               <Button
