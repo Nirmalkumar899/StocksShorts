@@ -31,6 +31,18 @@ interface VerifiedArticle {
 
 export class RealNewsIngestor {
   private readonly RSS_FEEDS = [
+    // Official Exchange Sources (Highest Priority)
+    {
+      url: 'https://www.sebi.gov.in/rss.html',
+      source: 'SEBI Official',
+      domain: 'sebi.gov.in'
+    },
+    {
+      url: 'https://www.bseindia.com/data/xml/notices.xml',
+      source: 'BSE Official',
+      domain: 'bseindia.com'
+    },
+    // Financial News Sources
     {
       url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
       source: 'Economic Times',
@@ -65,13 +77,8 @@ export class RealNewsIngestor {
       url: 'https://economictimes.indiatimes.com/news/company/corporate-trends/rssfeeds/13358478.cms',
       source: 'Economic Times Corporate',
       domain: 'economictimes.indiatimes.com'
-    },
-    {
-      url: 'https://www.bseindia.com/data/xml/notices.xml',
-      source: 'BSE Official',
-      domain: 'bseindia.com'
     }
-    // Note: Using verified working RSS feeds only
+    // Note: Using all free sources including SEBI official regulatory updates
   ];
 
   private readonly MARKET_KEYWORDS = [
@@ -332,14 +339,14 @@ export class RealNewsIngestor {
 
   private calculateProvenanceScore(domain: string, publishedAt: Date): number {
     const domainScores: Record<string, number> = {
-      'moneycontrol.com': 1.0,
+      'sebi.gov.in': 1.0,
       'bseindia.com': 1.0,
       'nseindia.com': 1.0,
       'economictimes.indiatimes.com': 0.9,
-      'business-standard.com': 0.85,
       'livemint.com': 0.8,
       'cnbctv18.com': 0.75,
-      'financialexpress.com': 0.7
+      'financialexpress.com': 0.7,
+      'business-standard.com': 0.65
     };
     
     const domainScore = domainScores[domain] || 0.5;
