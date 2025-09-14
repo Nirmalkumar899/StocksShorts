@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "@tanstack/react-query";
 import type { InvestmentAdvisor } from "@shared/schema";
 import { useSEO } from "@/hooks/useSEO";
+import BottomNavigation from "@/components/bottom-navigation";
 
 interface SebiRiaProps {
   onBack: () => void;
@@ -341,6 +342,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialization, setSelectedSpecialization] = useState("All");
   const [selectedCity, setSelectedCity] = useState("All");
+  const [activeSection, setActiveSection] = useState('sebi-ria');
   const [sortBy, setSortBy] = useState("random");
   const [shuffleSeed, setShuffleSeed] = useState(0);
 
@@ -434,8 +436,13 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
     );
   }
 
+  // Handle bottom navigation
+  const handleTabChange = (section: string) => {
+    setActiveSection(section);
+  };
+
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-end p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <Button 
@@ -449,69 +456,77 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
         </Button>
       </div>
 
-      {/* Hero Section */}
-      <HeroSection onPrimaryClick={scrollToSearch} advisorCount={advisors.length} />
+      {/* Main Content - Flexible */}
+      <div className="flex-1">
+        {/* Hero Section */}
+        <HeroSection onPrimaryClick={scrollToSearch} advisorCount={advisors.length} />
 
-      {/* Search Filters */}
-      <SearchFilters 
-        searchQuery={searchQuery}
-        selectedCity={selectedCity}
-        selectedSpecialization={selectedSpecialization}
-        onSearchChange={setSearchQuery}
-        onCityChange={setSelectedCity}
-        onSpecializationChange={setSelectedSpecialization}
-        cities={cities}
-        specializations={specializations}
-      />
-
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <TopAdvisorsBadge />
-        <ConsultationHeader />
-        <SpecializationPills 
+        {/* Search Filters */}
+        <SearchFilters 
+          searchQuery={searchQuery}
+          selectedCity={selectedCity}
+          selectedSpecialization={selectedSpecialization}
+          onSearchChange={setSearchQuery}
+          onCityChange={setSelectedCity}
+          onSpecializationChange={setSelectedSpecialization}
+          cities={cities}
           specializations={specializations}
-          activeSpecialization={selectedSpecialization}
-          onSelect={setSelectedSpecialization}
         />
 
-        {/* Compact Disclaimer */}
-        <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <p className="text-amber-800 dark:text-amber-200 text-sm flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Contact details not verified - verify SEBI registration independently
-          </p>
+        {/* Main Content */}
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <TopAdvisorsBadge />
+          <ConsultationHeader />
+          <SpecializationPills 
+            specializations={specializations}
+            activeSpecialization={selectedSpecialization}
+            onSelect={setSelectedSpecialization}
+          />
+
+          {/* Compact Disclaimer */}
+          <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <p className="text-amber-800 dark:text-amber-200 text-sm flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Contact details not verified - verify SEBI registration independently
+            </p>
+          </div>
+
+          {/* Results */}
+          {sortedAdvisors.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">👨‍💼</div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">No advisors found</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Try adjusting your search criteria or filters
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedSpecialization("All");
+                  setSelectedCity("All");
+                }}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-6 mb-12">
+              {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
+                <EnhancedAdvisorCard key={advisor.id} advisor={advisor} index={index} />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Results */}
-        {sortedAdvisors.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">👨‍💼</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">No advisors found</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Try adjusting your search criteria or filters
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedSpecialization("All");
-                setSelectedCity("All");
-              }}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-6 mb-12">
-            {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
-              <EnhancedAdvisorCard key={advisor.id} advisor={advisor} index={index} />
-            ))}
-          </div>
-        )}
+        {/* How It Works Section */}
+        <HowItWorksSection />
       </div>
 
-      {/* How It Works Section */}
-      <HowItWorksSection />
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
+      </div>
     </div>
   );
 }
