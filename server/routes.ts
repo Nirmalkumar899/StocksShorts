@@ -1068,6 +1068,214 @@ CONTENT: [Hindi translation]`;
     }
   });
 
+  // Enhanced Messaging System API Endpoints
+  
+  // Get user's conversations
+  app.get('/api/conversations', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      
+      const conversations = await storage.getUserConversations(userId);
+      
+      res.json({
+        conversations,
+        userId,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch conversations'
+      });
+    }
+  });
+
+  // Create new conversation with advisor
+  app.post('/api/conversations', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const { advisorId } = req.body;
+      const userId = (req.session as any).userId;
+      
+      // Validate advisor ID
+      const advisorIdNum = parseInt(advisorId);
+      if (isNaN(advisorIdNum)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+      
+      // Check if advisor exists
+      const advisor = await storage.getAdvisor(advisorIdNum);
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+      
+      // Get or create conversation
+      const conversation = await storage.getOrCreateConversation(advisorIdNum, userId);
+      
+      res.status(201).json({
+        message: 'Conversation ready',
+        conversation,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to create conversation'
+      });
+    }
+  });
+
+  // Get messages in a specific conversation
+  app.get('/api/conversations/:id/messages', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const userId = (req.session as any).userId;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ message: 'Invalid conversation ID' });
+      }
+      
+      // Validate limit parameter
+      if (limit < 1 || limit > 100) {
+        return res.status(400).json({ 
+          message: 'Limit must be between 1 and 100' 
+        });
+      }
+      
+      // Check if conversation exists and user has access
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: 'Conversation not found' });
+      }
+      
+      // Verify user has access to this conversation
+      if (conversation.userId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      
+      // Get messages using the original method (works with conversationKey)
+      const messages = await storage.getConversation(conversation.advisorId, userId, limit);
+      
+      // Mark messages as read
+      await storage.markMessagesAsRead(conversationId, userId);
+      
+      res.json({
+        messages,
+        conversation,
+        total: messages.length,
+        limit,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error fetching conversation messages:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch messages'
+      });
+    }
+  });
+
+  // Send message in a conversation
+  app.post('/api/conversations/:id/messages', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { content } = req.body;
+      const userId = (req.session as any).userId;
+      
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ message: 'Invalid conversation ID' });
+      }
+      
+      // Rate limiting check (reuse existing logic)
+      const now = Date.now();
+      const userRateKey = `user_${userId}`;
+      const userRateData = messageRateLimit.get(userRateKey);
+      const MAX_MESSAGES_PER_MINUTE = 10;
+      const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+      
+      if (userRateData) {
+        if (now < userRateData.resetAt) {
+          if (userRateData.count >= MAX_MESSAGES_PER_MINUTE) {
+            return res.status(429).json({
+              message: `Rate limit exceeded. Maximum ${MAX_MESSAGES_PER_MINUTE} messages per minute allowed.`,
+              retryAfter: Math.ceil((userRateData.resetAt - now) / 1000)
+            });
+          }
+          userRateData.count += 1;
+        } else {
+          messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        }
+      } else {
+        messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+      }
+      
+      // Validate message content
+      if (!content || typeof content !== 'string' || content.trim().length === 0) {
+        return res.status(400).json({ message: 'Message content is required' });
+      }
+      
+      if (content.length > 1000) {
+        return res.status(400).json({ message: 'Message content too long (max 1000 characters)' });
+      }
+      
+      // Check if conversation exists and user has access
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: 'Conversation not found' });
+      }
+      
+      // Verify user has access to this conversation
+      if (conversation.userId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      
+      // Create message
+      const newMessage = await storage.createMessage({
+        advisorId: conversation.advisorId,
+        userId,
+        sender: 'user',
+        content: content.trim(),
+        conversationKey: `${conversation.advisorId}:${userId}`,
+        conversationId
+      });
+      
+      res.status(201).json({
+        message: 'Message sent successfully',
+        messageData: newMessage,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to send message'
+      });
+    }
+  });
+
+  // Get unread message count for user
+  app.get('/api/conversations/unread-count', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      
+      const unreadCount = await storage.getUnreadMessageCount(userId);
+      
+      res.json({
+        unreadCount,
+        userId,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch unread count'
+      });
+    }
+  });
+
   // Mobile Authentication Routes
   app.post('/api/auth/send-otp', mobileAuth.sendOTP);
   app.post('/api/auth/verify-otp', mobileAuth.verifyOTP);

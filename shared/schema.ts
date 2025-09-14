@@ -281,18 +281,36 @@ export const investmentAdvisors = pgTable("investment_advisors", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Conversations table for managing chat sessions between advisors and users
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  status: text("status").notNull().default("active"), // 'active' | 'archived'
+  lastMessageAt: timestamp("last_message_at").defaultNow().notNull(),
+  lastMessagePreview: text("last_message_preview").default(""),
+  unreadCount: integer("unread_count").notNull().default(0), // Messages unread by recipient
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("IDX_conversations_user").on(table.userId),
+  index("IDX_conversations_advisor").on(table.advisorId),
+  index("IDX_conversations_last_message").on(table.lastMessageAt),
+]);
+
 // Messages table for in-app communication between advisors and users
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
   advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
   userId: varchar("user_id").notNull().references(() => users.id),
   sender: text("sender").notNull(), // 'user' | 'advisor'
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   readAt: timestamp("read_at"),
-  conversationKey: varchar("conversation_key").notNull(), // Format: advisorId:userId for indexing
+  conversationKey: varchar("conversation_key").notNull(), // Format: advisorId:userId for backward compatibility
 }, (table) => [
-  index("IDX_messages_conversation").on(table.conversationKey),
+  index("IDX_messages_conversation").on(table.conversationId),
+  index("IDX_messages_conversation_key").on(table.conversationKey),
   index("IDX_messages_created_at").on(table.createdAt),
 ]);
 
@@ -305,6 +323,14 @@ export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdviso
   status: z.enum(["active", "offline"]).default("offline"),
 });
 
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  createdAt: true,
+  lastMessageAt: true,
+}).extend({
+  status: z.enum(["active", "archived"]).default("active"),
+});
+
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   createdAt: true,
@@ -314,6 +340,8 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 
 export type InsertInvestmentAdvisor = z.infer<typeof insertInvestmentAdvisorSchema>;
 export type InvestmentAdvisor = typeof investmentAdvisors.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 

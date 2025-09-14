@@ -12,6 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useSEO } from "@/hooks/useSEO";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import type { InvestmentAdvisor } from "@shared/schema";
 
 // API Response Types
@@ -59,6 +63,9 @@ export default function AdvisorDirectory({ onBack }: AdvisorDirectoryProps) {
   const [showFilters, setShowFilters] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   // Debounce search input
   useEffect(() => {
@@ -133,11 +140,36 @@ export default function AdvisorDirectory({ onBack }: AdvisorDirectoryProps) {
     window.location.href = `tel:+91${cleanPhone}`;
   };
 
+  // Create conversation mutation
+  const createConversationMutation = useMutation({
+    mutationFn: async (advisorId: number) => {
+      return apiRequest('POST', '/api/conversations', { advisorId });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      setLocation(`/chat/${data.conversation.id}`);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to start conversation",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleMessage = (advisor: InvestmentAdvisor) => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "In-app messaging will be available soon. For now, please use WhatsApp or phone contact.",
-    });
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to message advisors.",
+        variant: "destructive",
+      });
+      setLocation('/profile');
+      return;
+    }
+
+    createConversationMutation.mutate(advisor.id);
   };
 
   const getStatusColor = (advisor: InvestmentAdvisor) => {

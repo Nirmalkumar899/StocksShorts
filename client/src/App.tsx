@@ -16,6 +16,8 @@ import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
 import GmailConnect from "@/pages/GmailConnect";
+import Conversations from "@/pages/conversations";
+import Chat from "@/pages/chat";
 import SplashScreen from "@/components/splash-screen";
 
 function Router() {
@@ -106,6 +108,12 @@ function Router() {
         {() => <Profile onBack={() => window.history.back()} />}
       </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
+      <Route path="/conversations">
+        {() => <Conversations onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/chat/:conversationId">
+        {(params) => <Chat conversationId={params.conversationId} />}
+      </Route>
       <Route path="/disclaimer">
         {() => <Home />}
       </Route>

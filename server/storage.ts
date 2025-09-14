@@ -8,6 +8,7 @@ import {
   personalizedArticles,
   comments,
   investmentAdvisors,
+  conversations,
   messages,
   type User, 
   type InsertUser, 
@@ -26,6 +27,8 @@ import {
   type InsertComment,
   type InvestmentAdvisor,
   type InsertInvestmentAdvisor,
+  type Conversation,
+  type InsertConversation,
   type Message,
   type InsertMessage
 } from "@shared/schema";
@@ -80,6 +83,14 @@ export interface IStorage {
   // Messaging System
   createMessage(message: InsertMessage): Promise<Message>;
   getConversation(advisorId: number, userId: string, limit?: number): Promise<Message[]>;
+  // Enhanced Messaging with Conversations
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  getOrCreateConversation(advisorId: number, userId: string): Promise<Conversation>;
+  getUserConversations(userId: string): Promise<Conversation[]>;
+  getConversationById(conversationId: number): Promise<Conversation | undefined>;
+  updateConversationLastMessage(conversationId: number, messagePreview: string): Promise<void>;
+  markMessagesAsRead(conversationId: number, userId: string): Promise<void>;
+  getUnreadMessageCount(userId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -552,12 +563,20 @@ export class DatabaseStorage implements IStorage {
   // Messaging System methods
   async createMessage(message: InsertMessage): Promise<Message> {
     try {
+      // Get or create conversation first
+      const conversation = await this.getOrCreateConversation(message.advisorId, message.userId);
+      
       const [newMessage] = await db.insert(messages)
         .values({
           ...message,
+          conversationId: conversation.id,
           createdAt: new Date(),
         })
         .returning();
+      
+      // Update conversation last message info
+      await this.updateConversationLastMessage(conversation.id, message.content.substring(0, 100));
+      
       return newMessage;
     } catch (error) {
       console.error('Error creating message:', error);
@@ -579,6 +598,138 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching conversation:', error);
       return [];
+    }
+  }
+
+  // Enhanced Messaging with Conversations
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    try {
+      const [newConversation] = await db.insert(conversations)
+        .values({
+          ...conversation,
+          createdAt: new Date(),
+          lastMessageAt: new Date(),
+        })
+        .returning();
+      return newConversation;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      throw error;
+    }
+  }
+
+  async getOrCreateConversation(advisorId: number, userId: string): Promise<Conversation> {
+    try {
+      // Try to find existing conversation
+      const [existingConversation] = await db.select().from(conversations)
+        .where(and(
+          eq(conversations.advisorId, advisorId),
+          eq(conversations.userId, userId)
+        ))
+        .limit(1);
+      
+      if (existingConversation) {
+        return existingConversation;
+      }
+      
+      // Create new conversation if none exists
+      return this.createConversation({
+        advisorId,
+        userId,
+        status: 'active',
+        lastMessagePreview: '',
+        unreadCount: 0,
+      });
+    } catch (error) {
+      console.error('Error getting or creating conversation:', error);
+      throw error;
+    }
+  }
+
+  async getUserConversations(userId: string): Promise<Conversation[]> {
+    try {
+      const userConversations = await db.select({
+        id: conversations.id,
+        advisorId: conversations.advisorId,
+        userId: conversations.userId,
+        status: conversations.status,
+        lastMessageAt: conversations.lastMessageAt,
+        lastMessagePreview: conversations.lastMessagePreview,
+        unreadCount: conversations.unreadCount,
+        createdAt: conversations.createdAt,
+        advisorName: investmentAdvisors.fullName,
+        advisorCompany: investmentAdvisors.companyName,
+      })
+        .from(conversations)
+        .innerJoin(investmentAdvisors, eq(conversations.advisorId, investmentAdvisors.id))
+        .where(eq(conversations.userId, userId))
+        .orderBy(desc(conversations.lastMessageAt));
+      
+      return userConversations as any[];
+    } catch (error) {
+      console.error('Error fetching user conversations:', error);
+      return [];
+    }
+  }
+
+  async getConversationById(conversationId: number): Promise<Conversation | undefined> {
+    try {
+      const [conversation] = await db.select().from(conversations)
+        .where(eq(conversations.id, conversationId));
+      return conversation || undefined;
+    } catch (error) {
+      console.error('Error fetching conversation:', error);
+      return undefined;
+    }
+  }
+
+  async updateConversationLastMessage(conversationId: number, messagePreview: string): Promise<void> {
+    try {
+      await db.update(conversations)
+        .set({
+          lastMessageAt: new Date(),
+          lastMessagePreview: messagePreview,
+          unreadCount: sql`${conversations.unreadCount} + 1`,
+        })
+        .where(eq(conversations.id, conversationId));
+    } catch (error) {
+      console.error('Error updating conversation last message:', error);
+      throw error;
+    }
+  }
+
+  async markMessagesAsRead(conversationId: number, userId: string): Promise<void> {
+    try {
+      await db.update(messages)
+        .set({ readAt: new Date() })
+        .where(and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.userId, userId),
+          sql`${messages.readAt} IS NULL`
+        ));
+      
+      // Reset unread count for conversation
+      await db.update(conversations)
+        .set({ unreadCount: 0 })
+        .where(eq(conversations.id, conversationId));
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+      throw error;
+    }
+  }
+
+  async getUnreadMessageCount(userId: string): Promise<number> {
+    try {
+      const result = await db.select({ 
+        totalUnread: sql<number>`SUM(${conversations.unreadCount})` 
+      })
+        .from(conversations)
+        .where(eq(conversations.userId, userId));
+      
+      return result[0]?.totalUnread || 0;
+    } catch (error) {
+      console.error('Error fetching unread message count:', error);
+      return 0;
     }
   }
 }
