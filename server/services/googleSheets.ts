@@ -49,34 +49,28 @@ export class GoogleSheetsService {
     
     if (clientEmail && privateKey) {
       console.log('Google Sheets: Environment variables found, initializing auth');
-      // Better private key formatting to handle various newline formats
-      let formattedPrivateKey = privateKey;
       
-      // Handle escaped newlines from environment variables
-      if (formattedPrivateKey.includes('\\n')) {
-        formattedPrivateKey = formattedPrivateKey.replace(/\\n/g, '\n');
+      try {
+        // Robust private key normalization to handle various formats
+        const formattedPrivateKey = this.normalizePrivateKey(privateKey);
+        console.log('Google Sheets: Private key normalized successfully');
+        
+        const auth = new google.auth.GoogleAuth({
+          credentials: {
+            client_email: clientEmail,
+            private_key: formattedPrivateKey,
+          },
+          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+        
+        this.sheets = google.sheets({ version: 'v4', auth });
+        
+        // Test authentication with a lightweight call
+        this.testAuthentication();
+      } catch (error) {
+        console.error('Google Sheets: Private key normalization failed:', error);
+        this.sheets = null;
       }
-      
-      // Ensure proper BEGIN/END formatting
-      if (!formattedPrivateKey.includes('\n')) {
-        // If it's a single line, add proper line breaks
-        formattedPrivateKey = formattedPrivateKey
-          .replace(/-----BEGIN PRIVATE KEY-----/, '-----BEGIN PRIVATE KEY-----\n')
-          .replace(/-----END PRIVATE KEY-----/, '\n-----END PRIVATE KEY-----')
-          .replace(/(.{64})/g, '$1\n'); // Add line breaks every 64 characters
-      }
-      
-      console.log('Google Sheets: Private key formatted for authentication');
-      
-      const auth = new google.auth.GoogleAuth({
-        credentials: {
-          client_email: clientEmail,
-          private_key: formattedPrivateKey,
-        },
-        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-      });
-      
-      this.sheets = google.sheets({ version: 'v4', auth });
     } else {
       console.log('Google Sheets: Credentials not found in environment variables - service will use fallback data');
       // Initialize without auth - methods will handle fallback appropriately
@@ -84,6 +78,89 @@ export class GoogleSheetsService {
     }
     
     this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '';
+  }
+
+  /**
+   * Robust private key normalization to handle various formats and edge cases
+   */
+  private normalizePrivateKey(privateKey: string): string {
+    let normalizedKey = privateKey.trim();
+    
+    // Remove surrounding quotes if present
+    if ((normalizedKey.startsWith('"') && normalizedKey.endsWith('"')) ||
+        (normalizedKey.startsWith("'") && normalizedKey.endsWith("'"))) {
+      normalizedKey = normalizedKey.slice(1, -1);
+    }
+    
+    // Handle base64 encoded private key (if GOOGLE_PRIVATE_KEY_BASE64 was used)
+    if (!normalizedKey.includes('-----BEGIN') && normalizedKey.length > 100) {
+      try {
+        normalizedKey = Buffer.from(normalizedKey, 'base64').toString('utf-8');
+      } catch (error) {
+        // Not base64, continue with original
+      }
+    }
+    
+    // Convert escaped newlines to real newlines
+    normalizedKey = normalizedKey.replace(/\\n/g, '\n');
+    
+    // Normalize line endings (CRLF to LF)
+    normalizedKey = normalizedKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Extract the key body between BEGIN/END markers
+    const beginMatch = normalizedKey.match(/-----BEGIN (?:RSA )?PRIVATE KEY-----/);
+    const endMatch = normalizedKey.match(/-----END (?:RSA )?PRIVATE KEY-----/);
+    
+    if (!beginMatch || !endMatch) {
+      throw new Error('Invalid private key format: missing BEGIN/END markers');
+    }
+    
+    const beginMarker = beginMatch[0];
+    const endMarker = endMatch[0];
+    const beginIndex = normalizedKey.indexOf(beginMarker) + beginMarker.length;
+    const endIndex = normalizedKey.indexOf(endMarker);
+    
+    if (beginIndex >= endIndex) {
+      throw new Error('Invalid private key format: malformed structure');
+    }
+    
+    // Extract and clean the base64 body
+    const keyBody = normalizedKey.substring(beginIndex, endIndex);
+    const cleanBody = keyBody.replace(/\s/g, ''); // Remove all whitespace
+    
+    // Validate base64 content
+    if (!/^[A-Za-z0-9+/=]+$/.test(cleanBody)) {
+      throw new Error('Invalid private key format: invalid base64 characters');
+    }
+    
+    // Re-wrap to 64 characters per line
+    const wrappedBody = cleanBody.match(/.{1,64}/g)?.join('\n') || cleanBody;
+    
+    // Reconstruct the private key with proper formatting
+    const reconstructedKey = `${beginMarker}\n${wrappedBody}\n${endMarker}\n`;
+    
+    return reconstructedKey;
+  }
+
+  /**
+   * Test authentication with a lightweight Google Sheets API call
+   */
+  private async testAuthentication(): Promise<void> {
+    if (!this.sheets || !this.spreadsheetId) {
+      return;
+    }
+    
+    try {
+      // Make a lightweight call to test authentication
+      await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+        fields: 'properties.title'
+      });
+      console.log('Google Sheets: Authentication test successful');
+    } catch (error) {
+      console.error('Google Sheets: Authentication test failed:', error);
+      this.sheets = null; // Disable sheets if auth fails
+    }
   }
 
   async fetchArticles(): Promise<Article[]> {
