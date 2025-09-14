@@ -136,7 +136,7 @@ export class RealNewsIngestor {
           source: feed.source,
           sentiment: this.analyzeSentiment(title, description),
           priority: this.assignPriority(title, description),
-          imageUrl: null,
+          imageUrl: this.getContextualImage(title, description, this.categorizeArticle(title, description), Date.now() + Math.random()),
           createdAt: new Date().toISOString(),
           sourceUrl: link,
           primarySourceUrl: link,
@@ -288,6 +288,109 @@ export class RealNewsIngestor {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private getContextualImage(title: string, content: string, type: string, id: number): string {
+    try {
+      const combinedText = (title + ' ' + content).toLowerCase();
+      
+      // Extract the main company being discussed
+      const mainCompany = this.extractCompanyFromContent(combinedText);
+      
+      // Use article ID to ensure different articles get different images
+      const imageVariant = (id % 3) + 1;
+    
+      // Generate images based on the main company being discussed
+      if (mainCompany === 'reliance' || combinedText.includes('ril')) {
+        const relianceImages = [
+          'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&h=600&fit=crop&auto=format&q=80', // Oil refinery
+          'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&h=600&fit=crop&auto=format&q=80', // Industrial
+          'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop&auto=format&q=80'  // Energy
+        ];
+        return relianceImages[imageVariant - 1];
+      }
+      
+      if (mainCompany === 'tcs' || mainCompany === 'tata consultancy' || mainCompany === 'infosys') {
+        const techImages = [
+          'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop&auto=format&q=80', // Office building
+          'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', // Business analytics
+          'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=600&fit=crop&auto=format&q=80'  // Software dev
+        ];
+        return techImages[imageVariant - 1];
+      }
+
+      if (mainCompany === 'hdfc' || mainCompany === 'icici' || combinedText.includes('bank')) {
+        const bankImages = [
+          'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=800&h=600&fit=crop&auto=format&q=80', // Banking
+          'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format&q=80', // Finance
+          'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop&auto=format&q=80'  // Investment
+        ];
+        return bankImages[imageVariant - 1];
+      }
+
+      if (combinedText.includes('defence') || combinedText.includes('defense') || mainCompany === 'hal') {
+        const defenceImages = [
+          'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=800&h=600&fit=crop&auto=format&q=80', // Military/Defense
+          'https://images.unsplash.com/photo-1552664688-cf412ec27db2?w=800&h=600&fit=crop&auto=format&q=80', // Aircraft
+          'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format&q=80'  // Security
+        ];
+        return defenceImages[imageVariant - 1];
+      }
+
+      if (combinedText.includes('ipo') || combinedText.includes('listing')) {
+        const ipoImages = [
+          'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Stock market
+          'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Trading
+          'https://images.unsplash.com/photo-1634733988138-bf2c3a2a13fa?w=800&h=600&fit=crop&auto=format&q=80'  // IPO/Listing
+        ];
+        return ipoImages[imageVariant - 1];
+      }
+
+      // Default fallback images based on sentiment
+      if (combinedText.includes('profit') || combinedText.includes('gain') || combinedText.includes('rise')) {
+        const positiveImages = [
+          'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Bull market
+          'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Growth
+          'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=800&h=600&fit=crop&auto=format&q=80'  // Success
+        ];
+        return positiveImages[imageVariant - 1];
+      }
+
+      // Generic market images as final fallback
+      const defaultImages = [
+        'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80', // Stock market
+        'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80', // Financial charts
+        'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=800&h=600&fit=crop&auto=format&q=80'  // Business
+      ];
+      return defaultImages[imageVariant - 1];
+      
+    } catch (error) {
+      console.error('Error generating contextual image:', error);
+      return 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80';
+    }
+  }
+
+  private extractCompanyFromContent(text: string): string | null {
+    // Major Indian companies - extract the most prominent one mentioned
+    const companies = [
+      'reliance', 'tcs', 'tata consultancy', 'infosys', 'hdfc', 'icici', 'adani', 'bajaj',
+      'maruti', 'suzuki', 'asian paints', 'wipro', 'hcl', 'titan', 'ultratech', 'grse',
+      'cochin shipyard', 'coal india', 'ongc', 'ntpc', 'trent', 'indusind', 'blue star',
+      'zensar', 'kaynes', 'kp green', 'nbcc', 'bharti airtel', 'hindalco', 'jsw steel',
+      'mahindra', 'hero motocorp', 'kotak mahindra', 'axis bank', 'sun pharma', 'dr reddy',
+      'cipla', 'lupin', 'biocon', 'divis', 'aurobindo pharma', 'vedanta', 'hindalco',
+      'tata steel', 'jio', 'airtel', 'vodafone idea', 'bpcl', 'ioc', 'gail', 'power grid',
+      'sail', 'bhel', 'hal', 'irctc', 'irfc', 'rvnl', 'pfc', 'rec', 'sjvn', 'nhpc'
+    ];
+    
+    // Find the first company mentioned (most likely the main subject)
+    for (const company of companies) {
+      if (text.includes(company)) {
+        return company;
+      }
+    }
+    
+    return null;
   }
 }
 
