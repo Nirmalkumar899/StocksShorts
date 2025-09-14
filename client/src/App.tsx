@@ -19,7 +19,7 @@ import SplashScreen from "@/components/splash-screen";
 function Router() {
   const [location, setLocation] = useLocation();
   
-  // Temporarily disable splash screen for debugging
+  // Force rebuild to clear cache
   // const [showSplash, setShowSplash] = useState(true);
   
   // // Show splash screen for 1 second on first load
@@ -86,6 +86,9 @@ function Router() {
         {() => <SebiRiaNew onBack={() => window.history.back()} />}
       </Route>
       <Route path="/sebi-ria/register">
+        {() => <SebiRiaRegister onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/sebi-ria-register">
         {() => <SebiRiaRegister onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">

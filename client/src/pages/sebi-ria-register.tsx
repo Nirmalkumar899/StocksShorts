@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, CheckCircle, Shield, AlertTriangle, User, Plus, Minus, Upload, Building, Globe, FileText, Users, Award, Phone, MapPin } from "@/lib/icons";
+import { ArrowLeft, CheckCircle, Shield, AlertTriangle, User, Plus, Minus, FileText, MapPin, Globe, Users, Star, Phone } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -368,7 +368,7 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
                 {/* PROFESSIONAL INFORMATION SECTION */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                    <Award className="h-5 w-5 text-blue-600" />
+                    <Star className="h-5 w-5 text-blue-600" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                       Professional Information
                     </h3>
@@ -974,7 +974,7 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
                 {/* FILE UPLOADS SECTION */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                    <Upload className="h-5 w-5 text-blue-600" />
+                    <FileText className="h-5 w-5 text-blue-600" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                       File Uploads
                     </h3>
