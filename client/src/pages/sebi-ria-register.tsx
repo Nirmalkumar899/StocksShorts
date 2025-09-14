@@ -348,7 +348,7 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <User className="h-12 w-12 mx-auto mb-4" />
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Register as SEBI Investment Advisor
+            Register as SEBI Investment Advisor - NEW VERSION
           </h1>
           <p className="text-lg text-blue-100">
             Join our network of verified financial professionals
