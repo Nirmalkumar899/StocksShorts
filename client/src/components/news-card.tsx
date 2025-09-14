@@ -230,9 +230,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   return (
     <>
       <div 
-        className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
+        className={`w-full flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
           getSentimentBorderColor()
-        } hover:shadow-lg transition-shadow duration-200`}
+        } hover:shadow-lg transition-shadow duration-200 rounded-lg`}
         onClick={(e) => {
           // Check if this is a special article that requires authentication
           if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
@@ -250,12 +250,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           onClick();
         }}
       >
-        {/* Article Content Container - Inshorts Style */}
-        <div className="flex flex-col h-full">
+        {/* Article Content Container - Traditional feed style */}
+        <div className="flex flex-col">
 
 
           {/* Image Section (Top - Full Width) */}
-          <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
+          <div className="w-full h-48 relative bg-gray-100 dark:bg-gray-800 rounded-t-lg overflow-hidden">
             <img
               src={article.imageUrl || getContextualImage(article)}
               alt={article.title}
@@ -276,8 +276,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
 
           {/* Content Section (Bottom - Full Width) */}
-          <div className="flex-1 p-3 pb-16 flex flex-col justify-between">
-            <div className="h-full flex flex-col">
+          <div className="p-4 flex flex-col">
+            <div className="flex flex-col">
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
@@ -360,17 +360,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           </div>
         </div>
-        
-
-
-        {/* Image Lightbox */}
-        <ImageLightbox
-          src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-          alt={article.title}
-          isOpen={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
-        />
       </div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+        alt={article.title}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+      />
 
       {/* Full Article Modal - Enhanced for all screens */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

@@ -413,10 +413,10 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          // News Cards - Inshorts style full-screen layout with seamless transitions
+          // News Cards - Traditional feed layout showing multiple articles
           <div 
             ref={scrollContainerRef}
-            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide transition-all duration-200 ease-in-out"
+            className="h-full overflow-y-auto scrollbar-hide transition-all duration-200 ease-in-out"
             onScroll={(e) => {
               const element = e.target as HTMLElement;
               const currentScrollTop = element.scrollTop;
@@ -425,17 +425,19 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               lastScrollTopRef.current = currentScrollTop;
             }}
           >
-            {articles.map((article) => (
-              <div key={article.id} className="min-h-[400px] h-full snap-start">
-                <NewsCard
-                  article={article}
-                  onClick={() => handleArticleClick(article)}
-                  onShare={(e) => handleShare(e, article)}
-                  isExpanded={expandedArticles.has(article.id)}
-                  onToggleExpanded={() => handleToggleExpanded(article.id)}
-                />
-              </div>
-            ))}
+            <div className="space-y-4 p-4">
+              {articles.map((article) => (
+                <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                  <NewsCard
+                    article={article}
+                    onClick={() => handleArticleClick(article)}
+                    onShare={(e) => handleShare(e, article)}
+                    isExpanded={expandedArticles.has(article.id)}
+                    onToggleExpanded={() => handleToggleExpanded(article.id)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
