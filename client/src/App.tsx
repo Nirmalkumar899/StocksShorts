@@ -13,7 +13,6 @@ import SebiRiaRegister from "@/pages/sebi-ria-register";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
-import AISection from "@/pages/ai-section";
 import GmailConnect from "@/pages/GmailConnect";
 import SplashScreen from "@/components/splash-screen";
 
@@ -94,12 +93,6 @@ function Router() {
       </Route>
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/ai-analysis">
-        {() => <AISection onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/ai-section">
-        {() => <AISection onBack={() => window.history.back()} />}
       </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
       <Route path="/disclaimer">
