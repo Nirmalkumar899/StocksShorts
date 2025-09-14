@@ -1,5 +1,6 @@
 import { Article } from '@shared/schema';
 import axios from 'axios';
+import { BSEAnnouncementProcessor } from './bseAnnouncementProcessor';
 
 interface RSSItem {
   title: string;
@@ -30,6 +31,12 @@ interface VerifiedArticle {
 }
 
 export class RealNewsIngestor {
+  private bseProcessor: BSEAnnouncementProcessor;
+  
+  constructor() {
+    this.bseProcessor = new BSEAnnouncementProcessor();
+  }
+  
   private readonly RSS_FEEDS = [
     // Official Exchange Sources (Highest Priority)
     {
@@ -96,6 +103,20 @@ export class RealNewsIngestor {
     const todayIST = this.getTodayInIST();
     const yesterdayIST = new Date(todayIST);
     yesterdayIST.setDate(yesterdayIST.getDate() - 1);
+    
+    // First, fetch BSE announcements with target keywords
+    try {
+      console.log('🏛️ Fetching BSE announcements with regulatory keywords...');
+      const bseAnnouncements = await this.bseProcessor.fetchAndProcessBSEAnnouncements();
+      console.log(`✅ Found ${bseAnnouncements.length} BSE announcements matching target keywords`);
+      
+      // Convert BSE announcements to Article format
+      for (const announcement of bseAnnouncements) {
+        allArticles.push(announcement);
+      }
+    } catch (error) {
+      console.error('Error fetching BSE announcements:', error);
+    }
     
     for (const feed of this.RSS_FEEDS) {
       try {
