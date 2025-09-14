@@ -272,7 +272,7 @@ function HowItWorksSection() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            How InvestConnect Works
+            How SEBI RIA Directory Works
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
             Get expert investment advice in just 3 simple steps
@@ -446,7 +446,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">InvestConnect</h1>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">SEBI RIA Directory</h1>
         <div className="w-10" />
       </div>
 
