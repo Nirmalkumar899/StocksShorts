@@ -317,11 +317,13 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     </button>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-3 min-h-[60px]">
-                    {article.content?.trim() || 'No content available.'}
-                    {article.content && article.content.trim().length < 100 && (
-                      <div className="mt-2 text-blue-600 dark:text-blue-400 text-xs">
-                        Tap to read full article
+                  <div className="mb-3">
+                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-base mb-2 min-h-[80px] p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {article.content?.trim() || 'No content available.'}
+                    </div>
+                    {article.content && article.content.trim().length < 150 && (
+                      <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                        👆 Tap article to read more details
                       </div>
                     )}
                   </div>
