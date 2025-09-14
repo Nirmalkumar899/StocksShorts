@@ -14,7 +14,7 @@ export class NewsCache {
     isRefreshing: false
   };
 
-  private readonly REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes like Inshorts
+  private readonly REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes for fresher content
   private readonly MAX_ARTICLES = 120; // Keep 120 articles, show latest 100
   private readonly MAX_DAYS_OLD = 2; // Only keep articles from last 2 days + today
   private refreshTimer?: NodeJS.Timeout;
@@ -88,7 +88,7 @@ export class NewsCache {
       this.refreshArticles();
     }, this.REFRESH_INTERVAL);
 
-    console.log('📰 News refresh cycle started - refreshing every 10 minutes');
+    console.log('📰 News refresh cycle started - refreshing every 15 minutes');
   }
 
   private async refreshArticles() {
@@ -121,9 +121,18 @@ export class NewsCache {
       // Merge filtered articles
       const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
       
-      // Sort by time (newest first) and keep only MAX_ARTICLES
+      // Sort by priority (Breakout Stocks & Analyst first), then by time (newest first)
       const sortedArticles = allArticles
         .sort((a, b) => {
+          // Priority categories: breakout-stocks and research-report (analyst)
+          const isPriorityA = ['breakout-stocks', 'research-report'].includes(a.type);
+          const isPriorityB = ['breakout-stocks', 'research-report'].includes(b.type);
+          
+          // If one is priority and other isn't, priority comes first
+          if (isPriorityA && !isPriorityB) return -1;
+          if (!isPriorityA && isPriorityB) return 1;
+          
+          // If both are same priority level, sort by time (newest first)
           const timeA = a.time ? new Date(a.time).getTime() : 0;
           const timeB = b.time ? new Date(b.time).getTime() : 0;
           return timeB - timeA;
