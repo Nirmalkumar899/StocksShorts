@@ -78,7 +78,7 @@ export class RealNewsIngestor {
   ];
 
   public async ingestTodaysNews(): Promise<Article[]> {
-    console.log('📰 Starting real news ingestion for recent days...');
+    console.log('📰 Starting real news ingestion for today and yesterday...');
     
     const allArticles: Article[] = [];
     const todayIST = this.getTodayInIST();
