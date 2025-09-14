@@ -33,13 +33,6 @@ function HeroSection({ onPrimaryClick, advisorCount }: HeroSectionProps) {
         <p className="text-xl md:text-2xl font-semibold mb-6 text-orange-300">
           First consultation FREE!
         </p>
-        <Button 
-          onClick={onPrimaryClick}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 sm:px-8 py-3 text-lg font-semibold rounded-full mb-6 w-full sm:w-auto whitespace-normal break-words leading-snug text-center"
-          data-testid="hero-start-consulting"
-        >
-          🎯 Available Now - Start Consulting!
-        </Button>
         <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 text-sm">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
