@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, Search, Phone, MessageCircle, Users, MapPin, Filter, Clock, User, Globe, Star, CheckCircle, X } from "@/lib/icons";
+import { ArrowLeft, Search, Phone, MessageCircle, Users, MapPin, Filter, Clock, User, Globe, Star, CheckCircle, X, Calendar } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -86,14 +86,14 @@ export default function AdvisorDirectory({ onBack }: AdvisorDirectoryProps) {
   }, [debouncedSearch, selectedState, selectedCity, statusFilter]);
 
   // Fetch advisors from API
-  const { data, isLoading, error, refetch } = useQuery<AdvisorApiResponse>({
-    queryKey: ['/api/advisors', queryParams],
+  const { data, isLoading, error, refetch } = useQuery<InvestmentAdvisor[]>({
+    queryKey: ['/api/investment-advisors', queryParams],
     enabled: true,
     refetchInterval: 30000, // Refetch every 30 seconds for status updates
   });
 
-  const advisors: InvestmentAdvisor[] = data?.advisors || [];
-  const totalCount = data?.total || 0;
+  const advisors: InvestmentAdvisor[] = data || [];
+  const totalCount = advisors.length;
 
   // Filter advisors by service if selected
   const filteredAdvisors = useMemo(() => {
@@ -145,7 +145,7 @@ export default function AdvisorDirectory({ onBack }: AdvisorDirectoryProps) {
     mutationFn: async (advisorId: number) => {
       return apiRequest('POST', '/api/conversations', { advisorId });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       setLocation(`/chat/${data.conversation.id}`);
     },
@@ -522,25 +522,24 @@ export default function AdvisorDirectory({ onBack }: AdvisorDirectoryProps) {
                       )}
 
                       {/* Consultation Booking */}
-                      {advisor.consultationEnabled && (advisor.consultationFee15min !== null || advisor.consultationFee30min !== null) && (
-                        <div className="mb-3">
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={() => setLocation(`/book-consultation/${advisor.id}`)}
-                            data-testid={`button-book-consultation-${advisor.id}`}
-                          >
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Book Consultation
+                      <div className="mb-3">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => setLocation(`/book-consultation/${advisor.id}`)}
+                          data-testid={`button-book-consultation-${advisor.id}`}
+                        >
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Book Consultation
+                          {(advisor.consultationFee15min || advisor.consultationFee30min) && (
                             <span className="ml-2 text-xs bg-blue-500 px-2 py-1 rounded">
                               {advisor.consultationFee15min && `₹${parseFloat(advisor.consultationFee15min.toString())}`}
-                              {advisor.consultationFee15min && advisor.consultationFee30min && ' | '}
-                              {advisor.consultationFee30min && `₹${parseFloat(advisor.consultationFee30min.toString())}`}
+                              {!advisor.consultationFee15min && advisor.consultationFee30min && `₹${parseFloat(advisor.consultationFee30min.toString())}`}
                             </span>
-                          </Button>
-                        </div>
-                      )}
+                          )}
+                        </Button>
+                      </div>
 
                       {/* Contact Buttons */}
                       <div className="space-y-2">
