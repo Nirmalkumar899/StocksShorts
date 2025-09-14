@@ -18,6 +18,7 @@ import ArticlePage from "@/pages/article-new";
 import GmailConnect from "@/pages/GmailConnect";
 import Conversations from "@/pages/conversations";
 import Chat from "@/pages/chat";
+import BookConsultation from "@/pages/book-consultation";
 import SplashScreen from "@/components/splash-screen";
 
 function Router() {
@@ -113,6 +114,12 @@ function Router() {
       </Route>
       <Route path="/chat/:conversationId">
         {(params) => <Chat conversationId={params.conversationId} />}
+      </Route>
+      <Route path="/book-consultation/:advisorId">
+        {(params) => <BookConsultation advisorId={params.advisorId} onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/book-consultation">
+        {() => <BookConsultation onBack={() => window.history.back()} />}
       </Route>
       <Route path="/disclaimer">
         {() => <Home />}

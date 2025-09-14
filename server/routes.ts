@@ -499,6 +499,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check teleconsultation availability for a specific advisor and date
+  app.get('/api/teleconsultations/availability/:advisorId', async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.advisorId);
+      const date = req.query.date as string; // Format: YYYY-MM-DD
+
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+
+      if (!date || !date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD' });
+      }
+
+      // Get existing bookings for the advisor on the specified date
+      const existingBookings = await storage.getAdvisorBookingsForDate(advisorId, date);
+      
+      res.json(existingBookings);
+
+    } catch (error) {
+      console.error('Error checking teleconsultation availability:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to check availability'
+      });
+    }
+  });
+
+  // Check if user is eligible for free consultation with specific advisor
+  app.get('/api/teleconsultations/check-free-eligibility/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const advisorId = parseInt(req.params.advisorId);
+      const userId = (req.session as any).userId;
+
+      if (isNaN(advisorId)) {
+        return res.status(400).json({ message: 'Invalid advisor ID' });
+      }
+
+      // Check eligibility using existing storage method
+      const eligible = await storage.canBookFreeConsultation(userId, advisorId);
+      
+      // Get usage details for response
+      const usage = await storage.getUserConsultationUsage(userId, advisorId);
+      const advisor = await storage.getAdvisor(advisorId);
+      
+      if (!advisor) {
+        return res.status(404).json({ message: 'Advisor not found' });
+      }
+
+      const freeConsultationsUsed = usage?.freeConsultationsUsed || 0;
+      const freeConsultationsLimit = advisor.freeConsultationsPerUser === -1 ? -1 : (advisor.freeConsultationsPerUser || 1);
+
+      res.json({
+        eligible,
+        freeConsultationsUsed,
+        freeConsultationsLimit,
+        remainingFreeConsultations: freeConsultationsLimit === -1 ? -1 : Math.max(0, freeConsultationsLimit - freeConsultationsUsed)
+      });
+
+    } catch (error) {
+      console.error('Error checking free consultation eligibility:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to check eligibility'
+      });
+    }
+  });
+
+  // Book a teleconsultation
+  app.post('/api/teleconsultations/book', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { advisorId, duration, scheduledAt, fee, notes } = req.body;
+
+      // Validate input
+      const bookingSchema = z.object({
+        advisorId: z.number().int().positive(),
+        duration: z.enum(['15min', '30min']),
+        scheduledAt: z.string().transform(str => new Date(str)),
+        fee: z.number().min(0).max(10000),
+        notes: z.string().max(500).optional()
+      });
+
+      const validationResult = bookingSchema.safeParse({ advisorId, duration, scheduledAt, fee, notes });
+      if (!validationResult.success) {
+        return res.status(400).json({
+          message: 'Invalid booking data',
+          errors: validationResult.error.errors
+        });
+      }
+
+      const { advisorId: validAdvisorId, duration: validDuration, scheduledAt: validScheduledAt, fee: validFee, notes: validNotes } = validationResult.data;
+
+      // Check if advisor exists and consultations are enabled
+      const advisor = await storage.getAdvisor(validAdvisorId);
+      if (!advisor || !advisor.consultationEnabled) {
+        return res.status(400).json({ 
+          message: 'Advisor not available for consultations' 
+        });
+      }
+
+      // Check if the duration is available for this advisor
+      const isDurationAvailable = validDuration === '15min' ? 
+        advisor.consultationFee15min !== null :
+        advisor.consultationFee30min !== null;
+
+      if (!isDurationAvailable) {
+        return res.status(400).json({
+          message: `${validDuration} consultations not available with this advisor`
+        });
+      }
+
+      // Validate scheduled time is in the future
+      if (validScheduledAt <= new Date()) {
+        return res.status(400).json({
+          message: 'Consultation must be scheduled for a future time'
+        });
+      }
+
+      // Check for booking conflicts
+      const conflictingBookings = await storage.checkBookingConflicts(validAdvisorId, validScheduledAt, validDuration);
+      if (conflictingBookings.length > 0) {
+        return res.status(409).json({
+          message: 'Time slot is no longer available'
+        });
+      }
+
+      // For free consultations, verify eligibility
+      if (validFee === 0) {
+        const canBookFree = await storage.canBookFreeConsultation(userId, validAdvisorId);
+        if (!canBookFree) {
+          return res.status(400).json({
+            message: 'You have used all free consultations with this advisor'
+          });
+        }
+      }
+
+      // Generate unique room ID for video call
+      const roomId = `consultation-${validAdvisorId}-${userId}-${Date.now()}`;
+
+      // Create teleconsultation
+      const consultation = await storage.createTeleconsultation({
+        advisorId: validAdvisorId,
+        userId,
+        duration: validDuration,
+        scheduledAt: validScheduledAt,
+        status: 'scheduled',
+        fee: validFee.toString(),
+        roomId,
+        notes: validNotes || null
+      });
+
+      // Update usage tracking if it's a free consultation
+      if (validFee === 0) {
+        await storage.incrementFreeConsultationUsage(userId, validAdvisorId);
+      }
+
+      res.status(201).json({
+        message: 'Consultation booked successfully',
+        consultation: {
+          id: consultation.id,
+          advisorId: consultation.advisorId,
+          duration: consultation.duration,
+          scheduledAt: consultation.scheduledAt,
+          status: consultation.status,
+          fee: consultation.fee,
+          roomId: consultation.roomId,
+          notes: consultation.notes
+        }
+      });
+
+    } catch (error) {
+      console.error('Error booking teleconsultation:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to book consultation'
+      });
+    }
+  });
+
   // Force refresh news cache (for testing and manual refresh)
   app.post("/api/refresh-news", async (req, res) => {
     try {

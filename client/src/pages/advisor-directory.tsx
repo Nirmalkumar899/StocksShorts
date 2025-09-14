@@ -521,14 +521,35 @@ export default function AdvisorDirectory({ onBack }: AdvisorDirectoryProps) {
                         </div>
                       )}
 
+                      {/* Consultation Booking */}
+                      {advisor.consultationEnabled && (advisor.consultationFee15min !== null || advisor.consultationFee30min !== null) && (
+                        <div className="mb-3">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={() => setLocation(`/book-consultation/${advisor.id}`)}
+                            data-testid={`button-book-consultation-${advisor.id}`}
+                          >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Book Consultation
+                            <span className="ml-2 text-xs bg-blue-500 px-2 py-1 rounded">
+                              {advisor.consultationFee15min && `₹${parseFloat(advisor.consultationFee15min.toString())}`}
+                              {advisor.consultationFee15min && advisor.consultationFee30min && ' | '}
+                              {advisor.consultationFee30min && `₹${parseFloat(advisor.consultationFee30min.toString())}`}
+                            </span>
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Contact Buttons */}
                       <div className="space-y-2">
                         <div className="flex gap-2">
                           {advisor.displayPhone && advisor.whatsappNumber && (
                             <Button
-                              variant="default"
+                              variant="outline"
                               size="sm"
-                              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                              className="flex-1 border-green-600 text-green-600 hover:bg-green-50"
                               onClick={() => handleWhatsAppContact(advisor)}
                               data-testid={`button-whatsapp-${advisor.id}`}
                             >
