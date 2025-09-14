@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import SebiRiaNew from "@/pages/sebi-ria-new";
 import SebiRiaRegister from "@/pages/sebi-ria-register";
+import AdvisorDashboard from "@/pages/advisor-dashboard";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
@@ -90,6 +91,9 @@ function Router() {
       </Route>
       <Route path="/sebi-ria-register">
         {() => <SebiRiaRegister onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/advisor-dashboard">
+        {() => <AdvisorDashboard onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">
         {() => <Contact onBack={() => window.history.back()} />}

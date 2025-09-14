@@ -829,6 +829,44 @@ CONTENT: [Hindi translation]`;
     }
   });
   
+  // Get current user's advisor profile - SECURE ENDPOINT
+  app.get('/api/advisors/me', mobileAuth.isAuthenticated, async (req, res) => {
+    try {
+      // Get session user
+      const sessionUserId = (req.session as any).userId;
+      const sessionUser = await storage.getUser(sessionUserId);
+      
+      if (!sessionUser || !sessionUser.email) {
+        return res.status(401).json({ 
+          message: 'Session user not found or email missing' 
+        });
+      }
+      
+      // Find advisor record by email
+      const advisors = await storage.listInvestmentAdvisors();
+      const currentAdvisor = advisors.find(advisor => advisor.email === sessionUser.email);
+      
+      if (!currentAdvisor) {
+        return res.status(404).json({ 
+          message: 'Advisor profile not found for current user',
+          hint: 'Please register as an advisor first' 
+        });
+      }
+      
+      // Return only current user's advisor data
+      res.json({
+        advisor: currentAdvisor,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Error fetching current user advisor:', error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : 'Failed to fetch advisor profile'
+      });
+    }
+  });
+  
   // Advisor Directory
   app.get('/api/advisors', async (req, res) => {
     try {
