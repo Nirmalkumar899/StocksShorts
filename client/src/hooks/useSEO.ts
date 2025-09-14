@@ -10,19 +10,14 @@ interface SEOConfig {
 
 const seoPages: Record<string, SEOConfig> = {
   '/': {
-    title: 'StocksShorts - Real-time Indian Stock Market News & AI Analysis',
-    description: 'Get instant Indian stock market updates, AI-powered stock analysis, live Nifty/Sensex tracking, IPO insights, and connect with SEBI registered investment advisors.',
+    title: 'StocksShorts - Real-time Indian Stock Market News',
+    description: 'Get instant Indian stock market updates, live Nifty/Sensex tracking, IPO insights, and connect with SEBI registered investment advisors.',
     keywords: 'Indian stock market news, Nifty 50, Bank Nifty, Sensex, real-time market updates'
   },
   '/trending': {
     title: 'Trending Stocks Today - Top Indian Market Movers | StocksShorts',
     description: 'Latest trending stocks in Indian market today. Real-time updates on top gainers, losers, and most active stocks on NSE and BSE.',
     keywords: 'trending stocks, top gainers, market movers, NSE trending, BSE trending'
-  },
-  '/ai-news': {
-    title: 'AI-Powered Stock Market News & Analysis | StocksShorts',
-    description: 'AI-generated stock market insights, breakout alerts, technical analysis, and investment recommendations for Indian stocks.',
-    keywords: 'AI stock analysis, automated trading signals, AI market news, stock recommendations'
   },
   '/special': {
     title: 'StocksShorts Special Reports - Exclusive Market Analysis',
