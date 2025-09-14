@@ -15,7 +15,7 @@ export class NewsCache {
   };
 
   private readonly REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes like Inshorts
-  private readonly MAX_ARTICLES = 120; // Keep 120 articles, show latest 100
+  private readonly MAX_ARTICLES = 200; // Keep 200 articles, minimum 50 guaranteed
   private readonly MAX_DAYS_OLD = 2; // Only keep articles from last 2 days + today
   private refreshTimer?: NodeJS.Timeout;
 
