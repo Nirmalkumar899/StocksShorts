@@ -423,8 +423,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
-        <div className="flex items-center justify-center p-4 border-b">
-          <h1 className="text-lg font-semibold">Connect with SEBI RIA</h1>
+        <div className="p-4 border-b">
         </div>
         <div className="flex-1 p-4 space-y-4">
           {[1, 2, 3, 4].map(i => (
@@ -438,9 +437,7 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <div className="w-10" />
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">SEBI RIA Directory</h1>
+      <div className="flex items-center justify-end p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <Button 
           variant="outline" 
           size="sm"
