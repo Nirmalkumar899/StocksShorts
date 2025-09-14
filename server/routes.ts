@@ -61,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add request timeout for deployment stability - except AI and translation endpoints
   app.use((req, res, next) => {
     // Skip timeout for AI and translation endpoints as they need more time
-    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query') {
+    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || req.path === '/api/articles/refresh') {
       return next();
     }
     
@@ -137,10 +137,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Set cache headers and respond (avoid duplicate headers)
-      res.set({
-        'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
-        'Content-Type': 'application/json; charset=utf-8'
-      });
+      if (!res.headersSent) {
+        res.set({
+          'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
+          'Content-Type': 'application/json; charset=utf-8'
+        });
+      }
       
       return res.json(sortedArticles);
     } catch (error) {

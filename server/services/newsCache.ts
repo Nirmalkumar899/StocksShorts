@@ -142,9 +142,13 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty and not currently refreshing, initialize it
+    // If cache is empty and not currently refreshing, start background initialization
     if (this.cache.articles.length === 0 && !this.cache.isRefreshing) {
-      await this.initializeCache();
+      // Don't await - run initialization in background to avoid timeout
+      this.initializeCache();
+      // Return empty array for now, cache will be populated in background
+      console.log('📊 Cache empty, starting background initialization...');
+      return [];
     }
     
     // Check if we need to refresh (if cache is old)
