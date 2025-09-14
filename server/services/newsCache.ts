@@ -20,9 +20,8 @@ export class NewsCache {
   private refreshTimer?: NodeJS.Timeout;
 
   constructor() {
-    // Start automatic refresh cycle
-    this.startRefreshCycle();
     // Cache will be lazily initialized on first request to avoid startup delay
+    // Refresh cycle will be started manually after server startup
   }
 
   private async initializeCache() {
@@ -81,7 +80,7 @@ export class NewsCache {
     ];
   }
 
-  private startRefreshCycle() {
+  public startRefreshCycle() {
     // Refresh articles every 10 minutes
     this.refreshTimer = setInterval(() => {
       this.refreshArticles();

@@ -27,7 +27,7 @@ import { gmailTracker } from "./services/gmailTracker";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export function registerRoutes(app: Express): Server {
   // Health check endpoint
   app.get('/health', (req, res) => {
     res.json({
@@ -131,6 +131,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const category = req.query.category as string;
       console.log('🔍 Requested category:', category);
       
+      // Prevent aggressive browser caching of articles
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       // Get articles from cache (automatically refreshes if needed)
       const articles = await newsCache.getArticles(category);
       
@@ -153,12 +158,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return timeB - timeA;
       });
       
-      // Set cache headers and respond (avoid duplicate headers)
+      // Ensure no caching conflicts
       if (!res.headersSent) {
-        res.set({
-          'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
-          'Content-Type': 'application/json; charset=utf-8'
-        });
+        res.set('Content-Type', 'application/json; charset=utf-8');
       }
       
       return res.json(sortedArticles);

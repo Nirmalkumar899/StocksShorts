@@ -112,7 +112,7 @@ app.use((req, res, next) => {
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('PORT:', process.env.PORT);
     
-    const server = await registerRoutes(app);
+    const server = registerRoutes(app);
     console.log('Routes registered successfully');
 
   // Add a health check route for external domains
@@ -162,28 +162,38 @@ app.use((req, res, next) => {
     }
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
-  } else {
-    setupProductionStatic(app);
-  }
-
-    // Use environment port for Replit deployment, fallback to 5000 for local development
-    const port = process.env.PORT || 5000;
-    server.listen(port, "0.0.0.0", () => {
-      log(`serving on port ${port}`);
-      
-      // Start background news ingestion after server is listening
-      setImmediate(() => {
-        console.log('🔄 Starting background news cache warm-up...');
-        newsCache.forceRefresh().catch(error => {
-          console.error('❌ Background news warm-up failed:', error);
-        });
-      });
+  // Use environment port for Replit deployment, fallback to 5000 for local development
+  const port = parseInt(process.env.PORT || '5000', 10);
+  
+  // Start server listening immediately to avoid timeout
+  console.log(`🚀 About to listen on port ${port}...`);
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`✅ Server listening on port ${port}!`);
+    log(`serving on port ${port}`);
+    
+    // Run heavy operations in background after server is listening
+    setImmediate(async () => {
+      try {
+        // Setup Vite in development mode (background)
+        if (process.env.NODE_ENV === "development") {
+          console.log('🔧 Setting up Vite in background...');
+          await setupVite(app, server);
+          console.log('✅ Vite setup completed');
+        } else {
+          setupProductionStatic(app);
+        }
+        
+        // Start news cache refresh cycle and warm-up (background)
+        console.log('🔄 Starting news cache system...');
+        newsCache.startRefreshCycle();
+        await newsCache.forceRefresh();
+        console.log('✅ News cache system started');
+        
+      } catch (error) {
+        console.error('❌ Background setup failed:', error);
+      }
     });
+  });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
