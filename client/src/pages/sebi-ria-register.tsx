@@ -16,6 +16,7 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useSEO } from "@/hooks/useSEO";
+import { useToast } from "@/hooks/use-toast";
 
 interface SebiRiaRegisterProps {
   onBack: () => void;
@@ -125,7 +126,12 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
   });
 
   const [isSuccess, setIsSuccess] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -197,6 +203,45 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
     name: "socialMediaLinks"
   });
 
+  const sendOtpMutation = useMutation({
+    mutationFn: (phoneNumber: string) => apiRequest("POST", "/api/auth/send-otp", { phoneNumber }),
+    onSuccess: () => {
+      setOtpSent(true);
+      toast({
+        title: "OTP Sent",
+        description: "Please check your phone for the verification code.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to send OTP. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const verifyOtpMutation = useMutation({
+    mutationFn: ({ phoneNumber, otp }: { phoneNumber: string; otp: string }) => 
+      apiRequest("POST", "/api/auth/verify-otp", { phoneNumber, otp }),
+    onSuccess: () => {
+      setOtpVerified(true);
+      setVerifyingOtp(false);
+      toast({
+        title: "OTP Verified",
+        description: "Phone number verified successfully.",
+      });
+    },
+    onError: (error: any) => {
+      setVerifyingOtp(false);
+      toast({
+        title: "Error",
+        description: error?.message || "Invalid OTP. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const registerMutation = useMutation({
     mutationFn: (data: RegisterFormData) => apiRequest("POST", "/api/investment-advisors", data),
     onSuccess: () => {
@@ -212,10 +257,50 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
     },
     onError: (error: any) => {
       console.error("Registration error:", error);
+      toast({
+        title: "Registration Error",
+        description: error?.message || "Failed to register. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
+  const handleSendOtp = () => {
+    const phoneNumber = form.getValues("professionalPhone");
+    if (!phoneNumber) {
+      toast({
+        title: "Error",
+        description: "Please enter your phone number first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    sendOtpMutation.mutate(phoneNumber);
+  };
+
+  const handleVerifyOtp = () => {
+    const phoneNumber = form.getValues("professionalPhone");
+    if (!otp) {
+      toast({
+        title: "Error",
+        description: "Please enter the OTP.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setVerifyingOtp(true);
+    verifyOtpMutation.mutate({ phoneNumber, otp });
+  };
+
   const onSubmit = (data: RegisterFormData) => {
+    if (!otpVerified) {
+      toast({
+        title: "Error",
+        description: "Please verify your phone number with OTP first.",
+        variant: "destructive",
+      });
+      return;
+    }
     registerMutation.mutate(data);
   };
 
@@ -581,12 +666,55 @@ export default function SebiRiaRegister({ onBack }: SebiRiaRegisterProps) {
                       <FormItem>
                         <FormLabel>Professional Phone *</FormLabel>
                         <FormControl>
-                          <Input
-                            type="tel"
-                            placeholder="+91 9876543210"
-                            {...field}
-                            data-testid="input-professional-phone"
-                          />
+                          <div className="space-y-3">
+                            <Input
+                              type="tel"
+                              placeholder="+91 9876543210"
+                              {...field}
+                              data-testid="input-professional-phone"
+                              disabled={otpVerified}
+                            />
+                            {field.value && !otpVerified && (
+                              <Button
+                                type="button"
+                                onClick={handleSendOtp}
+                                disabled={sendOtpMutation.isPending}
+                                className="w-full"
+                                data-testid="button-send-otp"
+                              >
+                                {sendOtpMutation.isPending ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+                              </Button>
+                            )}
+                            {otpSent && !otpVerified && (
+                              <div className="space-y-3">
+                                <Input
+                                  type="text"
+                                  placeholder="Enter 6-digit OTP"
+                                  value={otp}
+                                  onChange={(e) => setOtp(e.target.value)}
+                                  maxLength={6}
+                                  data-testid="input-otp"
+                                />
+                                <Button
+                                  type="button"
+                                  onClick={handleVerifyOtp}
+                                  disabled={verifyingOtp || verifyOtpMutation.isPending}
+                                  className="w-full"
+                                  data-testid="button-verify-otp"
+                                >
+                                  {verifyingOtp || verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
+                                </Button>
+                              </div>
+                            )}
+                            {otpVerified && (
+                              <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <AlertDescription className="text-green-800 dark:text-green-200">
+                                  Phone number verified successfully!
+                                </AlertDescription>
+                              </Alert>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
