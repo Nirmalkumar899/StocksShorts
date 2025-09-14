@@ -24,8 +24,8 @@ interface VerifiedArticle {
   primarySourceUrl: string | null;
   primarySourceTitle: string | null;
   primarySourcePublishedAt: Date | null;
-  sources: string | null;
-  contentType: string | null;
+  sources: unknown;
+  contentType: string;
   provenanceScore: number;
 }
 
@@ -92,14 +92,14 @@ export class RealNewsIngestor {
   public async ingestTodaysNews(): Promise<Article[]> {
     console.log('📰 Starting real news ingestion for today and yesterday...');
     
-    const allArticles: Article[] = [];
+    const allArticles: VerifiedArticle[] = [];
     const todayIST = this.getTodayInIST();
     const yesterdayIST = new Date(todayIST);
     yesterdayIST.setDate(yesterdayIST.getDate() - 1);
     
     for (const feed of this.RSS_FEEDS) {
       try {
-        console.log(`🔍 Fetching from ${feed.source} (${feed.domain})...`);
+        console.log(`🔍 Fetching from ${feed.source} (${feed.domain}) - live updates...`);
         const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
         const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
         allArticles.push(...todaysArticles, ...yesterdaysArticles);
@@ -167,7 +167,7 @@ export class RealNewsIngestor {
         // const isValidUrl = await this.verifyUrl(link);
         // if (!isValidUrl) continue;
         
-        const verifiedArticle: Article = {
+        const verifiedArticle: VerifiedArticle = {
           id: Date.now() + Math.random(),
           title: this.cleanText(title),
           content: this.generateSummary(description),
@@ -184,7 +184,7 @@ export class RealNewsIngestor {
           primarySourcePublishedAt: articleDate,
           sources: feed.source,
           contentType: 'original-report',
-          provenanceScore: this.calculateProvenanceScore(feed.domain, articleDate)
+          provenanceScore: this.calculateProvenanceScore(feed.domain, articleDate) ?? 0.0
         };
         
         articles.push(verifiedArticle);

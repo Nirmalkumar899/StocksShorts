@@ -190,13 +190,22 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty and not currently refreshing, start background initialization
+    // If cache is empty, wait for initialization to complete
     if (this.cache.articles.length === 0 && !this.cache.isRefreshing) {
-      // Don't await - run initialization in background to avoid timeout
-      this.initializeCache();
-      // Return empty array for now, cache will be populated in background
-      console.log('📊 Cache empty, starting background initialization...');
-      return [];
+      console.log('📊 Cache empty, awaiting initialization...');
+      this.cache.isRefreshing = true;
+      await this.initializeCache();
+      console.log(`📊 Cache initialized with ${this.cache.articles.length} articles`);
+    }
+    
+    // If cache is still empty after initialization, wait for ongoing refresh
+    if (this.cache.articles.length === 0 && this.cache.isRefreshing) {
+      console.log('📊 Waiting for ongoing cache refresh...');
+      // Wait up to 15 seconds for cache to populate
+      for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        if (this.cache.articles.length > 0) break;
+      }
     }
     
     // Check if we need to refresh (if cache is old)
