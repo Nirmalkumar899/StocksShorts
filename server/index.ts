@@ -171,7 +171,7 @@ app.use((req, res, next) => {
   }
 
     // Use environment port for Replit deployment, fallback to 5000 for local development
-    const port = parseInt(process.env.PORT || '5000', 10);
+    const port = process.env.PORT || 5000;
     server.listen(port, "0.0.0.0", () => {
       log(`serving on port ${port}`);
     });
