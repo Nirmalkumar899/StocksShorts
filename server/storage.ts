@@ -105,6 +105,9 @@ export interface IStorage {
   getUserConsultationUsage(userId: string, advisorId: number): Promise<UserConsultationUsage | undefined>;
   incrementFreeConsultationUsage(userId: string, advisorId: number): Promise<void>;
   canBookFreeConsultation(userId: string, advisorId: number): Promise<boolean>;
+  // New methods for conflict checking and availability
+  getAdvisorBookingsForDate(advisorId: number, date: string): Promise<Teleconsultation[]>;
+  checkBookingConflicts(advisorId: number, scheduledAt: Date, duration: '15min' | '30min'): Promise<Teleconsultation[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -864,6 +867,80 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error checking free consultation eligibility:', error);
       return false;
+    }
+  }
+
+  // ATOMIC CONFLICT CHECKING - Security and Double-booking Prevention
+  async getAdvisorBookingsForDate(advisorId: number, date: string): Promise<Teleconsultation[]> {
+    try {
+      // Parse date to get start and end of day for proper filtering
+      const startOfDay = new Date(`${date}T00:00:00.000Z`);
+      const endOfDay = new Date(`${date}T23:59:59.999Z`);
+      
+      const bookings = await db
+        .select()
+        .from(teleconsultations)
+        .where(
+          and(
+            eq(teleconsultations.advisorId, advisorId),
+            gte(teleconsultations.scheduledAt, startOfDay),
+            sql`${teleconsultations.scheduledAt} <= ${endOfDay}`,
+            // Only include scheduled and in-progress bookings for conflict checking
+            or(
+              eq(teleconsultations.status, 'scheduled'),
+              eq(teleconsultations.status, 'in_progress')
+            )
+          )
+        )
+        .orderBy(teleconsultations.scheduledAt);
+      
+      return bookings;
+    } catch (error) {
+      console.error('Error fetching advisor bookings for date:', error);
+      return [];
+    }
+  }
+
+  async checkBookingConflicts(advisorId: number, scheduledAt: Date, duration: '15min' | '30min'): Promise<Teleconsultation[]> {
+    try {
+      // Calculate consultation end time
+      const durationMinutes = duration === '15min' ? 15 : 30;
+      const endTime = new Date(scheduledAt.getTime() + (durationMinutes * 60 * 1000));
+      
+      // Check for overlapping bookings using database-level queries for atomicity
+      const conflicts = await db
+        .select()
+        .from(teleconsultations)
+        .where(
+          and(
+            eq(teleconsultations.advisorId, advisorId),
+            // Only check scheduled and in-progress bookings
+            or(
+              eq(teleconsultations.status, 'scheduled'),
+              eq(teleconsultations.status, 'in_progress')
+            ),
+            // Overlap detection: new booking conflicts if:
+            // 1. New start time is before existing end time AND
+            // 2. New end time is after existing start time
+            sql`(
+              ${scheduledAt} < (
+                ${teleconsultations.scheduledAt} + 
+                CASE 
+                  WHEN ${teleconsultations.duration} = '15min' THEN INTERVAL '15 minutes'
+                  WHEN ${teleconsultations.duration} = '30min' THEN INTERVAL '30 minutes'
+                  ELSE INTERVAL '15 minutes'
+                END
+              )
+              AND
+              ${endTime} > ${teleconsultations.scheduledAt}
+            )`
+          )
+        );
+      
+      return conflicts;
+    } catch (error) {
+      console.error('Error checking booking conflicts:', error);
+      throw error; // Throw error to prevent booking in case of database issues
     }
   }
 }

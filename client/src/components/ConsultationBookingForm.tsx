@@ -16,7 +16,43 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import type { InvestmentAdvisor } from "@shared/schema";
+import type { InvestmentAdvisor, User } from "@shared/schema";
+
+// API Response interfaces for proper TypeScript typing
+interface FreeConsultationEligibilityResponse {
+  eligible: boolean;
+  message?: string;
+}
+
+interface BookConsultationResponse {
+  message: string;
+  consultation: {
+    id: number;
+    advisorId: number;
+    duration: string;
+    scheduledAt: string;
+    status: string;
+    fee: string;
+    roomId: string;
+    notes?: string;
+  };
+}
+
+interface RazorpayOrderResponse {
+  razorpayOrder: {
+    id: string;
+    amount: number;
+    currency: string;
+  };
+  consultationData: any;
+}
+
+interface PaymentVerificationResponse {
+  consultation: {
+    id: number;
+  };
+  message: string;
+}
 
 // Form validation schema
 const bookingFormSchema = z.object({
@@ -75,7 +111,7 @@ export default function ConsultationBookingForm({
   });
 
   // Check if user qualifies for free consultation
-  const { data: freeConsultationEligible, isLoading: checkingEligibility } = useQuery({
+  const { data: freeConsultationEligible, isLoading: checkingEligibility } = useQuery<FreeConsultationEligibilityResponse>({
     queryKey: ['/api/teleconsultations/check-free-eligibility', advisor.id],
     enabled: isAuthenticated && !!advisor.id,
   });
@@ -86,7 +122,7 @@ export default function ConsultationBookingForm({
   const isConsultationServiceAvailable = isConsultationAvailable(advisor, duration);
 
   // Create Razorpay order mutation
-  const createOrderMutation = useMutation({
+  const createOrderMutation = useMutation<RazorpayOrderResponse, Error, any>({
     mutationFn: async (bookingData: any) => {
       return apiRequest('POST', '/api/razorpay/create-order', bookingData);
     },
@@ -100,7 +136,7 @@ export default function ConsultationBookingForm({
   });
 
   // Book consultation mutation
-  const bookConsultationMutation = useMutation({
+  const bookConsultationMutation = useMutation<BookConsultationResponse, Error, any>({
     mutationFn: async (consultationData: any) => {
       return apiRequest('POST', '/api/teleconsultations/book', consultationData);
     },
@@ -128,7 +164,6 @@ export default function ConsultationBookingForm({
       advisorId: advisor.id,
       duration,
       scheduledAt: selectedTimeSlot.toISOString(),
-      fee: 0,
       notes: data.notes || "",
     };
 
@@ -143,7 +178,6 @@ export default function ConsultationBookingForm({
         advisorId: advisor.id,
         duration,
         scheduledAt: selectedTimeSlot.toISOString(),
-        fee: finalFee,
         notes: data.notes || "",
       };
 
@@ -167,7 +201,7 @@ export default function ConsultationBookingForm({
               razorpay_signature: response.razorpay_signature,
             };
 
-            const result = await apiRequest('POST', '/api/razorpay/verify-payment', verificationData);
+            const result = await apiRequest('POST', '/api/razorpay/verify-payment', verificationData) as PaymentVerificationResponse;
             
             queryClient.invalidateQueries({ queryKey: ['/api/teleconsultations'] });
             queryClient.invalidateQueries({ queryKey: ['/api/teleconsultations/availability'] });
@@ -200,9 +234,9 @@ export default function ConsultationBookingForm({
           }
         },
         prefill: {
-          name: user?.name || `${user?.firstName} ${user?.lastName}`,
-          email: user?.email,
-          contact: user?.phoneNumber,
+          name: (user as User)?.name || `${(user as User)?.firstName} ${(user as User)?.lastName}`,
+          email: (user as User)?.email,
+          contact: (user as User)?.phoneNumber,
         },
         theme: {
           color: "#2563eb"

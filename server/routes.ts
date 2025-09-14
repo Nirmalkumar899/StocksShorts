@@ -127,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Teleconsultation and Payment Routes
 
   // Create Razorpay order for teleconsultation payment
-  app.post('/api/create-razorpay-order', mobileAuth.isAuthenticated, async (req, res) => {
+  app.post('/api/razorpay/create-order', mobileAuth.isAuthenticated, async (req, res) => {
     try {
       if (!razorpay) {
         return res.status(500).json({ 
@@ -246,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Verify Razorpay payment and complete teleconsultation booking
-  app.post('/api/verify-razorpay-payment', mobileAuth.isAuthenticated, async (req, res) => {
+  app.post('/api/razorpay/verify-payment', mobileAuth.isAuthenticated, async (req, res) => {
     try {
       if (!razorpay) {
         return res.status(500).json({ 
@@ -500,10 +500,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check teleconsultation availability for a specific advisor and date
-  app.get('/api/teleconsultations/availability/:advisorId', async (req, res) => {
+  // Supports both patterns: /:advisorId/:date and /:advisorId?date=YYYY-MM-DD
+  app.get('/api/teleconsultations/availability/:advisorId/:date?', async (req, res) => {
     try {
       const advisorId = parseInt(req.params.advisorId);
-      const date = req.query.date as string; // Format: YYYY-MM-DD
+      // Support both path param and query param for date
+      const date = req.params.date || req.query.date as string; // Format: YYYY-MM-DD
 
       if (isNaN(advisorId)) {
         return res.status(400).json({ message: 'Invalid advisor ID' });
@@ -516,7 +518,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get existing bookings for the advisor on the specified date
       const existingBookings = await storage.getAdvisorBookingsForDate(advisorId, date);
       
-      res.json(existingBookings);
+      // Return only necessary time slot information, not full booking details for security
+      const timeSlots = existingBookings.map(booking => ({
+        scheduledAt: booking.scheduledAt,
+        duration: booking.duration,
+        status: booking.status
+      }));
+      
+      res.json(timeSlots);
 
     } catch (error) {
       console.error('Error checking teleconsultation availability:', error);
@@ -569,18 +578,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/teleconsultations/book', mobileAuth.isAuthenticated, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
-      const { advisorId, duration, scheduledAt, fee, notes } = req.body;
+      const { advisorId, duration, scheduledAt, notes } = req.body;
 
-      // Validate input
+      // Validate input - REMOVED client-provided fee for security
       const bookingSchema = z.object({
         advisorId: z.number().int().positive(),
         duration: z.enum(['15min', '30min']),
         scheduledAt: z.string().transform(str => new Date(str)),
-        fee: z.number().min(0).max(10000),
         notes: z.string().max(500).optional()
       });
 
-      const validationResult = bookingSchema.safeParse({ advisorId, duration, scheduledAt, fee, notes });
+      const validationResult = bookingSchema.safeParse({ advisorId, duration, scheduledAt, notes });
       if (!validationResult.success) {
         return res.status(400).json({
           message: 'Invalid booking data',
@@ -588,7 +596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { advisorId: validAdvisorId, duration: validDuration, scheduledAt: validScheduledAt, fee: validFee, notes: validNotes } = validationResult.data;
+      const { advisorId: validAdvisorId, duration: validDuration, scheduledAt: validScheduledAt, notes: validNotes } = validationResult.data;
 
       // Check if advisor exists and consultations are enabled
       const advisor = await storage.getAdvisor(validAdvisorId);
@@ -616,41 +624,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check for booking conflicts
+      // SERVER-SIDE FEE CALCULATION - Security Fix
+      // Calculate actual consultation fee based on advisor settings and duration
+      let calculatedFee = 0;
+      let isFreeTier = false;
+      
+      // Check if user is eligible for free consultation
+      const canBookFree = await storage.canBookFreeConsultation(userId, validAdvisorId);
+      
+      if (canBookFree) {
+        // User eligible for free consultation
+        isFreeTier = true;
+        calculatedFee = 0;
+      } else {
+        // User must pay - calculate fee from advisor settings
+        if (validDuration === '15min') {
+          calculatedFee = parseFloat(advisor.consultationFee15min?.toString() || '0');
+        } else {
+          calculatedFee = parseFloat(advisor.consultationFee30min?.toString() || '0');
+        }
+        
+        if (calculatedFee <= 0) {
+          return res.status(400).json({
+            message: `${validDuration} consultations are not available or not priced by this advisor`
+          });
+        }
+      }
+      
+      // Check for booking conflicts with atomic database check
       const conflictingBookings = await storage.checkBookingConflicts(validAdvisorId, validScheduledAt, validDuration);
       if (conflictingBookings.length > 0) {
         return res.status(409).json({
-          message: 'Time slot is no longer available'
+          message: 'Time slot is no longer available',
+          conflictDetails: conflictingBookings.map(b => ({
+            scheduledAt: b.scheduledAt,
+            duration: b.duration
+          }))
         });
-      }
-
-      // For free consultations, verify eligibility
-      if (validFee === 0) {
-        const canBookFree = await storage.canBookFreeConsultation(userId, validAdvisorId);
-        if (!canBookFree) {
-          return res.status(400).json({
-            message: 'You have used all free consultations with this advisor'
-          });
-        }
       }
 
       // Generate unique room ID for video call
       const roomId = `consultation-${validAdvisorId}-${userId}-${Date.now()}`;
 
-      // Create teleconsultation
+      // Create teleconsultation with server-calculated fee
       const consultation = await storage.createTeleconsultation({
         advisorId: validAdvisorId,
         userId,
         duration: validDuration,
         scheduledAt: validScheduledAt,
         status: 'scheduled',
-        fee: validFee.toString(),
+        fee: calculatedFee.toFixed(2), // Convert to string with 2 decimal places as expected by schema
         roomId,
         notes: validNotes || null
       });
 
       // Update usage tracking if it's a free consultation
-      if (validFee === 0) {
+      if (isFreeTier) {
         await storage.incrementFreeConsultationUsage(userId, validAdvisorId);
       }
 
