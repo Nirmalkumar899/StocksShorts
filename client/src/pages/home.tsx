@@ -10,6 +10,7 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
 import NewsCard from '@/components/news-card';
+import FlipArticleViewer from '@/components/flip-article-viewer';
 import BottomNavigation from '@/components/bottom-navigation';
 
 import { VisitorStats } from '@/components/visitor-stats';
@@ -28,13 +29,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
-  const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const lastScrollTopRef = useRef(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Remove all category logic for clean Inshorts-style interface
 
@@ -310,29 +306,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     setLocation(`/article/${article.id}`);
   };
 
-  const handleShare = (e: React.MouseEvent, article: Article) => {
-    e.stopPropagation();
-    // Handle share functionality
-    if (navigator.share) {
-      navigator.share({
-        title: article.title,
-        text: article.content,
-        url: window.location.href,
-      });
-    }
-  };
-
-  const handleToggleExpanded = (articleId: number) => {
-    setExpandedArticles(prev => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(articleId)) {
-        newExpanded.delete(articleId);
-      } else {
-        newExpanded.add(articleId);
-      }
-      return newExpanded;
-    });
-  };
 
   // Fast client-side navigation - no page reloads
   const handleTabChange = (tab: string) => {
@@ -413,32 +386,11 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          // News Cards - Traditional feed layout showing multiple articles
-          <div 
-            ref={scrollContainerRef}
-            className="h-full overflow-y-auto scrollbar-hide transition-all duration-200 ease-in-out"
-            onScroll={(e) => {
-              const element = e.target as HTMLElement;
-              const currentScrollTop = element.scrollTop;
-              
-              // Store scroll position for reference
-              lastScrollTopRef.current = currentScrollTop;
-            }}
-          >
-            <div className="space-y-4 p-4">
-              {articles.map((article) => (
-                <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                  <NewsCard
-                    article={article}
-                    onClick={() => handleArticleClick(article)}
-                    onShare={(e) => handleShare(e, article)}
-                    isExpanded={expandedArticles.has(article.id)}
-                    onToggleExpanded={() => handleToggleExpanded(article.id)}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          // Inshorts-style flip interface - One article at a time
+          <FlipArticleViewer
+            articles={articles}
+            onArticleClick={handleArticleClick}
+          />
         )}
       </div>
     </>
