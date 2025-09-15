@@ -362,59 +362,55 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   const renderHomeContent = () => (
     <>
-      {/* Main Content Area - Full Screen */}
-      <div className="flex-1 overflow-hidden">
-        {isLoading ? (
-          // Loading State - Show loading if either regular or special articles are loading
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Loading articles...
-              </p>
-            </div>
-          </div>
-        ) : (!articles || articles.length === 0) ? (
-          // Empty State
-          <div className="h-full flex flex-col items-center justify-center px-4">
-            <div className="text-6xl mb-4">📰</div>
-            <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
-              No articles found
-            </h3>
-            <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
-              There are no articles available at the moment.
+      {isLoading ? (
+        // Loading State - Full Screen
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-neutral-950 z-30">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Loading articles...
             </p>
-            <div className="space-y-3">
-              <Button 
-                onClick={handleRefresh}
-                disabled={refreshMutation.isPending}
-                className="min-w-[140px]"
-              >
-                {refreshMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Refreshing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Refresh Articles
-                  </>
-                )}
-              </Button>
-            </div>
           </div>
-        ) : (
-          // Inshorts-style ArticleFeed
-          <ArticleFeed
-            articles={articles}
-            className="relative"
-            data-testid="home-article-feed"
-          />
-        )}
-      </div>
+        </div>
+      ) : (!articles || articles.length === 0) ? (
+        // Empty State - Full Screen
+        <div className="fixed inset-0 flex flex-col items-center justify-center px-4 bg-gray-50 dark:bg-neutral-950 z-30">
+          <div className="text-6xl mb-4">📰</div>
+          <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
+            No articles found
+          </h3>
+          <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
+            There are no articles available at the moment.
+          </p>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleRefresh}
+              disabled={refreshMutation.isPending}
+              className="min-w-[140px]"
+            >
+              {refreshMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh Articles
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        // Inshorts-style ArticleFeed - No containers, direct rendering
+        <ArticleFeed
+          articles={articles}
+          data-testid="home-article-feed"
+        />
+      )}
 
-      {/* Floating Action Buttons */}
+      {/* Floating Action Buttons - Above ArticleFeed */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         <Button
           onClick={handleRefresh}
@@ -447,14 +443,14 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+    <div className="inshorts-container fixed inset-0 bg-gray-50 dark:bg-neutral-950">
       {renderSection()}
       
       {/* Visitor Stats - Only show on home section */}
       {activeSection === 'home' && <VisitorStats />}
       
-      {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
+      {/* Fixed Bottom Navigation - Positioned above ArticleFeed */}
+      <div className="fixed bottom-0 left-0 right-0 z-40">
         <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
       </div>
     </div>

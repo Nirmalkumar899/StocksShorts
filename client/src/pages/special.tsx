@@ -127,10 +127,10 @@ export default function Special() {
 
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-neutral-950 relative">
+    <div className="inshorts-container fixed inset-0 bg-gray-50 dark:bg-neutral-950">
       {isLoading ? (
         // Loading State - Full Screen
-        <div className="h-full flex items-center justify-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-neutral-950 z-30">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-yellow-500" />
             <p className="text-gray-600 dark:text-gray-400">Loading special content...</p>
@@ -138,8 +138,8 @@ export default function Special() {
         </div>
       ) : error ? (
         // Error State - Full Screen
-        <div className="h-full flex items-center justify-center px-4">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 flex items-center justify-center px-4 bg-gray-50 dark:bg-neutral-950 z-30">
+          <Card className="w-full max-w-md allow-scroll">
             <CardContent className="text-center p-6">
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -157,8 +157,8 @@ export default function Special() {
         </div>
       ) : specialArticles.length === 0 ? (
         // Empty State - Full Screen
-        <div className="h-full flex items-center justify-center px-4">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 flex items-center justify-center px-4 bg-gray-50 dark:bg-neutral-950 z-30">
+          <Card className="w-full max-w-md allow-scroll">
             <CardContent className="text-center p-6">
               <div className="text-yellow-500 text-5xl mb-4">⭐</div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -175,17 +175,16 @@ export default function Special() {
           </Card>
         </div>
       ) : (
-        // Inshorts-style ArticleFeed with Priority Ordering
+        // Inshorts-style ArticleFeed with Priority Ordering - No containers
         <ArticleFeed
           articles={priorityOrderedArticles}
           priorityGroups={groupedArticles}
           showPriorityDividers={true}
-          className="relative"
           data-testid="special-article-feed"
         />
       )}
 
-      {/* Floating Refresh Button */}
+      {/* Floating Refresh Button - Above ArticleFeed */}
       <div className="fixed top-4 right-4 z-50">
         <Button
           onClick={handleRefresh}
