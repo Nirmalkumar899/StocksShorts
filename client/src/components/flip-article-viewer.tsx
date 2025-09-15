@@ -170,12 +170,6 @@ export default function FlipArticleViewer({
 
   return (
     <div className="h-full w-full relative overflow-hidden bg-white dark:bg-gray-900">
-      {/* Navigation indicators */}
-      <div className="absolute top-4 right-4 z-20 bg-black/50 rounded-full px-3 py-1">
-        <span className="text-white text-sm font-medium">
-          {currentIndex + 1} / {articles.length}
-        </span>
-      </div>
 
       {/* Navigation buttons */}
       {currentIndex > 0 && (
@@ -198,46 +192,12 @@ export default function FlipArticleViewer({
         </button>
       )}
 
-      {/* Source banner - always visible at top */}
-      <div className="absolute top-0 left-0 right-0 z-30 bg-black/90 text-white px-4 py-2">
-        <div className="flex items-center justify-between text-sm">
-          <div className="text-white/90 font-medium">
-            {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric'
-            })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true
-            })}
-          </div>
-          
-          <div>
-            {(currentArticle as any).sourceUrl ? (
-              <a 
-                href={(currentArticle as any).sourceUrl} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {currentArticle.source}
-              </a>
-            ) : (
-              <span className="text-white font-medium">
-                {currentArticle.source}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Article content */}
       <animated.div
         {...bind()}
         style={{ y }}
-        className="h-full w-full touch-pan-y cursor-grab active:cursor-grabbing pt-12"
+        className="h-full w-full touch-pan-y cursor-grab active:cursor-grabbing"
         onClick={() => handleArticleClick(currentArticle)}
       >
         <div className="h-full w-full flex flex-col">
@@ -300,11 +260,46 @@ export default function FlipArticleViewer({
               </div>
 
               {/* Tap to read more hint */}
-              {currentArticle.content && currentArticle.content.length > 800 && (
+              {currentArticle.content && currentArticle.content.length > 600 && (
                 <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg mt-4">
                   👆 Tap to read full article
                 </div>
               )}
+            </div>
+
+            {/* Source and date footer - moved to bottom */}
+            <div className="bg-black text-white p-4">
+              <div className="flex items-center justify-between text-sm">
+                <div className="text-white/90 font-medium">
+                  {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                  })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                  })}
+                </div>
+                
+                <div>
+                  {(currentArticle as any).sourceUrl ? (
+                    <a 
+                      href={(currentArticle as any).sourceUrl} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {currentArticle.source}
+                    </a>
+                  ) : (
+                    <span className="text-white font-medium">
+                      {currentArticle.source}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
