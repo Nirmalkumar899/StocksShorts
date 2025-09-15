@@ -33,9 +33,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const lastScrollTopRef = useRef(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Remove all category logic for clean Inshorts-style interface
 
@@ -55,15 +52,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     retry: false,
   });
 
-  // Preload images for visible articles
-  const preloadImages = useCallback((articleList: Article[]) => {
-    const imagesToPreload = articleList.slice(0, 8); // Preload first 8 images
-    imagesToPreload.forEach(article => {
-      const img = new Image();
-      img.src = article.imageUrl || getContextualImage(article);
-      img.loading = 'eager';
-    });
-  }, []);
 
   // Fast section switching handler
   const handleSectionChange = useCallback((section: string) => {

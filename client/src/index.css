@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Inshorts-style: Prevent ALL scrolling for true card-flip experience */
-html, body {
+html, body, #root {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;

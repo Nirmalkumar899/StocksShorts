@@ -447,7 +447,7 @@ export default function ArticleFeed({
   return (
     <div 
       ref={containerRef}
-      className={`relative h-[100svh] w-full overflow-hidden touch-none overscroll-none ${className}`}
+      className={`inshorts-container relative h-[100svh] w-full overflow-hidden touch-none overscroll-none ${className}`}
       data-testid="article-feed"
       style={{
         position: 'fixed',
@@ -539,22 +539,6 @@ export default function ArticleFeed({
         </>
       )}
 
-      {/* Loading indicators for performance windowing */}
-      {start > 0 && (
-        <div className="fixed top-4 left-4 z-30 pointer-events-none">
-          <div className="bg-black/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
-            Loading previous...
-          </div>
-        </div>
-      )}
-      
-      {end < orderedArticles.length && (
-        <div className="fixed bottom-4 left-4 z-30 pointer-events-none">
-          <div className="bg-black/20 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
-            Loading more...
-          </div>
-        </div>
-      )}
     </div>
   );
 }
