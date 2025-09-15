@@ -139,56 +139,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Fetch StocksShorts Special articles - Priority #2 section
-  const {
-    data: specialArticles = [],
-    isLoading: specialLoading,
-    error: specialError,
-    refetch: refetchSpecial
-  } = useQuery<Article[]>({
-    queryKey: ['/api/articles/stocks-special'],
-    queryFn: async () => {
-      console.log('🌟 Starting StocksShorts Special fetch...');
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
-      try {
-        const response = await fetch('/api/articles/stocks-special', {
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        
-        clearTimeout(timeoutId);
-      
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ StocksShorts Special fetch error:', errorText);
-          throw new Error(errorText || 'Failed to fetch StocksShorts Special articles');
-        }
-        
-        const data = await response.json();
-        console.log('✅ Fetched StocksShorts Special articles:', data.length, 'articles');
-        console.log('📋 Special articles data:', data);
-        
-        if (!Array.isArray(data)) {
-          console.error('Expected array but got:', typeof data, data);
-          return [];
-        }
-        
-        return data;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        console.error('💥 StocksShorts Special fetch failed:', error);
-        if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error('StocksShorts Special request timed out. Please try again.');
-        }
-        throw error;
-      }
-    },
-    retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    enabled: true, // Explicitly enable the query
-  });
 
   // Apply translations to articles
   const articles = useMemo(() => {
@@ -217,10 +167,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/articles/stocks-special'] });
       toast({
         title: "Articles refreshed",
-        description: "Latest articles and StocksShorts Special content have been loaded successfully.",
+        description: "Latest articles have been loaded successfully.",
       });
     },
     onError: (error: Error) => {
@@ -393,7 +342,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   // Debug log
   console.log('📊 Articles data:', articles?.length, 'Loading:', isLoading, 'Error:', error);
-  console.log('⭐ StocksShorts Special data:', specialArticles?.length, 'Loading:', specialLoading, 'Error:', specialError);
 
   // Render different sections based on activeSection
   const renderSection = () => {
@@ -427,19 +375,17 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-hidden">
-        {isLoading || specialLoading ? (
+        {isLoading ? (
           // Loading State - Show loading if either regular or special articles are loading
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
               <p className="text-neutral-600 dark:text-neutral-400">
-                {isLoading && specialLoading ? 'Loading all content...' : 
-                 isLoading ? 'Loading articles...' : 
-                 'Loading StocksShorts Special...'}
+                Loading articles...
               </p>
             </div>
           </div>
-        ) : (!articles || articles.length === 0) && (!specialArticles || specialArticles.length === 0) ? (
+        ) : (!articles || articles.length === 0) ? (
           // Empty State
           <div className="h-full flex flex-col items-center justify-center px-4">
             <div className="text-6xl mb-4">📰</div>
@@ -483,46 +429,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             }}
           >
             <div className="space-y-6 p-4">
-              {/* StocksShorts Special Section - Priority #2 */}
-              {specialArticles && specialArticles.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                      <span className="mr-2">⭐</span>
-                      StocksShorts Special
-                    </h2>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 bg-yellow-100 dark:bg-yellow-900 px-2 py-1 rounded-full">
-                      {specialArticles.length} articles
-                    </span>
-                  </div>
-                  <div className="space-y-4">
-                    {specialArticles.slice(0, 5).map((article) => (
-                      <div key={`special-${article.id}`} className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900 dark:to-orange-900 rounded-lg shadow-md border-l-4 border-yellow-400">
-                        <NewsCard
-                          data-testid={`special-article-${article.id}`}
-                          article={article}
-                          onClick={() => handleArticleClick(article)}
-                          onShare={(e) => handleShare(e, article)}
-                          isExpanded={expandedArticles.has(article.id)}
-                          onToggleExpanded={() => handleToggleExpanded(article.id)}
-                        />
-                      </div>
-                    ))}
-                    {specialArticles.length > 5 && (
-                      <div className="text-center">
-                        <Button 
-                          variant="outline"
-                          onClick={() => setLocation('/special')}
-                          data-testid="view-all-special"
-                          className="bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900 dark:hover:bg-yellow-800 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700"
-                        >
-                          View All {specialArticles.length} StocksShorts Special Articles
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Regular Articles Section */}
               {articles && articles.length > 0 && (
