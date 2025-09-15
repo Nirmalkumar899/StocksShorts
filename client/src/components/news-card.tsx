@@ -405,8 +405,8 @@ export default function NewsCard({ article, onClick, onShare, variant = 'default
                 {/* Source and Date in Black Highlighted Section */}
                 <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
                   <div className="flex items-center justify-between text-sm">
-                    {/* Left - Exact Date and Time */}
-                    <div className="text-white/90">
+                    {/* Left - Date and Time */}
+                    <div className="text-white font-medium">
                       {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
                         day: '2-digit',
                         month: 'short',
