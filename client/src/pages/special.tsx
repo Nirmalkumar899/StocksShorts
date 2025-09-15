@@ -4,18 +4,14 @@ import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, RefreshCw, ArrowLeft, Star, TrendingUp, Calendar } from '@/lib/icons';
+import { Loader2, RefreshCw, TrendingUp, Calendar } from '@/lib/icons';
 import { useToast } from '@/hooks/use-toast';
 import type { Article } from '@shared/schema';
 import { getContextualImage } from '@/lib/imageUtils';
 
 import NewsCard from '@/components/news-card';
 
-interface SpecialProps {
-  onBack?: () => void;
-}
-
-export default function Special({ onBack }: SpecialProps) {
+export default function Special() {
   const [, setLocation] = useLocation();
   const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
   const { toast } = useToast();
@@ -67,14 +63,6 @@ export default function Special({ onBack }: SpecialProps) {
     staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 
-  // Handle navigation and interactions
-  const handleBack = useCallback(() => {
-    if (onBack) {
-      onBack();
-    } else {
-      setLocation('/');
-    }
-  }, [onBack, setLocation]);
 
   const handleArticleClick = (article: Article) => {
     console.log('StocksShorts Special article clicked:', article);
@@ -121,7 +109,6 @@ export default function Special({ onBack }: SpecialProps) {
     low: specialArticles.filter(a => a.priority?.toLowerCase() === 'low')
   };
 
-  const totalArticles = specialArticles.length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
@@ -133,7 +120,7 @@ export default function Special({ onBack }: SpecialProps) {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-yellow-500" />
-              <p className="text-gray-600 dark:text-gray-400">Loading StocksShorts Special content...</p>
+              <p className="text-gray-600 dark:text-gray-400">Loading content...</p>
             </div>
           </div>
         ) : error ? (
@@ -165,7 +152,7 @@ export default function Special({ onBack }: SpecialProps) {
                   No Special Content Yet
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  StocksShorts Special articles haven't been published yet. Check back soon for exclusive content!
+                  Articles haven't been published yet. Check back soon!
                 </p>
                 <Button onClick={handleRefresh} data-testid="refresh-empty">
                   <RefreshCw className="mr-2 h-4 w-4" />
