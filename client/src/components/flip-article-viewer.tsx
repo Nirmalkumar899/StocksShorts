@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSpring, animated } from 'react-spring';
 import { useDrag } from '@use-gesture/react';
-import { ChevronUp, ChevronDown, Share2 } from '@/lib/icons';
+import { Share2 } from '@/lib/icons';
 import { getContextualImage } from '@/lib/imageUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -171,26 +171,6 @@ export default function FlipArticleViewer({
   return (
     <div className="h-full w-full relative overflow-hidden bg-white dark:bg-gray-900">
 
-      {/* Navigation buttons */}
-      {currentIndex > 0 && (
-        <button
-          onClick={() => navigateToArticle(currentIndex - 1)}
-          className="absolute top-1/2 left-4 z-20 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-          aria-label="Previous article"
-        >
-          <ChevronUp className="h-5 w-5" />
-        </button>
-      )}
-
-      {currentIndex < articles.length - 1 && (
-        <button
-          onClick={() => navigateToArticle(currentIndex + 1)}
-          className="absolute top-1/2 right-4 z-20 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-          aria-label="Next article"
-        >
-          <ChevronDown className="h-5 w-5" />
-        </button>
-      )}
 
 
       {/* Article content */}
