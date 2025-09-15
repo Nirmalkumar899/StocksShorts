@@ -265,39 +265,39 @@ export default function FlipArticleViewer({
                   👆 Tap to read full article
                 </div>
               )}
-            </div>
 
-            {/* Source and date footer - moved to bottom */}
-            <div className="bg-black text-white p-4">
-              <div className="flex items-center justify-between text-sm">
-                <div className="text-white/90 font-medium">
-                  {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
-                  })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                  })}
-                </div>
-                
-                <div>
-                  {(currentArticle as any).sourceUrl ? (
-                    <a 
-                      href={(currentArticle as any).sourceUrl} 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {currentArticle.source}
-                    </a>
-                  ) : (
-                    <span className="text-white font-medium">
-                      {currentArticle.source}
-                    </span>
-                  )}
+              {/* Source and date - with two line gap after content */}
+              <div className="mt-8 bg-black text-white p-4 rounded-lg">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="text-white/90 font-medium">
+                    {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric'
+                    })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </div>
+                  
+                  <div>
+                    {(currentArticle as any).sourceUrl ? (
+                      <a 
+                        href={(currentArticle as any).sourceUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {currentArticle.source}
+                      </a>
+                    ) : (
+                      <span className="text-white font-medium">
+                        {currentArticle.source}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
