@@ -223,12 +223,10 @@ export default function Special() {
         </Button>
       </div>
 
+      {/* Fixed Bottom Navigation - Positioned above ArticleFeed */}
+      <div className="fixed bottom-0 left-0 right-0 z-40">
+        <BottomNavigation activeTab="special" onTabChange={handleTabChange} />
+      </div>
     </div>
-    
-    {/* Fixed Bottom Navigation - Outside main container */}
-    <div className="fixed bottom-0 left-0 right-0 z-[9999]">
-      <BottomNavigation activeTab="special" onTabChange={handleTabChange} />
-    </div>
-    </>
   );
 }
