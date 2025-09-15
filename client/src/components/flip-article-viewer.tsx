@@ -25,6 +25,7 @@ export default function FlipArticleViewer({
   const { toast } = useToast();
 
   const currentArticle = articles[currentIndex] || null;
+  
 
   // Spring animation for smooth transitions - optimized for Inshorts-like feel
   const [{ y }, api] = useSpring(() => ({ 
