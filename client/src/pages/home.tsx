@@ -209,6 +209,13 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     return rawArticles || [];
   }, [rawArticles, isTranslated, translatedArticles]);
 
+  // Filter regular articles to exclude any Special articles
+  const nonSpecialArticles = useMemo(() => {
+    const filtered = (articles || []).filter(article => article.type !== 'StocksShorts Special');
+    console.log("🔍 Filtered regular articles:", filtered.length, "out of", articles?.length || 0);
+    return filtered;
+  }, [articles]);
+
   // Refresh articles mutation
   const refreshMutation = useMutation({
     mutationFn: async () => {
@@ -394,6 +401,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   // Debug log
   console.log('📊 Articles data:', articles?.length, 'Loading:', isLoading, 'Error:', error);
   console.log('⭐ StocksShorts Special data:', specialArticles?.length, 'Loading:', specialLoading, 'Error:', specialError);
+  console.log('🔍 Filtered regular articles:', nonSpecialArticles?.length, 'Total raw:', articles?.length);
 
   // Render different sections based on activeSection
   const renderSection = () => {
@@ -525,18 +533,18 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               )}
 
               {/* Regular Articles Section */}
-              {articles && articles.length > 0 && (
-                <div>
+              {nonSpecialArticles && nonSpecialArticles.length > 0 && (
+                <div data-testid="section-regular" className="block">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                       Latest News
                     </h2>
                     <span className="text-sm text-gray-500 dark:text-gray-400 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded-full">
-                      {articles.length} articles
+                      {nonSpecialArticles.length} articles
                     </span>
                   </div>
                   <div className="space-y-4">
-                    {articles.map((article) => (
+                    {nonSpecialArticles.map((article) => (
                       <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
                         <NewsCard
                           data-testid={`article-${article.id}`}
