@@ -142,7 +142,7 @@ export default function Special() {
               </CardContent>
             </Card>
           </div>
-        ) : totalArticles === 0 ? (
+        ) : specialArticles.length === 0 ? (
           // Empty State
           <div className="flex items-center justify-center py-20">
             <Card className="w-full max-w-md">
@@ -232,7 +232,7 @@ export default function Special() {
             {groupedArticles.low.length > 0 && (
               <div>
                 <div className="flex items-center space-x-2 mb-4">
-                  <Star className="h-5 w-5 text-blue-500" />
+                  <Calendar className="h-5 w-5 text-blue-500" />
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Additional Content
                   </h2>
