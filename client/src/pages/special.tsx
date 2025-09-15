@@ -125,48 +125,6 @@ export default function Special({ onBack }: SpecialProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800 shadow-sm">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              data-testid="back-button"
-              className="hover:bg-gray-100 dark:hover:bg-neutral-800"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center space-x-2">
-              <Star className="h-6 w-6 text-yellow-500" />
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  StocksShorts Special
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Exclusive content and analysis
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-              {totalArticles} articles
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isLoading}
-              data-testid="refresh-button"
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6 max-w-4xl">
