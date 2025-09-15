@@ -54,7 +54,7 @@ function Router() {
         {() => <Home initialCategory="trending" />}
       </Route>
       <Route path="/special">
-        {() => <Special onBack={() => window.history.back()} />}
+        {() => <Special />}
       </Route>
       <Route path="/breakout">
         {() => <Home />}
