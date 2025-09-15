@@ -223,7 +223,7 @@ export default function Special() {
       </div>
 
       {/* Fixed Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40">
+      <div className="fixed bottom-0 left-0 right-0 z-[100]">
         <BottomNavigation activeTab="special" onTabChange={handleTabChange} />
       </div>
     </div>
