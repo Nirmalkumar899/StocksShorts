@@ -11,11 +11,32 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import NewsCard from '@/components/news-card';
 import ArticleFeed from '@/components/article-feed';
+import BottomNavigation from '@/components/bottom-navigation';
 
 export default function Special() {
   const [, setLocation] = useLocation();
   const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
   const { toast } = useToast();
+
+  // Navigation state for bottom navigation
+  const handleTabChange = (tab: string) => {
+    switch (tab) {
+      case 'home':
+        setLocation('/');
+        break;
+      case 'special':
+        setLocation('/special');
+        break;
+      case 'sebi-ria':
+        setLocation('/sebi-ria');
+        break;
+      case 'profile':
+        setLocation('/profile');
+        break;
+      default:
+        break;
+    }
+  };
 
   // Fetch StocksShorts Special articles
   const {
@@ -199,6 +220,11 @@ export default function Special() {
             <RefreshCw className="h-4 w-4" />
           )}
         </Button>
+      </div>
+
+      {/* Fixed Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-40">
+        <BottomNavigation activeTab="special" onTabChange={handleTabChange} />
       </div>
     </div>
   );
