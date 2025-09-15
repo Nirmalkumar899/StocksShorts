@@ -40,150 +40,45 @@ export class GoogleSheetsService {
   private cache = new MemoryCache();
 
   constructor() {
-    // Use environment variables for security - never hard-code credentials
-    console.log('Google Sheets: Using service account credentials from environment variables');
-    
-    // Check if Google Sheets credentials are available
-    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-    
-    if (clientEmail && privateKey) {
-      console.log('Google Sheets: Environment variables found, initializing auth');
-      
-      try {
-        // Robust private key normalization to handle various formats
-        const formattedPrivateKey = this.normalizePrivateKey(privateKey);
-        console.log('Google Sheets: Private key normalized successfully');
-        
-        const auth = new google.auth.GoogleAuth({
-          credentials: {
-            client_email: clientEmail,
-            private_key: formattedPrivateKey,
-          },
-          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        });
-        
-        this.sheets = google.sheets({ version: 'v4', auth });
-        
-        // Test authentication with a lightweight call
-        this.testAuthentication();
-      } catch (error) {
-        console.error('Google Sheets: Private key normalization failed:', error);
-        this.sheets = null;
-      }
-    } else {
-      console.log('Google Sheets: Credentials not found in environment variables - service will use fallback data');
-      // Initialize without auth - methods will handle fallback appropriately
-      this.sheets = null;
-    }
-    
+    // Use the correct credentials from the JSON file directly
+    console.log('Google Sheets: Using service account credentials');
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: "stocksshortsnew@spartan-perigee-463004-u2.iam.gserviceaccount.com",
+        private_key: `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDxm4erbCGs0tHQ
+Mri1jp9AcFU6KMEnywtSCFhKtgDS5IhrjtAPnATmeBz9UusIW1omj8/9oMdb75cc
+rdrrcrQSBh3fQ6FmNeAoeJJ/UIaEAJs1hDqmzoMLGC/qinhqn0ZVqcAlRMyI4n2A
+1g0ApZTKLI1etmeVRlbvlPmwbLg8hjk89qxSkBKTZevs5870wmgwFx60e+/TPCvn
+3yGmskLUasLKveeW+x0UEmL/GWDYv8e+wXuepCUc4MOIQvMb6u2LhAAcCn5dO8BM
+lDvI1Pr1lRcHE0qk6vmz4wuF5l+FhR0ylhl4wvrhQ/hAuLOgneTLpQWW8f0aXLzM
+wy6VlxbdAgMBAAECggEABYhBGGH6Qf5QYN+OKjBjWGm+pCIRMZ3a0dyLxQK/uoI2
++3bwL/orqSAuQAnZO3UcnCBvUG0RQURy05E3RCNVBqYOfgzmUf139ynXng0dVkIE
+cF8yhpyPy3Th9/8Y/KCXc6Fo7ZGJgkd3GF0OYLwOdH080FBzopkKFP9R7AswHaRX
+Mp2W6CLeZXkRa049NKn/z5cIv0SCcyJOJ/p2v3WhmbNfK0vKXfdVFUjB8FvVs30F
+L2AI3qp4avNbvE8xSWNKVw9ckck8B+lD9V65tgNUhrtgaUUjIgOBLEwM4o1DaotV
+dizo8w62HHNun+0pNVnWXWv3QevRDo09zr6jR1+P0wKBgQD+T9VWv+gRZcbchZhG
+IIIiHtbp8aCuk/aNCVcoOSyYtA2MVpSoFW/qXqXMg7KAOoIjwbES+y+qjZM+IeVc
+2cMii6PT6QLoTG5WQ6qVqf4Vg8zt/lFd4dGADXLpn8b0t1h4+cl/HYjjI0BNYyn+
+yH7ol8DarD0vKZlK+tIetHlA/wKBgQDzNhuBgs4T9VTe0XEN3z5mxQJ9v4KuAzpv
+CuCPH+LY35RyQTWTesVyhwBLxD9TeE6PiP+mF1C2gzRZ5O8THoM6kaAqcZ9GbB3r
+h10/r+XaYcAeM2wJDg1LbcNKQ2+8VUpiexjDjE5aOL+/Aefz3USA1/6dmW4fHeIg
+b+iNfsjMIwKBgBhtZKmTf2AEbaiK8Ihz4OwUGEKaYfvC3KDJb+S+MSltygtb2aWX
+gYt6keRmFgQ5Gn0CwtZ26CoytRz3todHp3WvAgp9zDix9rs0frMng+9fHJUTo48n
+/K6XHB2SqlKhNc9Q9ujN1nMy1J9aUhNWANKomO6oMqxQC5hnJT2ryiXTAoGBAISQ
+94kuTTmfvbT+IEtZZeAKfoMgQhCrfcxM933L+ZAQvg9Q7+0FPF5iq4yg2YubxeaC
+3CYiC0KQXZaqLI4VUZ45Bj5cVF7ES8K3s+Ik9HqGUXukt7xvxltY5tuxylOzgaoQ
+Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
+4ZwoB4O5gQIlCxkeDlWE/2e2x51nUsDZIF4iY7iq8o9phcleFx9AgfgrNZ89MbAr
++2hyEr0BnNGEeiNg+ZNiqcLaIIr/yG8qCSsf3LGc4jZD6m7cFAj6qwM491S0M4/v
+0HsI2X6g//ccL7BPi5ZPKRY=
+-----END PRIVATE KEY-----`
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    this.sheets = google.sheets({ version: 'v4', auth });
     this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '';
-  }
-
-  /**
-   * Robust private key normalization to handle various formats and edge cases
-   */
-  private normalizePrivateKey(privateKey: string): string {
-    let normalizedKey = privateKey.trim();
-    
-    // Remove surrounding quotes if present
-    if ((normalizedKey.startsWith('"') && normalizedKey.endsWith('"')) ||
-        (normalizedKey.startsWith("'") && normalizedKey.endsWith("'"))) {
-      normalizedKey = normalizedKey.slice(1, -1);
-    }
-    
-    // Convert escaped newlines to real newlines FIRST
-    normalizedKey = normalizedKey.replace(/\\n/g, '\n');
-    
-    // Normalize line endings (CRLF to LF)
-    normalizedKey = normalizedKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    
-    // Handle base64 encoded private key (if GOOGLE_PRIVATE_KEY_BASE64 was used)
-    if (!normalizedKey.includes('-----BEGIN') && normalizedKey.length > 100) {
-      try {
-        normalizedKey = Buffer.from(normalizedKey, 'base64').toString('utf-8');
-        // After decoding, convert escaped newlines again
-        normalizedKey = normalizedKey.replace(/\\n/g, '\n');
-      } catch (error) {
-        // Not base64, continue with original
-      }
-    }
-    
-    // Debug: Log first and last 50 characters to troubleshoot format issues
-    console.log('🔍 Private key format check - first 50 chars:', normalizedKey.substring(0, 50));
-    console.log('🔍 Private key format check - last 50 chars:', normalizedKey.substring(normalizedKey.length - 50));
-    
-    // More flexible BEGIN/END marker detection
-    let beginMatch = normalizedKey.match(/-----BEGIN[^-]*PRIVATE KEY-----/);
-    let endMatch = normalizedKey.match(/-----END[^-]*PRIVATE KEY-----/);
-    
-    if (!beginMatch || !endMatch) {
-      // Try to find just the key content and reconstruct
-      if (normalizedKey.includes('BEGIN') && normalizedKey.includes('END')) {
-        console.log('🔧 Attempting to reconstruct private key format');
-        // Extract everything between BEGIN and END
-        const beginIdx = normalizedKey.indexOf('BEGIN');
-        const endIdx = normalizedKey.indexOf('END');
-        if (beginIdx < endIdx) {
-          const keyContent = normalizedKey.substring(beginIdx, endIdx + 3);
-          // Try to fix the format
-          const reconstructed = keyContent
-            .replace(/BEGIN[^-]*PRIVATE KEY[^-]*/, '-----BEGIN PRIVATE KEY-----\n')
-            .replace(/END[^-]*PRIVATE KEY[^-]*/, '\n-----END PRIVATE KEY-----');
-          return reconstructed;
-        }
-      }
-      throw new Error(`Invalid private key format: missing proper BEGIN/END markers. Key starts with: ${normalizedKey.substring(0, 100)}`);
-    }
-    
-    const beginMarker = beginMatch[0];
-    const endMarker = endMatch[0];
-    const beginIndex = normalizedKey.indexOf(beginMarker) + beginMarker.length;
-    const endIndex = normalizedKey.indexOf(endMarker);
-    
-    if (beginIndex >= endIndex) {
-      throw new Error('Invalid private key format: malformed structure');
-    }
-    
-    // Extract and clean the base64 body
-    const keyBody = normalizedKey.substring(beginIndex, endIndex);
-    const cleanBody = keyBody.replace(/\s/g, ''); // Remove all whitespace
-    
-    // Validate base64 content (allow some flexibility)
-    if (cleanBody.length < 100 || !/^[A-Za-z0-9+/=]+$/.test(cleanBody)) {
-      console.log('🔧 Key body appears invalid, length:', cleanBody.length, 'first 50 chars:', cleanBody.substring(0, 50));
-      throw new Error('Invalid private key format: invalid base64 characters');
-    }
-    
-    // Re-wrap to 64 characters per line
-    const wrappedBody = cleanBody.match(/.{1,64}/g)?.join('\n') || cleanBody;
-    
-    // Reconstruct the private key with proper formatting
-    const reconstructedKey = `${beginMarker}\n${wrappedBody}\n${endMarker}\n`;
-    
-    console.log('✅ Private key normalized successfully');
-    return reconstructedKey;
-  }
-
-  /**
-   * Test authentication with a lightweight Google Sheets API call
-   */
-  private async testAuthentication(): Promise<void> {
-    if (!this.sheets || !this.spreadsheetId) {
-      return;
-    }
-    
-    try {
-      // Make a lightweight call to test authentication
-      await this.sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
-        fields: 'properties.title'
-      });
-      console.log('Google Sheets: Authentication test successful');
-    } catch (error) {
-      console.error('Google Sheets: Authentication test failed:', error);
-      this.sheets = null; // Disable sheets if auth fails
-    }
   }
 
   async fetchArticles(): Promise<Article[]> {
@@ -194,9 +89,9 @@ export class GoogleSheetsService {
       return cachedArticles;
     }
 
-    // If Google Sheets is not properly initialized, return sample data
-    if (!this.sheets || !this.spreadsheetId) {
-      console.log('Google Sheets not configured, using sample data');
+    // If Google Sheets credentials are not configured, return sample data
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
+      console.log('Google Sheets credentials not configured, using sample data');
       // Return fresh sample data with updated timestamps
       return sampleArticles.map(article => ({
         ...article,
@@ -382,159 +277,6 @@ export class GoogleSheetsService {
     }
   }
 
-  async fetchStocksShortsSpecialArticles(): Promise<Article[]> {
-    // Check cache first for faster response
-    const cachedSpecialArticles = this.cache.get<Article[]>('stocks-special-articles');
-    if (cachedSpecialArticles && cachedSpecialArticles.length > 0) {
-      console.log('Returning cached StocksShorts Special articles - instant response');
-      return cachedSpecialArticles;
-    }
-
-    // If Google Sheets is not properly initialized, return empty array
-    if (!this.sheets || !this.spreadsheetId) {
-      console.log('Google Sheets not configured, returning empty StocksShorts Special articles');
-      return [];
-    }
-
-    try {
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'news!A2:J', // ID, Title, Content, Type, TimeAgo, Source, Sentiment, Priority, Category, ImageURL
-      });
-
-      const rows: string[][] = response.data.values || [];
-      
-      const specialArticles: Article[] = rows
-        .filter(row => row.length >= 6) // At least ID, Title, Content, Type, TimeAgo, Source
-        .map((row, index) => {
-          // Google Sheets structure: A=ID, B=Title, C=Content, D=Type, E=TimeAgo, F=Source, G=Sentiment, H=Priority, I=ImageURL
-          
-          const timeStr = row[4] || '1 hour ago';
-          let parsedTime: Date;
-          
-          try {
-            // Handle "TimeAgo" column format
-            if (timeStr.includes('ago')) {
-              parsedTime = this.parseRelativeTime(timeStr);
-            } else if (timeStr.trim() === '' || timeStr.trim() === 'null') {
-              // Handle null/empty timestamps - treat as beginning of today (12:01 AM)
-              const today = new Date();
-              today.setHours(0, 1, 0, 0); // Set to 12:01 AM of today
-              parsedTime = today;
-            } else {
-              parsedTime = new Date(timeStr);
-            }
-          } catch (error) {
-            console.warn(`Invalid time format for StocksShorts Special row ${index + 2}: ${timeStr}`);
-            // Treat invalid timestamps as beginning of today (12:01 AM)
-            const today = new Date();
-            today.setHours(0, 1, 0, 0);
-            parsedTime = today;
-          }
-
-          // Get full content without truncation
-          const content = row[2] || '';
-          
-          // Map sentiment column (Positive/Negative) to our format
-          const sentimentValue = row[6] || 'Neutral';
-          const sentiment = sentimentValue.toLowerCase().includes('positive') ? 'Positive' :
-                           sentimentValue.toLowerCase().includes('negative') ? 'Negative' : 'Neutral';
-
-          // Get priority from column H (index 7)
-          const priority = row[7] || 'Medium';
-          
-          // Use column D (Type) as category source
-          const category = row[3] || 'StocksShorts Special';
-
-          // Get Image URL from column I (index 8)
-          let imageUrl = null;
-          const title = row[1] || 'Untitled';
-          
-          const providedImageUrl = row[8] ? row[8].toString().trim() : '';
-          
-          if (providedImageUrl && (providedImageUrl.startsWith('http://') || providedImageUrl.startsWith('https://'))) {
-            // Convert Google Drive sharing URLs to direct image URLs
-            if (providedImageUrl.includes('drive.google.com')) {
-              const fileIdMatch = providedImageUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-              if (fileIdMatch) {
-                const fileId = fileIdMatch[1];
-                imageUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-                console.log(`Converted Google Drive URL for StocksShorts Special article: ${title}`);
-              } else {
-                imageUrl = providedImageUrl;
-              }
-            } else if (providedImageUrl.includes('imgur.com/a/')) {
-              // Convert Imgur album URLs to direct image URLs
-              const albumIdMatch = providedImageUrl.match(/imgur\.com\/a\/([a-zA-Z0-9]+)/);
-              if (albumIdMatch) {
-                const albumId = albumIdMatch[1];
-                imageUrl = `https://i.imgur.com/${albumId}.jpg`;
-              } else {
-                imageUrl = providedImageUrl;
-              }
-            } else if (providedImageUrl.includes('replit.com') && providedImageUrl.includes('attached_assets')) {
-              // Convert Replit URLs to local asset URLs
-              const assetMatch = providedImageUrl.match(/attached_assets\/([^#]+)/);
-              if (assetMatch) {
-                const filename = assetMatch[1];
-                imageUrl = `/attachments/${filename}`;
-              } else {
-                imageUrl = providedImageUrl;
-              }
-            } else {
-              // Use provided image URL as-is for other services
-              imageUrl = providedImageUrl;
-            }
-          }
-          
-          return {
-            id: parseInt(row[0]) || Date.now() + index, // Use unique ID for special articles
-            title,
-            content,
-            type: 'StocksShorts Special', // Always set as StocksShorts Special
-            time: parsedTime,
-            source: row[5] || 'StocksShorts',
-            sentiment,
-            priority,
-            imageUrl,
-            sourceUrl: null, // StocksShorts Special articles don't have external source URLs
-            primarySourceUrl: null,
-            primarySourceTitle: null,
-            primarySourcePublishedAt: null,
-            sources: null,
-            provenanceScore: null,
-            contentType: 'original-report' as const,
-            createdAt: new Date(),
-          };
-        })
-        .sort((a, b) => {
-          // Sort by Priority (High > Medium > Low) then by time descending
-          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-          const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 2;
-          const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 2;
-          
-          if (aPriority !== bPriority) {
-            return bPriority - aPriority; // High priority first
-          }
-          
-          // If same priority, sort by time (most recent first)
-          const aTime = a.time ? new Date(a.time).getTime() : 0;
-          const bTime = b.time ? new Date(b.time).getTime() : 0;
-          return bTime - aTime;
-        });
-
-      // Cache articles for 5 minutes to avoid API rate limits
-      this.cache.set('stocks-special-articles', specialArticles, 300); // 5 minutes
-      console.log(`Cached ${specialArticles.length} StocksShorts Special articles for 5 minutes`);
-
-      return specialArticles;
-    } catch (error) {
-      console.error('Error fetching StocksShorts Special articles from Google Sheets:', error);
-      console.log('📊 Returning 0 StocksShorts Special articles');
-      return [];
-    }
-  }
-
   private parseRelativeTime(timeStr: string): Date {
     const now = new Date();
     const lowerStr = timeStr.toLowerCase();
@@ -613,9 +355,9 @@ export class GoogleSheetsService {
   }
 
   async fetchInvestmentAdvisors(): Promise<InvestmentAdvisor[]> {
-    // If Google Sheets is not properly initialized, return fallback data
-    if (!this.sheets || !this.spreadsheetId) {
-      console.log('Google Sheets not configured - using fallback advisor data');
+    // If Google Sheets credentials are not configured, return fallback data
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
+      console.log('Google Sheets credentials not configured - using fallback advisor data');
       return this.getFallbackAdvisorData();
     }
 

@@ -2,32 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Inshorts-style: Prevent ALL scrolling for true card-flip experience */
-html, body, #root {
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
-}
-
-/* Reset for specific components that need scrolling (like modals) */
-.allow-scroll {
-  overflow: auto !important;
-  position: static !important;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Prevent text selection during swipe gestures */
-.inshorts-container {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

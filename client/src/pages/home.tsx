@@ -10,7 +10,6 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
 import NewsCard from '@/components/news-card';
-import ArticleFeed from '@/components/article-feed';
 import BottomNavigation from '@/components/bottom-navigation';
 
 import { VisitorStats } from '@/components/visitor-stats';
@@ -33,6 +32,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const lastScrollTopRef = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Remove all category logic for clean Inshorts-style interface
 
@@ -52,6 +54,15 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     retry: false,
   });
 
+  // Preload images for visible articles
+  const preloadImages = useCallback((articleList: Article[]) => {
+    const imagesToPreload = articleList.slice(0, 8); // Preload first 8 images
+    imagesToPreload.forEach(article => {
+      const img = new Image();
+      img.src = article.imageUrl || getContextualImage(article);
+      img.loading = 'eager';
+    });
+  }, []);
 
   // Fast section switching handler
   const handleSectionChange = useCallback((section: string) => {
@@ -127,7 +138,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
 
   // Apply translations to articles
   const articles = useMemo(() => {
@@ -330,7 +340,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   };
 
   // Debug log
-  console.log('📊 Articles data:', articles?.length, 'Loading:', isLoading, 'Error:', error);
+  console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
   // Render different sections based on activeSection
   const renderSection = () => {
@@ -350,95 +360,99 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   const renderHomeContent = () => (
     <>
-      {isLoading ? (
-        // Loading State - Full Screen
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-neutral-950 z-30">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-neutral-600 dark:text-neutral-400">
-              Loading articles...
-            </p>
-          </div>
-        </div>
-      ) : (!articles || articles.length === 0) ? (
-        // Empty State - Full Screen
-        <div className="fixed inset-0 flex flex-col items-center justify-center px-4 bg-gray-50 dark:bg-neutral-950 z-30">
-          <div className="text-6xl mb-4">📰</div>
-          <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
-            No articles found
-          </h3>
-          <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
-            There are no articles available at the moment.
-          </p>
-          <div className="space-y-3">
-            <Button 
-              onClick={handleRefresh}
-              disabled={refreshMutation.isPending}
-              className="min-w-[140px]"
-            >
-              {refreshMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh Articles
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        // Inshorts-style ArticleFeed - No containers, direct rendering
-        <ArticleFeed
-          articles={articles}
-          data-testid="home-article-feed"
+      {/* Fixed Header */}
+      <div className="flex-shrink-0">
+        <Header 
+          onRefresh={handleRefresh} 
+          isRefreshing={refreshMutation.isPending}
+          onTranslate={handleTranslate}
+          isTranslated={isTranslated}
+          isTranslating={translateMutation.isPending}
         />
-      )}
+        {/* Category filter removed for clean Inshorts-style interface */}
+      </div>
 
-      {/* Floating Action Buttons - Above ArticleFeed */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
-        <Button
-          onClick={handleRefresh}
-          disabled={refreshMutation.isPending}
-          size="sm"
-          className="bg-white/80 backdrop-blur-sm text-gray-900 hover:bg-white/90 shadow-lg border"
-          data-testid="floating-refresh-button"
-        >
-          {refreshMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-        </Button>
-        <Button
-          onClick={handleTranslate}
-          disabled={translateMutation.isPending}
-          size="sm"
-          className="bg-white/80 backdrop-blur-sm text-gray-900 hover:bg-white/90 shadow-lg border"
-          data-testid="floating-translate-button"
-        >
-          {translateMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <span className="text-sm font-medium">{isTranslated ? 'EN' : 'हिं'}</span>
-          )}
-        </Button>
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
+        {isLoading ? (
+          // Loading State
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
+            </div>
+          </div>
+        ) : !articles || articles.length === 0 ? (
+          // Empty State
+          <div className="h-full flex flex-col items-center justify-center px-4">
+            <div className="text-6xl mb-4">📰</div>
+            <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
+              No articles found
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
+              There are no articles available at the moment.
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={handleRefresh}
+                disabled={refreshMutation.isPending}
+                className="min-w-[140px]"
+              >
+                {refreshMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh Articles
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // News Cards - Traditional feed layout showing multiple articles
+          <div 
+            ref={scrollContainerRef}
+            className="h-full overflow-y-auto scrollbar-hide transition-all duration-200 ease-in-out"
+            onScroll={(e) => {
+              const element = e.target as HTMLElement;
+              const currentScrollTop = element.scrollTop;
+              
+              // Store scroll position for reference
+              lastScrollTopRef.current = currentScrollTop;
+            }}
+          >
+            <div className="space-y-4 p-4">
+              {articles.map((article) => (
+                <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                  <NewsCard
+                    article={article}
+                    onClick={() => handleArticleClick(article)}
+                    onShare={(e) => handleShare(e, article)}
+                    isExpanded={expandedArticles.has(article.id)}
+                    onToggleExpanded={() => handleToggleExpanded(article.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
 
   return (
-    <div className="bg-gray-50 dark:bg-neutral-950">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
       {renderSection()}
       
       {/* Visitor Stats - Only show on home section */}
       {activeSection === 'home' && <VisitorStats />}
       
-      {/* Fixed Bottom Navigation - Positioned above ArticleFeed */}
-      <div className="fixed bottom-0 left-0 right-0 z-40">
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
         <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
       </div>
     </div>
