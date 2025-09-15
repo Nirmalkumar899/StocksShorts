@@ -105,19 +105,20 @@ export default function FlipArticleViewer({
       const trigger = Math.abs(my) > 50 || Math.abs(vy) > 0.5;
       const flipThreshold = Math.abs(my) > 100 || Math.abs(vy) > 1;
       
-      // Debug paper flip gestures
-      if (active || last) {
-        console.log(`📄 Paper flip gesture: last=${last}, my=${my}, dy=${dy}, vy=${vy}, trigger=${trigger}, isFlipping=${isFlipping}`);
-      }
       
       if (last && trigger && !isFlipping) {
+        console.log(`🔍 Navigation attempt: dy=${dy}, currentIndex=${currentIndex}, articlesLength=${articles.length}, canGoNext=${currentIndex < articles.length - 1}, canGoPrev=${currentIndex > 0}`);
+        
         if (dy > 0 && currentIndex > 0) {
           // Swipe down - go to previous article
+          console.log(`⬇️ Going to previous article: ${currentIndex - 1}`);
           navigateToArticle(currentIndex - 1, 'down');
         } else if (dy < 0 && currentIndex < articles.length - 1) {
           // Swipe up - go to next article  
+          console.log(`⬆️ Going to next article: ${currentIndex + 1}`);
           navigateToArticle(currentIndex + 1, 'up');
         } else {
+          console.log(`🚫 Cannot navigate: dy=${dy}, at bounds`);
           // Snap back if can't navigate
           api.start({ 
             y: 0,
@@ -377,25 +378,6 @@ export default function FlipArticleViewer({
         </div>
       </animated.div>
 
-      {/* Enhanced swipe instruction with paper effect */}
-      {currentIndex === 0 && articles.length > 1 && !isFlipping && (
-        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-30 bg-black/80 backdrop-blur-sm text-white px-6 py-3 rounded-2xl text-sm shadow-xl border border-white/20 animate-pulse">
-          <div className="flex items-center space-x-2">
-            <span>↑</span>
-            <span>Swipe to flip pages</span>
-            <span>↓</span>
-          </div>
-        </div>
-      )}
-      
-      {/* Loading indicator during flip */}
-      {isFlipping && (
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-40 pointer-events-none">
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-gray-900 dark:text-white shadow-lg">
-            Flipping page...
-          </div>
-        </div>
-      )}
     </div>
   );
 }
