@@ -72,27 +72,29 @@ export default function FlipArticleViewer({
     if (index >= 0 && index < articles.length && !isFlipping) {
       setIsFlipping(true);
       
-      // Paper flip animation sequence
+      // Paper flip animation sequence - start flip
       api.start({
         rotateX: direction === 'up' ? -90 : 90,
         scale: 0.95,
         opacity: 0.8,
-        config: { tension: 200, friction: 25 }
-      }).then(() => {
-        setCurrentIndex(index);
-        // Reset image error state for new article
-        setImageError(prev => ({ ...prev, [articles[index].id]: false }));
-        
-        // Complete the flip
-        api.start({
-          rotateX: 0,
-          scale: 1,
-          opacity: 1,
-          y: 0,
-          config: { tension: 150, friction: 30 }
-        }).then(() => {
-          setIsFlipping(false);
-        });
+        config: { tension: 200, friction: 25 },
+        onRest: () => {
+          // Mid-animation - change content
+          setCurrentIndex(index);
+          setImageError(prev => ({ ...prev, [articles[index].id]: false }));
+          
+          // Complete the flip
+          api.start({
+            rotateX: 0,
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            config: { tension: 150, friction: 30 },
+            onRest: () => {
+              setIsFlipping(false);
+            }
+          });
+        }
       });
     }
   }, [articles, api, isFlipping]);
@@ -102,6 +104,11 @@ export default function FlipArticleViewer({
     ({ last, movement: [, my], direction: [, dy], velocity: [, vy], active }) => {
       const trigger = Math.abs(my) > 50 || Math.abs(vy) > 0.5;
       const flipThreshold = Math.abs(my) > 100 || Math.abs(vy) > 1;
+      
+      // Debug paper flip gestures
+      if (active || last) {
+        console.log(`📄 Paper flip gesture: last=${last}, my=${my}, dy=${dy}, vy=${vy}, trigger=${trigger}, isFlipping=${isFlipping}`);
+      }
       
       if (last && trigger && !isFlipping) {
         if (dy > 0 && currentIndex > 0) {
