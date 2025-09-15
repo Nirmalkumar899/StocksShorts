@@ -223,10 +223,9 @@ export default function Special() {
         </Button>
       </div>
 
-      {/* Fixed Bottom Navigation - Positioned above ArticleFeed */}
-      <div className="fixed bottom-0 left-0 right-0 z-40">
-        <BottomNavigation activeTab="special" onTabChange={handleTabChange} />
-      </div>
+      {/* Fixed Bottom Navigation - Let component handle its own positioning */}
+      <BottomNavigation activeTab="special" onTabChange={handleTabChange} />
     </div>
+    </>
   );
 }
