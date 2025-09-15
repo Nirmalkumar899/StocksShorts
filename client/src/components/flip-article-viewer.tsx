@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSpring, animated } from 'react-spring';
+import { useSpring, animated, useTransition } from 'react-spring';
 import { useDrag } from '@use-gesture/react';
 import { Share2 } from '@/lib/icons';
 import { getContextualImage } from '@/lib/imageUtils';
@@ -21,62 +21,125 @@ export default function FlipArticleViewer({
 }: FlipArticleViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
+  const [isFlipping, setIsFlipping] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const currentArticle = articles[currentIndex] || null;
-  
+  const nextArticle = articles[currentIndex + 1] || null;
+  const prevArticle = articles[currentIndex - 1] || null;
 
-  // Spring animation for smooth transitions - optimized for Inshorts-like feel
-  const [{ y }, api] = useSpring(() => ({ 
+  // Paper flip animation with realistic physics
+  const [{ rotateX, y, scale, opacity }, api] = useSpring(() => ({ 
+    rotateX: 0,
     y: 0,
+    scale: 1,
+    opacity: 1,
     config: { 
-      tension: 300, 
-      friction: 30,
-      mass: 0.8
+      tension: 120, 
+      friction: 40,
+      mass: 1,
+      precision: 0.001
     }
   }));
 
-  // Navigate to next/previous article
-  const navigateToArticle = useCallback((index: number) => {
-    if (index >= 0 && index < articles.length) {
-      setCurrentIndex(index);
-      // Reset image error state for new article
-      setImageError(prev => ({ ...prev, [articles[index].id]: false }));
+  // Transitions for paper-like stacking effect
+  const transitions = useTransition(currentIndex, {
+    from: { 
+      transform: 'rotateX(-90deg) translateZ(-50px)',
+      opacity: 0,
+      zIndex: 0
+    },
+    enter: { 
+      transform: 'rotateX(0deg) translateZ(0px)',
+      opacity: 1,
+      zIndex: 1
+    },
+    leave: { 
+      transform: 'rotateX(90deg) translateZ(-50px)',
+      opacity: 0,
+      zIndex: 0
+    },
+    config: {
+      tension: 200,
+      friction: 25,
+      mass: 0.8
     }
-  }, [articles]);
+  });
 
-  // Gesture handling - optimized for smooth Inshorts-like feel
+  // Navigate to next/previous article with paper flip animation
+  const navigateToArticle = useCallback((index: number, direction: 'up' | 'down') => {
+    if (index >= 0 && index < articles.length && !isFlipping) {
+      setIsFlipping(true);
+      
+      // Paper flip animation sequence
+      api.start({
+        rotateX: direction === 'up' ? -90 : 90,
+        scale: 0.95,
+        opacity: 0.8,
+        config: { tension: 200, friction: 25 }
+      }).then(() => {
+        setCurrentIndex(index);
+        // Reset image error state for new article
+        setImageError(prev => ({ ...prev, [articles[index].id]: false }));
+        
+        // Complete the flip
+        api.start({
+          rotateX: 0,
+          scale: 1,
+          opacity: 1,
+          y: 0,
+          config: { tension: 150, friction: 30 }
+        }).then(() => {
+          setIsFlipping(false);
+        });
+      });
+    }
+  }, [articles, api, isFlipping]);
+
+  // Enhanced gesture handling for paper-like flip experience
   const bind = useDrag(
     ({ last, movement: [, my], direction: [, dy], velocity: [, vy], active }) => {
-      // More sensitive trigger for smoother experience
-      const trigger = Math.abs(my) > 30 || Math.abs(vy) > 0.3;
+      const trigger = Math.abs(my) > 50 || Math.abs(vy) > 0.5;
+      const flipThreshold = Math.abs(my) > 100 || Math.abs(vy) > 1;
       
-      if (last && trigger) {
+      if (last && trigger && !isFlipping) {
         if (dy > 0 && currentIndex > 0) {
           // Swipe down - go to previous article
-          navigateToArticle(currentIndex - 1);
+          navigateToArticle(currentIndex - 1, 'down');
         } else if (dy < 0 && currentIndex < articles.length - 1) {
-          // Swipe up - go to next article
-          navigateToArticle(currentIndex + 1);
+          // Swipe up - go to next article  
+          navigateToArticle(currentIndex + 1, 'up');
+        } else {
+          // Snap back if can't navigate
+          api.start({ 
+            y: 0,
+            rotateX: 0,
+            scale: 1,
+            opacity: 1,
+            config: { tension: 250, friction: 30 }
+          });
         }
+      } else if (active && !isFlipping) {
+        // Paper lift effect during drag
+        const progress = Math.min(Math.abs(my) / 200, 1);
+        const rotateAmount = my > 0 ? progress * 15 : -progress * 15;
+        const scaleAmount = 1 - progress * 0.05;
+        const opacityAmount = 1 - progress * 0.2;
+        
         api.start({ 
-          y: 0, 
-          immediate: false,
-          config: { tension: 300, friction: 30 }
-        });
-      } else if (active) {
-        // During drag, follow the finger with reduced movement for better control
-        api.start({ 
-          y: my * 0.5, // Reduce movement sensitivity 
+          y: my * 0.3,
+          rotateX: rotateAmount,
+          scale: scaleAmount,
+          opacity: opacityAmount,
           immediate: true 
         });
       }
     },
     {
       axis: 'y',
-      bounds: { top: -80, bottom: 80 },
-      rubberband: true,
+      bounds: { top: -200, bottom: 200 },
+      rubberband: 0.3,
       filterTaps: true,
     }
   );
@@ -85,9 +148,9 @@ export default function FlipArticleViewer({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' && currentIndex > 0) {
-        navigateToArticle(currentIndex - 1);
+        navigateToArticle(currentIndex - 1, 'down');
       } else if (e.key === 'ArrowDown' && currentIndex < articles.length - 1) {
-        navigateToArticle(currentIndex + 1);
+        navigateToArticle(currentIndex + 1, 'up');
       }
     };
 
@@ -170,114 +233,135 @@ export default function FlipArticleViewer({
   }
 
   return (
-    <div className="h-full w-full relative overflow-hidden bg-white dark:bg-gray-900">
+    <div className="h-full w-full relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-950" style={{ perspective: '1000px' }}>
+      
+      {/* Paper stack effect - show glimpse of next/previous articles */}
+      {prevArticle && (
+        <div className="absolute inset-0 transform translate-y-1 scale-98 opacity-30 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg" style={{ zIndex: -2 }} />
+      )}
+      {nextArticle && (
+        <div className="absolute inset-0 transform -translate-y-1 scale-98 opacity-30 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg" style={{ zIndex: -1 }} />
+      )}
 
-
-
-      {/* Article content */}
+      {/* Main article with paper flip animation */}
       <animated.div
         {...bind()}
-        style={{ y }}
-        className="h-full w-full touch-pan-y cursor-grab active:cursor-grabbing"
+        style={{ 
+          transform: y.to(yVal => rotateX.to(rotVal => `translateY(${yVal}px) rotateX(${rotVal}deg)`)),
+          scale,
+          opacity,
+          transformOrigin: 'center center'
+        }}
+        className="h-full w-full touch-pan-y cursor-grab active:cursor-grabbing relative"
         onClick={() => handleArticleClick(currentArticle)}
       >
-        <div className="h-full w-full flex flex-col">
-          {/* Article image - smaller, only takes 35% of viewport */}
-          <div className="h-[35vh] relative">
-            <img
-              src={currentArticle.imageUrl || getContextualImage(currentArticle)}
-              alt={currentArticle.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                if (!imageError[currentArticle.id]) {
-                  setImageError(prev => ({ ...prev, [currentArticle.id]: true }));
-                  e.currentTarget.src = getContextualImage(currentArticle);
-                }
-              }}
-            />
-            
-            {/* Light gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-          </div>
+        {/* Paper-like container with shadow and border */}
+        <div className="h-full w-full bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden relative">
+          
+          {/* Paper texture overlay */}
+          <div className="absolute inset-0 opacity-5 dark:opacity-10 pointer-events-none" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23000' fill-opacity='0.1' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E")`,
+          }} />
+          
+          <div className="h-full w-full flex flex-col relative z-10">
+            {/* Article image - 35% viewport */}
+            <div className="h-[35vh] relative overflow-hidden">
+              <img
+                src={currentArticle.imageUrl || getContextualImage(currentArticle)}
+                alt={currentArticle.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  if (!imageError[currentArticle.id]) {
+                    setImageError(prev => ({ ...prev, [currentArticle.id]: true }));
+                    e.currentTarget.src = getContextualImage(currentArticle);
+                  }
+                }}
+              />
+              
+              {/* Elegant gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            </div>
 
-          {/* Article content - takes remaining space */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden">
-            {/* Share button */}
-            <button
-              onClick={(e) => handleShare(e, currentArticle)}
-              className="absolute top-3 right-3 z-10 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
-              aria-label="Share article"
-            >
-              <Share2 className="h-4 w-4" />
-            </button>
+            {/* Article content with paper-like styling */}
+            <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 relative">
+              
+              {/* Share button with paper-like styling */}
+              <button
+                onClick={(e) => handleShare(e, currentArticle)}
+                className="absolute top-4 right-4 z-20 p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all hover:scale-105 active:scale-95"
+                aria-label="Share article"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
 
-            <div className="flex-1 p-4 overflow-y-auto">
-              {/* Title */}
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-3 pr-12 leading-tight">
-                {currentArticle.title}
-              </h1>
+              <div className="flex-1 p-5 overflow-y-auto">
+                {/* Title with paper typography */}
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4 pr-16 leading-tight tracking-tight">
+                  {currentArticle.title}
+                </h1>
 
-              {/* Content */}
-              <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px]">
-                {currentArticle.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-                  <div className="space-y-3">
-                    <p className="text-gray-700 dark:text-gray-300">
-                      {currentArticle.content.substring(0, 200)}...
-                    </p>
-                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-3 rounded-lg border border-blue-300 dark:border-blue-700">
-                      <p className="text-blue-800 dark:text-blue-200 font-semibold text-center text-sm">
-                        🔒 Login required to read full article
+                {/* Content with newspaper-like styling */}
+                <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-base font-light">
+                  {currentArticle.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+                    <div className="space-y-4">
+                      <p className="text-gray-700 dark:text-gray-300">
+                        {currentArticle.content.substring(0, 200)}...
                       </p>
-                      <p className="text-blue-700 dark:text-blue-300 text-xs text-center mt-1">
-                        Go to Profile section to login
-                      </p>
+                      <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/50 dark:to-blue-800/50 p-4 rounded-xl border border-blue-200 dark:border-blue-700 shadow-sm">
+                        <p className="text-blue-800 dark:text-blue-200 font-semibold text-center">
+                          🔒 Login required to read full article
+                        </p>
+                        <p className="text-blue-700 dark:text-blue-300 text-sm text-center mt-1">
+                          Go to Profile section to login
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="whitespace-pre-wrap">
-                    {getTruncatedContent(currentArticle.content)}
+                  ) : (
+                    <div className="whitespace-pre-wrap">
+                      {getTruncatedContent(currentArticle.content)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Read more hint with paper styling */}
+                {currentArticle.content && currentArticle.content.length > 600 && (
+                  <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl mt-6 border border-blue-100 dark:border-blue-800">
+                    👆 Tap to read full article
                   </div>
                 )}
-              </div>
 
-              {/* Tap to read more hint */}
-              {currentArticle.content && currentArticle.content.length > 600 && (
-                <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg mt-4">
-                  👆 Tap to read full article
-                </div>
-              )}
-
-              {/* Source and date - with two line gap after content */}
-              <div className="mt-8 bg-black text-white p-4 rounded-lg">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="text-white/90 font-medium">
-                    {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
-                  </div>
-                  
-                  <div>
-                    {(currentArticle as any).sourceUrl ? (
-                      <a 
-                        href={(currentArticle as any).sourceUrl} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {currentArticle.source}
-                      </a>
-                    ) : (
-                      <span className="text-white font-medium">
-                        {currentArticle.source}
-                      </span>
-                    )}
+                {/* Source and date with newspaper-like footer */}
+                <div className="mt-8 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-700 dark:to-gray-800 text-white p-4 rounded-xl shadow-lg">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-gray-200 font-medium">
+                      {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </div>
+                    
+                    <div>
+                      {(currentArticle as any).sourceUrl ? (
+                        <a 
+                          href={(currentArticle as any).sourceUrl} 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {currentArticle.source}
+                        </a>
+                      ) : (
+                        <span className="text-white font-medium">
+                          {currentArticle.source}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -286,10 +370,23 @@ export default function FlipArticleViewer({
         </div>
       </animated.div>
 
-      {/* Swipe instruction overlay (shown briefly) */}
-      {currentIndex === 0 && articles.length > 1 && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 bg-black/70 text-white px-4 py-2 rounded-full text-sm animate-pulse">
-          Swipe up for next article
+      {/* Enhanced swipe instruction with paper effect */}
+      {currentIndex === 0 && articles.length > 1 && !isFlipping && (
+        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-30 bg-black/80 backdrop-blur-sm text-white px-6 py-3 rounded-2xl text-sm shadow-xl border border-white/20 animate-pulse">
+          <div className="flex items-center space-x-2">
+            <span>↑</span>
+            <span>Swipe to flip pages</span>
+            <span>↓</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Loading indicator during flip */}
+      {isFlipping && (
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-40 pointer-events-none">
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-gray-900 dark:text-white shadow-lg">
+            Flipping page...
+          </div>
         </div>
       )}
     </div>
