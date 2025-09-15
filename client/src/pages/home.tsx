@@ -148,7 +148,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   } = useQuery<Article[]>({
     queryKey: ['/api/articles/stocks-special'],
     queryFn: async () => {
-      console.log('🌟 Starting StocksShorts Special fetch...');
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
@@ -162,13 +161,12 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ StocksShorts Special fetch error:', errorText);
+          console.error('StocksShorts Special fetch error:', errorText);
           throw new Error(errorText || 'Failed to fetch StocksShorts Special articles');
         }
         
         const data = await response.json();
-        console.log('✅ Fetched StocksShorts Special articles:', data.length, 'articles');
-        console.log('📋 Special articles data:', data);
+        console.log('Fetched StocksShorts Special articles:', data);
         
         if (!Array.isArray(data)) {
           console.error('Expected array but got:', typeof data, data);
@@ -178,7 +176,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return data;
       } catch (error) {
         clearTimeout(timeoutId);
-        console.error('💥 StocksShorts Special fetch failed:', error);
         if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('StocksShorts Special request timed out. Please try again.');
         }
@@ -187,7 +184,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes cache
-    enabled: true, // Explicitly enable the query
   });
 
   // Apply translations to articles
@@ -208,13 +204,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     console.log("Showing original articles:", rawArticles?.length);
     return rawArticles || [];
   }, [rawArticles, isTranslated, translatedArticles]);
-
-  // Filter regular articles to exclude any Special articles
-  const nonSpecialArticles = useMemo(() => {
-    const filtered = (articles || []).filter(article => article.type !== 'StocksShorts Special');
-    console.log("🔍 Filtered regular articles:", filtered.length, "out of", articles?.length || 0);
-    return filtered;
-  }, [articles]);
 
   // Refresh articles mutation
   const refreshMutation = useMutation({
@@ -399,9 +388,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   };
 
   // Debug log
-  console.log('📊 Articles data:', articles?.length, 'Loading:', isLoading, 'Error:', error);
-  console.log('⭐ StocksShorts Special data:', specialArticles?.length, 'Loading:', specialLoading, 'Error:', specialError);
-  console.log('🔍 Filtered regular articles:', nonSpecialArticles?.length, 'Total raw:', articles?.length);
+  console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
 
   // Render different sections based on activeSection
   const renderSection = () => {
@@ -533,18 +520,18 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               )}
 
               {/* Regular Articles Section */}
-              {nonSpecialArticles && nonSpecialArticles.length > 0 && (
-                <div data-testid="section-regular" className="block">
+              {articles && articles.length > 0 && (
+                <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                       Latest News
                     </h2>
                     <span className="text-sm text-gray-500 dark:text-gray-400 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded-full">
-                      {nonSpecialArticles.length} articles
+                      {articles.length} articles
                     </span>
                   </div>
                   <div className="space-y-4">
-                    {nonSpecialArticles.map((article) => (
+                    {articles.map((article) => (
                       <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
                         <NewsCard
                           data-testid={`article-${article.id}`}
