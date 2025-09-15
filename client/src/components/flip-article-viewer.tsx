@@ -26,8 +26,15 @@ export default function FlipArticleViewer({
 
   const currentArticle = articles[currentIndex] || null;
 
-  // Spring animation for smooth transitions
-  const [{ y }, api] = useSpring(() => ({ y: 0 }));
+  // Spring animation for smooth transitions - optimized for Inshorts-like feel
+  const [{ y }, api] = useSpring(() => ({ 
+    y: 0,
+    config: { 
+      tension: 300, 
+      friction: 30,
+      mass: 0.8
+    }
+  }));
 
   // Navigate to next/previous article
   const navigateToArticle = useCallback((index: number) => {
@@ -38,11 +45,11 @@ export default function FlipArticleViewer({
     }
   }, [articles]);
 
-  // Gesture handling
+  // Gesture handling - optimized for smooth Inshorts-like feel
   const bind = useDrag(
-    ({ last, movement: [, my], direction: [, dy], velocity: [, vy] }) => {
-      // If drag is significant or velocity is high, trigger navigation
-      const trigger = Math.abs(my) > 50 || Math.abs(vy) > 0.5;
+    ({ last, movement: [, my], direction: [, dy], velocity: [, vy], active }) => {
+      // More sensitive trigger for smoother experience
+      const trigger = Math.abs(my) > 30 || Math.abs(vy) > 0.3;
       
       if (last && trigger) {
         if (dy > 0 && currentIndex > 0) {
@@ -52,16 +59,24 @@ export default function FlipArticleViewer({
           // Swipe up - go to next article
           navigateToArticle(currentIndex + 1);
         }
-        api.start({ y: 0, immediate: false });
-      } else {
-        // During drag, follow the finger
-        api.start({ y: my, immediate: true });
+        api.start({ 
+          y: 0, 
+          immediate: false,
+          config: { tension: 300, friction: 30 }
+        });
+      } else if (active) {
+        // During drag, follow the finger with reduced movement for better control
+        api.start({ 
+          y: my * 0.5, // Reduce movement sensitivity 
+          immediate: true 
+        });
       }
     },
     {
       axis: 'y',
-      bounds: { top: -100, bottom: 100 },
+      bounds: { top: -80, bottom: 80 },
       rubberband: true,
+      filterTaps: true,
     }
   );
 
@@ -136,8 +151,8 @@ export default function FlipArticleViewer({
       return 'No content available';
     }
     
-    // For Inshorts-style, show more content but still truncate if very long
-    const maxLength = 800;
+    // For Inshorts-style, show optimal amount of content for the smaller layout
+    const maxLength = 600; // Reduced for better UX
     if (content.length <= maxLength) {
       return content;
     }
@@ -183,16 +198,51 @@ export default function FlipArticleViewer({
         </button>
       )}
 
+      {/* Source banner - always visible at top */}
+      <div className="absolute top-0 left-0 right-0 z-30 bg-black/90 text-white px-4 py-2">
+        <div className="flex items-center justify-between text-sm">
+          <div className="text-white/90 font-medium">
+            {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            })}
+          </div>
+          
+          <div>
+            {(currentArticle as any).sourceUrl ? (
+              <a 
+                href={(currentArticle as any).sourceUrl} 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {currentArticle.source}
+              </a>
+            ) : (
+              <span className="text-white font-medium">
+                {currentArticle.source}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Article content */}
       <animated.div
         {...bind()}
         style={{ y }}
-        className="h-full w-full touch-pan-y cursor-grab active:cursor-grabbing"
+        className="h-full w-full touch-pan-y cursor-grab active:cursor-grabbing pt-12"
         onClick={() => handleArticleClick(currentArticle)}
       >
         <div className="h-full w-full flex flex-col">
-          {/* Article image - takes upper half */}
-          <div className="flex-1 relative">
+          {/* Article image - smaller, only takes 35% of viewport */}
+          <div className="h-[35vh] relative">
             <img
               src={currentArticle.imageUrl || getContextualImage(currentArticle)}
               alt={currentArticle.title}
@@ -205,39 +255,39 @@ export default function FlipArticleViewer({
               }}
             />
             
-            {/* Gradient overlay for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            {/* Light gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           </div>
 
-          {/* Article content - takes lower half */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 relative">
+          {/* Article content - takes remaining space */}
+          <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden">
             {/* Share button */}
             <button
               onClick={(e) => handleShare(e, currentArticle)}
-              className="absolute top-4 right-4 z-10 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
+              className="absolute top-3 right-3 z-10 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
               aria-label="Share article"
             >
-              <Share2 className="h-5 w-5" />
+              <Share2 className="h-4 w-4" />
             </button>
 
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 p-4 overflow-y-auto">
               {/* Title */}
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-4 pr-16">
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-3 pr-12 leading-tight">
                 {currentArticle.title}
               </h1>
 
               {/* Content */}
-              <div className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px]">
                 {currentArticle.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <p className="text-gray-700 dark:text-gray-300">
                       {currentArticle.content.substring(0, 200)}...
                     </p>
-                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-4 rounded-lg border-2 border-blue-300 dark:border-blue-700">
-                      <p className="text-blue-800 dark:text-blue-200 font-semibold text-center">
+                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-3 rounded-lg border border-blue-300 dark:border-blue-700">
+                      <p className="text-blue-800 dark:text-blue-200 font-semibold text-center text-sm">
                         🔒 Login required to read full article
                       </p>
-                      <p className="text-blue-700 dark:text-blue-300 text-sm text-center mt-1">
+                      <p className="text-blue-700 dark:text-blue-300 text-xs text-center mt-1">
                         Go to Profile section to login
                       </p>
                     </div>
@@ -251,45 +301,10 @@ export default function FlipArticleViewer({
 
               {/* Tap to read more hint */}
               {currentArticle.content && currentArticle.content.length > 800 && (
-                <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg mb-4">
+                <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg mt-4">
                   👆 Tap to read full article
                 </div>
               )}
-            </div>
-
-            {/* Source and date footer */}
-            <div className="bg-black text-white p-4">
-              <div className="flex items-center justify-between text-sm">
-                <div className="text-white/90">
-                  {new Date(currentArticle.time || new Date()).toLocaleDateString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
-                  })} • {new Date(currentArticle.time || new Date()).toLocaleTimeString('en-IN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                  })}
-                </div>
-                
-                <div>
-                  {(currentArticle as any).sourceUrl ? (
-                    <a 
-                      href={(currentArticle as any).sourceUrl} 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {currentArticle.source}
-                    </a>
-                  ) : (
-                    <span className="text-white font-medium">
-                      {currentArticle.source}
-                    </span>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>
