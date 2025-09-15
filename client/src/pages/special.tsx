@@ -10,6 +10,7 @@ import type { Article } from '@shared/schema';
 import { getContextualImage } from '@/lib/imageUtils';
 
 import NewsCard from '@/components/news-card';
+import ArticleFeed from '@/components/article-feed';
 
 export default function Special() {
   const [, setLocation] = useLocation();
@@ -109,158 +110,96 @@ export default function Special() {
     low: specialArticles.filter(a => a.priority?.toLowerCase() === 'low')
   };
 
+  // Order articles: High → Medium → Low, then by time within each group
+  const sortByTimeDesc = (articles: Article[]) => {
+    return [...articles].sort((a, b) => {
+      const aTime = new Date(a.time || a.createdAt).getTime();
+      const bTime = new Date(b.time || b.createdAt).getTime();
+      return bTime - aTime; // Most recent first
+    });
+  };
+
+  const priorityOrderedArticles = [
+    ...sortByTimeDesc(groupedArticles.high),
+    ...sortByTimeDesc(groupedArticles.medium),
+    ...sortByTimeDesc(groupedArticles.low)
+  ];
+
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+    <div className="h-screen bg-gray-50 dark:bg-neutral-950 relative">
+      {isLoading ? (
+        // Loading State - Full Screen
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-yellow-500" />
+            <p className="text-gray-600 dark:text-gray-400">Loading special content...</p>
+          </div>
+        </div>
+      ) : error ? (
+        // Error State - Full Screen
+        <div className="h-full flex items-center justify-center px-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="text-center p-6">
+              <div className="text-red-500 text-5xl mb-4">⚠️</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Failed to Load Content
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {error instanceof Error ? error.message : 'Something went wrong'}
+              </p>
+              <Button onClick={handleRefresh} data-testid="retry-button">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      ) : specialArticles.length === 0 ? (
+        // Empty State - Full Screen
+        <div className="h-full flex items-center justify-center px-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="text-center p-6">
+              <div className="text-yellow-500 text-5xl mb-4">⭐</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                No Special Content Yet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Articles haven't been published yet. Check back soon!
+              </p>
+              <Button onClick={handleRefresh} data-testid="refresh-empty">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Check for Updates
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // Inshorts-style ArticleFeed with Priority Ordering
+        <ArticleFeed
+          articles={priorityOrderedArticles}
+          priorityGroups={groupedArticles}
+          showPriorityDividers={true}
+          className="relative"
+          data-testid="special-article-feed"
+        />
+      )}
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {isLoading ? (
-          // Loading State
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-yellow-500" />
-              <p className="text-gray-600 dark:text-gray-400">Loading content...</p>
-            </div>
-          </div>
-        ) : error ? (
-          // Error State
-          <div className="flex items-center justify-center py-20">
-            <Card className="w-full max-w-md">
-              <CardContent className="text-center p-6">
-                <div className="text-red-500 text-5xl mb-4">⚠️</div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Failed to Load Content
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  {error instanceof Error ? error.message : 'Something went wrong'}
-                </p>
-                <Button onClick={handleRefresh} data-testid="retry-button">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Try Again
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        ) : specialArticles.length === 0 ? (
-          // Empty State
-          <div className="flex items-center justify-center py-20">
-            <Card className="w-full max-w-md">
-              <CardContent className="text-center p-6">
-                <div className="text-yellow-500 text-5xl mb-4">⭐</div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  No Special Content Yet
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Articles haven't been published yet. Check back soon!
-                </p>
-                <Button onClick={handleRefresh} data-testid="refresh-empty">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Check for Updates
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          // Articles List
-          <div className="space-y-8">
-            {/* High Priority Articles */}
-            {groupedArticles.high.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-red-500" />
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    High Priority
-                  </h2>
-                  <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                    {groupedArticles.high.length}
-                  </Badge>
-                </div>
-                <div className="space-y-4">
-                  {groupedArticles.high.map((article) => (
-                    <div
-                      key={article.id}
-                      className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg shadow-md border-l-4 border-red-500"
-                    >
-                      <NewsCard
-                        data-testid={`high-priority-article-${article.id}`}
-                        article={article}
-                        onClick={() => handleArticleClick(article)}
-                        onShare={(e) => handleShare(e, article)}
-                        isExpanded={expandedArticles.has(article.id)}
-                        onToggleExpanded={() => handleToggleExpanded(article.id)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Medium Priority Articles */}
-            {groupedArticles.medium.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-2 mb-4">
-                  <Calendar className="h-5 w-5 text-yellow-500" />
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Medium Priority
-                  </h2>
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                    {groupedArticles.medium.length}
-                  </Badge>
-                </div>
-                <div className="space-y-4">
-                  {groupedArticles.medium.map((article) => (
-                    <div
-                      key={article.id}
-                      className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg shadow-md border-l-4 border-yellow-500"
-                    >
-                      <NewsCard
-                        data-testid={`medium-priority-article-${article.id}`}
-                        article={article}
-                        onClick={() => handleArticleClick(article)}
-                        onShare={(e) => handleShare(e, article)}
-                        isExpanded={expandedArticles.has(article.id)}
-                        onToggleExpanded={() => handleToggleExpanded(article.id)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Low Priority Articles */}
-            {groupedArticles.low.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-2 mb-4">
-                  <Calendar className="h-5 w-5 text-blue-500" />
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Additional Content
-                  </h2>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
-                    {groupedArticles.low.length}
-                  </Badge>
-                </div>
-                <div className="space-y-4">
-                  {groupedArticles.low.map((article) => (
-                    <div
-                      key={article.id}
-                      className="bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 border-blue-400"
-                    >
-                      <NewsCard
-                        data-testid={`low-priority-article-${article.id}`}
-                        article={article}
-                        onClick={() => handleArticleClick(article)}
-                        onShare={(e) => handleShare(e, article)}
-                        isExpanded={expandedArticles.has(article.id)}
-                        onToggleExpanded={() => handleToggleExpanded(article.id)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      {/* Floating Refresh Button */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button
+          onClick={handleRefresh}
+          disabled={isLoading}
+          size="sm"
+          className="bg-white/80 backdrop-blur-sm text-gray-900 hover:bg-white/90 shadow-lg border"
+          data-testid="floating-refresh-button"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+        </Button>
       </div>
     </div>
   );

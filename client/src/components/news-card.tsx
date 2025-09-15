@@ -16,11 +16,13 @@ interface NewsCardProps {
   onShare: (e: React.MouseEvent) => void;
   isExpanded?: boolean;
   onToggleExpanded?: () => void;
+  variant?: 'default' | 'inshorts';
 }
 
-export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
+export default function NewsCard({ article, onClick, onShare, variant = 'default' }: NewsCardProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const { toast } = useToast();
@@ -31,6 +33,15 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       return formatDistanceToNow(date, { addSuffix: true });
     } catch (error) {
       return 'unknown time';
+    }
+  };
+
+  // Safely convert article time to Date object
+  const getArticleDate = () => {
+    try {
+      return new Date(article.time || Date.now());
+    } catch (error) {
+      return new Date();
     }
   };
 
@@ -158,75 +169,134 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
       }
     }
     
-    // Custom sharing options
-    const shareOptions = [
-      {
-        name: 'WhatsApp',
-        url: `https://wa.me/?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`,
-        color: 'bg-green-500 hover:bg-green-600'
-      },
-      {
-        name: 'Twitter',
-        url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
-        color: 'bg-blue-500 hover:bg-blue-600'
-      },
-      {
-        name: 'Telegram',
-        url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-        color: 'bg-blue-400 hover:bg-blue-500'
-      },
-      {
-        name: 'LinkedIn',
-        url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-        color: 'bg-blue-700 hover:bg-blue-800'
-      }
-    ];
-    
-    // Show share options in a temporary dialog
-    const shareDialog = document.createElement('div');
-    shareDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    shareDialog.innerHTML = `
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4">
-        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Share Article</h3>
-        <div class="space-y-2">
-          ${shareOptions.map(option => `
-            <button 
-              class="w-full ${option.color} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              onclick="window.open('${option.url}', '_blank'); document.body.removeChild(this.closest('.fixed'));"
-            >
-              Share on ${option.name}
-            </button>
-          `).join('')}
-          <button 
-            class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            onclick="navigator.clipboard.writeText('${shareUrl}'); document.body.removeChild(this.closest('.fixed'));"
-          >
-            Copy Link
-          </button>
-          <button 
-            class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            onclick="document.body.removeChild(this.closest('.fixed'));"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(shareDialog);
-    
-    // Close dialog when clicking outside
-    shareDialog.addEventListener('click', (event) => {
-      if (event.target === shareDialog) {
-        document.body.removeChild(shareDialog);
-      }
+    // Open React share dialog instead of DOM manipulation
+    setIsShareDialogOpen(true);
+  };
+
+  // Safe share function for social platforms
+  const handleShareTo = (platform: string, url: string) => {
+    window.open(url, '_blank');
+    setIsShareDialogOpen(false);
+  };
+
+  // Safe copy to clipboard
+  const handleCopyToClipboard = () => {
+    const shareUrl = `${window.location.origin}/article/${article.id}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      toast({
+        title: "Link copied!",
+        description: "Article link has been copied to your clipboard.",
+      });
+      setIsShareDialogOpen(false);
     });
+  };
+
+  // Generate safe share URLs
+  const getShareUrls = () => {
+    const shareUrl = `${window.location.origin}/article/${article.id}`;
+    const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;
+    
+    return {
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
+    };
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
+  // Inshorts variant - minimal full-screen layout
+  if (variant === 'inshorts') {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col relative">
+        {/* Hero Image */}
+        <div className="relative h-2/5 bg-gray-100 dark:bg-gray-800 overflow-hidden">
+          <img
+            src={article.imageUrl || getContextualImage(article)}
+            alt={article.title}
+            className="w-full h-full object-cover object-center"
+            onError={(e) => {
+              if (!imageError) {
+                setImageError(true);
+                e.currentTarget.src = getContextualImage(article);
+              }
+            }}
+          />
+          {/* Gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        </div>
+
+        {/* Content Section */}
+        <div className="flex-1 flex flex-col p-6 pb-safe">
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+            {article.title}
+          </h1>
+
+          {/* Content Summary */}
+          <div className="flex-1 mb-6">
+            <div className="relative">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base line-clamp-6">
+                {article.content?.substring(0, 300) || 'No content available'}
+                {article.content && article.content.length > 300 && '...'}
+              </p>
+              {/* Fade effect */}
+              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Source and Time */}
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <span className="font-medium">{article.source}</span>
+            <span>
+              {formatTimeAgo(getArticleDate())}
+            </span>
+          </div>
+
+          {/* Read More Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+            className="w-full bg-black dark:bg-white text-white dark:text-black py-4 px-6 rounded-lg font-semibold text-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors duration-200"
+            data-testid="read-more-button"
+          >
+            Read Full Article
+          </button>
+        </div>
+
+        {/* Share button (floating) */}
+        <button
+          onClick={(e) => onShare(e)}
+          className="absolute top-6 right-6 p-3 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors duration-200"
+          data-testid="share-button"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
+
+        {/* Premium lock overlay for special articles */}
+        {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading && (
+          <div className="absolute inset-x-6 bottom-32">
+            <div className="bg-blue-50 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-lg p-4 backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-2">
+                <Lock className="h-4 w-4" />
+                <span className="text-sm font-semibold">Premium Content</span>
+              </div>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Login to read the complete article with detailed analysis
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Default variant - existing layout
   return (
     <>
       <div 
@@ -450,7 +520,7 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 <span>•</span>
                 <span className="font-medium">Source: {article.source}</span>
                 <span>•</span>
-                <span>Published: {formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
+                <span>Published: {formatTimeAgo(getArticleDate())}</span>
               </div>
             </div>
             
@@ -480,6 +550,63 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                 </Button>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Safe Share Dialog */}
+      <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="share-dialog">
+          <DialogHeader>
+            <DialogTitle>Share Article</DialogTitle>
+            <DialogDescription>
+              Share this article with others
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Button
+              className="w-full bg-green-500 hover:bg-green-600 text-white"
+              onClick={() => handleShareTo('WhatsApp', getShareUrls().whatsapp)}
+              data-testid="share-whatsapp"
+            >
+              Share on WhatsApp
+            </Button>
+            <Button
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              onClick={() => handleShareTo('Twitter', getShareUrls().twitter)}
+              data-testid="share-twitter"
+            >
+              Share on Twitter
+            </Button>
+            <Button
+              className="w-full bg-blue-400 hover:bg-blue-500 text-white"
+              onClick={() => handleShareTo('Telegram', getShareUrls().telegram)}
+              data-testid="share-telegram"
+            >
+              Share on Telegram
+            </Button>
+            <Button
+              className="w-full bg-blue-700 hover:bg-blue-800 text-white"
+              onClick={() => handleShareTo('LinkedIn', getShareUrls().linkedin)}
+              data-testid="share-linkedin"
+            >
+              Share on LinkedIn
+            </Button>
+            <Button
+              className="w-full bg-gray-500 hover:bg-gray-600 text-white"
+              onClick={handleCopyToClipboard}
+              data-testid="share-copy"
+            >
+              Copy Link
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsShareDialogOpen(false)}
+              data-testid="share-cancel"
+            >
+              Cancel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

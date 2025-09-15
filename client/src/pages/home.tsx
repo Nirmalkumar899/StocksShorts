@@ -10,6 +10,7 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
 import NewsCard from '@/components/news-card';
+import ArticleFeed from '@/components/article-feed';
 import BottomNavigation from '@/components/bottom-navigation';
 
 import { VisitorStats } from '@/components/visitor-stats';
@@ -361,19 +362,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   const renderHomeContent = () => (
     <>
-      {/* Fixed Header */}
-      <div className="flex-shrink-0">
-        <Header 
-          onRefresh={handleRefresh} 
-          isRefreshing={refreshMutation.isPending}
-          onTranslate={handleTranslate}
-          isTranslated={isTranslated}
-          isTranslating={translateMutation.isPending}
-        />
-        {/* Category filter removed for clean Inshorts-style interface */}
-      </div>
-
-      {/* Main Content Area */}
+      {/* Main Content Area - Full Screen */}
       <div className="flex-1 overflow-hidden">
         {isLoading ? (
           // Loading State - Show loading if either regular or special articles are loading
@@ -416,50 +405,43 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          // News Cards - Traditional feed layout showing multiple articles
-          <div 
-            ref={scrollContainerRef}
-            className="h-full overflow-y-auto scrollbar-hide transition-all duration-200 ease-in-out"
-            onScroll={(e) => {
-              const element = e.target as HTMLElement;
-              const currentScrollTop = element.scrollTop;
-              
-              // Store scroll position for reference
-              lastScrollTopRef.current = currentScrollTop;
-            }}
-          >
-            <div className="space-y-6 p-4">
-
-              {/* Regular Articles Section */}
-              {articles && articles.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      Latest News
-                    </h2>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded-full">
-                      {articles.length} articles
-                    </span>
-                  </div>
-                  <div className="space-y-4">
-                    {articles.map((article) => (
-                      <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                        <NewsCard
-                          data-testid={`article-${article.id}`}
-                          article={article}
-                          onClick={() => handleArticleClick(article)}
-                          onShare={(e) => handleShare(e, article)}
-                          isExpanded={expandedArticles.has(article.id)}
-                          onToggleExpanded={() => handleToggleExpanded(article.id)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          // Inshorts-style ArticleFeed
+          <ArticleFeed
+            articles={articles}
+            className="relative"
+            data-testid="home-article-feed"
+          />
         )}
+      </div>
+
+      {/* Floating Action Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+        <Button
+          onClick={handleRefresh}
+          disabled={refreshMutation.isPending}
+          size="sm"
+          className="bg-white/80 backdrop-blur-sm text-gray-900 hover:bg-white/90 shadow-lg border"
+          data-testid="floating-refresh-button"
+        >
+          {refreshMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          onClick={handleTranslate}
+          disabled={translateMutation.isPending}
+          size="sm"
+          className="bg-white/80 backdrop-blur-sm text-gray-900 hover:bg-white/90 shadow-lg border"
+          data-testid="floating-translate-button"
+        >
+          {translateMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <span className="text-sm font-medium">{isTranslated ? 'EN' : 'हिं'}</span>
+          )}
+        </Button>
       </div>
     </>
   );
