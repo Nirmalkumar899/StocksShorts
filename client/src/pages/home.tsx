@@ -431,7 +431,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   );
 
   return (
-    <div className="inshorts-container fixed inset-0 bg-gray-50 dark:bg-neutral-950">
+    <div className="bg-gray-50 dark:bg-neutral-950">
       {renderSection()}
       
       {/* Visitor Stats - Only show on home section */}
