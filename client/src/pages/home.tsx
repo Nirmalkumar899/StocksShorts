@@ -148,6 +148,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   } = useQuery<Article[]>({
     queryKey: ['/api/articles/stocks-special'],
     queryFn: async () => {
+      console.log('🌟 Starting StocksShorts Special fetch...');
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
@@ -161,12 +162,13 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('StocksShorts Special fetch error:', errorText);
+          console.error('❌ StocksShorts Special fetch error:', errorText);
           throw new Error(errorText || 'Failed to fetch StocksShorts Special articles');
         }
         
         const data = await response.json();
-        console.log('Fetched StocksShorts Special articles:', data);
+        console.log('✅ Fetched StocksShorts Special articles:', data.length, 'articles');
+        console.log('📋 Special articles data:', data);
         
         if (!Array.isArray(data)) {
           console.error('Expected array but got:', typeof data, data);
@@ -176,6 +178,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return data;
       } catch (error) {
         clearTimeout(timeoutId);
+        console.error('💥 StocksShorts Special fetch failed:', error);
         if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('StocksShorts Special request timed out. Please try again.');
         }
@@ -184,6 +187,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     },
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes cache
+    enabled: true, // Explicitly enable the query
   });
 
   // Apply translations to articles
@@ -388,7 +392,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   };
 
   // Debug log
-  console.log('Articles data:', articles, 'Loading:', isLoading, 'Error:', error);
+  console.log('📊 Articles data:', articles?.length, 'Loading:', isLoading, 'Error:', error);
+  console.log('⭐ StocksShorts Special data:', specialArticles?.length, 'Loading:', specialLoading, 'Error:', specialError);
 
   // Render different sections based on activeSection
   const renderSection = () => {
