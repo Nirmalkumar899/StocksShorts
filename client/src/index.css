@@ -7,7 +7,6 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
   position: fixed;
   width: 100%;
 }
@@ -16,6 +15,7 @@ html, body, #root {
 .allow-scroll {
   overflow: auto !important;
   position: static !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Prevent text selection during swipe gestures */

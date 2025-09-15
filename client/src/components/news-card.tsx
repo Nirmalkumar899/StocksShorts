@@ -211,7 +211,10 @@ export default function NewsCard({ article, onClick, onShare, variant = 'default
   // Inshorts variant - minimal full-screen layout
   if (variant === 'inshorts') {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col relative">
+      <div 
+        className="min-h-screen bg-white dark:bg-gray-900 flex flex-col relative"
+        style={{ touchAction: 'none', overscrollBehavior: 'none' }}
+      >
         {/* Hero Image */}
         <div className="relative h-2/5 bg-gray-100 dark:bg-gray-800 overflow-hidden">
           <img

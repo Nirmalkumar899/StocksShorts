@@ -251,21 +251,21 @@ export default function ArticleFeed({
       e.stopPropagation();
     };
 
-    // Add all event listeners with passive: false
-    container.addEventListener('touchstart', handleTouchStart, { passive: false });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd, { passive: false });
-    container.addEventListener('wheel', handleWheel, { passive: false });
+    // Add all event listeners with capture: true, passive: false for iOS Safari
+    container.addEventListener('touchstart', handleTouchStart, { capture: true, passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { capture: true, passive: false });
+    container.addEventListener('touchend', handleTouchEnd, { capture: true, passive: false });
+    container.addEventListener('wheel', handleWheel, { capture: true, passive: false });
     
     container.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleTouchEnd);
-      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      container.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      container.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      container.removeEventListener('wheel', handleWheel, { capture: true });
       container.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
@@ -355,7 +355,7 @@ export default function ArticleFeed({
     }
     
     return {
-      transform: `translateY(${translateY}vh) scale(${scale})`,
+      transform: `translateY(${translateY}dvh) scale(${scale})`,
       opacity,
       zIndex,
       transition: gesture.isGesturing 
@@ -447,7 +447,7 @@ export default function ArticleFeed({
   return (
     <div 
       ref={containerRef}
-      className={`inshorts-container relative h-[100svh] w-full overflow-hidden touch-none overscroll-none ${className}`}
+      className={`inshorts-container relative h-[100dvh] w-full overflow-hidden touch-none overscroll-none ${className}`}
       data-testid="article-feed"
       style={{
         position: 'fixed',
