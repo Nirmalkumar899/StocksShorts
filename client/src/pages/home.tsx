@@ -386,7 +386,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           // Loading State
           <div className="h-full flex items-center justify-center">
@@ -439,7 +439,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               {articles.slice(0, 100).map(a => (
                 <article key={a.id} style={{ border:'1px solid #e5e5e5', borderRadius:8, overflow:'hidden' }}>
                   <div style={{ height: 160, background:'#f3f4f6' }}>
-                    <img src={a.imageUrl} alt={a.title} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    <img src={a.imageUrl || ''} alt={a.title || ''} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                   </div>
                   <div style={{ padding: 12 }}>
                     <h3 style={{ margin: 0, fontSize: 16, lineHeight: 1.3 }}>{a.title}</h3>
