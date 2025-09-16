@@ -29,14 +29,12 @@ export default function FlipArticleViewer({
   const nextArticle = articles[currentIndex + 1] || null;
   const prevArticle = articles[currentIndex - 1] || null;
 
-  // Debug logging
-  console.log("🔍 FlipArticleViewer state:", {
-    currentIndex,
-    articlesLength: articles.length,
-    hasCurrentArticle: !!currentArticle,
-    currentArticleTitle: currentArticle?.title?.substring(0, 50),
-    isFlipping,
-  });
+  // Force re-render when articles change
+  useEffect(() => {
+    if (articles.length > 0 && currentIndex >= articles.length) {
+      setCurrentIndex(0);
+    }
+  }, [articles.length, currentIndex]);
 
   // Paper flip animation with realistic physics
   const [{ rotateX, y, scale, opacity }, api] = useSpring(() => ({ 
@@ -78,10 +76,7 @@ export default function FlipArticleViewer({
 
   // Navigate to next/previous article with paper flip animation
   const navigateToArticle = useCallback((index: number, direction: 'up' | 'down') => {
-    console.log(`🔄 NavigateToArticle called: index=${index}, direction=${direction}, currentIndex=${currentIndex}, isFlipping=${isFlipping}`);
-    
     if (index >= 0 && index < articles.length && !isFlipping) {
-      console.log(`✅ Starting navigation to article ${index}`);
       setIsFlipping(true);
       
       // Update current index immediately for instant response
@@ -103,16 +98,13 @@ export default function FlipArticleViewer({
             y: 0,
             config: { tension: 150, friction: 30 },
             onRest: () => {
-              console.log(`✅ Animation complete for article ${index}`);
               setIsFlipping(false);
             }
           });
         }
       });
-    } else {
-      console.log(`❌ Navigation blocked: index=${index}, length=${articles.length}, isFlipping=${isFlipping}`);
     }
-  }, [articles, api, isFlipping, currentIndex]);
+  }, [articles, api, isFlipping]);
 
   // Enhanced gesture handling for paper-like flip experience
   const bind = useDrag(
@@ -122,18 +114,13 @@ export default function FlipArticleViewer({
       
       
       if (last && trigger && !isFlipping) {
-        console.log(`🔍 Navigation attempt: dy=${dy}, currentIndex=${currentIndex}, articlesLength=${articles.length}, canGoNext=${currentIndex < articles.length - 1}, canGoPrev=${currentIndex > 0}`);
-        
         if (dy > 0 && currentIndex > 0) {
           // Swipe down - go to previous article
-          console.log(`⬇️ Going to previous article: ${currentIndex - 1}`);
           navigateToArticle(currentIndex - 1, 'down');
         } else if (dy < 0 && currentIndex < articles.length - 1) {
           // Swipe up - go to next article  
-          console.log(`⬆️ Going to next article: ${currentIndex + 1}`);
           navigateToArticle(currentIndex + 1, 'up');
         } else {
-          console.log(`🚫 Cannot navigate: dy=${dy}, at bounds`);
           // Snap back if can't navigate
           api.start({ 
             y: 0,
