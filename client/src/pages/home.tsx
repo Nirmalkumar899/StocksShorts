@@ -10,7 +10,6 @@ import { getContextualImage } from '@/lib/imageUtils';
 
 import Header from '@/components/header';
 import NewsCard from '@/components/news-card';
-import FlipArticleViewer from '@/components/flip-article-viewer';
 import BottomNavigation from '@/components/bottom-navigation';
 
 import { VisitorStats } from '@/components/visitor-stats';
@@ -29,8 +28,13 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const [activeSection, setActiveSection] = useState('home');
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
+  const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const lastScrollTopRef = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Remove all category logic for clean Inshorts-style interface
 
@@ -306,6 +310,29 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     setLocation(`/article/${article.id}`);
   };
 
+  const handleShare = (e: React.MouseEvent, article: Article) => {
+    e.stopPropagation();
+    // Handle share functionality
+    if (navigator.share) {
+      navigator.share({
+        title: article.title,
+        text: article.content,
+        url: window.location.href,
+      });
+    }
+  };
+
+  const handleToggleExpanded = (articleId: number) => {
+    setExpandedArticles(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(articleId)) {
+        newExpanded.delete(articleId);
+      } else {
+        newExpanded.add(articleId);
+      }
+      return newExpanded;
+    });
+  };
 
   // Fast client-side navigation - no page reloads
   const handleTabChange = (tab: string) => {
@@ -333,8 +360,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   const renderHomeContent = () => (
     <>
-      {/* Fixed Header with enhanced design */}
-      <div className="flex-shrink-0 bg-white dark:bg-neutral-900 shadow-sm border-b border-neutral-100 dark:border-neutral-800">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0">
         <Header 
           onRefresh={handleRefresh} 
           isRefreshing={refreshMutation.isPending}
@@ -345,88 +372,71 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         {/* Category filter removed for clean Inshorts-style interface */}
       </div>
 
-      {/* Main Content Area with improved layout */}
-      <div className="flex-1 overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
         {isLoading ? (
-          // Enhanced Loading State
-          <div className="h-full flex items-center justify-center p-8">
-            <div className="text-center space-y-6">
-              <div className="relative">
-                <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-500 dark:text-blue-400" />
-                <div className="absolute inset-0 h-12 w-12 mx-auto rounded-full border-2 border-blue-200 dark:border-blue-800 animate-pulse"></div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-neutral-800 dark:text-white">Loading Latest News</h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-xs mx-auto leading-relaxed">
-                  Fetching the freshest stories from Indian markets...
-                </p>
-              </div>
-              {/* Loading skeleton */}
-              <div className="space-y-3 max-w-sm mx-auto">
-                <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse"></div>
-                <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse w-3/4"></div>
-                <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse w-1/2"></div>
-              </div>
+          // Loading State
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-neutral-600 dark:text-neutral-400">Loading articles...</p>
             </div>
           </div>
         ) : !articles || articles.length === 0 ? (
-          // Enhanced Empty State
-          <div className="h-full flex flex-col items-center justify-center px-6 py-12">
-            <div className="text-center space-y-6 max-w-md mx-auto">
-              <div className="relative">
-                <div className="text-7xl mb-4 opacity-80">📰</div>
-                <div className="absolute inset-0 top-2 text-6xl animate-bounce delay-1000">💭</div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-2xl font-bold text-neutral-800 dark:text-white">
-                  No Stories Yet
-                </h3>
-                <p className="text-neutral-600 dark:text-neutral-400 text-center leading-relaxed">
-                  Our newsroom is brewing fresh content. Check back in a moment or tap refresh for the latest market updates.
-                </p>
-              </div>
-              
-              <div className="pt-4">
-                <Button 
-                  onClick={handleRefresh}
-                  disabled={refreshMutation.isPending}
-                  size="lg"
-                  className="min-w-[160px] h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {refreshMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="mr-2 h-5 w-5" />
-                      Refresh Stories
-                    </>
-                  )}
-                </Button>
-              </div>
-              
-              {/* Subtle background pattern */}
-              <div className="absolute inset-0 opacity-5 dark:opacity-10">
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-500 rounded-full filter blur-3xl"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-purple-500 rounded-full filter blur-3xl"></div>
-              </div>
+          // Empty State
+          <div className="h-full flex flex-col items-center justify-center px-4">
+            <div className="text-6xl mb-4">📰</div>
+            <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">
+              No articles found
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400 text-center mb-6">
+              There are no articles available at the moment.
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={handleRefresh}
+                disabled={refreshMutation.isPending}
+                className="min-w-[140px]"
+              >
+                {refreshMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Refreshing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh Articles
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         ) : (
-          // Enhanced Inshorts-style flip interface - One article at a time
-          <div className="h-full relative">
-            <FlipArticleViewer
-              articles={articles}
-              onArticleClick={handleArticleClick}
-            />
-            {/* Subtle article counter */}
-            <div className="absolute top-4 right-4 z-10">
-              <div className="bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white font-medium">
-                {articles.length} stories
-              </div>
+          // News Cards - Traditional feed layout showing multiple articles
+          <div 
+            ref={scrollContainerRef}
+            className="h-full overflow-y-auto scrollbar-hide transition-all duration-200 ease-in-out"
+            onScroll={(e) => {
+              const element = e.target as HTMLElement;
+              const currentScrollTop = element.scrollTop;
+              
+              // Store scroll position for reference
+              lastScrollTopRef.current = currentScrollTop;
+            }}
+          >
+            <div className="space-y-4 p-4">
+              {articles.map((article) => (
+                <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                  <NewsCard
+                    article={article}
+                    onClick={() => handleArticleClick(article)}
+                    onShare={(e) => handleShare(e, article)}
+                    isExpanded={expandedArticles.has(article.id)}
+                    onToggleExpanded={() => handleToggleExpanded(article.id)}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -435,30 +445,15 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 relative overflow-hidden">
-      {/* Subtle background patterns */}
-      <div className="absolute inset-0 opacity-30 dark:opacity-10 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 rounded-full filter blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-green-400 via-blue-400 to-purple-400 rounded-full filter blur-3xl"></div>
-      </div>
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+      {renderSection()}
       
-      {/* Main content with relative positioning */}
-      <div className="relative z-10 h-full flex flex-col">
-        {renderSection()}
-        
-        {/* Visitor Stats - Only show on home section with improved styling */}
-        {activeSection === 'home' && (
-          <div className="relative z-20">
-            <VisitorStats />
-          </div>
-        )}
-        
-        {/* Fixed Bottom Navigation with enhanced design */}
-        <div className="flex-shrink-0 relative z-30">
-          <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-t border-neutral-200/50 dark:border-neutral-700/50">
-            <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
-          </div>
-        </div>
+      {/* Visitor Stats - Only show on home section */}
+      {activeSection === 'home' && <VisitorStats />}
+      
+      {/* Fixed Bottom Navigation */}
+      <div className="flex-shrink-0">
+        <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
       </div>
     </div>
   );

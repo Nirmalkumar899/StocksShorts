@@ -64,8 +64,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add request timeout for deployment stability - except AI and translation endpoints
   app.use((req, res, next) => {
-    // Skip timeout for AI, translation, and article endpoints as they need more time
-    if (req.path === '/api/translate-articles' || req.path === '/api/articles/refresh' || req.path === '/api/articles') {
+    // Skip timeout for AI and translation endpoints as they need more time
+    if (req.path === '/api/translate-articles' || req.path === '/api/articles/refresh') {
       return next();
     }
     
