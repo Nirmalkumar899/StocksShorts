@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSpring, animated, useTransition } from 'react-spring';
+import { useSpring, animated, useTransition, to } from 'react-spring';
 import { useDrag } from '@use-gesture/react';
 import { Share2 } from '@/lib/icons';
 import { getContextualImage } from '@/lib/imageUtils';
@@ -255,7 +255,7 @@ export default function FlipArticleViewer({
       <animated.div
         {...bind()}
         style={{ 
-          transform: y.to(yVal => rotateX.to(rotVal => `translateY(${yVal}px) rotateX(${rotVal}deg)`)),
+          transform: to([y, rotateX], (yVal, rotVal) => `translateY(${yVal}px) rotateX(${rotVal}deg)`),
           scale,
           opacity,
           transformOrigin: 'center center'

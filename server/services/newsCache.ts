@@ -235,7 +235,7 @@ export class NewsCache {
       );
     }
 
-    // Return latest 100 articles for display
+    // Return latest 100 articles for display (increased to ensure minimum 75)
     return articles.slice(0, 100);
   }
 

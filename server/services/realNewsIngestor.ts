@@ -135,10 +135,10 @@ export class RealNewsIngestor {
     // Remove duplicates based on title similarity
     const uniqueArticles = this.removeDuplicates(allArticles);
     
-    // Sort by published time (newest first) and take top 50
+    // Sort by published time (newest first) and take top 80
     const sortedArticles = uniqueArticles
       .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
-      .slice(0, 50);
+      .slice(0, 80);
 
     console.log(`✅ Ingested ${sortedArticles.length} unique articles from today with enhanced categories`);
     return sortedArticles;
