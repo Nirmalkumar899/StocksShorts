@@ -10,6 +10,8 @@ interface FlipArticleViewerProps {
 }
 
 export default function FlipArticleViewer({ articles, onArticleClick }: FlipArticleViewerProps) {
+  console.log('🔄 NEW FlipArticleViewer loaded with', articles.length, 'articles');
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageError, setImageError] = useState<Record<number, boolean>>({});
   const [isAnimating, setIsAnimating] = useState(false);
@@ -30,7 +32,10 @@ export default function FlipArticleViewer({ articles, onArticleClick }: FlipArti
   const currentArticle = articles[currentIndex] || null;
 
   const handleNavigation = (newIndex: number) => {
+    console.log('✅ NEW handleNavigation called:', currentIndex, '→', newIndex, 'articlesLength:', articles.length);
+    
     if (newIndex >= 0 && newIndex < articles.length && !isAnimating) {
+      console.log('✅ Navigation allowed, updating to index:', newIndex);
       setIsAnimating(true);
       setCurrentIndex(newIndex);
       
@@ -38,6 +43,8 @@ export default function FlipArticleViewer({ articles, onArticleClick }: FlipArti
       setTimeout(() => {
         setIsAnimating(false);
       }, 300);
+    } else {
+      console.log('❌ Navigation blocked:', { newIndex, articlesLength: articles.length, isAnimating });
     }
   };
 
@@ -53,6 +60,8 @@ export default function FlipArticleViewer({ articles, onArticleClick }: FlipArti
     const deltaTime = touchEndTime - touchStartTime.current;
     const velocity = Math.abs(deltaY) / deltaTime;
 
+    console.log('🔄 NEW Touch end:', { deltaY, deltaTime, velocity, currentIndex });
+
     // Swipe threshold: minimum distance or velocity
     const minDistance = 50;
     const minVelocity = 0.5;
@@ -60,11 +69,15 @@ export default function FlipArticleViewer({ articles, onArticleClick }: FlipArti
     if (Math.abs(deltaY) > minDistance || velocity > minVelocity) {
       if (deltaY > 0) {
         // Swipe up - next article
+        console.log('⬆️ NEW Swipe UP detected - going to next');
         handleNavigation(currentIndex + 1);
       } else {
-        // Swipe down - previous article
+        // Swipe down - previous article  
+        console.log('⬇️ NEW Swipe DOWN detected - going to previous');
         handleNavigation(currentIndex - 1);
       }
+    } else {
+      console.log('🔄 NEW Touch gesture too small, ignoring');
     }
   };
 
