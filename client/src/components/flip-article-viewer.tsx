@@ -76,11 +76,12 @@ export default function FlipArticleViewer({
 
   // Navigate to next/previous article with paper flip animation
   const navigateToArticle = useCallback((index: number, direction: 'up' | 'down') => {
+    console.log(`🔄 NavigateToArticle called: index=${index}, direction=${direction}, currentIndex=${currentIndex}, isFlipping=${isFlipping}, articlesLength=${articles.length}`);
+    
     if (index >= 0 && index < articles.length && !isFlipping) {
-      setIsFlipping(true);
-      
-      // Update current index immediately for instant response
+      console.log(`✅ State update: setting currentIndex to ${index}`);
       setCurrentIndex(index);
+      setIsFlipping(true);
       setImageError(prev => ({ ...prev, [articles[index].id]: false }));
       
       // Paper flip animation sequence - start flip
@@ -103,8 +104,10 @@ export default function FlipArticleViewer({
           });
         }
       });
+    } else {
+      console.log(`❌ Navigation blocked: index=${index}, length=${articles.length}, isFlipping=${isFlipping}`);
     }
-  }, [articles, api, isFlipping]);
+  }, [articles, api, isFlipping, currentIndex]);
 
   // Enhanced gesture handling for paper-like flip experience
   const bind = useDrag(
