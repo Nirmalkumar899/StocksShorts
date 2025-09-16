@@ -14,7 +14,7 @@ export class NewsCache {
     isRefreshing: false
   };
 
-  private readonly REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes for fresher content
+  private readonly REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes like Inshorts
   private readonly MAX_ARTICLES = 120; // Keep 120 articles, show latest 100
   private readonly MAX_DAYS_OLD = 2; // Only keep articles from last 2 days + today
   private refreshTimer?: NodeJS.Timeout;
@@ -88,7 +88,7 @@ export class NewsCache {
       this.refreshArticles();
     }, this.REFRESH_INTERVAL);
 
-    console.log('📰 News refresh cycle started - refreshing every 15 minutes');
+    console.log('📰 News refresh cycle started - refreshing every 10 minutes');
   }
 
   private async refreshArticles() {
@@ -121,23 +121,9 @@ export class NewsCache {
       // Merge filtered articles
       const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
       
-      // Sort by priority (enhanced categories), randomize IPO, then by time
+      // Sort by time (newest first) and keep only MAX_ARTICLES
       const sortedArticles = allArticles
         .sort((a, b) => {
-          // Priority categories: breakout-stocks, research-report, order-win, multibagger, block-deal, high-volume
-          const isPriorityA = ['breakout-stocks', 'research-report', 'order-win', 'multibagger', 'block-deal', 'high-volume'].includes(a.type);
-          const isPriorityB = ['breakout-stocks', 'research-report', 'order-win', 'multibagger', 'block-deal', 'high-volume'].includes(b.type);
-          
-          // If one is priority and other isn't, priority comes first
-          if (isPriorityA && !isPriorityB) return -1;
-          if (!isPriorityA && isPriorityB) return 1;
-          
-          // For IPO articles, randomize order instead of chronological
-          if (a.type === 'ipo' && b.type === 'ipo') {
-            return Math.random() - 0.5; // Random order for IPO articles
-          }
-          
-          // If both are same priority level, sort by time (newest first)
           const timeA = a.time ? new Date(a.time).getTime() : 0;
           const timeB = b.time ? new Date(b.time).getTime() : 0;
           return timeB - timeA;
@@ -190,22 +176,13 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty, wait for initialization to complete
+    // If cache is empty and not currently refreshing, start background initialization
     if (this.cache.articles.length === 0 && !this.cache.isRefreshing) {
-      console.log('📊 Cache empty, awaiting initialization...');
-      this.cache.isRefreshing = true;
-      await this.initializeCache();
-      console.log(`📊 Cache initialized with ${this.cache.articles.length} articles`);
-    }
-    
-    // If cache is still empty after initialization, wait for ongoing refresh
-    if (this.cache.articles.length === 0 && this.cache.isRefreshing) {
-      console.log('📊 Waiting for ongoing cache refresh...');
-      // Wait up to 15 seconds for cache to populate
-      for (let i = 0; i < 30; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        if (this.cache.articles.length > 0) break;
-      }
+      // Don't await - run initialization in background to avoid timeout
+      this.initializeCache();
+      // Return empty array for now, cache will be populated in background
+      console.log('📊 Cache empty, starting background initialization...');
+      return [];
     }
     
     // Check if we need to refresh (if cache is old)

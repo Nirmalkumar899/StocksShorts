@@ -9,22 +9,17 @@ import { useSEO } from "@/hooks/useSEO";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import SebiRiaNew from "@/pages/sebi-ria-new";
-import SebiRiaRegister from "@/pages/sebi-ria-register";
-import AdvisorDashboard from "@/pages/advisor-dashboard";
-import AdvisorDirectory from "@/pages/advisor-directory";
 import Contact from "@/pages/contact";
 import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
+import AISection from "@/pages/ai-section";
 import GmailConnect from "@/pages/GmailConnect";
-import Conversations from "@/pages/conversations";
-import Chat from "@/pages/chat";
-import BookConsultation from "@/pages/book-consultation";
 import SplashScreen from "@/components/splash-screen";
 
 function Router() {
   const [location, setLocation] = useLocation();
   
-  // Force rebuild to clear cache
+  // Temporarily disable splash screen for debugging
   // const [showSplash, setShowSplash] = useState(true);
   
   // // Show splash screen for 1 second on first load
@@ -43,64 +38,26 @@ function Router() {
   
   return (
     <Switch>
-      <Route path="/">
-        {() => <Home />}
-      </Route>
-      <Route path="/home">
-        {() => <Home />}
-      </Route>
+      <Route path="/" component={Home} />
+      <Route path="/home" component={Home} />
       <Route path="/trending">
         {() => <Home initialCategory="trending" />}
       </Route>
-      <Route path="/special">
-        {() => <Home />}
-      </Route>
-      <Route path="/breakout">
-        {() => <Home />}
-      </Route>
-      <Route path="/kalkabazaar">
-        {() => <Home />}
-      </Route>
-      <Route path="/warrants">
-        {() => <Home />}
-      </Route>
-      <Route path="/educational">
-        {() => <Home />}
-      </Route>
-      <Route path="/ipo">
-        {() => <Home />}
-      </Route>
+      <Route path="/special" component={Home} />
+      <Route path="/breakout" component={Home} />
+      <Route path="/kalkabazaar" component={Home} />
+      <Route path="/warrants" component={Home} />
+      <Route path="/educational" component={Home} />
+      <Route path="/ipo" component={Home} />
 
-      <Route path="/others">
-        {() => <Home />}
-      </Route>
-      <Route path="/crypto">
-        {() => <Home />}
-      </Route>
-      <Route path="/us-market">
-        {() => <Home />}
-      </Route>
-      <Route path="/orders">
-        {() => <Home />}
-      </Route>
-      <Route path="/research">
-        {() => <Home />}
-      </Route>
+      <Route path="/others" component={Home} />
+      <Route path="/crypto" component={Home} />
+      <Route path="/us-market" component={Home} />
+      <Route path="/orders" component={Home} />
+      <Route path="/research" component={Home} />
 
       <Route path="/sebi-ria">
         {() => <SebiRiaNew onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/sebi-ria/register">
-        {() => <SebiRiaRegister onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/sebi-ria-register">
-        {() => <SebiRiaRegister onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/advisor-dashboard">
-        {() => <AdvisorDashboard onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/advisor-directory">
-        {() => <AdvisorDirectory onBack={() => window.history.back()} />}
       </Route>
       <Route path="/contact">
         {() => <Contact onBack={() => window.history.back()} />}
@@ -108,22 +65,14 @@ function Router() {
       <Route path="/profile">
         {() => <Profile onBack={() => window.history.back()} />}
       </Route>
+      <Route path="/ai-analysis">
+        {() => <AISection onBack={() => window.history.back()} />}
+      </Route>
+      <Route path="/ai-section">
+        {() => <AISection onBack={() => window.history.back()} />}
+      </Route>
       <Route path="/gmail-connect" component={GmailConnect} />
-      <Route path="/conversations">
-        {() => <Conversations onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/chat/:conversationId">
-        {(params) => <Chat conversationId={params.conversationId} />}
-      </Route>
-      <Route path="/book-consultation/:advisorId">
-        {(params) => <BookConsultation advisorId={params.advisorId} onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/book-consultation">
-        {() => <BookConsultation onBack={() => window.history.back()} />}
-      </Route>
-      <Route path="/disclaimer">
-        {() => <Home />}
-      </Route>
+      <Route path="/disclaimer" component={Home} />
       <Route path="/article/:id" component={ArticlePage} />
       <Route component={NotFound} />
     </Switch>

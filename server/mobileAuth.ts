@@ -128,7 +128,7 @@ export const mobileAuth = {
         phoneNumber: normalizedPhone,
         otp,
         expiresAt,
-        isUsed: false
+        isUsed: "false"
       });
 
       // Send SMS
@@ -167,10 +167,9 @@ export const mobileAuth = {
       // Check if user exists, if not create new user
       let user = await storage.getUserByPhone(normalizedPhone);
       if (!user) {
-        user = await storage.upsertUser({
-          id: crypto.randomUUID(), // Generate UUID for new user
+        user = await storage.createUser({
           phoneNumber: normalizedPhone,
-          isVerified: true
+          isVerified: "true"
         });
       } else {
         // Verify existing user

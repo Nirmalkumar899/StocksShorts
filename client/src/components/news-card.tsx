@@ -230,9 +230,9 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
   return (
     <>
       <div 
-        className={`w-full flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
+        className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
           getSentimentBorderColor()
-        } hover:shadow-lg transition-shadow duration-200 rounded-lg`}
+        } hover:shadow-lg transition-shadow duration-200`}
         onClick={(e) => {
           // Check if this is a special article that requires authentication
           if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
@@ -250,12 +250,12 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           onClick();
         }}
       >
-        {/* Article Content Container - Traditional feed style */}
-        <div className="flex flex-col">
+        {/* Article Content Container - Inshorts Style */}
+        <div className="flex flex-col h-full">
 
 
           {/* Image Section (Top - Full Width) */}
-          <div className="w-full h-48 relative bg-gray-100 dark:bg-gray-800 rounded-t-lg overflow-hidden">
+          <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
             <img
               src={article.imageUrl || getContextualImage(article)}
               alt={article.title}
@@ -276,8 +276,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           </div>
 
           {/* Content Section (Bottom - Full Width) */}
-          <div className="p-4 flex flex-col">
-            <div className="flex flex-col">
+          <div className="flex-1 p-3 pb-16 flex flex-col justify-between">
+            <div className="h-full flex flex-col">
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
@@ -317,15 +317,8 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                     </button>
                   </div>
                 ) : (
-                  <div className="mb-3">
-                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-base mb-2 min-h-[80px] p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      {article.content?.trim() || 'No content available.'}
-                    </div>
-                    {article.content && article.content.trim().length < 150 && (
-                      <div className="text-blue-600 dark:text-blue-400 text-sm font-medium text-center p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                        👆 Tap article to read more details
-                      </div>
-                    )}
+                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-3">
+                    {article.content?.trim() || 'No content available.'}
                   </div>
                 )}
                 
@@ -350,8 +343,6 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
                       {(article as any).sourceUrl ? (
                         <a 
                           href={(article as any).sourceUrl} 
-                          target="_blank"
-                          rel="noopener noreferrer"
                           className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -369,15 +360,17 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             </div>
           </div>
         </div>
-      </div>
+        
 
-      {/* Image Lightbox */}
-      <ImageLightbox
-        src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-        alt={article.title}
-        isOpen={isLightboxOpen}
-        onClose={() => setIsLightboxOpen(false)}
-      />
+
+        {/* Image Lightbox */}
+        <ImageLightbox
+          src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+          alt={article.title}
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+        />
+      </div>
 
       {/* Full Article Modal - Enhanced for all screens */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

@@ -20,16 +20,12 @@ import { realTimeMarketTracker } from "./services/realTimeMarketTracker";
 import { verifiedNewsService } from "./services/verifiedNewsService";
 import { directExchangeConnector } from "./services/directExchangeConnector";
 import { authenticDataProvider } from "./services/authenticDataProvider";
+import { enhancedAIService } from "./services/enhancedAIService";
 import { googleDriveService } from "./services/googleDriveService";
 
 import { gmailTracker } from "./services/gmailTracker";
 import session from "express-session";
 import MemoryStore from "memorystore";
-import { z } from "zod";
-import { insertMessageSchema } from "@shared/schema";
-import Razorpay from "razorpay";
-import crypto from "crypto";
-import { nanoid } from "nanoid";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
@@ -65,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add request timeout for deployment stability - except AI and translation endpoints
   app.use((req, res, next) => {
     // Skip timeout for AI and translation endpoints as they need more time
-    if (req.path === '/api/translate-articles' || req.path === '/api/articles/refresh') {
+    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || req.path === '/api/articles/refresh') {
       return next();
     }
     
@@ -111,599 +107,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
     }
   }));
-
-  // Initialize Razorpay for payment processing
-  let razorpay: Razorpay | null = null;
-  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET
-    });
-    console.log('✅ Razorpay initialized successfully');
-  } else {
-    console.warn('⚠️  Razorpay credentials not found. Payment functionality will be disabled.');
-  }
-
-  // Teleconsultation and Payment Routes
-
-  // Create Razorpay order for teleconsultation payment
-  app.post('/api/razorpay/create-order', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      if (!razorpay) {
-        return res.status(500).json({ 
-          message: 'Payment service not available. Please check Razorpay configuration.' 
-        });
-      }
-
-      const { advisorId, duration, scheduledAt } = req.body;
-      const userId = (req.session as any).userId;
-
-      // Validate input
-      const orderSchema = z.object({
-        advisorId: z.number().int().positive(),
-        duration: z.enum(['15min', '30min']),
-        scheduledAt: z.string().datetime()
-      });
-
-      const validationResult = orderSchema.safeParse({ advisorId, duration, scheduledAt });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid order data',
-          errors: validationResult.error.errors
-        });
-      }
-
-      // Check if advisor exists and get consultation fees
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-
-      if (!advisor.consultationEnabled) {
-        return res.status(400).json({ message: 'Advisor is not available for consultations' });
-      }
-
-      // Check user's consultation usage for this advisor
-      const usage = await storage.getUserConsultationUsage(userId, advisorId);
-      const freeConsultationsUsed = usage?.freeConsultationsUsed || 0;
-      const freeConsultationsLimit = advisor.freeConsultationsPerUser || 0;
-
-      let consultationFee = 0;
-      let isFreeTier = false;
-
-      // Check if user is eligible for free consultation
-      if (freeConsultationsUsed < freeConsultationsLimit) {
-        isFreeTier = true;
-        consultationFee = 0;
-      } else {
-        // User must pay
-        if (duration === '15min') {
-          consultationFee = parseFloat(advisor.consultationFee15min || '0');
-        } else {
-          consultationFee = parseFloat(advisor.consultationFee30min || '0');
-        }
-      }
-
-      // If it's a free consultation, create the booking directly
-      if (isFreeTier) {
-        const roomId = nanoid(12);
-        const teleconsultation = await storage.createTeleconsultation({
-          advisorId,
-          userId: userId.toString(),
-          duration,
-          scheduledAt: new Date(scheduledAt),
-          fee: 0.00,
-          roomId,
-          status: 'scheduled'
-        });
-
-        // Increment free consultation usage
-        await storage.incrementFreeConsultationUsage(userId.toString(), advisorId);
-
-        return res.json({
-          success: true,
-          isFreeConsultation: true,
-          teleconsultation,
-          message: 'Free consultation booked successfully'
-        });
-      }
-
-      // Create Razorpay order for paid consultation
-      const amountInPaise = Math.round(consultationFee * 100); // Convert to paise (smallest currency unit)
-      
-      const order = await razorpay.orders.create({
-        amount: amountInPaise,
-        currency: 'INR',
-        receipt: `consult_${advisorId}_${userId}_${Date.now()}`,
-        notes: {
-          advisorId: advisorId.toString(),
-          userId: userId.toString(),
-          duration,
-          scheduledAt,
-          advisorName: `${advisor.firstName || ''} ${advisor.lastName || ''}`.trim()
-        }
-      });
-
-      res.json({
-        success: true,
-        isFreeConsultation: false,
-        orderId: order.id,
-        amount: amountInPaise,
-        currency: 'INR',
-        advisorName: `${advisor.firstName || ''} ${advisor.lastName || ''}`.trim(),
-        consultationFee,
-        duration,
-        scheduledAt,
-        razorpayKeyId: process.env.RAZORPAY_KEY_ID
-      });
-
-    } catch (error) {
-      console.error('Error creating Razorpay order:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to create payment order'
-      });
-    }
-  });
-
-  // Verify Razorpay payment and complete teleconsultation booking
-  app.post('/api/razorpay/verify-payment', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      if (!razorpay) {
-        return res.status(500).json({ 
-          message: 'Payment service not available. Please check Razorpay configuration.' 
-        });
-      }
-
-      const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
-      const userId = (req.session as any).userId;
-
-      // Validate input
-      const paymentSchema = z.object({
-        razorpay_payment_id: z.string().min(1),
-        razorpay_order_id: z.string().min(1),
-        razorpay_signature: z.string().min(1)
-      });
-
-      const validationResult = paymentSchema.safeParse({
-        razorpay_payment_id,
-        razorpay_order_id,
-        razorpay_signature
-      });
-
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid payment data',
-          errors: validationResult.error.errors
-        });
-      }
-
-      // Verify payment signature
-      const body = razorpay_order_id + "|" + razorpay_payment_id;
-      const expectedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-        .update(body.toString())
-        .digest('hex');
-
-      if (expectedSignature !== razorpay_signature) {
-        return res.status(400).json({
-          message: 'Payment verification failed. Invalid signature.'
-        });
-      }
-
-      // Fetch order details to get consultation information
-      const order = await razorpay.orders.fetch(razorpay_order_id);
-      if (!order || !order.notes) {
-        return res.status(400).json({
-          message: 'Order details not found'
-        });
-      }
-
-      const advisorId = parseInt(String(order.notes.advisorId) || '0');
-      const orderUserId = order.notes.userId || '';
-      const duration = (order.notes.duration as '15min' | '30min') || '15min';
-      const scheduledAt = order.notes.scheduledAt || new Date().toISOString();
-
-      // Verify the user matches
-      if (orderUserId !== userId) {
-        return res.status(403).json({
-          message: 'Unauthorized: User mismatch'
-        });
-      }
-
-      // Payment is verified - create the teleconsultation
-      const roomId = nanoid(12);
-      const consultationFee = (Number(order.amount || 0) / 100).toString(); // Convert back to rupees
-
-      const teleconsultation = await storage.createTeleconsultation({
-        advisorId,
-        userId: userId.toString(),
-        duration,
-        scheduledAt: new Date(scheduledAt),
-        fee: parseFloat(consultationFee),
-        roomId,
-        status: 'scheduled'
-      });
-
-      res.json({
-        success: true,
-        message: 'Payment verified and consultation booked successfully',
-        teleconsultation,
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id
-      });
-
-    } catch (error) {
-      console.error('Error verifying Razorpay payment:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Payment verification failed'
-      });
-    }
-  });
-
-  // Get user's teleconsultations
-  app.get('/api/teleconsultations', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.session as any).userId;
-      const teleconsultations = await storage.getUserTeleconsultations(userId);
-
-      res.json({
-        teleconsultations,
-        total: teleconsultations.length,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Error fetching teleconsultations:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch teleconsultations'
-      });
-    }
-  });
-
-  // Get advisor's teleconsultations (for advisor dashboard)
-  app.get('/api/advisor-teleconsultations/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.advisorId);
-      const sessionUser = (req.session as any).user;
-
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-
-      // Verify advisor ownership - only advisors can view their own consultations
-      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
-        return res.status(403).json({ 
-          message: 'Forbidden: You can only view your own consultations' 
-        });
-      }
-
-      const teleconsultations = await storage.getAdvisorTeleconsultations(advisorId);
-
-      res.json({
-        teleconsultations,
-        total: teleconsultations.length,
-        advisorId,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Error fetching advisor teleconsultations:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch advisor teleconsultations'
-      });
-    }
-  });
-
-  // Update teleconsultation status
-  app.patch('/api/teleconsultations/:id/status', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const teleconsultationId = parseInt(req.params.id);
-      const { status } = req.body;
-      const userId = (req.session as any).userId;
-
-      if (isNaN(teleconsultationId)) {
-        return res.status(400).json({ message: 'Invalid teleconsultation ID' });
-      }
-
-      // Validate status
-      const statusSchema = z.object({
-        status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled'])
-      });
-
-      const validationResult = statusSchema.safeParse({ status });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid status',
-          errors: validationResult.error.errors
-        });
-      }
-
-      // TODO: Add authorization check - only participants can update status
-      await storage.updateTeleconsultationStatus(teleconsultationId, status);
-
-      res.json({
-        success: true,
-        message: 'Teleconsultation status updated successfully',
-        teleconsultationId,
-        status,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Error updating teleconsultation status:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to update teleconsultation status'
-      });
-    }
-  });
-
-  // Check consultation eligibility and pricing
-  app.get('/api/consultation-eligibility/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.advisorId);
-      const userId = (req.session as any).userId;
-
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-
-      if (!advisor.consultationEnabled) {
-        return res.status(400).json({ 
-          message: 'Advisor is not available for consultations',
-          available: false
-        });
-      }
-
-      // Get user's consultation usage
-      const usage = await storage.getUserConsultationUsage(userId, advisorId);
-      const freeConsultationsUsed = usage?.freeConsultationsUsed || 0;
-      const freeConsultationsLimit = advisor.freeConsultationsPerUser || 0;
-      const hasFreeTier = freeConsultationsUsed < freeConsultationsLimit;
-
-      res.json({
-        available: true,
-        advisorName: `${advisor.firstName || ''} ${advisor.lastName || ''}`.trim(),
-        freeConsultationsUsed,
-        freeConsultationsLimit,
-        hasFreeTier,
-        freeConsultationsRemaining: Math.max(0, freeConsultationsLimit - freeConsultationsUsed),
-        pricing: {
-          fee15min: parseFloat(advisor.consultationFee15min || '0'),
-          fee30min: parseFloat(advisor.consultationFee30min || '0')
-        },
-        advisorDetails: {
-          specialization: advisor.specialization,
-          experience: advisor.experience,
-          location: advisor.location,
-          bio: advisor.bio
-        }
-      });
-
-    } catch (error) {
-      console.error('Error checking consultation eligibility:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to check consultation eligibility'
-      });
-    }
-  });
-
-  // Check teleconsultation availability for a specific advisor and date
-  // Supports both patterns: /:advisorId/:date and /:advisorId?date=YYYY-MM-DD
-  app.get('/api/teleconsultations/availability/:advisorId/:date?', async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.advisorId);
-      // Support both path param and query param for date
-      const date = req.params.date || req.query.date as string; // Format: YYYY-MM-DD
-
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-
-      if (!date || !date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        return res.status(400).json({ message: 'Invalid date format. Use YYYY-MM-DD' });
-      }
-
-      // Get existing bookings for the advisor on the specified date
-      const existingBookings = await storage.getAdvisorBookingsForDate(advisorId, date);
-      
-      // Return only necessary time slot information, not full booking details for security
-      const timeSlots = existingBookings.map(booking => ({
-        scheduledAt: booking.scheduledAt,
-        duration: booking.duration,
-        status: booking.status
-      }));
-      
-      res.json(timeSlots);
-
-    } catch (error) {
-      console.error('Error checking teleconsultation availability:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to check availability'
-      });
-    }
-  });
-
-  // Check if user is eligible for free consultation with specific advisor
-  app.get('/api/teleconsultations/check-free-eligibility/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.advisorId);
-      const userId = (req.session as any).userId;
-
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-
-      // Check eligibility using existing storage method
-      const eligible = await storage.canBookFreeConsultation(userId, advisorId);
-      
-      // Get usage details for response
-      const usage = await storage.getUserConsultationUsage(userId, advisorId);
-      const advisor = await storage.getAdvisor(advisorId);
-      
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-
-      const freeConsultationsUsed = usage?.freeConsultationsUsed || 0;
-      const freeConsultationsLimit = advisor.freeConsultationsPerUser === -1 ? -1 : (advisor.freeConsultationsPerUser || 1);
-
-      res.json({
-        eligible,
-        freeConsultationsUsed,
-        freeConsultationsLimit,
-        remainingFreeConsultations: freeConsultationsLimit === -1 ? -1 : Math.max(0, freeConsultationsLimit - freeConsultationsUsed)
-      });
-
-    } catch (error) {
-      console.error('Error checking free consultation eligibility:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to check eligibility'
-      });
-    }
-  });
-
-  // Book a teleconsultation
-  app.post('/api/teleconsultations/book', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.session as any).userId;
-      const { advisorId, duration, scheduledAt, notes } = req.body;
-
-      // Validate input - REMOVED client-provided fee for security
-      const bookingSchema = z.object({
-        advisorId: z.number().int().positive(),
-        duration: z.enum(['15min', '30min']),
-        scheduledAt: z.string().transform(str => new Date(str)),
-        notes: z.string().max(500).optional()
-      });
-
-      const validationResult = bookingSchema.safeParse({ advisorId, duration, scheduledAt, notes });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid booking data',
-          errors: validationResult.error.errors
-        });
-      }
-
-      const { advisorId: validAdvisorId, duration: validDuration, scheduledAt: validScheduledAt, notes: validNotes } = validationResult.data;
-
-      // Check if advisor exists and consultations are enabled
-      const advisor = await storage.getAdvisor(validAdvisorId);
-      if (!advisor || !advisor.consultationEnabled) {
-        return res.status(400).json({ 
-          message: 'Advisor not available for consultations' 
-        });
-      }
-
-      // Check if the duration is available for this advisor
-      const isDurationAvailable = validDuration === '15min' ? 
-        advisor.consultationFee15min !== null :
-        advisor.consultationFee30min !== null;
-
-      if (!isDurationAvailable) {
-        return res.status(400).json({
-          message: `${validDuration} consultations not available with this advisor`
-        });
-      }
-
-      // Validate scheduled time is in the future
-      if (validScheduledAt <= new Date()) {
-        return res.status(400).json({
-          message: 'Consultation must be scheduled for a future time'
-        });
-      }
-
-      // SERVER-SIDE FEE CALCULATION - Security Fix
-      // Calculate actual consultation fee based on advisor settings and duration
-      let calculatedFee = 0;
-      let isFreeTier = false;
-      
-      // Check if user is eligible for free consultation
-      const canBookFree = await storage.canBookFreeConsultation(userId, validAdvisorId);
-      
-      if (canBookFree) {
-        // User eligible for free consultation
-        isFreeTier = true;
-        calculatedFee = 0;
-      } else {
-        // User must pay - calculate fee from advisor settings
-        if (validDuration === '15min') {
-          calculatedFee = parseFloat(advisor.consultationFee15min?.toString() || '0');
-        } else {
-          calculatedFee = parseFloat(advisor.consultationFee30min?.toString() || '0');
-        }
-        
-        if (calculatedFee <= 0) {
-          return res.status(400).json({
-            message: `${validDuration} consultations are not available or not priced by this advisor`
-          });
-        }
-      }
-      
-      // Check for booking conflicts with atomic database check
-      const conflictingBookings = await storage.checkBookingConflicts(validAdvisorId, validScheduledAt, validDuration);
-      if (conflictingBookings.length > 0) {
-        return res.status(409).json({
-          message: 'Time slot is no longer available',
-          conflictDetails: conflictingBookings.map(b => ({
-            scheduledAt: b.scheduledAt,
-            duration: b.duration
-          }))
-        });
-      }
-
-      // Generate unique room ID for video call
-      const roomId = `consultation-${validAdvisorId}-${userId}-${Date.now()}`;
-
-      // Create teleconsultation with server-calculated fee
-      const consultation = await storage.createTeleconsultation({
-        advisorId: validAdvisorId,
-        userId,
-        duration: validDuration,
-        scheduledAt: validScheduledAt,
-        status: 'scheduled',
-        fee: calculatedFee, // Keep as number as expected by schema
-        roomId,
-        notes: validNotes || null
-      });
-
-      // Update usage tracking if it's a free consultation
-      if (isFreeTier) {
-        await storage.incrementFreeConsultationUsage(userId, validAdvisorId);
-      }
-
-      res.status(201).json({
-        message: 'Consultation booked successfully',
-        consultation: {
-          id: consultation.id,
-          advisorId: consultation.advisorId,
-          duration: consultation.duration,
-          scheduledAt: consultation.scheduledAt,
-          status: consultation.status,
-          fee: consultation.fee,
-          roomId: consultation.roomId,
-          notes: consultation.notes
-        }
-      });
-
-    } catch (error) {
-      console.error('Error booking teleconsultation:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to book consultation'
-      });
-    }
-  });
 
   // Force refresh news cache (for testing and manual refresh)
   app.post("/api/refresh-news", async (req, res) => {
@@ -756,8 +159,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
           'Content-Type': 'application/json; charset=utf-8'
         });
-        return res.json(sortedArticles);
       }
+      
+      return res.json(sortedArticles);
     } catch (error) {
       console.error('❌ Error fetching cached articles:', error);
       if (!res.headersSent) {
@@ -892,8 +296,8 @@ CONTENT: [Hindi translation]`;
               console.log(`✅ Translation received for article ${article.id}`);
               
               // Parse the translated response
-              const titleMatch = translatedText?.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/);
-              const contentMatch = translatedText?.match(/CONTENT:\s*([\s\S]*?)$/);
+              const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/s);
+              const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/s);
               
               return {
                 id: article.id,
@@ -902,11 +306,10 @@ CONTENT: [Hindi translation]`;
               };
               
             } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-              console.error(`❌ Translation error for article ${article.id}:`, errorMessage);
+              console.error(`❌ Translation error for article ${article.id}:`, error.message);
               
               // Check if it's a quota exceeded error
-              if (error instanceof Error && error.message.includes('exceeded your current quota')) {
+              if (error.message && error.message.includes('exceeded your current quota')) {
                 throw new Error('Translation service quota exceeded. Please try again later or contact support.');
               }
               
@@ -937,14 +340,13 @@ CONTENT: [Hindi translation]`;
       
     } catch (error) {
       console.error('💥 Translation API error:', error);
-      const errorStack = error instanceof Error ? error.stack : undefined;
-      console.error('💥 Error stack:', errorStack);
+      console.error('💥 Error stack:', error.stack);
       
       // Only send error response if headers haven't been sent
       if (!res.headersSent) {
         res.status(500).json({ 
           message: error instanceof Error ? error.message : 'Translation failed',
-          details: errorStack
+          details: error.stack
         });
       }
     }
@@ -1126,7 +528,189 @@ CONTENT: [Hindi translation]`;
     }
   });
 
+  // Enhanced AI Query endpoint - Uses Database + Google Drive
+  app.post("/api/stock-ai/query", async (req: any, res) => {
+    // Set longer timeout for AI processing
+    req.setTimeout(180000); // 3 minutes
+    res.setTimeout(180000); // 3 minutes
+    
+    try {
+      const { query } = req.body;
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: 'Query is required' });
+      }
 
+      console.log(`🤖 Processing AI query: ${query}`);
+      
+      // Use enhanced AI service with extended timeout
+      const result = await Promise.race([
+        enhancedAIService.processAIQuery(query, req.session?.user?.id),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('AI processing timeout after 150 seconds')), 150000)
+        )
+      ]) as any;
+      
+      console.log('✅ AI processing completed successfully');
+      
+      if (!res.headersSent) {
+        res.json({ 
+          analysis: result.response,
+          sources: result.sources,
+          databaseResults: result.databaseResults,
+          driveResults: result.driveResults,
+          enhanced: true
+        });
+      }
+    } catch (error) {
+      console.error('Enhanced AI query error:', error);
+      
+      if (!res.headersSent) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to process AI query';
+        res.status(errorMessage.includes('timeout') ? 408 : 500).json({ 
+          message: errorMessage,
+          details: errorMessage.includes('timeout') ? 
+            'AI analysis is taking longer than expected. Please try a simpler query or try again.' :
+            'The AI analysis system encountered an error. Please try again.'
+        });
+      }
+    }
+  });
+
+  // Get company setup suggestions for Google Drive
+  app.post("/api/ai/company-setup", async (req: any, res) => {
+    try {
+      const { companyName } = req.body;
+      if (!companyName || typeof companyName !== 'string') {
+        return res.status(400).json({ message: 'Company name is required' });
+      }
+
+      const suggestions = await enhancedAIService.suggestCompanySetup(companyName);
+      res.json(suggestions);
+    } catch (error) {
+      console.error('Company setup error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to generate setup suggestions'
+      });
+    }
+  });
+
+  // Search for company data in Google Drive
+  app.post("/api/ai/search-company", async (req: any, res) => {
+    try {
+      const { companyName } = req.body;
+      if (!companyName || typeof companyName !== 'string') {
+        return res.status(400).json({ message: 'Company name is required' });
+      }
+
+      const data = await googleDriveService.searchCompanyData(companyName);
+      res.json({
+        ...data,
+        message: `Found ${data.folders.length} folders, ${data.documents.length} documents, ${data.sheets.length} spreadsheets for ${companyName}`
+      });
+    } catch (error) {
+      console.error('Company search error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to search company data'
+      });
+    }
+  });
+
+  // List all available company folders in Google Drive
+  app.get("/api/ai/list-folders", async (req: any, res) => {
+    try {
+      const folders = await googleDriveService.listAllFoldersInAIDatabase();
+      res.json({
+        folders,
+        count: folders.length,
+        message: `Found ${folders.length} company folders in AI Database`
+      });
+    } catch (error) {
+      console.error('List folders error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to list folders'
+      });
+    }
+  });
+
+  // Test Google Drive access
+  app.get("/api/ai/test-drive", async (req: any, res) => {
+    try {
+      const folderId = await googleDriveService.findAIDatabaseFolder();
+      if (folderId) {
+        const folders = await googleDriveService.listAllFoldersInAIDatabase();
+        res.json({
+          success: true,
+          message: 'Google Drive access successful',
+          folderId,
+          folders: folders.map(f => f.name),
+          count: folders.length
+        });
+      } else {
+        res.json({
+          success: false,
+          message: 'Could not access Google Drive folder. Check if folder is publicly accessible or if service account credentials are needed.'
+        });
+      }
+    } catch (error) {
+      console.error('Test drive error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to test Google Drive access'
+      });
+    }
+  });
+
+  // Debug specific company folder contents
+  app.get("/api/ai/debug-folder/:companyName", async (req: any, res) => {
+    try {
+      const companyName = req.params.companyName;
+      console.log(`DEBUG: Checking folder contents for ${companyName}`);
+      
+      // Find company folders
+      const folders = await googleDriveService.searchCompanyFolders(companyName);
+      console.log(`DEBUG: Found ${folders.length} folders for ${companyName}`);
+      
+      if (folders.length === 0) {
+        return res.json({
+          success: false,
+          message: `No folders found for ${companyName}`,
+          folders: []
+        });
+      }
+      
+      // Check files in each folder
+      const folderContents = [];
+      for (const folder of folders) {
+        console.log(`DEBUG: Checking files in folder ${folder.name} (${folder.id})`);
+        const files = await googleDriveService.getFilesFromFolder(folder.id);
+        console.log(`DEBUG: Found ${files.length} files in ${folder.name}`);
+        
+        folderContents.push({
+          folderName: folder.name,
+          folderId: folder.id,
+          fileCount: files.length,
+          files: files.map(f => ({
+            name: f.name,
+            mimeType: f.mimeType,
+            size: f.size,
+            modifiedTime: f.modifiedTime
+          }))
+        });
+      }
+      
+      res.json({
+        success: true,
+        companyName,
+        folderContents
+      });
+    } catch (error) {
+      console.error('Debug folder error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to debug folder'
+      });
+    }
+  });
 
 
 
@@ -1140,111 +724,6 @@ CONTENT: [Hindi translation]`;
       console.error('Error fetching investment advisors:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
-      });
-    }
-  });
-
-  // Register as SEBI Investment Advisor
-  app.post("/api/investment-advisors", async (req, res) => {
-    try {
-      console.log('📝 SEBI Advisor registration request received');
-      console.log('Request body keys:', Object.keys(req.body));
-      
-      // Import the validation schema
-      const { insertInvestmentAdvisorSchema } = await import("@shared/schema");
-      
-      // Validate the comprehensive form data
-      const validationResult = insertInvestmentAdvisorSchema.safeParse(req.body);
-      
-      if (!validationResult.success) {
-        console.log('❌ Validation errors:', validationResult.error.issues);
-        return res.status(400).json({
-          message: 'Validation failed',
-          errors: validationResult.error.issues.map(issue => ({
-            field: issue.path.join('.'),
-            message: issue.message
-          }))
-        });
-      }
-
-      const advisorData = validationResult.data;
-      
-      // Handle teleconsultation logic - set consultationEnabled based on fee values
-      const hasConsultationFees = (
-        (advisorData.consultationFee15min !== null && advisorData.consultationFee15min !== undefined) ||
-        (advisorData.consultationFee30min !== null && advisorData.consultationFee30min !== undefined)
-      );
-      
-      // Explicitly set consultationEnabled based on whether advisor offers any consultation fees
-      advisorData.consultationEnabled = hasConsultationFees;
-      
-      console.log('💰 Teleconsultation setup:', {
-        consultationFee15min: advisorData.consultationFee15min,
-        consultationFee30min: advisorData.consultationFee30min,
-        consultationEnabled: advisorData.consultationEnabled,
-        freeConsultationsPerUser: advisorData.freeConsultationsPerUser
-      });
-      
-      // Normalize phone number - ensure it has proper format
-      if (advisorData.professionalPhone && !advisorData.professionalPhone.startsWith('+')) {
-        // If it's a 10-digit Indian number, add +91 prefix
-        if (/^\d{10}$/.test(advisorData.professionalPhone)) {
-          advisorData.professionalPhone = `+91${advisorData.professionalPhone}`;
-        }
-      }
-
-      // Set legacy fields for backward compatibility with Google Sheets integration
-      if (advisorData.firstName && advisorData.lastName) {
-        advisorData.designation = advisorData.qualification || 'SEBI Registered Investment Advisor';
-        advisorData.phone = advisorData.professionalPhone;
-        advisorData.specialization = Array.isArray(advisorData.specializations) 
-          ? advisorData.specializations.join(', ') 
-          : '';
-        advisorData.experience = `${advisorData.experienceYears || 0} years`;
-        advisorData.location = [advisorData.city, advisorData.state].filter(Boolean).join(', ');
-        advisorData.bio = advisorData.aboutYou || '';
-      }
-
-      // Create the advisor using the comprehensive schema
-      const newAdvisor = await storage.createInvestmentAdvisor(advisorData);
-      
-      console.log('✅ SEBI Advisor registered successfully:', newAdvisor.id);
-
-      res.status(201).json({
-        message: 'Investment advisor registered successfully',
-        advisor: {
-          id: newAdvisor.id,
-          firstName: newAdvisor.firstName,
-          lastName: newAdvisor.lastName,
-          sebiRegNo: newAdvisor.sebiRegNo,
-          email: newAdvisor.email,
-          professionalPhone: newAdvisor.professionalPhone,
-          company: newAdvisor.company,
-          specializations: newAdvisor.specializations,
-          experienceYears: newAdvisor.experienceYears,
-          location: [newAdvisor.city, newAdvisor.state].filter(Boolean).join(', ')
-        }
-      });
-
-    } catch (error: any) {
-      console.error('❌ Error registering SEBI advisor:', error);
-
-      // Handle duplicate email or sebiRegNo
-      if (error.code === '23505') { // Postgres unique violation
-        if (error.detail?.includes('email')) {
-          return res.status(409).json({
-            message: 'An advisor with this email address already exists'
-          });
-        }
-        if (error.detail?.includes('sebi_reg_no')) {
-          return res.status(409).json({
-            message: 'An advisor with this SEBI registration number already exists'
-          });
-        }
-      }
-
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to register advisor'
       });
     }
   });
@@ -1270,620 +749,6 @@ CONTENT: [Hindi translation]`;
       console.error('Error refreshing investment advisors:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to refresh investment advisors'
-      });
-    }
-  });
-
-  // ===== ADVISOR POST-REGISTRATION SYSTEM API ROUTES =====
-  
-  // Advisor Status Management
-  app.patch('/api/advisors/:id/status', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.id);
-      const { status } = req.body;
-      
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-      
-      // Validate status
-      const statusSchema = z.object({
-        status: z.enum(['active', 'offline'])
-      });
-      
-      const validationResult = statusSchema.safeParse({ status });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid status value',
-          errors: validationResult.error.errors
-        });
-      }
-      
-      // Check if advisor exists and get advisor info for validation
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Verify advisor ownership - only advisors can modify their own status
-      const sessionUserId = (req.session as any).userId;
-      const sessionUser = await storage.getUser(sessionUserId);
-      
-      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
-        return res.status(403).json({ 
-          message: 'Forbidden: You can only update your own advisor status' 
-        });
-      }
-      
-      // Update advisor status
-      await storage.setAdvisorStatus(advisorId, validationResult.data.status);
-      
-      res.json({
-        message: `Advisor status updated to ${validationResult.data.status}`,
-        advisorId,
-        status: validationResult.data.status,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error updating advisor status:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to update advisor status'
-      });
-    }
-  });
-  
-  app.post('/api/advisors/:id/heartbeat', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.id);
-      
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-      
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Verify advisor ownership - only advisors can update their own heartbeat
-      const sessionUserId = (req.session as any).userId;
-      const sessionUser = await storage.getUser(sessionUserId);
-      
-      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
-        return res.status(403).json({ 
-          message: 'Forbidden: You can only update your own advisor heartbeat' 
-        });
-      }
-      
-      // Only update heartbeat if advisor is active
-      if (advisor.status !== 'active') {
-        return res.status(400).json({ 
-          message: 'Heartbeat only allowed for active advisors',
-          currentStatus: advisor.status 
-        });
-      }
-      
-      // Update last active timestamp
-      await storage.heartbeatAdvisor(advisorId);
-      
-      res.json({
-        message: 'Heartbeat recorded',
-        advisorId,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error recording advisor heartbeat:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to record heartbeat'
-      });
-    }
-  });
-  
-  // Contact Preferences
-  app.patch('/api/advisors/:id/contact-prefs', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.id);
-      const { displayPhone, whatsappNumber } = req.body;
-      
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-      
-      // Validate contact preferences
-      const contactPrefsSchema = z.object({
-        displayPhone: z.boolean().optional(),
-        whatsappNumber: z.string().max(15).optional()
-      });
-      
-      const validationResult = contactPrefsSchema.safeParse({ displayPhone, whatsappNumber });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid contact preferences',
-          errors: validationResult.error.errors
-        });
-      }
-      
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Verify advisor ownership - only advisors can update their own contact preferences
-      const sessionUserId = (req.session as any).userId;
-      const sessionUser = await storage.getUser(sessionUserId);
-      
-      if (!sessionUser || !sessionUser.email || sessionUser.email !== advisor.email) {
-        return res.status(403).json({ 
-          message: 'Forbidden: You can only update your own advisor contact preferences' 
-        });
-      }
-      
-      // Update contact preferences
-      await storage.updateContactPreferences(advisorId, validationResult.data);
-      
-      res.json({
-        message: 'Contact preferences updated successfully',
-        advisorId,
-        preferences: validationResult.data,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error updating contact preferences:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to update contact preferences'
-      });
-    }
-  });
-  
-  // Get current user's advisor profile - SECURE ENDPOINT
-  app.get('/api/advisors/me', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      // Get session user
-      const sessionUserId = (req.session as any).userId;
-      const sessionUser = await storage.getUser(sessionUserId);
-      
-      if (!sessionUser || !sessionUser.email) {
-        return res.status(401).json({ 
-          message: 'Session user not found or email missing' 
-        });
-      }
-      
-      // Find advisor record by email
-      const advisors = await storage.listInvestmentAdvisors();
-      const currentAdvisor = advisors.find(advisor => advisor.email === sessionUser.email);
-      
-      if (!currentAdvisor) {
-        return res.status(404).json({ 
-          message: 'Advisor profile not found for current user',
-          hint: 'Please register as an advisor first' 
-        });
-      }
-      
-      // Return only current user's advisor data
-      res.json({
-        advisor: currentAdvisor,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error fetching current user advisor:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch advisor profile'
-      });
-    }
-  });
-  
-  // Advisor Directory
-  app.get('/api/advisors', async (req, res) => {
-    try {
-      const { city, state, status, search } = req.query;
-      
-      // Validate query parameters
-      const filtersSchema = z.object({
-        city: z.string().optional(),
-        state: z.string().optional(),
-        status: z.enum(['active', 'offline']).optional(),
-        search: z.string().optional()
-      });
-      
-      const validationResult = filtersSchema.safeParse({ city, state, status, search });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid filter parameters',
-          errors: validationResult.error.errors
-        });
-      }
-      
-      // Get filtered advisors
-      const advisors = await storage.listAdvisors(validationResult.data);
-      
-      // Apply privacy controls - hide contact info when displayPhone is false
-      const filteredAdvisors = advisors.map(advisor => {
-        if (!advisor.displayPhone) {
-          const { professionalPhone, phone, whatsappNumber, ...filtered } = advisor;
-          return filtered;
-        }
-        return advisor;
-      });
-      
-      res.json({
-        advisors: filteredAdvisors,
-        total: filteredAdvisors.length,
-        filters: validationResult.data,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error listing advisors:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to list advisors'
-      });
-    }
-  });
-  
-  app.get('/api/advisors/:id', async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.id);
-      
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-      
-      // Get specific advisor
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Apply privacy controls - hide contact info when displayPhone is false
-      const filteredAdvisor = advisor.displayPhone 
-        ? advisor 
-        : (() => {
-            const { professionalPhone, phone, whatsappNumber, ...filtered } = advisor;
-            return filtered;
-          })();
-      
-      res.json({
-        advisor: filteredAdvisor,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error fetching advisor:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch advisor'
-      });
-    }
-  });
-  
-  // Simple in-memory rate limiter for messaging
-  const messageRateLimit = new Map<string, { count: number; resetAt: number }>();
-  const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-  const MAX_MESSAGES_PER_MINUTE = 10;
-
-  // Messaging System
-  app.post('/api/messages', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const { advisorId, content } = req.body;
-      const userId = (req.session as any).userId;
-      
-      // Rate limiting check
-      const now = Date.now();
-      const userRateKey = `user_${userId}`;
-      const userRateData = messageRateLimit.get(userRateKey);
-      
-      if (userRateData) {
-        if (now < userRateData.resetAt) {
-          if (userRateData.count >= MAX_MESSAGES_PER_MINUTE) {
-            return res.status(429).json({
-              message: `Rate limit exceeded. Maximum ${MAX_MESSAGES_PER_MINUTE} messages per minute allowed.`,
-              retryAfter: Math.ceil((userRateData.resetAt - now) / 1000)
-            });
-          }
-          userRateData.count += 1;
-        } else {
-          messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-        }
-      } else {
-        messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-      }
-      
-      // Validate message data
-      const messageSchema = z.object({
-        advisorId: z.number().int().positive(),
-        content: z.string().min(1).max(1000)
-      });
-      
-      const validationResult = messageSchema.safeParse({ advisorId, content });
-      if (!validationResult.success) {
-        return res.status(400).json({
-          message: 'Invalid message data',
-          errors: validationResult.error.errors
-        });
-      }
-      
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(validationResult.data.advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Create message with user as sender
-      const newMessage = await storage.createMessage({
-        advisorId: validationResult.data.advisorId,
-        userId,
-        sender: 'user',
-        content: validationResult.data.content,
-        conversationKey: `${validationResult.data.advisorId}:${userId}`,
-        conversationId: 0 // Will be set automatically by storage method
-      });
-      
-      res.status(201).json({
-        message: 'Message sent successfully',
-        messageData: newMessage,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error creating message:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to send message'
-      });
-    }
-  });
-  
-  app.get('/api/messages/:advisorId', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const advisorId = parseInt(req.params.advisorId);
-      const userId = (req.session as any).userId;
-      const limit = parseInt(req.query.limit as string) || 50;
-      
-      if (isNaN(advisorId)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-      
-      // Validate limit parameter
-      if (limit < 1 || limit > 100) {
-        return res.status(400).json({ 
-          message: 'Limit must be between 1 and 100' 
-        });
-      }
-      
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(advisorId);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Get conversation messages
-      const messages = await storage.getConversation(advisorId, userId, limit);
-      
-      res.json({
-        messages,
-        advisorId,
-        userId,
-        total: messages.length,
-        limit,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch messages'
-      });
-    }
-  });
-
-  // Enhanced Messaging System API Endpoints
-  
-  // Get user's conversations
-  app.get('/api/conversations', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.session as any).userId;
-      
-      const conversations = await storage.getUserConversations(userId);
-      
-      res.json({
-        conversations,
-        userId,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch conversations'
-      });
-    }
-  });
-
-  // Create new conversation with advisor
-  app.post('/api/conversations', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const { advisorId } = req.body;
-      const userId = (req.session as any).userId;
-      
-      // Validate advisor ID
-      const advisorIdNum = parseInt(advisorId);
-      if (isNaN(advisorIdNum)) {
-        return res.status(400).json({ message: 'Invalid advisor ID' });
-      }
-      
-      // Check if advisor exists
-      const advisor = await storage.getAdvisor(advisorIdNum);
-      if (!advisor) {
-        return res.status(404).json({ message: 'Advisor not found' });
-      }
-      
-      // Get or create conversation
-      const conversation = await storage.getOrCreateConversation(advisorIdNum, userId);
-      
-      res.status(201).json({
-        message: 'Conversation ready',
-        conversation,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to create conversation'
-      });
-    }
-  });
-
-  // Get messages in a specific conversation
-  app.get('/api/conversations/:id/messages', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      const userId = (req.session as any).userId;
-      const limit = parseInt(req.query.limit as string) || 50;
-      
-      if (isNaN(conversationId)) {
-        return res.status(400).json({ message: 'Invalid conversation ID' });
-      }
-      
-      // Validate limit parameter
-      if (limit < 1 || limit > 100) {
-        return res.status(400).json({ 
-          message: 'Limit must be between 1 and 100' 
-        });
-      }
-      
-      // Check if conversation exists and user has access
-      const conversation = await storage.getConversationById(conversationId);
-      if (!conversation) {
-        return res.status(404).json({ message: 'Conversation not found' });
-      }
-      
-      // Verify user has access to this conversation
-      if (conversation.userId !== userId) {
-        return res.status(403).json({ message: 'Access denied' });
-      }
-      
-      // Get messages using the original method (works with conversationKey)
-      const messages = await storage.getConversation(conversation.advisorId, userId, limit);
-      
-      // Mark messages as read
-      await storage.markMessagesAsRead(conversationId, userId);
-      
-      res.json({
-        messages,
-        conversation,
-        total: messages.length,
-        limit,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error fetching conversation messages:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch messages'
-      });
-    }
-  });
-
-  // Send message in a conversation
-  app.post('/api/conversations/:id/messages', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      const { content } = req.body;
-      const userId = (req.session as any).userId;
-      
-      if (isNaN(conversationId)) {
-        return res.status(400).json({ message: 'Invalid conversation ID' });
-      }
-      
-      // Rate limiting check (reuse existing logic)
-      const now = Date.now();
-      const userRateKey = `user_${userId}`;
-      const userRateData = messageRateLimit.get(userRateKey);
-      const MAX_MESSAGES_PER_MINUTE = 10;
-      const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-      
-      if (userRateData) {
-        if (now < userRateData.resetAt) {
-          if (userRateData.count >= MAX_MESSAGES_PER_MINUTE) {
-            return res.status(429).json({
-              message: `Rate limit exceeded. Maximum ${MAX_MESSAGES_PER_MINUTE} messages per minute allowed.`,
-              retryAfter: Math.ceil((userRateData.resetAt - now) / 1000)
-            });
-          }
-          userRateData.count += 1;
-        } else {
-          messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-        }
-      } else {
-        messageRateLimit.set(userRateKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-      }
-      
-      // Validate message content
-      if (!content || typeof content !== 'string' || content.trim().length === 0) {
-        return res.status(400).json({ message: 'Message content is required' });
-      }
-      
-      if (content.length > 1000) {
-        return res.status(400).json({ message: 'Message content too long (max 1000 characters)' });
-      }
-      
-      // Check if conversation exists and user has access
-      const conversation = await storage.getConversationById(conversationId);
-      if (!conversation) {
-        return res.status(404).json({ message: 'Conversation not found' });
-      }
-      
-      // Verify user has access to this conversation
-      if (conversation.userId !== userId) {
-        return res.status(403).json({ message: 'Access denied' });
-      }
-      
-      // Create message
-      const newMessage = await storage.createMessage({
-        advisorId: conversation.advisorId,
-        userId,
-        sender: 'user',
-        content: content.trim(),
-        conversationKey: `${conversation.advisorId}:${userId}`,
-        conversationId
-      });
-      
-      res.status(201).json({
-        message: 'Message sent successfully',
-        messageData: newMessage,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to send message'
-      });
-    }
-  });
-
-  // Get unread message count for user
-  app.get('/api/conversations/unread-count', mobileAuth.isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.session as any).userId;
-      
-      const unreadCount = await storage.getUnreadMessageCount(userId);
-      
-      res.json({
-        unreadCount,
-        userId,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-      res.status(500).json({
-        message: error instanceof Error ? error.message : 'Failed to fetch unread count'
       });
     }
   });

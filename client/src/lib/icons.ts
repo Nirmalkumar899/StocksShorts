@@ -65,6 +65,4 @@ export {
   FileText,
   FolderOpen,
   LogOut,
-  CreditCard,
-  Calendar,
 } from "./custom-icons";

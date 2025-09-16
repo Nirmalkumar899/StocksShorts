@@ -17,6 +17,7 @@ import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
+import AISection from '@/pages/ai-section';
 
 interface HomeProps {
   initialCategory?: string;
@@ -129,7 +130,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       return processedData;
       } catch (error) {
         clearTimeout(timeoutId);
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (error.name === 'AbortError') {
           throw new Error('Request timed out. Please try again.');
         }
         throw error;
@@ -219,22 +220,22 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return data;
       } catch (error) {
         // Handle AbortError specifically
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (error.name === 'AbortError') {
           console.error("⏰ Translation request timed out after 2 minutes");
           throw new Error('Translation is taking longer than expected. Please try again with fewer articles.');
         }
         
         // Handle quota exceeded errors with user-friendly message
-        if (error instanceof Error && error.message.includes('quota exceeded')) {
+        if (error.message && error.message.includes('quota exceeded')) {
           console.error("💰 OpenAI API quota exceeded");
           throw new Error('Hindi translation temporarily unavailable due to API limits. Please try again later.');
         }
         
         console.error("💥 Translation API error details:", {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-          name: error instanceof Error ? error.name : 'Unknown',
-          cause: error instanceof Error ? error.cause : undefined
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+          cause: error.cause
         });
         throw error;
       }
@@ -353,6 +354,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return <Profile onBack={() => setActiveSection('home')} />;
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
+      case 'ai-section':
+        return <AISection onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }
@@ -413,10 +416,10 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          // News Cards - Traditional feed layout showing multiple articles
+          // News Cards - Inshorts style full-screen layout with seamless transitions
           <div 
             ref={scrollContainerRef}
-            className="h-full overflow-y-auto scrollbar-hide transition-all duration-200 ease-in-out"
+            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide transition-all duration-200 ease-in-out"
             onScroll={(e) => {
               const element = e.target as HTMLElement;
               const currentScrollTop = element.scrollTop;
@@ -425,19 +428,17 @@ export default function Home({ initialCategory }: HomeProps = {}) {
               lastScrollTopRef.current = currentScrollTop;
             }}
           >
-            <div className="space-y-4 p-4">
-              {articles.map((article) => (
-                <div key={article.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                  <NewsCard
-                    article={article}
-                    onClick={() => handleArticleClick(article)}
-                    onShare={(e) => handleShare(e, article)}
-                    isExpanded={expandedArticles.has(article.id)}
-                    onToggleExpanded={() => handleToggleExpanded(article.id)}
-                  />
-                </div>
-              ))}
-            </div>
+            {articles.map((article) => (
+              <div key={article.id} className="min-h-[400px] h-full snap-start">
+                <NewsCard
+                  article={article}
+                  onClick={() => handleArticleClick(article)}
+                  onShare={(e) => handleShare(e, article)}
+                  isExpanded={expandedArticles.has(article.id)}
+                  onToggleExpanded={() => handleToggleExpanded(article.id)}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>

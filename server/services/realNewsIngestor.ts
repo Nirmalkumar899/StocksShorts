@@ -1,6 +1,5 @@
 import { Article } from '@shared/schema';
 import axios from 'axios';
-import { BSEAnnouncementProcessor } from './bseAnnouncementProcessor';
 
 interface RSSItem {
   title: string;
@@ -25,31 +24,13 @@ interface VerifiedArticle {
   primarySourceUrl: string | null;
   primarySourceTitle: string | null;
   primarySourcePublishedAt: Date | null;
-  sources: unknown;
-  contentType: string;
+  sources: string | null;
+  contentType: string | null;
   provenanceScore: number;
 }
 
 export class RealNewsIngestor {
-  private bseProcessor: BSEAnnouncementProcessor;
-  
-  constructor() {
-    this.bseProcessor = new BSEAnnouncementProcessor();
-  }
-  
   private readonly RSS_FEEDS = [
-    // Official Exchange Sources (Highest Priority)
-    {
-      url: 'https://www.sebi.gov.in/rss.html',
-      source: 'SEBI Official',
-      domain: 'sebi.gov.in'
-    },
-    {
-      url: 'https://www.bseindia.com/data/xml/notices.xml',
-      source: 'BSE Official',
-      domain: 'bseindia.com'
-    },
-    // Financial News Sources
     {
       url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
       source: 'Economic Times',
@@ -71,21 +52,21 @@ export class RealNewsIngestor {
       domain: 'economictimes.indiatimes.com'
     },
     {
+      url: 'https://www.business-standard.com/rss/markets-106.rss',
+      source: 'Business Standard',
+      domain: 'business-standard.com'
+    },
+    {
+      url: 'https://www.moneycontrol.com/rss/MCtopstories.xml',
+      source: 'MoneyControl',
+      domain: 'moneycontrol.com'
+    },
+    {
       url: 'https://www.livemint.com/rss/markets',
-      source: 'LiveMint Markets',
+      source: 'LiveMint',
       domain: 'livemint.com'
-    },
-    {
-      url: 'https://www.livemint.com/rss/companies',
-      source: 'LiveMint Companies',
-      domain: 'livemint.com'
-    },
-    {
-      url: 'https://economictimes.indiatimes.com/news/company/corporate-trends/rssfeeds/13358478.cms',
-      source: 'Economic Times Corporate',
-      domain: 'economictimes.indiatimes.com'
     }
-    // Note: Using all free sources including SEBI official regulatory updates
+    // Note: Some RSS feeds block automated requests, keeping only working ones
   ];
 
   private readonly MARKET_KEYWORDS = [
@@ -99,28 +80,14 @@ export class RealNewsIngestor {
   public async ingestTodaysNews(): Promise<Article[]> {
     console.log('📰 Starting real news ingestion for today and yesterday...');
     
-    const allArticles: VerifiedArticle[] = [];
+    const allArticles: Article[] = [];
     const todayIST = this.getTodayInIST();
     const yesterdayIST = new Date(todayIST);
     yesterdayIST.setDate(yesterdayIST.getDate() - 1);
     
-    // First, fetch BSE announcements with target keywords
-    try {
-      console.log('🏛️ Fetching BSE announcements with regulatory keywords...');
-      const bseAnnouncements = await this.bseProcessor.fetchAndProcessBSEAnnouncements();
-      console.log(`✅ Found ${bseAnnouncements.length} BSE announcements matching target keywords`);
-      
-      // Convert BSE announcements to Article format
-      for (const announcement of bseAnnouncements) {
-        allArticles.push(announcement);
-      }
-    } catch (error) {
-      console.error('Error fetching BSE announcements:', error);
-    }
-    
     for (const feed of this.RSS_FEEDS) {
       try {
-        console.log(`🔍 Fetching from ${feed.source} (${feed.domain}) - live updates...`);
+        console.log(`🔍 Fetching from ${feed.source}...`);
         const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
         const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
         allArticles.push(...todaysArticles, ...yesterdaysArticles);
@@ -128,7 +95,7 @@ export class RealNewsIngestor {
         // Add delay between requests to be respectful
         await this.delay(1000);
       } catch (error: any) {
-        console.error(`❌ Error fetching from ${feed.source} (${feed.domain}):`, error?.message || error);
+        console.error(`❌ Error fetching from ${feed.source}:`, error?.message || error);
       }
     }
 
@@ -140,7 +107,7 @@ export class RealNewsIngestor {
       .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
       .slice(0, 50);
 
-    console.log(`✅ Ingested ${sortedArticles.length} unique articles from today with enhanced categories`);
+    console.log(`✅ Ingested ${sortedArticles.length} unique articles from today`);
     return sortedArticles;
   }
 
@@ -188,7 +155,7 @@ export class RealNewsIngestor {
         // const isValidUrl = await this.verifyUrl(link);
         // if (!isValidUrl) continue;
         
-        const verifiedArticle: VerifiedArticle = {
+        const verifiedArticle: Article = {
           id: Date.now() + Math.random(),
           title: this.cleanText(title),
           content: this.generateSummary(description),
@@ -205,7 +172,7 @@ export class RealNewsIngestor {
           primarySourcePublishedAt: articleDate,
           sources: feed.source,
           contentType: 'original-report',
-          provenanceScore: this.calculateProvenanceScore(feed.domain, articleDate) ?? 0.0
+          provenanceScore: this.calculateProvenanceScore(feed.domain, articleDate)
         };
         
         articles.push(verifiedArticle);
@@ -266,57 +233,11 @@ export class RealNewsIngestor {
   private categorizeArticle(title: string, description: string): string {
     const text = (title + ' ' + description).toLowerCase();
     
-    // Multibagger detection (separate high-priority category)
-    if (text.includes('multibagger') || text.includes('multi-bagger') || text.includes('10x return') ||
-        text.includes('100% return') || text.includes('250% rally') || text.includes('265% rally') ||
-        text.includes('penny stock') || text.includes('smallcap rally')) return 'multibagger';
-    
-    // Breakout stocks detection (enhanced)
-    if (text.includes('breakout') || text.includes('chart pattern') || text.includes('technical breakout') || 
-        text.includes('breakage') || text.includes('resistance break') || text.includes('support break') ||
-        text.includes('momentum') || text.includes('surge above') || text.includes('rally') ||
-        text.includes('explosive') || text.includes('surge')) return 'breakout-stocks';
-    
-    // Order Win detection
-    if (text.includes('order win') || text.includes('order book') || text.includes('order received') ||
-        text.includes('contract win') || text.includes('tender win') || text.includes('order secured')) return 'order-win';
-    
-    // Warrant Issue detection  
-    if (text.includes('warrant') || text.includes('preferential') || text.includes('rights issue') ||
-        text.includes('warrant exercise') || text.includes('warrant trading')) return 'warrants';
-    
-    // Block Deal detection
-    if (text.includes('block deal') || text.includes('bulk deal') || text.includes('large trade') ||
-        text.includes('institutional sale') || text.includes('promoter sale')) return 'block-deal';
-    
-    // High Volume Stock detection
-    if (text.includes('high volume') || text.includes('volume surge') || text.includes('trading volume') ||
-        text.includes('heavy volume') || text.includes('unusual volume') || text.includes('volume spike')) return 'high-volume';
-    
-    // Next Day Market / Tomorrow Market detection
-    if (text.includes('tomorrow') || text.includes('next day') || text.includes('monday') ||
-        text.includes('next week') || text.includes('week ahead') || text.includes('market outlook')) return 'market-outlook';
-    
-    // IPO detection (enhanced to include SME)
-    if (text.includes('ipo') || text.includes('listing') || text.includes('sme ipo') || 
-        text.includes('public issue') || text.includes('allotment') || text.includes('subscription')) return 'ipo';
-    
-    // Crypto detection
-    if (text.includes('crypto') || text.includes('bitcoin') || text.includes('ethereum') || 
-        text.includes('cryptocurrency') || text.includes('blockchain') || text.includes('digital currency') ||
-        text.includes('btc') || text.includes('eth') || text.includes('defi')) return 'crypto';
-    
-    // US Market detection (enhanced)
-    if (text.includes('global') || text.includes('us market') || text.includes('wall street') ||
-        text.includes('federal reserve') || text.includes('fed') || text.includes('dow jones') ||
-        text.includes('nasdaq') || text.includes('s&p 500') || text.includes('american')) return 'us-market';
-    
-    // Research Report / Analyst detection
-    if (text.includes('earnings') || text.includes('results') || text.includes('quarterly') ||
-        text.includes('analysis') || text.includes('outlook') || text.includes('target') ||
-        text.includes('recommendation') || text.includes('buy') || text.includes('sell')) return 'research-report';
-    
+    if (text.includes('ipo') || text.includes('listing')) return 'ipo';
+    if (text.includes('earnings') || text.includes('results') || text.includes('quarterly')) return 'research-report';
     if (text.includes('breaking') || text.includes('alert') || text.includes('urgent')) return 'trending';
+    if (text.includes('analysis') || text.includes('outlook') || text.includes('target')) return 'research-report';
+    if (text.includes('global') || text.includes('us market') || text.includes('wall street')) return 'us-market';
     
     return 'trending';
   }
@@ -338,8 +259,7 @@ export class RealNewsIngestor {
   private assignPriority(title: string, description: string): 'High' | 'Medium' | 'Low' {
     const text = (title + ' ' + description).toLowerCase();
     
-    const highPriorityWords = ['breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant', 
-                              'multibagger', 'breakout', 'order win', 'block deal', 'high volume', 'warrant'];
+    const highPriorityWords = ['breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant'];
     const highPriorityCount = highPriorityWords.filter(word => text.includes(word)).length;
     
     if (highPriorityCount >= 2) return 'High';
@@ -360,14 +280,11 @@ export class RealNewsIngestor {
 
   private calculateProvenanceScore(domain: string, publishedAt: Date): number {
     const domainScores: Record<string, number> = {
-      'sebi.gov.in': 1.0,
-      'bseindia.com': 1.0,
-      'nseindia.com': 1.0,
       'economictimes.indiatimes.com': 0.9,
+      'moneycontrol.com': 0.85,
       'livemint.com': 0.8,
       'cnbctv18.com': 0.75,
-      'financialexpress.com': 0.7,
-      'business-standard.com': 0.65
+      'financialexpress.com': 0.7
     };
     
     const domainScore = domainScores[domain] || 0.5;

@@ -1,5 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean, real, numeric, unique, check } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { pgTable, text, serial, integer, timestamp, varchar, index, jsonb, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -14,34 +13,29 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for mobile authentication  
+// User storage table for mobile authentication
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey(),
-  username: text("username"),
-  password: text("password"),
-  email: varchar("email"),
+  id: serial("id").primaryKey(),
+  phoneNumber: varchar("phone_number").unique().notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  age: integer("age"),
+  gender: varchar("gender"),
+  city: varchar("city"),
+  occupation: varchar("occupation"),
+  investmentExperience: varchar("investment_experience"),
+  isVerified: varchar("is_verified").default("false"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  phoneNumber: varchar("phone_number", { length: 15 }),
-  age: integer("age"),
-  gender: varchar("gender", { length: 20 }),
-  city: varchar("city", { length: 100 }),
-  occupation: varchar("occupation", { length: 100 }),
-  investmentExperience: varchar("investment_experience", { length: 50 }),
-  name: varchar("name", { length: 100 }),
-  isVerified: boolean("is_verified").default(false),
 });
 
 // OTP verification table
 export const otpVerifications = pgTable("otp_verifications", {
   id: serial("id").primaryKey(),
-  phoneNumber: varchar("phone_number", { length: 15 }).notNull(),
-  otp: varchar("otp", { length: 6 }).notNull(),
-  isUsed: boolean("is_used").default(false),
+  phoneNumber: varchar("phone_number").notNull(),
+  otp: varchar("otp").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
+  isUsed: varchar("is_used").default("false"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -219,231 +213,26 @@ export type AiArticleReport = typeof aiArticleReports.$inferSelect;
 // Investment Advisor table
 export const investmentAdvisors = pgTable("investment_advisors", {
   id: serial("id").primaryKey(),
-  // Personal Information
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  email: text("email").notNull().unique(),
-  
-  // Professional Information  
-  sebiRegNo: text("sebi_reg_no").notNull().unique(),
+  name: text("name").notNull(),
   company: text("company").default(''),
-  qualification: text("qualification").default('SEBI Registered Investment Advisor'),
-  experienceYears: integer("experience_years").default(0),
-  yearsInBusiness: integer("years_in_business").default(0),
-  
-  // Office Contact Information
-  officeAddress: text("office_address").default(''),
-  city: text("city").default(''),
-  state: text("state").default(''),
-  pincode: text("pincode").default(''),
-  professionalPhone: text("professional_phone").notNull(),
-  whatsappNumber: varchar("whatsapp_number", { length: 15 }),
-  
-  // Online Presence
-  website: text("website").default(''),
-  linkedinProfile: text("linkedin_profile").default(''),
-  articleLinks: jsonb("article_links").default([]),
-  socialMediaLinks: jsonb("social_media_links").default([]),
-  
-  // Professional Services
-  specializations: jsonb("specializations").default([]),
-  servicesOffered: jsonb("services_offered").default([]),
-  languagesSpoken: jsonb("languages_spoken").default([]),
-  
-  // Additional Information
-  aboutYou: text("about_you").default(''),
-  consultationFee: numeric("consultation_fee", { precision: 10, scale: 2 }).default("100.00"),
-  
-  // Teleconsultation Configuration
-  consultationFee15min: numeric("consultation_fee_15min", { precision: 10, scale: 2 }), // nullable - null means not offering 15min consultations
-  consultationFee30min: numeric("consultation_fee_30min", { precision: 10, scale: 2 }), // nullable - null means not offering 30min consultations
-  freeConsultationsPerUser: integer("free_consultations_per_user").default(1), // -1 for unlimited
-  consultationEnabled: boolean("consultation_enabled").default(false),
-  
-  // File Uploads
-  profileImageUrl: text("profile_image_url").default(''),
-  sebiCertificateUrl: text("sebi_certificate_url").default(''),
-  
-  // Legal Requirements & Availability
-  termsAccepted: boolean("terms_accepted").notNull().default(false),
-  privacyPolicyAccepted: boolean("privacy_policy_accepted").notNull().default(false),
-  professionalDisclaimerAccepted: boolean("professional_disclaimer_accepted").notNull().default(false),
-  availableForConsultations: boolean("available_for_consultations").notNull().default(true),
-  
-  // Advisor Status and Activity Tracking
-  status: text("status").notNull().default("offline"), // 'active' | 'offline'
-  lastActiveAt: timestamp("last_active_at"),
-  statusUpdatedAt: timestamp("status_updated_at").defaultNow().notNull(),
-  displayPhone: boolean("display_phone").notNull().default(false),
-  
-  // Legacy fields for backward compatibility
   designation: text("designation").default(''),
-  phone: text("phone").default(''),
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  website: text("website").default(''),
   specialization: text("specialization").default(''),
   experience: text("experience").default(''),
   location: text("location").default(''),
-  bio: text("bio").default(''),
   rating: text("rating").default('4.0'),
-  
   createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [
-  // Database-level validation for advisor status and free consultations
-  check("CHK_advisor_status", sql`status IN ('active', 'offline')`),
-  check("CHK_advisor_free_consultations", sql`free_consultations_per_user = -1 OR free_consultations_per_user >= 0`),
-]);
+});
 
-// Conversations table for managing chat sessions between advisors and users
-export const conversations = pgTable("conversations", {
-  id: serial("id").primaryKey(),
-  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  status: text("status").notNull().default("active"), // 'active' | 'archived'
-  lastMessageAt: timestamp("last_message_at").defaultNow().notNull(),
-  lastMessagePreview: text("last_message_preview").default(""),
-  unreadCount: integer("unread_count").notNull().default(0), // Messages unread by recipient
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [
-  index("IDX_conversations_user").on(table.userId),
-  index("IDX_conversations_advisor").on(table.advisorId),
-  index("IDX_conversations_last_message").on(table.lastMessageAt),
-]);
-
-// Messages table for in-app communication between advisors and users
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
-  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
-  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  sender: text("sender").notNull(), // 'user' | 'advisor'
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  readAt: timestamp("read_at"),
-  conversationKey: varchar("conversation_key").notNull(), // Format: advisorId:userId for backward compatibility
-}, (table) => [
-  index("IDX_messages_conversation").on(table.conversationId),
-  index("IDX_messages_conversation_key").on(table.conversationKey),
-  index("IDX_messages_created_at").on(table.createdAt),
-]);
-
-// Teleconsultations table for booking and managing video consultations
-export const teleconsultations = pgTable("teleconsultations", {
-  id: serial("id").primaryKey(),
-  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  duration: text("duration").notNull(), // "15min" | "30min"
-  scheduledAt: timestamp("scheduled_at").notNull(),
-  status: text("status").notNull().default("scheduled"), // "scheduled" | "completed" | "cancelled" | "in_progress"
-  fee: numeric("fee", { precision: 10, scale: 2 }).notNull().default("0.00"), // Actual fee charged (0 for free consultations)
-  roomId: varchar("room_id", { length: 100 }).notNull().unique(), // Unique identifier for video call room
-  notes: text("notes"), // Optional notes from advisor or user
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => [
-  index("IDX_teleconsultations_advisor").on(table.advisorId),
-  index("IDX_teleconsultations_user").on(table.userId),
-  index("IDX_teleconsultations_scheduled").on(table.scheduledAt),
-  index("IDX_teleconsultations_status").on(table.status),
-  // Prevent double-booking: same advisor cannot have overlapping consultations
-  unique("UNQ_teleconsultations_no_overlap").on(table.advisorId, table.scheduledAt, table.duration),
-  // Database-level validation constraints
-  check("CHK_teleconsultations_status", sql`status IN ('scheduled', 'in_progress', 'completed', 'cancelled')`),
-  check("CHK_teleconsultations_duration", sql`duration IN ('15min', '30min')`),
-  check("CHK_teleconsultations_fee_positive", sql`fee >= 0`),
-]);
-
-// User consultation usage tracking table
-export const userConsultationUsage = pgTable("user_consultation_usage", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  advisorId: integer("advisor_id").notNull().references(() => investmentAdvisors.id),
-  freeConsultationsUsed: integer("free_consultations_used").notNull().default(0),
-  lastUsed: timestamp("last_used"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => [
-  index("IDX_consultation_usage_user").on(table.userId),
-  index("IDX_consultation_usage_advisor").on(table.advisorId),
-  // Proper UNIQUE constraint to ensure one record per user-advisor pair
-  unique("UNQ_consultation_usage_user_advisor").on(table.userId, table.advisorId),
-  // Database-level validation
-  check("CHK_consultation_usage_free_count", sql`free_consultations_used >= 0`),
-]);
-
-// Enhanced Investment Advisor schema with status validation
 export const insertInvestmentAdvisorSchema = createInsertSchema(investmentAdvisors).omit({
   id: true,
   createdAt: true,
-  statusUpdatedAt: true,
-}).extend({
-  status: z.enum(["active", "offline"]).default("offline"),
-  consultationFee: z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val).optional(),
-  // Teleconsultation fields - nullable means not offering that service
-  consultationFee15min: z.union([
-    z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val === '' ? null : val),
-    z.number().transform(val => val.toString()),
-    z.null()
-  ]).optional().nullable(),
-  consultationFee30min: z.union([
-    z.string().regex(/^\d+(\.\d{1,2})?$/).transform((val) => val === '' ? null : val),
-    z.number().transform(val => val.toString()),
-    z.null()
-  ]).optional().nullable(),
-  freeConsultationsPerUser: z.number().refine((val) => val === -1 || val >= 0, {
-    message: "Free consultations must be -1 (unlimited) or >= 0",
-  }).optional(),
-  consultationEnabled: z.boolean().default(false).optional(),
-});
-
-export const insertConversationSchema = createInsertSchema(conversations).omit({
-  id: true,
-  createdAt: true,
-  lastMessageAt: true,
-}).extend({
-  status: z.enum(["active", "archived"]).default("active"),
-});
-
-export const insertMessageSchema = createInsertSchema(messages).omit({
-  id: true,
-  createdAt: true,
-}).extend({
-  sender: z.enum(["user", "advisor"]),
 });
 
 export type InsertInvestmentAdvisor = z.infer<typeof insertInvestmentAdvisorSchema>;
 export type InvestmentAdvisor = typeof investmentAdvisors.$inferSelect;
-export type InsertConversation = z.infer<typeof insertConversationSchema>;
-export type Conversation = typeof conversations.$inferSelect;
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type Message = typeof messages.$inferSelect;
-
-// Teleconsultation schemas with validation
-export const insertTeleconsultationSchema = createInsertSchema(teleconsultations).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  duration: z.enum(["15min", "30min"]),
-  status: z.enum(["scheduled", "completed", "cancelled", "in_progress"]).default("scheduled"),
-  fee: z.string().regex(/^\d+(\.\d{1,2})?$/, "Fee must be a valid decimal with up to 2 decimal places").transform((val) => parseFloat(val)).refine((val) => val >= 0 && val <= 10000, {
-    message: "Fee must be between 0 and 10,000 INR",
-  }),
-  scheduledAt: z.date().refine((date) => date > new Date(), {
-    message: "Consultation must be scheduled for a future date",
-  }),
-});
-
-export const insertUserConsultationUsageSchema = createInsertSchema(userConsultationUsage).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  freeConsultationsUsed: z.number().min(0).max(100), // Reasonable limit validation
-});
-
-export type InsertTeleconsultation = z.infer<typeof insertTeleconsultationSchema>;
-export type Teleconsultation = typeof teleconsultations.$inferSelect;
-export type InsertUserConsultationUsage = z.infer<typeof insertUserConsultationUsageSchema>;
-export type UserConsultationUsage = typeof userConsultationUsage.$inferSelect;
 
 // Google Sheets row structure
 export interface GoogleSheetsRow {

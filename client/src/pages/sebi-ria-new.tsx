@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "@tanstack/react-query";
 import type { InvestmentAdvisor } from "@shared/schema";
 import { useSEO } from "@/hooks/useSEO";
-import BottomNavigation from "@/components/bottom-navigation";
 
 interface SebiRiaProps {
   onBack: () => void;
@@ -34,7 +33,14 @@ function HeroSection({ onPrimaryClick, advisorCount }: HeroSectionProps) {
         <p className="text-xl md:text-2xl font-semibold mb-6 text-orange-300">
           First consultation FREE!
         </p>
-        <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 text-sm">
+        <Button 
+          onClick={onPrimaryClick}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 text-lg font-semibold rounded-full mb-6"
+          data-testid="hero-start-consulting"
+        >
+          🎯 Available Now - Start Consulting!
+        </Button>
+        <div className="flex justify-center items-center gap-8 text-sm">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
             <span>SEBI Registered</span>
@@ -126,7 +132,7 @@ function SearchFilters({
 function TopAdvisorsBadge() {
   return (
     <div className="flex justify-center mb-6">
-      <Badge className="bg-green-500 text-white px-3 py-2 text-sm font-medium max-w-full whitespace-normal break-words text-center">
+      <Badge className="bg-green-500 text-white px-4 py-2 text-sm font-medium">
         🔥 Top SEBI Advisors Available Now
       </Badge>
     </div>
@@ -242,7 +248,7 @@ function EnhancedAdvisorCard({ advisor, index }: EnhancedAdvisorCardProps) {
         
         <div className="space-y-2">
           <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-medium whitespace-normal break-words leading-snug"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-medium"
             onClick={() => handleContact('phone', advisor)}
             disabled={!advisor.phone}
             data-testid={`start-consultation-${index}`}
@@ -251,7 +257,7 @@ function EnhancedAdvisorCard({ advisor, index }: EnhancedAdvisorCardProps) {
           </Button>
           <Button 
             variant="outline"
-            className="w-full py-2 text-sm whitespace-normal break-words leading-snug"
+            className="w-full py-2 text-sm"
             onClick={() => handleContact('whatsapp', advisor)}
             disabled={!advisor.phone}
             data-testid={`chat-advisor-${index}`}
@@ -273,7 +279,7 @@ function HowItWorksSection() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            How SEBI RIA Directory Works
+            How InvestConnect Works
           </h2>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
             Get expert investment advice in just 3 simple steps
@@ -320,7 +326,7 @@ function HowItWorksSection() {
         
         <div className="text-center mt-8">
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-8 py-3 text-lg font-semibold w-full sm:w-auto whitespace-normal break-words leading-snug text-center"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold"
             data-testid="how-it-works-cta"
           >
             Start Your Investment Journey
@@ -342,7 +348,6 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialization, setSelectedSpecialization] = useState("All");
   const [selectedCity, setSelectedCity] = useState("All");
-  const [activeSection, setActiveSection] = useState('sebi-ria');
   const [sortBy, setSortBy] = useState("random");
   const [shuffleSeed, setShuffleSeed] = useState(0);
 
@@ -425,7 +430,12 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
-        <div className="p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Connect with SEBI RIA</h1>
+          <div className="w-10" />
         </div>
         <div className="flex-1 p-4 space-y-4">
           {[1, 2, 3, 4].map(i => (
@@ -436,97 +446,80 @@ export default function SebiRiaNew({ onBack }: SebiRiaProps) {
     );
   }
 
-  // Handle bottom navigation
-  const handleTabChange = (section: string) => {
-    setActiveSection(section);
-  };
-
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-end p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800"
-          onClick={() => window.location.href = '/sebi-ria/register'}
-          data-testid="register-sebi-analyst"
-        >
-          Join as SEBI Registered Analyst
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="h-5 w-5" />
         </Button>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">InvestConnect</h1>
+        <div className="w-10" />
       </div>
 
-      {/* Main Content - Flexible */}
-      <div className="flex-1">
-        {/* Hero Section */}
-        <HeroSection onPrimaryClick={scrollToSearch} advisorCount={advisors.length} />
+      {/* Hero Section */}
+      <HeroSection onPrimaryClick={scrollToSearch} advisorCount={advisors.length} />
 
-        {/* Search Filters */}
-        <SearchFilters 
-          searchQuery={searchQuery}
-          selectedCity={selectedCity}
-          selectedSpecialization={selectedSpecialization}
-          onSearchChange={setSearchQuery}
-          onCityChange={setSelectedCity}
-          onSpecializationChange={setSelectedSpecialization}
-          cities={cities}
+      {/* Search Filters */}
+      <SearchFilters 
+        searchQuery={searchQuery}
+        selectedCity={selectedCity}
+        selectedSpecialization={selectedSpecialization}
+        onSearchChange={setSearchQuery}
+        onCityChange={setSelectedCity}
+        onSpecializationChange={setSelectedSpecialization}
+        cities={cities}
+        specializations={specializations}
+      />
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <TopAdvisorsBadge />
+        <ConsultationHeader />
+        <SpecializationPills 
           specializations={specializations}
+          activeSpecialization={selectedSpecialization}
+          onSelect={setSelectedSpecialization}
         />
 
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <TopAdvisorsBadge />
-          <ConsultationHeader />
-          <SpecializationPills 
-            specializations={specializations}
-            activeSpecialization={selectedSpecialization}
-            onSelect={setSelectedSpecialization}
-          />
-
-          {/* Compact Disclaimer */}
-          <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <p className="text-amber-800 dark:text-amber-200 text-sm flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Contact details not verified - verify SEBI registration independently
-            </p>
-          </div>
-
-          {/* Results */}
-          {sortedAdvisors.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">👨‍💼</div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">No advisors found</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Try adjusting your search criteria or filters
-              </p>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedSpecialization("All");
-                  setSelectedCity("All");
-                }}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-6 mb-12">
-              {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
-                <EnhancedAdvisorCard key={advisor.id} advisor={advisor} index={index} />
-              ))}
-            </div>
-          )}
+        {/* Compact Disclaimer */}
+        <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <p className="text-amber-800 dark:text-amber-200 text-sm flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Contact details not verified - verify SEBI registration independently
+          </p>
         </div>
 
-        {/* How It Works Section */}
-        <HowItWorksSection />
+        {/* Results */}
+        {sortedAdvisors.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-4xl mb-4">👨‍💼</div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">No advisors found</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Try adjusting your search criteria or filters
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedSpecialization("All");
+                setSelectedCity("All");
+              }}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-6 mb-12">
+            {sortedAdvisors.map((advisor: InvestmentAdvisor, index: number) => (
+              <EnhancedAdvisorCard key={advisor.id} advisor={advisor} index={index} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Fixed Bottom Navigation */}
-      <div className="flex-shrink-0">
-        <BottomNavigation activeTab={activeSection} onTabChange={handleTabChange} />
-      </div>
+      {/* How It Works Section */}
+      <HowItWorksSection />
     </div>
   );
 }
