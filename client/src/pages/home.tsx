@@ -69,43 +69,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     }
   }, []);
 
-  // Article share handler
-  const handleShare = useCallback(async (e: React.MouseEvent, article: Article) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const shareUrl = `${window.location.origin}/article/${article.id}`;
-    const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: article.title,
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      } catch (error) {
-        // Fall back to clipboard
-      }
-    }
-    
-    // Fallback to clipboard
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-      toast({
-        title: "Link copied!",
-        description: "Article link has been copied to your clipboard.",
-      });
-    } catch (error) {
-      toast({
-        title: "Share failed",
-        description: "Unable to share this article.",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
-
   // Fetch all articles without category filtering
   const {
     data: rawArticles = [],
@@ -158,9 +121,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         // Sort by most recent first (descending order)
         return bTime - aTime;
       });
-      
-      // Add console log after fetch
-      console.log('articles length =', processedData.length);
       
       return processedData;
       } catch (error) {
@@ -386,7 +346,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         {isLoading ? (
           // Loading State
           <div className="h-full flex items-center justify-center">
@@ -426,29 +386,11 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          <div style={{ padding: 16 }}>
-            <div style={{ marginBottom: 8, fontSize: 14 }}>
-              Showing {Math.min(100, articles.length)} articles
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: 12
-            }}>
-              {articles.slice(0, 100).map(a => (
-                <article key={a.id} style={{ border:'1px solid #e5e5e5', borderRadius:8, overflow:'hidden' }}>
-                  <div style={{ height: 160, background:'#f3f4f6' }}>
-                    <img src={a.imageUrl || ''} alt={a.title || ''} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                  </div>
-                  <div style={{ padding: 12 }}>
-                    <h3 style={{ margin: 0, fontSize: 16, lineHeight: 1.3 }}>{a.title}</h3>
-                    <p style={{ margin: '8px 0 0', fontSize: 13, color: '#555' }}>{a.content ? a.content.substring(0, 120) + '...' : ''}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
+          // Inshorts-style flip interface - One article at a time
+          <FlipArticleViewer
+            articles={articles}
+            onArticleClick={handleArticleClick}
+          />
         )}
       </div>
     </>

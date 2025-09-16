@@ -110,17 +110,9 @@ export class RealNewsIngestor {
       const bseAnnouncements = await this.bseProcessor.fetchAndProcessBSEAnnouncements();
       console.log(`✅ Found ${bseAnnouncements.length} BSE announcements matching target keywords`);
       
-      // Convert BSE announcements to VerifiedArticle format
+      // Convert BSE announcements to Article format
       for (const announcement of bseAnnouncements) {
-        allArticles.push({
-          ...announcement,
-          primarySourceUrl: announcement.sourceUrl,
-          primarySourceTitle: announcement.title,
-          primarySourcePublishedAt: announcement.time,
-          sources: 'BSE Official',
-          contentType: 'announcement',
-          provenanceScore: 95 // High provenance for BSE official data
-        });
+        allArticles.push(announcement);
       }
     } catch (error) {
       console.error('Error fetching BSE announcements:', error);
@@ -143,10 +135,10 @@ export class RealNewsIngestor {
     // Remove duplicates based on title similarity
     const uniqueArticles = this.removeDuplicates(allArticles);
     
-    // Sort by published time (newest first) and take top 100
+    // Sort by published time (newest first) and take top 80
     const sortedArticles = uniqueArticles
       .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
-      .slice(0, 100);
+      .slice(0, 80);
 
     console.log(`✅ Ingested ${sortedArticles.length} unique articles from today with enhanced categories`);
     return sortedArticles;
