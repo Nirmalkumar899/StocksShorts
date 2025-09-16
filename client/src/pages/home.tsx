@@ -69,6 +69,43 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     }
   }, []);
 
+  // Article share handler
+  const handleShare = useCallback(async (e: React.MouseEvent, article: Article) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const shareUrl = `${window.location.origin}/article/${article.id}`;
+    const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        // Fall back to clipboard
+      }
+    }
+    
+    // Fallback to clipboard
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+      toast({
+        title: "Link copied!",
+        description: "Article link has been copied to your clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Share failed",
+        description: "Unable to share this article.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
   // Fetch all articles without category filtering
   const {
     data: rawArticles = [],
@@ -121,6 +158,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         // Sort by most recent first (descending order)
         return bTime - aTime;
       });
+      
+      // Add console log after fetch
+      console.log('articles length =', processedData.length);
       
       return processedData;
       } catch (error) {
@@ -386,11 +426,31 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          // Inshorts-style flip interface - One article at a time
-          <FlipArticleViewer
-            articles={articles}
-            onArticleClick={handleArticleClick}
-          />
+          // Grid layout showing up to 100 articles
+          <div className="h-full overflow-y-auto">
+            {/* Article count */}
+            <div className="sticky top-0 bg-white dark:bg-neutral-950 z-10 p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Showing {Math.min(100, articles.length)} articles
+              </div>
+            </div>
+            
+            {/* Articles Grid */}
+            <div className="p-4" style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
+              gap: '12px' 
+            }}>
+              {articles.slice(0, 100).map((article) => (
+                <NewsCard
+                  key={article.id}
+                  article={article}
+                  onClick={() => handleArticleClick(article)}
+                  onShare={(e) => handleShare(e, article)}
+                />
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </>
