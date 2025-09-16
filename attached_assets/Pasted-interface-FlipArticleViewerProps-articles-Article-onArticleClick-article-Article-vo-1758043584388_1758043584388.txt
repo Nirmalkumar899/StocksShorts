@@ -1,0 +1,68 @@
+interface FlipArticleViewerProps {
+  articles: Article[];
+  onArticleClick: (article: Article) => void;
+  variant?: 'flip' | 'grid'; // NEW
+  maxCount?: number;         // NEW
+}
+
+export default function FlipArticleViewer({
+  articles,
+  onArticleClick,
+  variant = 'flip',
+  maxCount = 100,
+}: FlipArticleViewerProps) {
+  // ... keep your existing state/hooks (currentIndex, imageError, etc.)
+
+  // --- GRID MODE: show many at once ---
+  if (variant === 'grid') {
+    const list = articles.slice(0, maxCount);
+    if (list.length === 0) {
+      return (
+        <div className="h-full flex items-center justify-center">
+          <p className="text-neutral-600 dark:text-neutral-400">No articles available</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-4">
+        <div className="mb-3 text-sm text-neutral-600 dark:text-neutral-400">
+          Showing {list.length} article{list.length > 1 ? 's' : ''}.
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {list.map((a) => (
+            <article
+              key={a.id}
+              className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow transition"
+              onClick={() => onArticleClick(a)}
+              role="button"
+            >
+              <div className="h-36 bg-gray-100 dark:bg-gray-700">
+                <img
+                  src={a.imageUrl || 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80'}
+                  alt={a.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-3">
+                <h3 className="text-sm font-semibold line-clamp-2">{a.title}</h3>
+                <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-300 line-clamp-3">
+                  {a.content?.slice(0, 180) || 'No content'}
+                </p>
+                <div className="mt-3 text-[11px] text-neutral-500 flex items-center justify-between">
+                  <span>{a.source || 'Source'}</span>
+                  <span>{new Date(a.time || a.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // --- FLIP MODE (your existing single-article swipe UI) ---
+  // keep your current code below for the flip experience, unchanged
+  // (currentIndex, swipe handlers, single card render, etc.)
+}
