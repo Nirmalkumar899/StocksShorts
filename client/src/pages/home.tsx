@@ -426,28 +426,26 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             </div>
           </div>
         ) : (
-          // Grid layout showing up to 100 articles
-          <div className="h-full overflow-y-auto">
-            {/* Article count */}
-            <div className="sticky top-0 bg-white dark:bg-neutral-950 z-10 p-4 border-b border-gray-200 dark:border-gray-800">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Showing {Math.min(100, articles.length)} articles
-              </div>
+          <div style={{ padding: 16 }}>
+            <div style={{ marginBottom: 8, fontSize: 14 }}>
+              Showing {Math.min(100, articles.length)} articles
             </div>
-            
-            {/* Articles Grid */}
-            <div className="p-4" style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
-              gap: '12px' 
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: 12
             }}>
-              {articles.slice(0, 100).map((article) => (
-                <NewsCard
-                  key={article.id}
-                  article={article}
-                  onClick={() => handleArticleClick(article)}
-                  onShare={(e) => handleShare(e, article)}
-                />
+              {articles.slice(0, 100).map(a => (
+                <article key={a.id} style={{ border:'1px solid #e5e5e5', borderRadius:8, overflow:'hidden' }}>
+                  <div style={{ height: 160, background:'#f3f4f6' }}>
+                    <img src={a.imageUrl} alt={a.title} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  </div>
+                  <div style={{ padding: 12 }}>
+                    <h3 style={{ margin: 0, fontSize: 16, lineHeight: 1.3 }}>{a.title}</h3>
+                    <p style={{ margin: '8px 0 0', fontSize: 13, color: '#555' }}>{a.content ? a.content.substring(0, 120) + '...' : ''}</p>
+                  </div>
+                </article>
               ))}
             </div>
           </div>
