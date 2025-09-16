@@ -756,9 +756,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
           'Content-Type': 'application/json; charset=utf-8'
         });
+        return res.json(sortedArticles);
       }
-      
-      return res.json(sortedArticles);
     } catch (error) {
       console.error('❌ Error fetching cached articles:', error);
       if (!res.headersSent) {
