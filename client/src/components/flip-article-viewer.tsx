@@ -29,6 +29,15 @@ export default function FlipArticleViewer({
   const nextArticle = articles[currentIndex + 1] || null;
   const prevArticle = articles[currentIndex - 1] || null;
 
+  // Debug logging
+  console.log("🔍 FlipArticleViewer state:", {
+    currentIndex,
+    articlesLength: articles.length,
+    hasCurrentArticle: !!currentArticle,
+    currentArticleTitle: currentArticle?.title?.substring(0, 50),
+    isFlipping,
+  });
+
   // Paper flip animation with realistic physics
   const [{ rotateX, y, scale, opacity }, api] = useSpring(() => ({ 
     rotateX: 0,
