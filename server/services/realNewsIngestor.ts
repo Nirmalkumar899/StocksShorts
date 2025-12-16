@@ -68,15 +68,10 @@ export class RealNewsIngestor {
       source: 'LiveMint Money',
       domain: 'livemint.com'
     },
-    // Financial Express
+    // Financial Express - India Markets
     {
       url: 'https://www.financialexpress.com/market/rss/',
       source: 'Financial Express',
-      domain: 'financialexpress.com'
-    },
-    {
-      url: 'https://www.financialexpress.com/investing-abroad/rss/',
-      source: 'FE Investing',
       domain: 'financialexpress.com'
     },
     // The Hindu Business Line
