@@ -114,6 +114,11 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   // Remove all category logic for clean Inshorts-style interface
 
+  // Force invalidate articles cache on first mount to ensure fresh data
+  useEffect(() => {
+    queryClient.removeQueries({ queryKey: ['/api/articles'] });
+  }, []); // Only run once on mount
+
   // Set active section based on URL
   useEffect(() => {
     if (location === '/disclaimer') {
