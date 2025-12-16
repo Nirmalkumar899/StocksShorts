@@ -85,29 +85,11 @@ export class RealNewsIngestor {
       source: 'The Hindu Business',
       domain: 'thehindu.com'
     },
-    // Investing.com India
-    {
-      url: 'https://in.investing.com/rss/news.rss',
-      source: 'Investing.com',
-      domain: 'investing.com'
-    },
-    // GoodReturns
-    {
-      url: 'https://www.goodreturns.in/rss/goodreturns.xml',
-      source: 'GoodReturns',
-      domain: 'goodreturns.in'
-    },
-    // Trade Brains
+    // Trade Brains - India-focused stock analysis
     {
       url: 'https://tradebrains.in/feed',
       source: 'Trade Brains',
       domain: 'tradebrains.in'
-    },
-    // MoneyControl alternative feed
-    {
-      url: 'https://www.moneycontrol.com/rss/latestnews.xml',
-      source: 'MoneyControl',
-      domain: 'moneycontrol.com'
     }
   ];
 
@@ -121,6 +103,27 @@ export class RealNewsIngestor {
     'underperform', 'brokerage', 'upgrade', 'downgrade', 'recommendation',
     'technical', 'breakout', 'resistance', 'support', 'momentum', 'rally',
     'bull', 'bear', 'correction', 'crash', 'surge', 'plunge', 'gain', 'fall'
+  ];
+
+  // Keywords that indicate international/non-Indian news - filter these out
+  private readonly EXCLUDE_KEYWORDS = [
+    'wall street', 's&p 500', 'dow jones', 'nasdaq', 'nyse', 'us stocks', 'us market',
+    'american', 'european shares', 'ftse', 'dax', 'cac', 'japan nikkei', 'nikkei',
+    'hang seng', 'shanghai', 'china stocks', 'fed rate', 'federal reserve',
+    'elon musk', 'tesla', 'apple inc', 'amazon', 'google', 'microsoft', 'meta',
+    'bitcoin', 'ethereum', 'crypto', 'cryptocurrency', 'spacex', 'pfizer',
+    'warren buffett', 'berkshire', 'coca-cola', 'walmart', 'boeing', 'nvidia'
+  ];
+
+  // Keywords that strongly indicate Indian market news
+  private readonly INDIA_KEYWORDS = [
+    'nifty', 'sensex', 'bse', 'nse', 'rbi', 'sebi', 'rupee', 'inr',
+    'india', 'indian', 'mumbai', 'dalal street', 'nifty50', 'nifty 50',
+    'bank nifty', 'midcap', 'smallcap', 'largecap', 'f&o', 'mcx',
+    'tata', 'reliance', 'infosys', 'hdfc', 'icici', 'sbi', 'wipro',
+    'adani', 'bajaj', 'mahindra', 'maruti', 'hul', 'itc', 'kotak',
+    'axis bank', 'bharti', 'vedanta', 'jsw', 'hindalco', 'ongc',
+    'ntpc', 'powergrid', 'coal india', 'bpcl', 'ioc', 'gail'
   ];
 
   public async ingestTodaysNews(): Promise<Article[]> {
@@ -251,7 +254,18 @@ export class RealNewsIngestor {
 
   private isMarketRelated(title: string, description: string): boolean {
     const text = (title + ' ' + description).toLowerCase();
-    return this.MARKET_KEYWORDS.some(keyword => text.includes(keyword));
+    
+    // First, exclude international/US market news
+    if (this.EXCLUDE_KEYWORDS.some(keyword => text.includes(keyword))) {
+      return false;
+    }
+    
+    // Prefer articles with Indian market indicators
+    const hasIndiaKeyword = this.INDIA_KEYWORDS.some(keyword => text.includes(keyword));
+    const hasMarketKeyword = this.MARKET_KEYWORDS.some(keyword => text.includes(keyword));
+    
+    // Include if it has India-specific keywords, or general market keywords without exclusions
+    return hasIndiaKeyword || hasMarketKeyword;
   }
 
   private async verifyUrl(url: string): Promise<boolean> {
