@@ -246,8 +246,11 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
             });
             return;
           }
-          // For other articles or authenticated users, proceed with normal click
-          onClick();
+          // Open article in popup modal instead of navigating away
+          e.preventDefault();
+          e.stopPropagation();
+          trackEvent('article_view', 'engagement', article.type, article.id);
+          setIsModalOpen(true);
         }}
       >
         {/* Article Content Container - Inshorts Style */}
