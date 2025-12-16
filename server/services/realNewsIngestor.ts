@@ -85,6 +85,23 @@ export class RealNewsIngestor {
       url: 'https://tradebrains.in/feed',
       source: 'Trade Brains',
       domain: 'tradebrains.in'
+    },
+    // Trendlyne - BSE Corporate Announcements (Order Wins, Financial Results)
+    {
+      url: 'https://trendlyne.com/feeds/bse-corporate-announcements/',
+      source: 'BSE Announcements',
+      domain: 'trendlyne.com'
+    },
+    // MoneyControl - Corporate News & Results
+    {
+      url: 'https://www.moneycontrol.com/rss/results.xml',
+      source: 'MoneyControl Results',
+      domain: 'moneycontrol.com'
+    },
+    {
+      url: 'https://www.moneycontrol.com/rss/business.xml',
+      source: 'MoneyControl Business',
+      domain: 'moneycontrol.com'
     }
   ];
 
@@ -97,7 +114,13 @@ export class RealNewsIngestor {
     'research', 'target price', 'buy rating', 'sell rating', 'hold', 'outperform',
     'underperform', 'brokerage', 'upgrade', 'downgrade', 'recommendation',
     'technical', 'breakout', 'resistance', 'support', 'momentum', 'rally',
-    'bull', 'bear', 'correction', 'crash', 'surge', 'plunge', 'gain', 'fall'
+    'bull', 'bear', 'correction', 'crash', 'surge', 'plunge', 'gain', 'fall',
+    // Order wins and corporate announcements
+    'order win', 'order wins', 'new order', 'contract win', 'bags order', 'receives order',
+    'awarded contract', 'order book', 'order inflow', 'secures order', 'wins contract',
+    'financial results', 'q1 results', 'q2 results', 'q3 results', 'q4 results',
+    'annual results', 'net profit', 'ebitda', 'eps', 'pat', 'top line', 'bottom line',
+    'board meeting', 'agm', 'egm', 'corporate announcement', 'filing', 'disclosure'
   ];
 
   // Keywords that indicate international/non-Indian news - filter these out
