@@ -130,24 +130,27 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 shadow-sm border-b border-gray-100 dark:border-neutral-800">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-lg border-b border-purple-500/30">
       <div className="px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-center space-x-3">
+        <div className="flex items-center justify-center">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="relative">
               <img 
                 src={logoImage} 
                 alt="StocksShorts" 
-                className="h-8 w-auto object-contain"
+                className="h-10 w-10 object-contain rounded-lg shadow-lg ring-2 ring-yellow-400/50 group-hover:ring-yellow-400 transition-all duration-300"
               />
-              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent tracking-tight animate-pulse">
                 StocksShorts
               </span>
-            </Link>
-          </div>
-          <div className="flex items-center space-x-2">
-            {/* Icons removed as requested - cleaner interface with auto-generated news */}
-          </div>
+              <span className="text-[10px] text-purple-300/80 font-medium -mt-1">
+                📈 Live Market News
+              </span>
+            </div>
+          </Link>
         </div>
       </div>
     </header>
