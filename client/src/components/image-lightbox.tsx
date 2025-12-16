@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { X, ZoomIn, ZoomOut } from '@/lib/icons';
 import { Button } from '@/components/ui/button';
-import logoImage from "@assets/stocksshorts-logo-new.jpeg";
 
 interface ImageLightboxProps {
   src: string;
@@ -40,11 +39,6 @@ export default function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightb
     >
       {/* StocksShorts Branding */}
       <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
-        <img 
-          src={logoImage} 
-          alt="StocksShorts" 
-          className="h-8 w-auto object-contain rounded"
-        />
         <span className="text-white font-bold text-lg bg-black/30 px-2 py-1 rounded backdrop-blur-sm">
           StocksShorts
         </span>
