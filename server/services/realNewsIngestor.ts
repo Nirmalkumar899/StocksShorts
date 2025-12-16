@@ -31,15 +31,11 @@ interface VerifiedArticle {
 
 export class RealNewsIngestor {
   private readonly RSS_FEEDS = [
+    // Economic Times - Primary Source (Most Reliable)
     {
       url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms',
       source: 'Economic Times',
       domain: 'economictimes.indiatimes.com'
-    },
-    {
-      url: 'https://www.financialexpress.com/market/rss/',
-      source: 'Financial Express',
-      domain: 'financialexpress.com'
     },
     {
       url: 'https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms',
@@ -52,21 +48,72 @@ export class RealNewsIngestor {
       domain: 'economictimes.indiatimes.com'
     },
     {
-      url: 'https://www.business-standard.com/rss/markets-106.rss',
-      source: 'Business Standard',
-      domain: 'business-standard.com'
+      url: 'https://economictimes.indiatimes.com/markets/expert-view/rssfeeds/16416696.cms',
+      source: 'ET Expert View',
+      domain: 'economictimes.indiatimes.com'
     },
+    {
+      url: 'https://economictimes.indiatimes.com/markets/technical-charts/rssfeeds/12086858.cms',
+      source: 'ET Technical Analysis',
+      domain: 'economictimes.indiatimes.com'
+    },
+    // LiveMint
+    {
+      url: 'https://www.livemint.com/rss/markets',
+      source: 'LiveMint',
+      domain: 'livemint.com'
+    },
+    {
+      url: 'https://www.livemint.com/rss/money',
+      source: 'LiveMint Money',
+      domain: 'livemint.com'
+    },
+    // Financial Express
+    {
+      url: 'https://www.financialexpress.com/market/rss/',
+      source: 'Financial Express',
+      domain: 'financialexpress.com'
+    },
+    {
+      url: 'https://www.financialexpress.com/investing-abroad/rss/',
+      source: 'FE Investing',
+      domain: 'financialexpress.com'
+    },
+    // MoneyControl (may have rate limits)
     {
       url: 'https://www.moneycontrol.com/rss/MCtopstories.xml',
       source: 'MoneyControl',
       domain: 'moneycontrol.com'
     },
     {
-      url: 'https://www.livemint.com/rss/markets',
-      source: 'LiveMint',
-      domain: 'livemint.com'
+      url: 'https://www.moneycontrol.com/rss/stocksandmarkets.xml',
+      source: 'MC Stocks',
+      domain: 'moneycontrol.com'
+    },
+    // Business Standard (may have rate limits)
+    {
+      url: 'https://www.business-standard.com/rss/markets-106.rss',
+      source: 'Business Standard',
+      domain: 'business-standard.com'
+    },
+    // NDTV Profit
+    {
+      url: 'https://www.ndtvprofit.com/rss/markets',
+      source: 'NDTV Profit',
+      domain: 'ndtvprofit.com'
+    },
+    // Reuters India
+    {
+      url: 'https://www.reuters.com/rss/indiaNews',
+      source: 'Reuters India',
+      domain: 'reuters.com'
+    },
+    // SEBI Official Press Releases
+    {
+      url: 'https://www.sebi.gov.in/rss/press-release.xml',
+      source: 'SEBI',
+      domain: 'sebi.gov.in'
     }
-    // Note: Some RSS feeds block automated requests, keeping only working ones
   ];
 
   private readonly MARKET_KEYWORDS = [
@@ -74,7 +121,11 @@ export class RealNewsIngestor {
     'ipo', 'listing', 'trading', 'investor', 'investment', 'mutual fund', 'sip',
     'earnings', 'results', 'quarterly', 'revenue', 'profit', 'loss', 'dividend',
     'rupee', 'forex', 'commodity', 'gold', 'crude', 'oil', 'inflation', 'rbi',
-    'sebi', 'banking', 'finance', 'insurance', 'fii', 'dii', 'broker', 'analyst'
+    'sebi', 'banking', 'finance', 'insurance', 'fii', 'dii', 'broker', 'analyst',
+    'research', 'target price', 'buy rating', 'sell rating', 'hold', 'outperform',
+    'underperform', 'brokerage', 'upgrade', 'downgrade', 'recommendation',
+    'technical', 'breakout', 'resistance', 'support', 'momentum', 'rally',
+    'bull', 'bear', 'correction', 'crash', 'surge', 'plunge', 'gain', 'fall'
   ];
 
   public async ingestTodaysNews(): Promise<Article[]> {
