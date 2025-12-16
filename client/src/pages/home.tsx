@@ -197,12 +197,23 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       }
     },
     retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always use fresh data, server handles caching
+    gcTime: 0, // Don't cache old data, always use fresh server response
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+    refetchOnMount: 'always', // Always refetch on mount
+    networkMode: 'always', // Bypass React Query's request deduplication
+    structuralSharing: false, // Don't merge new data with old data, always use fresh
   });
 
   // Apply translations to articles and filter out read articles
   const articles = useMemo(() => {
     let result = rawArticles || [];
+    
+    // Debug: log first article's ranking score to verify server order is preserved
+    if (result.length > 0) {
+      const first = result[0] as any;
+      console.log("First article in rawArticles:", first.title?.substring(0, 40), "Score:", first.rankingScore);
+    }
     
     if (isTranslated && Object.keys(translatedArticles).length > 0) {
       console.log("Applying translations to", rawArticles?.length, "articles");

@@ -262,19 +262,19 @@ export class RealNewsIngestor {
     const uniqueArticles = this.removeDuplicates(allArticles);
     
     // Sort by ranking score (high-interest first), then by time for same score
+    // IMPORTANT: Store rankingScore on each article so it persists through cache/routes
     const sortedArticles = uniqueArticles
       .map(article => ({
         ...article,
-        _rankingScore: this.calculateRankingScore(article.title, article.content, article.sentiment)
+        rankingScore: this.calculateRankingScore(article.title, article.content, article.sentiment)
       }))
       .sort((a, b) => {
         // Primary sort: ranking score (higher = more interesting)
-        const scoreDiff = (b._rankingScore || 0) - (a._rankingScore || 0);
+        const scoreDiff = (b.rankingScore || 0) - (a.rankingScore || 0);
         if (scoreDiff !== 0) return scoreDiff;
         // Secondary sort: time (newest first)
         return new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime();
       })
-      .map(({ _rankingScore, ...article }) => article) // Remove temp score field
       .slice(0, 50);
 
     console.log(`✅ Ingested ${sortedArticles.length} unique articles (sorted by interest score)`);

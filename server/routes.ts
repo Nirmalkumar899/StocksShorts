@@ -60,8 +60,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add request timeout for deployment stability - except AI and translation endpoints
   app.use((req, res, next) => {
-    // Skip timeout for AI and translation endpoints as they need more time
-    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || req.path === '/api/articles/refresh') {
+    // Skip timeout for AI, translation, and articles endpoints as they need more time
+    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || 
+        req.path === '/api/articles/refresh' || req.path === '/api/articles') {
       return next();
     }
     
@@ -136,30 +137,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
       
-      // Sort by priority (High > Medium > Low) then by time (most recent first)
+      // Sort by rankingScore (interest-based) then by time as tiebreaker
+      // rankingScore is set by realNewsIngestor based on order wins, price movements, etc.
       const sortedArticles = articles.sort((a, b) => {
-        // Priority ordering
-        const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-        const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-        const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+        // Primary sort: ranking score (higher = more interesting)
+        const scoreA = (a as any).rankingScore || 0;
+        const scoreB = (b as any).rankingScore || 0;
         
-        if (priorityA !== priorityB) {
-          return priorityB - priorityA; // Higher priority first
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA; // Higher score first
         }
         
-        // If same priority, sort by time (most recent first)
+        // Tiebreaker: time (most recent first)
         const timeA = a.time ? new Date(a.time).getTime() : 0;
         const timeB = b.time ? new Date(b.time).getTime() : 0;
         return timeB - timeA;
       });
       
-      // Set cache headers and respond (avoid duplicate headers)
-      if (!res.headersSent) {
-        res.set({
-          'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
-          'Content-Type': 'application/json; charset=utf-8'
-        });
+      // Check if timeout already sent response
+      if (res.headersSent) {
+        console.log('📊 Response already sent (timeout?), skipping duplicate response');
+        return;
       }
+      
+      // Set cache headers and respond
+      res.set({
+        'Cache-Control': 'public, max-age=60, s-maxage=120', // 1-2 min browser cache
+        'Content-Type': 'application/json; charset=utf-8'
+      });
       
       return res.json(sortedArticles);
     } catch (error) {
