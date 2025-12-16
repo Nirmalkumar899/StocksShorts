@@ -132,7 +132,8 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-lg border-b border-purple-500/30">
       <div className="px-4 py-3">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-between">
+          <div className="w-12"></div>
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="relative">
               <img 
@@ -151,6 +152,29 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
               </span>
             </div>
           </Link>
+          
+          {showInstallButton && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleInstallClick}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg shadow-green-500/30 animate-pulse"
+                    data-testid="button-install-app"
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Save
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Save app to your phone</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {!showInstallButton && <div className="w-12"></div>}
         </div>
       </div>
     </header>
