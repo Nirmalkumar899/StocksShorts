@@ -714,6 +714,20 @@ CONTENT: [Hindi translation]`;
 
 
 
+  // Get StocksShorts Special Articles from news tab
+  app.get("/api/special-articles", async (req, res) => {
+    try {
+      const articles = await googleSheetsService.fetchSpecialArticles();
+      console.log(`Fetched ${articles.length} special articles from news tab`);
+      res.json(articles);
+    } catch (error) {
+      console.error('Error fetching special articles:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to fetch special articles'
+      });
+    }
+  });
+
   // Get Investment Advisors
   app.get("/api/investment-advisors", async (req, res) => {
     try {

@@ -475,6 +475,83 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
     console.log('Google Sheets cache cleared');
   }
 
+  async fetchSpecialArticles(): Promise<Article[]> {
+    const cachedSpecial = this.cache.get<Article[]>('special-articles');
+    if (cachedSpecial && cachedSpecial.length > 0) {
+      console.log('Returning cached special articles');
+      return cachedSpecial;
+    }
+
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_SHEETS_ID) {
+      console.log('Google Sheets credentials not configured for special articles');
+      return [];
+    }
+
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'news!A2:I',
+      });
+
+      const rows: string[][] = response.data.values || [];
+      
+      const articles: Article[] = rows
+        .filter(row => row.length >= 3 && row[1]?.trim())
+        .map((row, index) => {
+          const timeStr = row[4] || '';
+          let parsedTime: Date;
+          
+          try {
+            if (timeStr.includes('ago')) {
+              parsedTime = this.parseRelativeTime(timeStr);
+            } else if (timeStr.trim() === '' || timeStr.trim() === 'null') {
+              const today = new Date();
+              today.setHours(0, 1, 0, 0);
+              parsedTime = today;
+            } else {
+              parsedTime = new Date(timeStr);
+            }
+          } catch (error) {
+            const today = new Date();
+            today.setHours(0, 1, 0, 0);
+            parsedTime = today;
+          }
+
+          const content = row[2] || '';
+          const sentimentValue = row[6] || 'Neutral';
+          const sentiment = sentimentValue.toLowerCase().includes('positive') ? 'Positive' :
+                           sentimentValue.toLowerCase().includes('negative') ? 'Negative' : 'Neutral';
+
+          return {
+            id: Date.now() + Math.random() * 1000 + index,
+            title: row[1] || 'Untitled',
+            content: content,
+            type: 'stocksshorts-special',
+            time: parsedTime,
+            source: row[5] || 'StocksShorts Special',
+            sentiment: sentiment as 'Positive' | 'Negative' | 'Neutral',
+            priority: row[7] || 'High',
+            imageUrl: row[8] || null,
+            createdAt: new Date(),
+            sourceUrl: null,
+            primarySourceUrl: null,
+            primarySourceTitle: null,
+          };
+        });
+
+      console.log(`Fetched ${articles.length} special articles from news tab`);
+      this.cache.set('special-articles', articles, 60);
+      return articles.sort((a, b) => {
+        const dateA = a.time ? new Date(a.time).getTime() : 0;
+        const dateB = b.time ? new Date(b.time).getTime() : 0;
+        return dateB - dateA;
+      });
+    } catch (error) {
+      console.error('Error fetching special articles from news tab:', error);
+      return [];
+    }
+  }
+
   private getFallbackAdvisorData(): InvestmentAdvisor[] {
     return [
       {

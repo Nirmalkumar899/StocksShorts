@@ -17,6 +17,81 @@ import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
 
+function SpecialSection({ onBack }: { onBack: () => void }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
+  const [, setLocation] = useLocation();
+
+  const { data: specialArticles = [], isLoading, error } = useQuery<Article[]>({
+    queryKey: ['/api/special-articles'],
+    queryFn: async () => {
+      const response = await fetch('/api/special-articles', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch special articles');
+      return response.json();
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const handleArticleClick = (article: Article) => {
+    setLocation(`/article/${article.id}`);
+  };
+
+  const handleShare = (e: React.MouseEvent, article: Article) => {
+    e.stopPropagation();
+    if (navigator.share) {
+      navigator.share({ title: article.title, text: article.content, url: window.location.href });
+    }
+  };
+
+  const handleToggleExpanded = (articleId: number) => {
+    setExpandedArticles(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(articleId)) newExpanded.delete(articleId);
+      else newExpanded.add(articleId);
+      return newExpanded;
+    });
+  };
+
+  return (
+    <>
+      <div className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 p-4">
+        <h1 className="text-xl font-bold text-white text-center">⭐ StocksShorts Special</h1>
+        <p className="text-white/80 text-center text-sm">Exclusive insights & analysis</p>
+      </div>
+      <div className="flex-1 overflow-hidden">
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-500" />
+              <p className="text-neutral-600 dark:text-neutral-400">Loading special articles...</p>
+            </div>
+          </div>
+        ) : !specialArticles || specialArticles.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center px-4">
+            <div className="text-6xl mb-4">⭐</div>
+            <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">No special articles yet</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 text-center">Check back soon for exclusive content!</p>
+          </div>
+        ) : (
+          <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
+            {specialArticles.map((article) => (
+              <div key={article.id} className="min-h-[400px] h-full snap-start">
+                <NewsCard
+                  article={article}
+                  onClick={() => handleArticleClick(article)}
+                  onShare={(e) => handleShare(e, article)}
+                  isExpanded={expandedArticles.has(article.id)}
+                  onToggleExpanded={() => handleToggleExpanded(article.id)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 interface HomeProps {
   initialCategory?: string;
 }
@@ -41,6 +116,10 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   useEffect(() => {
     if (location === '/disclaimer') {
       setActiveSection('disclaimer');
+    } else if (location === '/special') {
+      setActiveSection('special');
+    } else if (location === '/profile') {
+      setActiveSection('profile');
     } else {
       setActiveSection('home');
     }
@@ -347,6 +426,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return <Profile onBack={() => setActiveSection('home')} />;
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
+      case 'special':
+        return <SpecialSection onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }
