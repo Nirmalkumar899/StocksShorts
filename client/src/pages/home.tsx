@@ -16,7 +16,6 @@ import { VisitorStats } from '@/components/visitor-stats';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
-import AISection from '@/pages/ai-section';
 
 interface HomeProps {
   initialCategory?: string;
@@ -348,8 +347,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return <Profile onBack={() => setActiveSection('home')} />;
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
-      case 'ai-section':
-        return <AISection onBack={() => setActiveSection('home')} />;
       default:
         return renderHomeContent();
     }

@@ -8,11 +8,10 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: null, url: '/' },
-  { id: 'ai-section', label: 'AI Analysis', icon: null, url: '/ai-analysis' },
   { id: 'profile', label: 'Profile', icon: null, url: '/profile' },
   { id: 'disclaimer', label: 'Disclaimer', icon: null, url: '/disclaimer' },
 ];
-// v7.1 - Only 4 tabs: Home, AI Analysis, Profile, Disclaimer
+// v7.2 - Only 3 tabs: Home, Profile, Disclaimer
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   const [, setLocation] = useLocation();
