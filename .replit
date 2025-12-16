@@ -18,22 +18,6 @@ externalPort = 80
 localPort = 5001
 externalPort = 3000
 
-[[ports]]
-localPort = 38407
-externalPort = 3003
-
-[[ports]]
-localPort = 43303
-externalPort = 3001
-
-[[ports]]
-localPort = 44615
-externalPort = 3002
-
-[[ports]]
-localPort = 45121
-externalPort = 4200
-
 [workflows]
 runButton = "Project"
 
@@ -56,4 +40,4 @@ args = "npm run dev"
 waitForPort = 5000
 
 [agent]
-integrations = ["javascript_google_analytics==1.0.0", "javascript_openai==1.0.0"]
+integrations = ["javascript_google_analytics:1.0.0", "javascript_openai:1.0.0"]

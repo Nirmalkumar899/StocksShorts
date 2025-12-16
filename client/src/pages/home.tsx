@@ -13,7 +13,6 @@ import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
 
 import { VisitorStats } from '@/components/visitor-stats';
-import SebiRia from '@/pages/sebi-ria';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
@@ -69,9 +68,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const handleSectionChange = useCallback((section: string) => {
     console.log('Tab clicked:', section);
     setActiveSection(section);
-    if (section === 'sebi-ria') {
-      console.log('Navigating to SEBI RIA');
-    }
   }, []);
 
   // Fetch all articles without category filtering
@@ -346,8 +342,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   // Render different sections based on activeSection
   const renderSection = () => {
     switch (activeSection) {
-      case 'sebi-ria':
-        return <SebiRia onBack={() => setActiveSection('home')} />;
       case 'contact':
         return <Contact onBack={() => setActiveSection('home')} />;
       case 'profile':

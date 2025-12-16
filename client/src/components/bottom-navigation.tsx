@@ -8,7 +8,6 @@ interface BottomNavigationProps {
 
 const navItems = [
   { id: 'home', label: 'Home', icon: null, url: '/' },
-  { id: 'sebi-ria', label: 'Connect RIA', icon: null, url: '/sebi-ria' },
   { id: 'ai-section', label: 'AI Analysis', icon: null, url: '/ai-analysis' },
   { id: 'profile', label: 'Profile', icon: null, url: '/profile' },
   { id: 'disclaimer', label: 'Disclaimer', icon: null, url: '/disclaimer' },
