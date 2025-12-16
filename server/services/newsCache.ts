@@ -121,9 +121,21 @@ export class NewsCache {
       // Merge filtered articles
       const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
       
-      // Sort by time (newest first) and keep only MAX_ARTICLES
+      // Sort by priority first (High > Medium > Low), then by time
+      // The realNewsIngestor already sorted by interest score, so we maintain that order
+      // by keeping newer high-priority articles first
       const sortedArticles = allArticles
         .sort((a, b) => {
+          // Priority ordering
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
+          const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+          
+          if (priorityA !== priorityB) {
+            return priorityB - priorityA; // Higher priority first
+          }
+          
+          // If same priority, sort by time (most recent first)
           const timeA = a.time ? new Date(a.time).getTime() : 0;
           const timeB = b.time ? new Date(b.time).getTime() : 0;
           return timeB - timeA;
