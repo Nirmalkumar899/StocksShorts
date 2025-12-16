@@ -24,21 +24,20 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function Header({ onRefresh, isRefreshing, onTranslate, isTranslated, isTranslating }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
-  const [showInstallButton, setShowInstallButton] = useState(false);
+  const [showInstallButton, setShowInstallButton] = useState(true);
 
   useEffect(() => {
-    // Always show install button unless already installed as PWA
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
-    // Check iOS standalone mode safely
-    let isPWAInstalled = false;
     try {
-      isPWAInstalled = 'standalone' in window.navigator && (window.navigator as any).standalone === true;
+      // Check if already installed as PWA
+      const isStandalone = window.matchMedia?.('(display-mode: standalone)')?.matches ?? false;
+      const isPWAInstalled = 'standalone' in window.navigator && (window.navigator as any).standalone === true;
+      
+      // Show button unless already installed
+      if (!isStandalone && !isPWAInstalled) {
+        setShowInstallButton(true);
+      }
     } catch (e) {
-      // Fallback for browsers that don't support this property
-    }
-    
-    if (!isStandalone && !isPWAInstalled) {
+      // If detection fails, always show the button
       setShowInstallButton(true);
     }
   }, []);
