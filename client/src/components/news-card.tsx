@@ -16,9 +16,10 @@ interface NewsCardProps {
   onShare: (e: React.MouseEvent) => void;
   isExpanded?: boolean;
   onToggleExpanded?: () => void;
+  onMarkAsRead?: (articleId: number) => void;
 }
 
-export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
+export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: NewsCardProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -250,6 +251,10 @@ export default function NewsCard({ article, onClick, onShare }: NewsCardProps) {
           e.preventDefault();
           e.stopPropagation();
           trackEvent('article_view', 'engagement', article.type, article.id);
+          // Mark article as read when opened
+          if (onMarkAsRead) {
+            onMarkAsRead(article.id);
+          }
           setIsModalOpen(true);
         }}
       >

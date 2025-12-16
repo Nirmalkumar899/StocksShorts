@@ -11,6 +11,7 @@ import { getContextualImage } from '@/lib/imageUtils';
 import Header from '@/components/header';
 import NewsCard from '@/components/news-card';
 import BottomNavigation from '@/components/bottom-navigation';
+import { useReadArticles } from '@/hooks/useReadArticles';
 
 import { VisitorStats } from '@/components/visitor-stats';
 import Contact from '@/pages/contact';
@@ -105,6 +106,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { readArticleIds, markAsRead, clearReadHistory } = useReadArticles();
 
   const lastScrollTopRef = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -214,24 +216,26 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Apply translations to articles
+  // Apply translations to articles and filter out read articles
   const articles = useMemo(() => {
+    let result = rawArticles || [];
+    
     if (isTranslated && Object.keys(translatedArticles).length > 0) {
       console.log("Applying translations to", rawArticles?.length, "articles");
-      console.log("Translation map has", Object.keys(translatedArticles).length, "entries");
-      const result = rawArticles.map(article => {
+      result = rawArticles.map(article => {
         const translated = translatedArticles[article.id];
         if (translated) {
-          console.log(`Article ${article.id} translated: ${article.title} → ${translated.title}`);
           return translated;
         }
         return article;
       });
-      return result;
     }
-    console.log("Showing original articles:", rawArticles?.length);
-    return rawArticles || [];
-  }, [rawArticles, isTranslated, translatedArticles]);
+    
+    // Filter out articles that have been read
+    const unreadArticles = result.filter(article => !readArticleIds.has(article.id));
+    console.log("Showing", unreadArticles.length, "unread articles (filtered", result.length - unreadArticles.length, "read)");
+    return unreadArticles;
+  }, [rawArticles, isTranslated, translatedArticles, readArticleIds]);
 
   // Refresh articles mutation
   const refreshMutation = useMutation({
@@ -508,6 +512,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
                   onShare={(e) => handleShare(e, article)}
                   isExpanded={expandedArticles.has(article.id)}
                   onToggleExpanded={() => handleToggleExpanded(article.id)}
+                  onMarkAsRead={markAsRead}
                 />
               </div>
             ))}
