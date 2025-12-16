@@ -522,16 +522,32 @@ Qr1D2uleiVWJqm7IKrC4CvbITLf1R+46UV3ev4BVAoGAWhmoUJhwpOZmKoKQ1e3l
           const sentiment = sentimentValue.toLowerCase().includes('positive') ? 'Positive' :
                            sentimentValue.toLowerCase().includes('negative') ? 'Negative' : 'Neutral';
 
+          const articleId = Date.now() + Math.random() * 1000 + index;
+          const title = row[1] || 'Untitled';
+          
+          // Generate contextual image if no image URL provided
+          let imageUrl = row[8] || null;
+          if (!imageUrl) {
+            const specialImages = [
+              'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop&auto=format&q=80',
+              'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=600&fit=crop&auto=format&q=80',
+              'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=800&h=600&fit=crop&auto=format&q=80',
+              'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80',
+              'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&auto=format&q=80'
+            ];
+            imageUrl = specialImages[index % specialImages.length];
+          }
+
           return {
-            id: Date.now() + Math.random() * 1000 + index,
-            title: row[1] || 'Untitled',
+            id: articleId,
+            title: title,
             content: content,
             type: 'stocksshorts-special',
             time: parsedTime,
             source: row[5] || 'StocksShorts Special',
             sentiment: sentiment as 'Positive' | 'Negative' | 'Neutral',
             priority: row[7] || 'High',
-            imageUrl: row[8] || null,
+            imageUrl: imageUrl,
             createdAt: new Date(),
             sourceUrl: null,
             primarySourceUrl: null,
