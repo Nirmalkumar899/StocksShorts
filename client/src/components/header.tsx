@@ -1,8 +1,5 @@
-import { Moon, Sun, Download } from "@/lib/icons";
-import logoImage from "@assets/stocksshorts-logo-new.jpeg";
+import { Download } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState, useEffect } from "react";
 import { Link } from "wouter";
 
 interface HeaderProps {
@@ -13,40 +10,7 @@ interface HeaderProps {
   isTranslating?: boolean;
 }
 
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
-
 export default function Header({ onRefresh, isRefreshing, onTranslate, isTranslated, isTranslating }: HeaderProps) {
-  const [isDark, setIsDark] = useState(false);
-  const [showInstallButton, setShowInstallButton] = useState(true);
-
-  useEffect(() => {
-    try {
-      // Check if already installed as PWA
-      const isStandalone = window.matchMedia?.('(display-mode: standalone)')?.matches ?? false;
-      const isPWAInstalled = 'standalone' in window.navigator && (window.navigator as any).standalone === true;
-      
-      // Show button unless already installed
-      if (!isStandalone && !isPWAInstalled) {
-        setShowInstallButton(true);
-      }
-    } catch (e) {
-      // If detection fails, always show the button
-      setShowInstallButton(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
-
   const getMobileInstructions = () => {
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
@@ -132,18 +96,9 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
     <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 shadow-lg border-b border-purple-500/30">
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="w-12"></div>
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="relative">
-              <img 
-                src={logoImage} 
-                alt="StocksShorts" 
-                className="h-10 w-10 object-contain rounded-lg shadow-lg ring-2 ring-yellow-400/50 group-hover:ring-yellow-400 transition-all duration-300"
-              />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
-            </div>
+          <Link href="/" className="flex items-center group">
             <div className="flex flex-col">
-              <span className="text-xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent tracking-tight animate-pulse">
+              <span className="text-xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent tracking-tight">
                 StocksShorts
               </span>
               <span className="text-[10px] text-purple-300/80 font-medium -mt-1">
@@ -152,28 +107,16 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
             </div>
           </Link>
           
-          {showInstallButton && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleInstallClick}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg shadow-green-500/30 animate-pulse"
-                    data-testid="button-install-app"
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Save
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Save app to your phone</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {!showInstallButton && <div className="w-12"></div>}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleInstallClick}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-4 py-2 text-sm font-bold shadow-lg shadow-green-500/30"
+            data-testid="button-install-app"
+          >
+            <Download className="h-5 w-5 mr-2" />
+            Save App
+          </Button>
         </div>
       </div>
     </header>
