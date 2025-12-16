@@ -79,40 +79,35 @@ export class RealNewsIngestor {
       source: 'FE Investing',
       domain: 'financialexpress.com'
     },
-    // MoneyControl (may have rate limits)
+    // The Hindu Business Line
     {
-      url: 'https://www.moneycontrol.com/rss/MCtopstories.xml',
+      url: 'https://www.thehindu.com/business/markets/?service=rss',
+      source: 'The Hindu Business',
+      domain: 'thehindu.com'
+    },
+    // Investing.com India
+    {
+      url: 'https://in.investing.com/rss/news.rss',
+      source: 'Investing.com',
+      domain: 'investing.com'
+    },
+    // GoodReturns
+    {
+      url: 'https://www.goodreturns.in/rss/goodreturns.xml',
+      source: 'GoodReturns',
+      domain: 'goodreturns.in'
+    },
+    // Trade Brains
+    {
+      url: 'https://tradebrains.in/feed',
+      source: 'Trade Brains',
+      domain: 'tradebrains.in'
+    },
+    // MoneyControl alternative feed
+    {
+      url: 'https://www.moneycontrol.com/rss/latestnews.xml',
       source: 'MoneyControl',
       domain: 'moneycontrol.com'
-    },
-    {
-      url: 'https://www.moneycontrol.com/rss/stocksandmarkets.xml',
-      source: 'MC Stocks',
-      domain: 'moneycontrol.com'
-    },
-    // Business Standard (may have rate limits)
-    {
-      url: 'https://www.business-standard.com/rss/markets-106.rss',
-      source: 'Business Standard',
-      domain: 'business-standard.com'
-    },
-    // NDTV Profit
-    {
-      url: 'https://www.ndtvprofit.com/rss/markets',
-      source: 'NDTV Profit',
-      domain: 'ndtvprofit.com'
-    },
-    // Reuters India
-    {
-      url: 'https://www.reuters.com/rss/indiaNews',
-      source: 'Reuters India',
-      domain: 'reuters.com'
-    },
-    // SEBI Official Press Releases
-    {
-      url: 'https://www.sebi.gov.in/rss/press-release.xml',
-      source: 'SEBI',
-      domain: 'sebi.gov.in'
     }
   ];
 
