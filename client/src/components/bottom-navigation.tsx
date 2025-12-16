@@ -12,6 +12,7 @@ const navItems = [
   { id: 'profile', label: 'Profile', icon: null, url: '/profile' },
   { id: 'disclaimer', label: 'Disclaimer', icon: null, url: '/disclaimer' },
 ];
+// v7.1 - Only 4 tabs: Home, AI Analysis, Profile, Disclaimer
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   const [, setLocation] = useLocation();
