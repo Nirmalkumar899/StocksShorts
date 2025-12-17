@@ -356,19 +356,13 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                           e.preventDefault();
                           e.stopPropagation();
                           trackEvent('article_view', 'engagement', article.type, article.id);
-                          if (onMarkAsRead) {
-                            onMarkAsRead(article.id);
-                          }
                           setIsModalOpen(true);
-                        }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          trackEvent('article_view', 'engagement', article.type, article.id);
-                          if (onMarkAsRead) {
-                            onMarkAsRead(article.id);
-                          }
-                          setIsModalOpen(true);
+                          // Defer mark as read to after modal opens
+                          setTimeout(() => {
+                            if (onMarkAsRead) {
+                              onMarkAsRead(article.id);
+                            }
+                          }, 100);
                         }}
                       >
                         {article.source}
