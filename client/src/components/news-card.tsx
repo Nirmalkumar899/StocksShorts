@@ -351,6 +351,8 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       {(article as any).sourceUrl ? (
                         <a 
                           href={(article as any).sourceUrl} 
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
