@@ -1,6 +1,19 @@
 import { Article } from '../../shared/schema';
 import { realNewsIngestor } from './realNewsIngestor';
 
+// Generate stable ID from article content (hash-based)
+function generateStableId(title: string, sourceUrl: string | null): number {
+  const input = (title + (sourceUrl || '')).toLowerCase().trim();
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Ensure positive number in safe range
+  return Math.abs(hash) % 900000000 + 100000000;
+}
+
 interface CachedNews {
   articles: Article[];
   lastRefresh: Date;
@@ -59,10 +72,12 @@ export class NewsCache {
 
   private generateEmergencyFallback(): Article[] {
     const now = new Date();
+    const fallbackTitle = "Indian Stock Markets Show Strong Performance Today";
+    const fallbackUrl = "https://economictimes.indiatimes.com/markets";
     return [
       {
-        id: Date.now() + 1,
-        title: "Indian Stock Markets Show Strong Performance Today",
+        id: generateStableId(fallbackTitle, fallbackUrl),
+        title: fallbackTitle,
         content: "Indian equity markets displayed robust performance with both Nifty and Sensex posting gains. Banking and IT sectors led the rally supported by positive global cues.",
         type: "trending",
         time: now,

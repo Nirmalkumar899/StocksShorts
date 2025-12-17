@@ -1,6 +1,19 @@
 import { Article } from '@shared/schema';
 import axios from 'axios';
 
+// Generate stable ID from article content (hash-based)
+function generateStableId(title: string, sourceUrl: string | null): number {
+  const input = (title + (sourceUrl || '')).toLowerCase().trim();
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Ensure positive number in safe range
+  return Math.abs(hash) % 900000000 + 100000000;
+}
+
 interface RSSItem {
   title: string;
   link: string;
@@ -223,7 +236,7 @@ export class RealNewsIngestor {
         // if (!isValidUrl) continue;
         
         const verifiedArticle: Article = {
-          id: Date.now() + Math.random(),
+          id: generateStableId(title, link),
           title: this.cleanText(title),
           content: this.generateSummary(description),
           type: this.categorizeArticle(title, description),
