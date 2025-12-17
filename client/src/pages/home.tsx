@@ -522,7 +522,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-neutral-950 pt-9">
       {renderSection()}
       
       {/* Visitor Stats - Only show on home section */}

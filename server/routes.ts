@@ -356,6 +356,62 @@ CONTENT: [Hindi translation]`;
   });
 
 
+  // Translate single article to Hindi
+  app.post('/api/translate-article/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid article ID' });
+      }
+
+      const article = await newsCache.getArticleById(id);
+      if (!article) {
+        return res.status(404).json({ message: 'Article not found' });
+      }
+
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: 'OpenAI API key not configured' });
+      }
+
+      console.log(`🌐 Translating article ${id} to Hindi: "${article.title.substring(0, 40)}..."`);
+
+      const prompt = `Translate this Indian stock market article to Hindi. Keep financial terms, company names, stock symbols, numbers, and percentages in English/digits. Make it natural and easy to read.
+
+Title: ${article.title}
+Content: ${article.content}
+
+Return in exact format:
+TITLE: [Hindi translation]
+CONTENT: [Hindi translation]`;
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [{ role: 'user', content: prompt }],
+        max_completion_tokens: 1500
+      });
+
+      const translatedText = response.choices[0].message.content || '';
+      
+      const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/s);
+      const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/s);
+
+      const result = {
+        id: article.id,
+        title: titleMatch ? titleMatch[1].trim() : article.title,
+        content: contentMatch ? contentMatch[1].trim() : article.content
+      };
+
+      console.log(`✅ Translation completed for article ${id}`);
+      res.json(result);
+
+    } catch (error: any) {
+      console.error('❌ Translation error:', error.message);
+      res.status(500).json({ 
+        message: error.message || 'Translation failed'
+      });
+    }
+  });
+
   // Get article by title slug for SEO-friendly URLs
   app.get("/api/articles/slug/:slug", async (req, res) => {
     try {
