@@ -1,4 +1,4 @@
-// Build version: 2025-12-17-v4 - Source link opens original website in new window
+// Build version: 2025-12-17-v5 - Source link opens popup modal with article content
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
@@ -344,26 +344,20 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens original website in new window */}
+                    {/* Right - Source Link - Opens popup modal with article content */}
                     <div>
-                      {(article as any).sourceUrl ? (
-                        <a 
-                          href={(article as any).sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          }}
-                        >
-                          {article.source}
-                        </a>
-                      ) : (
-                        <span className="text-white font-medium">
-                          {article.source}
-                        </span>
-                      )}
+                      <button 
+                        type="button"
+                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          trackEvent('article_source_click', 'engagement', article.type, article.id);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        {article.source}
+                      </button>
                     </div>
                   </div>
                 </div>
