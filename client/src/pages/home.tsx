@@ -34,7 +34,7 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
   });
 
   const handleArticleClick = (article: Article) => {
-    setLocation(`/article/${article.id}`);
+    // Modal is handled inside NewsCard - no navigation needed
   };
 
   const handleShare = (e: React.MouseEvent, article: Article) => {
@@ -384,9 +384,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
 
   const handleArticleClick = (article: Article) => {
-    // Navigate to individual article page where comments section will be visible
+    // Modal is handled inside NewsCard - no navigation needed
     console.log('Article clicked:', article);
-    setLocation(`/article/${article.id}`);
   };
 
   const handleShare = (e: React.MouseEvent, article: Article) => {
