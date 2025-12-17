@@ -1,4 +1,4 @@
-// Build version: 2025-12-17-v2 - Modal popup fix
+// Build version: 2025-12-17-v3 - Fix: mark as read only when modal closes
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
@@ -252,10 +252,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
           e.preventDefault();
           e.stopPropagation();
           trackEvent('article_view', 'engagement', article.type, article.id);
-          // Mark article as read when opened
-          if (onMarkAsRead) {
-            onMarkAsRead(article.id);
-          }
+          // Don't mark as read here - will mark when modal closes
           setIsModalOpen(true);
         }}
       >
@@ -356,13 +353,8 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                           e.preventDefault();
                           e.stopPropagation();
                           trackEvent('article_view', 'engagement', article.type, article.id);
+                          // Don't mark as read here - will mark when modal closes
                           setIsModalOpen(true);
-                          // Defer mark as read to after modal opens
-                          setTimeout(() => {
-                            if (onMarkAsRead) {
-                              onMarkAsRead(article.id);
-                            }
-                          }, 100);
                         }}
                       >
                         {article.source}
@@ -387,7 +379,13 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
       </div>
 
       {/* Full Article Modal - Enhanced for all screens */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => {
+        setIsModalOpen(open);
+        // Mark article as read when modal closes
+        if (!open && onMarkAsRead) {
+          onMarkAsRead(article.id);
+        }
+      }}>
         <DialogContent className="modal-content w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0 pb-4">
             <DialogTitle className="text-lg font-bold pr-8 line-clamp-2">
