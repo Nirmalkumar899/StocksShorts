@@ -58,10 +58,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Add request timeout for deployment stability - except AI and translation endpoints
+  // Add request timeout for deployment stability - except AI, translation, and individual article endpoints
   app.use((req, res, next) => {
-    // Skip timeout for AI and translation endpoints as they need more time
-    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || req.path === '/api/articles/refresh') {
+    // Skip timeout for AI, translation, and individual article endpoints (need more time for cache init)
+    if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || req.path === '/api/articles/refresh' || req.path.match(/^\/api\/articles\/\d+$/)) {
       return next();
     }
     
@@ -172,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get specific article by ID
+  // Get specific article by ID (with cache wait for shared links)
   app.get("/api/articles/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -180,14 +180,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid article ID' });
       }
 
-      // Get articles from cache and find the specific article
-      const articles = await newsCache.getArticles();
-      const article = articles.find(a => a.id === id);
+      console.log(`📖 Article request: ${id}`);
+      
+      // Use dedicated method that waits for cache initialization
+      const article = await newsCache.getArticleById(id);
       
       if (!article) {
+        console.log(`❌ Article ${id} not found in cache`);
         return res.status(404).json({ message: 'Article not found' });
       }
 
+      console.log(`✅ Article ${id} found: "${article.title.substring(0, 50)}..."`);
       res.json(article);
     } catch (error) {
       console.error('Error fetching cached article:', error);

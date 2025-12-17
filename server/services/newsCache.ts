@@ -266,6 +266,31 @@ export class NewsCache {
     };
   }
 
+  public async getArticleById(id: number): Promise<Article | null> {
+    // Wait for cache to be ready with longer timeout for shared links
+    const maxWait = 45000; // 45 seconds max wait
+    const checkInterval = 500;
+    let waited = 0;
+
+    while (this.cache.articles.length === 0 && waited < maxWait) {
+      if (!this.cache.isRefreshing) {
+        console.log(`🔍 Article ${id} requested but cache empty, initializing...`);
+        await this.initializeCache();
+      }
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+      waited += checkInterval;
+    }
+
+    if (this.cache.articles.length === 0) {
+      console.log(`⚠️ Cache still empty after ${maxWait/1000}s wait`);
+      return null;
+    }
+
+    const article = this.cache.articles.find(a => a.id === id);
+    console.log(`🔍 Looking for article ${id}: ${article ? 'FOUND' : 'NOT FOUND'} (cache has ${this.cache.articles.length} articles)`);
+    return article || null;
+  }
+
   public destroy() {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
