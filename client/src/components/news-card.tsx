@@ -1,12 +1,11 @@
-// Build version: 2025-12-17-v11 - Source link opens original website in swipeable drawer
+// Build version: 2025-12-17-v12 - Source link opens original website in new window
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock, X } from '@/lib/icons';
+import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { getContextualImage } from '@/lib/imageUtils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
 import { useToast } from '@/hooks/use-toast';
 import ImageLightbox from '@/components/image-lightbox';
 import { trackEvent } from '@/lib/analytics';
@@ -24,8 +23,6 @@ interface NewsCardProps {
 export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: NewsCardProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSourceDrawerOpen, setIsSourceDrawerOpen] = useState(false);
-  const [iframeError, setIframeError] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const { toast } = useToast();
@@ -347,7 +344,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens original website in swipeable drawer */}
+                    {/* Right - Source Link - Opens original website in new window */}
                     <div>
                       <button 
                         type="button"
@@ -356,8 +353,10 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                           e.preventDefault();
                           e.stopPropagation();
                           trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          setIframeError(false);
-                          setIsSourceDrawerOpen(true);
+                          const sourceUrl = (article as any).sourceUrl;
+                          if (sourceUrl) {
+                            window.open(sourceUrl, '_blank', 'noopener,noreferrer');
+                          }
                         }}
                       >
                         {article.source}
@@ -492,59 +491,6 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
         </DialogContent>
       </Dialog>
 
-      {/* Source Website Drawer - Shows article with link to original source */}
-      <Drawer open={isSourceDrawerOpen} onOpenChange={setIsSourceDrawerOpen}>
-        <DrawerContent className="h-[90vh] max-h-[90vh]">
-          <DrawerHeader className="flex items-center justify-between border-b pb-3 px-4">
-            <DrawerTitle className="text-lg font-semibold truncate pr-4">
-              {article.source}
-            </DrawerTitle>
-            <DrawerClose asChild>
-              <Button variant="ghost" size="icon" className="flex-shrink-0">
-                <X className="h-5 w-5" />
-              </Button>
-            </DrawerClose>
-          </DrawerHeader>
-          <div className="flex-1 overflow-y-auto p-4">
-            {/* Article Title */}
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              {article.title}
-            </h2>
-            
-            {/* Article Image */}
-            <div className="w-full max-h-60 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 mb-4">
-              <img
-                src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                alt={article.title}
-                className="w-full h-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = getContextualImage(article);
-                }}
-              />
-            </div>
-            
-            {/* Article Content */}
-            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-6">
-              {article.content?.trim() || 'No content available.'}
-            </div>
-            
-            {/* Open Original Source Button */}
-            {(article as any).sourceUrl && (
-              <div className="sticky bottom-0 bg-white dark:bg-gray-900 pt-4 pb-2 border-t">
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    window.open((article as any).sourceUrl, '_blank');
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Read Full Article on {article.source}
-                </Button>
-              </div>
-            )}
-          </div>
-        </DrawerContent>
-      </Drawer>
     </>
   );
 }
