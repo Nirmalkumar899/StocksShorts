@@ -1,11 +1,12 @@
-// Build version: 2025-12-17-v10 - Source link opens in-app modal (PWA compatible, swipe to close)
+// Build version: 2025-12-17-v11 - Source link opens original website in swipeable drawer
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
+import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock, X } from '@/lib/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { getContextualImage } from '@/lib/imageUtils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
 import { useToast } from '@/hooks/use-toast';
 import ImageLightbox from '@/components/image-lightbox';
 import { trackEvent } from '@/lib/analytics';
@@ -23,6 +24,8 @@ interface NewsCardProps {
 export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: NewsCardProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSourceDrawerOpen, setIsSourceDrawerOpen] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const { toast } = useToast();
@@ -344,7 +347,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens in-app modal (PWA compatible) */}
+                    {/* Right - Source Link - Opens original website in swipeable drawer */}
                     <div>
                       <button 
                         type="button"
@@ -353,7 +356,8 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                           e.preventDefault();
                           e.stopPropagation();
                           trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          setIsModalOpen(true);
+                          setIframeError(false);
+                          setIsSourceDrawerOpen(true);
                         }}
                       >
                         {article.source}
@@ -487,6 +491,62 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Source Website Drawer - Opens original website in swipeable drawer */}
+      <Drawer open={isSourceDrawerOpen} onOpenChange={setIsSourceDrawerOpen}>
+        <DrawerContent className="h-[95vh] max-h-[95vh]">
+          <DrawerHeader className="flex items-center justify-between border-b pb-3">
+            <DrawerTitle className="text-lg font-semibold truncate pr-4">
+              {article.source}
+            </DrawerTitle>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="icon" className="flex-shrink-0">
+                <X className="h-5 w-5" />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+          <div className="flex-1 overflow-hidden h-full">
+            {(article as any).sourceUrl && !iframeError ? (
+              <iframe
+                src={(article as any).sourceUrl}
+                className="w-full h-full border-0"
+                title={`${article.source} - ${article.title}`}
+                sandbox="allow-scripts allow-same-origin allow-popups"
+                onError={() => setIframeError(true)}
+                onLoad={(e) => {
+                  try {
+                    const iframe = e.target as HTMLIFrameElement;
+                    if (!iframe.contentDocument && !iframe.contentWindow) {
+                      setIframeError(true);
+                    }
+                  } catch {
+                    setIframeError(true);
+                  }
+                }}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <ExternalLink className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Unable to load website here
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  This website cannot be displayed inline. Click below to open it in a new tab.
+                </p>
+                <Button
+                  onClick={() => {
+                    window.open((article as any).sourceUrl, '_blank');
+                    setIsSourceDrawerOpen(false);
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in New Tab
+                </Button>
+              </div>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
