@@ -492,10 +492,10 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
         </DialogContent>
       </Dialog>
 
-      {/* Source Website Drawer - Opens original website in swipeable drawer */}
+      {/* Source Website Drawer - Shows article with link to original source */}
       <Drawer open={isSourceDrawerOpen} onOpenChange={setIsSourceDrawerOpen}>
-        <DrawerContent className="h-[95vh] max-h-[95vh]">
-          <DrawerHeader className="flex items-center justify-between border-b pb-3">
+        <DrawerContent className="h-[90vh] max-h-[90vh]">
+          <DrawerHeader className="flex items-center justify-between border-b pb-3 px-4">
             <DrawerTitle className="text-lg font-semibold truncate pr-4">
               {article.source}
             </DrawerTitle>
@@ -505,42 +505,40 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
               </Button>
             </DrawerClose>
           </DrawerHeader>
-          <div className="flex-1 overflow-hidden h-full">
-            {(article as any).sourceUrl && !iframeError ? (
-              <iframe
-                src={(article as any).sourceUrl}
-                className="w-full h-full border-0"
-                title={`${article.source} - ${article.title}`}
-                sandbox="allow-scripts allow-same-origin allow-popups"
-                onError={() => setIframeError(true)}
-                onLoad={(e) => {
-                  try {
-                    const iframe = e.target as HTMLIFrameElement;
-                    if (!iframe.contentDocument && !iframe.contentWindow) {
-                      setIframeError(true);
-                    }
-                  } catch {
-                    setIframeError(true);
-                  }
+          <div className="flex-1 overflow-y-auto p-4">
+            {/* Article Title */}
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              {article.title}
+            </h2>
+            
+            {/* Article Image */}
+            <div className="w-full max-h-60 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 mb-4">
+              <img
+                src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
+                alt={article.title}
+                className="w-full h-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = getContextualImage(article);
                 }}
               />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                <ExternalLink className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Unable to load website here
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  This website cannot be displayed inline. Click below to open it in a new tab.
-                </p>
+            </div>
+            
+            {/* Article Content */}
+            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-6">
+              {article.content?.trim() || 'No content available.'}
+            </div>
+            
+            {/* Open Original Source Button */}
+            {(article as any).sourceUrl && (
+              <div className="sticky bottom-0 bg-white dark:bg-gray-900 pt-4 pb-2 border-t">
                 <Button
+                  className="w-full"
                   onClick={() => {
                     window.open((article as any).sourceUrl, '_blank');
-                    setIsSourceDrawerOpen(false);
                   }}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  Open in New Tab
+                  Read Full Article on {article.source}
                 </Button>
               </div>
             )}
