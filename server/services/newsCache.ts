@@ -18,7 +18,6 @@ export class NewsCache {
   private readonly MAX_ARTICLES = 120; // Keep 120 articles, show latest 100
   private readonly MAX_DAYS_OLD = 2; // Only keep articles from last 2 days + today
   private refreshTimer?: NodeJS.Timeout;
-  private initializationPromise: Promise<void> | null = null; // Prevent concurrent initializations
 
   constructor() {
     // Start automatic refresh cycle
@@ -27,45 +26,25 @@ export class NewsCache {
     this.initializeCache();
   }
 
-  private async initializeCache(): Promise<void> {
-    // If already initializing, return the existing promise to prevent duplicate work
-    if (this.initializationPromise) {
-      console.log('⏳ Initialization already in progress, waiting...');
-      return this.initializationPromise;
-    }
-
-    // If cache is already populated, skip initialization
-    if (this.cache.articles.length > 0) {
-      console.log('✅ Cache already initialized, skipping');
-      return;
-    }
-
-    this.initializationPromise = this.doInitialize();
-    try {
-      await this.initializationPromise;
-    } finally {
-      this.initializationPromise = null;
-    }
-  }
-
-  private async doInitialize(): Promise<void> {
+  private async initializeCache() {
     try {
       console.log('🚀 Initializing news cache...');
-      this.cache.isRefreshing = true;
       
       // Fetch real news from RSS feeds
       const realNews = await realNewsIngestor.ingestTodaysNews();
       
       if (realNews.length > 0) {
         // Ensure imageUrl is always present (normalize undefined to null)
-        this.cache.articles = realNews.map(article => ({
-          ...article,
-          imageUrl: article.imageUrl ?? null
-        }));
+      this.cache.articles = realNews.map(article => ({
+        ...article,
+        imageUrl: article.imageUrl ?? null
+      }));
         this.cache.lastRefresh = new Date();
+        this.cache.isRefreshing = false;
         console.log(`✅ Cache initialized with ${realNews.length} real news articles`);
       } else {
         console.log('⚠️ No real news found, cache remains empty');
+        this.cache.isRefreshing = false;
       }
       
     } catch (error) {
@@ -73,9 +52,8 @@ export class NewsCache {
       // Use emergency fallback if real news ingestion fails
       this.cache.articles = this.generateEmergencyFallback();
       this.cache.lastRefresh = new Date();
-      console.log('🚨 Using emergency fallback articles');
-    } finally {
       this.cache.isRefreshing = false;
+      console.log('🚨 Using emergency fallback articles');
     }
   }
 
@@ -143,19 +121,9 @@ export class NewsCache {
       // Merge filtered articles
       const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
       
-      // Sort by rankingScore (interest-based), then by time as tiebreaker
-      // rankingScore is set by realNewsIngestor based on order wins, price movements, etc.
+      // Sort by time (newest first) and keep only MAX_ARTICLES
       const sortedArticles = allArticles
         .sort((a, b) => {
-          // Primary sort: ranking score (higher = more interesting)
-          const scoreA = (a as any).rankingScore || 0;
-          const scoreB = (b as any).rankingScore || 0;
-          
-          if (scoreA !== scoreB) {
-            return scoreB - scoreA; // Higher score first
-          }
-          
-          // Tiebreaker: time (most recent first)
           const timeA = a.time ? new Date(a.time).getTime() : 0;
           const timeB = b.time ? new Date(b.time).getTime() : 0;
           return timeB - timeA;
@@ -208,12 +176,21 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty or initialization is in progress, wait for it
-    if (this.cache.articles.length === 0 || this.initializationPromise) {
-      console.log('📊 Cache empty or initializing, waiting...');
+    // If cache is empty, wait for initialization to complete (with timeout)
+    if (this.cache.articles.length === 0) {
+      console.log('📊 Cache empty, waiting for initialization...');
       
-      // Wait for existing initialization or start new one
-      await this.initializeCache();
+      // If not refreshing, start initialization
+      if (!this.cache.isRefreshing) {
+        await this.initializeCache();
+      } else {
+        // Wait for ongoing refresh to complete (max 30 seconds)
+        let waitTime = 0;
+        while (this.cache.isRefreshing && waitTime < 30000) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          waitTime += 500;
+        }
+      }
       
       console.log(`✅ Cache ready with ${this.cache.articles.length} articles`);
     }

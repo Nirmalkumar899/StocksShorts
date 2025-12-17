@@ -144,98 +144,6 @@ export class RealNewsIngestor {
     'ntpc', 'powergrid', 'coal india', 'bpcl', 'ioc', 'gail'
   ];
 
-  // HIGH-INTEREST KEYWORDS for article prioritization (score weight: 5)
-  private readonly PRICE_IMPACT_KEYWORDS = [
-    'surges', 'jumps', 'soars', 'rockets', 'skyrockets', 'rallies', 'spikes',
-    'plunges', 'crashes', 'tumbles', 'tanks', 'slumps', 'nosedives',
-    'hits 52-week high', 'hits 52 week high', '52-week high', 'all-time high',
-    'hits 52-week low', 'hits 52 week low', '52-week low', 'all-time low',
-    'circuit', 'upper circuit', 'lower circuit', 'multibagger'
-  ];
-
-  // ORDER WINS keywords (score weight: 4)
-  private readonly ORDER_WIN_KEYWORDS = [
-    'bags order', 'wins order', 'secures order', 'receives order', 'awarded contract',
-    'order win', 'order wins', 'new order', 'contract win', 'order inflow',
-    'bags contract', 'wins contract', 'crore order', 'lakh order', 'billion order',
-    'major order', 'big order', 'large order', 'order worth'
-  ];
-
-  // EXCEPTIONAL RESULTS keywords (score weight: 4)
-  private readonly EXCEPTIONAL_RESULTS_KEYWORDS = [
-    'record profit', 'record revenue', 'beats estimates', 'beats expectations',
-    'exceptional results', 'stellar results', 'strong results', 'robust results',
-    'profit jumps', 'profit surges', 'revenue jumps', 'revenue surges',
-    'profit doubles', 'profit triples', 'q1 results', 'q2 results', 'q3 results', 'q4 results',
-    'quarterly results', 'financial results', 'net profit', 'ebitda growth'
-  ];
-
-  // TOP GAINERS/LOSERS keywords (score weight: 3)
-  private readonly GAINERS_LOSERS_KEYWORDS = [
-    'top gainer', 'top gainers', 'biggest gainer', 'top performer',
-    'top loser', 'top losers', 'biggest loser', 'worst performer',
-    'gains up to', 'falls up to', 'rises', 'declines', 'gains', 'loses'
-  ];
-
-  // Calculate ranking score for an article (higher = more interesting)
-  private calculateRankingScore(title: string, content: string, sentiment: string): number {
-    const text = `${title} ${content}`.toLowerCase();
-    let score = 10; // Base score
-
-    // Check for percentage moves (significant price impact)
-    const percentMatch = text.match(/(\d+(?:\.\d+)?)\s*%/);
-    if (percentMatch) {
-      const percent = parseFloat(percentMatch[1]);
-      if (percent >= 5) score += 15; // Very significant move
-      else if (percent >= 3) score += 10; // Significant move
-      else if (percent >= 1) score += 5; // Notable move
-    }
-
-    // Check high-interest categories
-    for (const keyword of this.PRICE_IMPACT_KEYWORDS) {
-      if (text.includes(keyword)) {
-        score += 12;
-        break;
-      }
-    }
-
-    for (const keyword of this.ORDER_WIN_KEYWORDS) {
-      if (text.includes(keyword)) {
-        score += 10;
-        break;
-      }
-    }
-
-    for (const keyword of this.EXCEPTIONAL_RESULTS_KEYWORDS) {
-      if (text.includes(keyword)) {
-        score += 10;
-        break;
-      }
-    }
-
-    for (const keyword of this.GAINERS_LOSERS_KEYWORDS) {
-      if (text.includes(keyword)) {
-        score += 8;
-        break;
-      }
-    }
-
-    // Boost for specific amount mentions (crore/lakh orders)
-    if (text.match(/rs\.?\s*\d+.*crore/i) || text.match(/₹\s*\d+.*crore/i)) {
-      score += 5;
-    }
-
-    // Sentiment alignment boost
-    if (sentiment === 'Positive' && (text.includes('surge') || text.includes('jump') || text.includes('order win'))) {
-      score += 3;
-    }
-    if (sentiment === 'Negative' && (text.includes('plunge') || text.includes('crash') || text.includes('fall'))) {
-      score += 3;
-    }
-
-    return score;
-  }
-
   public async ingestTodaysNews(): Promise<Article[]> {
     console.log('📰 Starting real news ingestion for today and yesterday...');
     
@@ -261,27 +169,12 @@ export class RealNewsIngestor {
     // Remove duplicates based on title similarity
     const uniqueArticles = this.removeDuplicates(allArticles);
     
-    // Sort by ranking score (high-interest first), then by time for same score
-    // IMPORTANT: Store rankingScore on each article so it persists through cache/routes
+    // Sort by published time (newest first) and take top 50
     const sortedArticles = uniqueArticles
-      .map(article => ({
-        ...article,
-        rankingScore: this.calculateRankingScore(article.title, article.content, article.sentiment)
-      }))
-      .sort((a, b) => {
-        // Primary sort: ranking score (higher = more interesting)
-        const scoreDiff = (b.rankingScore || 0) - (a.rankingScore || 0);
-        if (scoreDiff !== 0) return scoreDiff;
-        // Secondary sort: time (newest first)
-        return new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime();
-      })
+      .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
       .slice(0, 50);
 
-    console.log(`✅ Ingested ${sortedArticles.length} unique articles (sorted by interest score)`);
-    // Log top 5 articles for debugging
-    sortedArticles.slice(0, 5).forEach((a, i) => {
-      console.log(`  📊 #${i+1}: [Score: ${this.calculateRankingScore(a.title, a.content, a.sentiment)}] ${a.title.substring(0, 60)}...`);
-    });
+    console.log(`✅ Ingested ${sortedArticles.length} unique articles from today`);
     return sortedArticles;
   }
 
@@ -444,23 +337,10 @@ export class RealNewsIngestor {
   private assignPriority(title: string, description: string): 'High' | 'Medium' | 'Low' {
     const text = (title + ' ' + description).toLowerCase();
     
-    // High priority: price impact, order wins, exceptional results
-    const highPriorityWords = [
-      'breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant',
-      'surges', 'jumps', 'plunges', 'crashes', 'rockets', 'skyrockets',
-      'order win', 'bags order', 'secures order', 'wins contract', 'crore order',
-      'record profit', 'beats estimates', 'exceptional results', 'stellar results',
-      'top gainer', 'top loser', '52-week high', '52-week low', 'multibagger',
-      'upper circuit', 'lower circuit', 'block deal', 'bulk deal'
-    ];
-    
+    const highPriorityWords = ['breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant'];
     const highPriorityCount = highPriorityWords.filter(word => text.includes(word)).length;
     
-    // Check for significant percentage moves
-    const percentMatch = text.match(/(\d+(?:\.\d+)?)\s*%/);
-    const hasSignificantMove = percentMatch && parseFloat(percentMatch[1]) >= 3;
-    
-    if (highPriorityCount >= 2 || hasSignificantMove) return 'High';
+    if (highPriorityCount >= 2) return 'High';
     if (highPriorityCount >= 1) return 'Medium';
     return 'Low';
   }

@@ -114,11 +114,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   // Remove all category logic for clean Inshorts-style interface
 
-  // Force invalidate articles cache on first mount to ensure fresh data
-  useEffect(() => {
-    queryClient.removeQueries({ queryKey: ['/api/articles'] });
-  }, []); // Only run once on mount
-
   // Set active section based on URL
   useEffect(() => {
     if (location === '/disclaimer') {
@@ -190,9 +185,25 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return [];
       }
       
-      // Keep server's sorting order (already sorted by interest score + priority)
-      // Server prioritizes: order wins, price movements, exceptional results, top gainers/losers
-      return data;
+      // Sort articles chronologically (latest first)
+      const processedData = data.sort((a: Article, b: Article) => {
+        // Parse timestamps, default to 12:01 AM (start of day) if missing
+        const getTimestamp = (article: Article) => {
+          if (!article.time) {
+            // Articles without timestamp are considered uploaded at 12:01 AM start of day
+            return new Date('2025-07-05T00:01:00Z').getTime();
+          }
+          return new Date(article.time).getTime();
+        };
+        
+        const aTime = getTimestamp(a);
+        const bTime = getTimestamp(b);
+        
+        // Sort by most recent first (descending order)
+        return bTime - aTime;
+      });
+      
+      return processedData;
       } catch (error) {
         clearTimeout(timeoutId);
         if (error.name === 'AbortError') {
@@ -202,23 +213,12 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       }
     },
     retry: 2,
-    staleTime: 0, // Always use fresh data, server handles caching
-    gcTime: 0, // Don't cache old data, always use fresh server response
-    refetchOnWindowFocus: false, // Prevent unnecessary refetches
-    refetchOnMount: 'always', // Always refetch on mount
-    networkMode: 'always', // Bypass React Query's request deduplication
-    structuralSharing: false, // Don't merge new data with old data, always use fresh
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Apply translations to articles and filter out read articles
   const articles = useMemo(() => {
     let result = rawArticles || [];
-    
-    // Debug: log first article's ranking score to verify server order is preserved
-    if (result.length > 0) {
-      const first = result[0] as any;
-      console.log("First article in rawArticles:", first.title?.substring(0, 40), "Score:", first.rankingScore);
-    }
     
     if (isTranslated && Object.keys(translatedArticles).length > 0) {
       console.log("Applying translations to", rawArticles?.length, "articles");
