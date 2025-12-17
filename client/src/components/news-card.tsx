@@ -1,4 +1,4 @@
-// Build version: 2025-12-17-v9 - Source link opens ORIGINAL website in new tab (PWA compatible)
+// Build version: 2025-12-17-v10 - Source link opens in-app modal (PWA compatible, swipe to close)
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
@@ -344,26 +344,20 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens ORIGINAL website in new tab (PWA compatible) */}
+                    {/* Right - Source Link - Opens in-app modal (PWA compatible) */}
                     <div>
-                      {(article as any).sourceUrl ? (
-                        <a 
-                          href={(article as any).sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          }}
-                        >
-                          {article.source}
-                        </a>
-                      ) : (
-                        <span className="text-white font-medium">
-                          {article.source}
-                        </span>
-                      )}
+                      <button 
+                        type="button"
+                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          trackEvent('article_source_click', 'engagement', article.type, article.id);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        {article.source}
+                      </button>
                     </div>
                   </div>
                 </div>
