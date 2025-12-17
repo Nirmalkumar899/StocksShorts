@@ -31,9 +31,13 @@ export default function ArticlePage() {
     retry: 2,
   });
 
+  // Track pending translation to prevent duplicate calls
+  const [translatingId, setTranslatingId] = useState<number | null>(null);
+
   // Translation mutation
   const translateMutation = useMutation({
     mutationFn: async (articleId: number) => {
+      setTranslatingId(articleId);
       const response = await apiRequest('POST', `/api/translate-article/${articleId}`);
       return response.json();
     },
@@ -42,8 +46,10 @@ export default function ArticlePage() {
         setTranslatedContent(data);
         addToCache(article.id, data);
       }
+      setTranslatingId(null);
     },
     onError: () => {
+      setTranslatingId(null);
       toast({
         title: "Translation failed",
         description: "Could not translate article. Showing original.",
@@ -52,19 +58,19 @@ export default function ArticlePage() {
     }
   });
 
-  // Handle language change
+  // Handle language change - with guard against duplicate calls
   useEffect(() => {
     if (article && language === 'hi') {
       const cached = getFromCache(article.id);
       if (cached) {
         setTranslatedContent(cached);
-      } else {
+      } else if (translatingId !== article.id && !translateMutation.isPending) {
         translateMutation.mutate(article.id);
       }
     } else {
       setTranslatedContent(null);
     }
-  }, [language, article?.id]);
+  }, [language, article?.id, translatingId]);
 
   const displayTitle = language === 'hi' && translatedContent ? translatedContent.title : article?.title;
   const displayContent = language === 'hi' && translatedContent ? translatedContent.content : article?.content;

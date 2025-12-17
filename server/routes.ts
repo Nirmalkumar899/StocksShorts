@@ -356,9 +356,32 @@ CONTENT: [Hindi translation]`;
   });
 
 
-  // Translate single article to Hindi
+  // Simple in-memory rate limiter for translation endpoint
+  const translationRateLimit = new Map<string, { count: number; resetTime: number }>();
+  const TRANSLATION_LIMIT = 10; // Max translations per IP per minute
+  const TRANSLATION_WINDOW = 60000; // 1 minute
+
+  // Translate single article to Hindi (with rate limiting)
   app.post('/api/translate-article/:id', async (req, res) => {
     try {
+      // Rate limiting by IP
+      const clientIP = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.ip || 'unknown';
+      const now = Date.now();
+      const rateData = translationRateLimit.get(clientIP);
+      
+      if (rateData) {
+        if (now < rateData.resetTime) {
+          if (rateData.count >= TRANSLATION_LIMIT) {
+            return res.status(429).json({ message: 'Too many translation requests. Please wait a minute.' });
+          }
+          rateData.count++;
+        } else {
+          translationRateLimit.set(clientIP, { count: 1, resetTime: now + TRANSLATION_WINDOW });
+        }
+      } else {
+        translationRateLimit.set(clientIP, { count: 1, resetTime: now + TRANSLATION_WINDOW });
+      }
+
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: 'Invalid article ID' });
