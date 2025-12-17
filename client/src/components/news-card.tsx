@@ -347,23 +347,21 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link */}
+                    {/* Right - Source Link - Opens popup modal */}
                     <div>
-                      {(article as any).sourceUrl ? (
-                        <a 
-                          href={(article as any).sourceUrl} 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {article.source}
-                        </a>
-                      ) : (
-                        <span className="text-white font-medium">
-                          {article.source}
-                        </span>
-                      )}
+                      <button 
+                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          trackEvent('article_view', 'engagement', article.type, article.id);
+                          if (onMarkAsRead) {
+                            onMarkAsRead(article.id);
+                          }
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        {article.source}
+                      </button>
                     </div>
                   </div>
                 </div>
