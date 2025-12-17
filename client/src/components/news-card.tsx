@@ -350,8 +350,19 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                     {/* Right - Source Link - Opens popup modal */}
                     <div>
                       <button 
+                        type="button"
                         className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
                         onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          trackEvent('article_view', 'engagement', article.type, article.id);
+                          if (onMarkAsRead) {
+                            onMarkAsRead(article.id);
+                          }
+                          setIsModalOpen(true);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           trackEvent('article_view', 'engagement', article.type, article.id);
                           if (onMarkAsRead) {
