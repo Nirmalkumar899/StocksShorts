@@ -1,4 +1,4 @@
-// Build version: 2025-12-17-v8 - Source link opens ORIGINAL website in popup window
+// Build version: 2025-12-17-v9 - Source link opens ORIGINAL website in new tab (PWA compatible)
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
@@ -344,31 +344,26 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens ORIGINAL website in popup window */}
+                    {/* Right - Source Link - Opens ORIGINAL website in new tab (PWA compatible) */}
                     <div>
-                      <button 
-                        type="button"
-                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          const sourceUrl = (article as any).sourceUrl;
-                          if (sourceUrl) {
-                            const width = Math.min(800, window.innerWidth - 50);
-                            const height = Math.min(600, window.innerHeight - 100);
-                            const left = (window.innerWidth - width) / 2;
-                            const top = (window.innerHeight - height) / 2;
-                            window.open(
-                              sourceUrl,
-                              'sourcePopup',
-                              `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
-                            );
-                          }
-                        }}
-                      >
-                        {article.source}
-                      </button>
+                      {(article as any).sourceUrl ? (
+                        <a 
+                          href={(article as any).sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            trackEvent('article_source_click', 'engagement', article.type, article.id);
+                          }}
+                        >
+                          {article.source}
+                        </a>
+                      ) : (
+                        <span className="text-white font-medium">
+                          {article.source}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
