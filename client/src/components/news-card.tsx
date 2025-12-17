@@ -1,4 +1,4 @@
-// Build version: 2025-12-17-v3 - Fix: mark as read only when modal closes
+// Build version: 2025-12-17-v4 - Source link opens original website in new window
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
@@ -344,21 +344,26 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens popup modal */}
+                    {/* Right - Source Link - Opens original website in new window */}
                     <div>
-                      <button 
-                        type="button"
-                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          trackEvent('article_view', 'engagement', article.type, article.id);
-                          // Don't mark as read here - will mark when modal closes
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        {article.source}
-                      </button>
+                      {(article as any).sourceUrl ? (
+                        <a 
+                          href={(article as any).sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            trackEvent('article_source_click', 'engagement', article.type, article.id);
+                          }}
+                        >
+                          {article.source}
+                        </a>
+                      ) : (
+                        <span className="text-white font-medium">
+                          {article.source}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
