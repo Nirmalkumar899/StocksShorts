@@ -1,79 +1,25 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Share2, Copy, ExternalLink, Lock } from "@/lib/icons";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useLanguage } from "@/hooks/useLanguage";
-import { apiRequest } from "@/lib/queryClient";
 
 import type { Article } from "@shared/schema";
-
-interface TranslatedContent {
-  title: string;
-  content: string;
-}
 
 export default function ArticlePage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { language, getFromCache, addToCache } = useLanguage();
-  const [translatedContent, setTranslatedContent] = useState<TranslatedContent | null>(null);
   
   // Get specific article by ID
   const { data: article, isLoading, error } = useQuery<Article>({
     queryKey: [`/api/articles/${id}`],
     retry: 2,
   });
-
-  // Track pending translation to prevent duplicate calls
-  const [translatingId, setTranslatingId] = useState<number | null>(null);
-
-  // Translation mutation
-  const translateMutation = useMutation({
-    mutationFn: async (articleId: number) => {
-      setTranslatingId(articleId);
-      const response = await apiRequest('POST', `/api/translate-article/${articleId}`);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (article) {
-        setTranslatedContent(data);
-        addToCache(article.id, data);
-      }
-      setTranslatingId(null);
-    },
-    onError: () => {
-      setTranslatingId(null);
-      toast({
-        title: "Translation failed",
-        description: "Could not translate article. Showing original.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Handle language change - with guard against duplicate calls
-  useEffect(() => {
-    if (article && language === 'hi') {
-      const cached = getFromCache(article.id);
-      if (cached) {
-        setTranslatedContent(cached);
-      } else if (translatingId !== article.id && !translateMutation.isPending) {
-        translateMutation.mutate(article.id);
-      }
-    } else {
-      setTranslatedContent(null);
-    }
-  }, [language, article?.id, translatingId]);
-
-  const displayTitle = language === 'hi' && translatedContent ? translatedContent.title : article?.title;
-  const displayContent = language === 'hi' && translatedContent ? translatedContent.content : article?.content;
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment?.toLowerCase()) {
@@ -152,9 +98,9 @@ export default function ArticlePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-9">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-9 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
           <Button variant="ghost" size="sm" onClick={() => setLocation('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -202,28 +148,9 @@ export default function ArticlePage() {
               )}
             </div>
 
-            {/* Translation Loading Indicator */}
-            {translateMutation.isPending && (
-              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-4 flex items-center gap-2">
-                <div className="animate-spin h-4 w-4 border-2 border-orange-500 border-t-transparent rounded-full"></div>
-                <span className="text-sm text-orange-700 dark:text-orange-300">
-                  Translating to Hindi / हिंदी में अनुवाद हो रहा है...
-                </span>
-              </div>
-            )}
-
-            {/* Language Indicator */}
-            {language === 'hi' && translatedContent && (
-              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-1.5 mb-4 inline-block">
-                <span className="text-xs text-orange-700 dark:text-orange-300">
-                  हिंदी में पढ़ें
-                </span>
-              </div>
-            )}
-
             {/* Title */}
             <h1 className="text-2xl font-bold text-foreground mb-4 leading-tight">
-              {displayTitle || article.title}
+              {article.title}
             </h1>
 
             {/* Content */}
@@ -231,7 +158,7 @@ export default function ArticlePage() {
               {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
                 <div className="space-y-4">
                   <div dangerouslySetInnerHTML={{ 
-                    __html: (displayContent || article.content).substring(0, 150).replace(/\n/g, '<br />') + '...' 
+                    __html: article.content.substring(0, 150).replace(/\n/g, '<br />') + '...' 
                   }} />
                   <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-6 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
                     <div className="flex items-center gap-3 text-blue-800 dark:text-blue-200 mb-3">
@@ -250,7 +177,7 @@ export default function ArticlePage() {
                   </div>
                 </div>
               ) : (
-                <div dangerouslySetInnerHTML={{ __html: (displayContent || article.content).replace(/\n/g, '<br />') }} />
+                <div dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }} />
               )}
             </div>
 

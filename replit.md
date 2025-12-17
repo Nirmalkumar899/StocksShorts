@@ -25,15 +25,7 @@ Preferred communication style: Simple, everyday language.
 - AskQuery (Contact): Chat interface with instant messaging via email - type message and press Enter or click send
 - Profile: Gmail-only authentication with no additional forms or information required
 
-## Recent Changes (December 17, 2025)
-- **Language Selection**: Added English/Hindi language toggle at the top of the app
-- **Hindi Translation**: Users can choose Hindi to read articles translated via OpenAI GPT-4o
-- **First Visit Popup**: New users see a language selection dialog on first visit
-- **Translation Caching**: Translations are cached in localStorage to avoid repeated API calls
-- **Rate Limiting**: Translation API is rate-limited (10 per minute per IP) to prevent abuse
-- **Stable Article IDs**: Fixed article sharing - IDs are now content-based hashes, so shared links work reliably
-
-## Previous Changes
+## Recent Changes (August 30, 2025)
 - **MAJOR UPDATE**: Completely replaced Google Sheets with AI-powered news generation using OpenAI GPT-4o
 - **Interface**: Removed ALL icons, category filters, and visual elements for ultra-clean text-only design like Inshorts
 - **Date Filtering**: Implemented strict 2-day article limit - only shows articles from today and last 2 days

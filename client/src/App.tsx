@@ -6,8 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { useSEO } from "@/hooks/useSEO";
-import { LanguageProvider } from "@/hooks/useLanguage";
-import { LanguageSelector } from "@/components/language-selector";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 import Contact from "@/pages/contact";
@@ -73,14 +71,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <TooltipProvider>
-          <GoogleAnalytics />
-          <Toaster />
-          <LanguageSelector />
-          <Router />
-        </TooltipProvider>
-      </LanguageProvider>
+      <TooltipProvider>
+        <GoogleAnalytics />
+        <Toaster />
+        <Router />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
