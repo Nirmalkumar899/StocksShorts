@@ -1,3 +1,4 @@
+// Build version: 2025-12-17-v2 - Modal popup fix
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock } from '@/lib/icons';
