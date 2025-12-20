@@ -278,7 +278,14 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       const cached = cachedTranslations?.translations || {};
       const cachedCount = Object.keys(cached).length;
       
-      if (cachedCount > 0) {
+      // Count how many articles have translations
+      const translatedCount = articles.filter(a => cached[a.id]).length;
+      const coveragePercent = articles.length > 0 ? (translatedCount / articles.length) * 100 : 0;
+      
+      console.log(`📊 Translation coverage: ${translatedCount}/${articles.length} (${coveragePercent.toFixed(0)}%)`);
+      
+      // Use cached if we have at least 50% coverage
+      if (cachedCount > 0 && coveragePercent >= 50) {
         console.log(`✅ Found ${cachedCount} cached translations - using instantly!`);
         
         // Apply cached translations to articles
