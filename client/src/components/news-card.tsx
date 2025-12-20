@@ -52,6 +52,8 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
     }
   };
 
+  const MAX_LINES = 6; // Content preview lines for All News section
+
   const shouldShowViewMore = () => {
     // Don't show View More for Special articles if not authenticated
     if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
@@ -69,7 +71,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
       totalLines += estimatedLinesForThisText;
     });
     
-    return totalLines > 10;
+    return totalLines > MAX_LINES;
   };
 
   const getTruncatedContent = (content: string) => {
@@ -85,12 +87,12 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
     for (const line of lines) {
       const estimatedLinesForThisText = Math.ceil(line.length / 50) || 1;
       
-      if (totalLines + estimatedLinesForThisText <= 10) {
+      if (totalLines + estimatedLinesForThisText <= MAX_LINES) {
         truncatedContent += (truncatedContent ? '\n' : '') + line;
         totalLines += estimatedLinesForThisText;
       } else {
         // Add partial line if we can fit some characters
-        const remainingLines = 10 - totalLines;
+        const remainingLines = MAX_LINES - totalLines;
         if (remainingLines > 0) {
           const partialText = line.substring(0, remainingLines * 50);
           truncatedContent += (truncatedContent ? '\n' : '') + partialText;
@@ -99,7 +101,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
       }
     }
     
-    return truncatedContent || trimmed.substring(0, 600); // Fallback to character limit
+    return truncatedContent || trimmed.substring(0, 300); // Fallback to character limit
   };
 
   const handleViewMore = (e: React.MouseEvent) => {

@@ -7,7 +7,7 @@ interface BottomNavigationProps {
 }
 
 const navItems = [
-  { id: 'home', label: 'Home', icon: null, url: '/', highlight: false },
+  { id: 'home', label: 'All News', icon: null, url: '/', highlight: false },
   { id: 'special', label: 'Special', icon: null, url: '/special', highlight: true },
   { id: 'profile', label: 'Profile', icon: null, url: '/profile', highlight: false },
   { id: 'disclaimer', label: 'Disclaimer', icon: null, url: '/disclaimer', highlight: false },

@@ -17,22 +17,12 @@ import SplashScreen from "@/components/splash-screen";
 function Router() {
   const [location, setLocation] = useLocation();
   
-  // Temporarily disable splash screen for debugging
-  // const [showSplash, setShowSplash] = useState(true);
-  
-  // // Show splash screen for 1 second on first load
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setShowSplash(false);
-  //   }, 1000);
-  //   
-  //   return () => clearTimeout(timer);
-  // }, []);
-  
-  // // Show splash screen for first 1 second
-  // if (showSplash) {
-  //   return <SplashScreen />;
-  // }
+  // Redirect root to /special on first visit
+  useEffect(() => {
+    if (location === '/') {
+      setLocation('/special');
+    }
+  }, []);
   
   return (
     <Switch>
