@@ -1,5 +1,6 @@
 import { Article } from '../../shared/schema';
 import { realNewsIngestor } from './realNewsIngestor';
+import { translationCache } from './translationCache';
 
 // Generate stable ID from article content (hash-based)
 function generateStableId(title: string, sourceUrl: string | null): number {
@@ -47,14 +48,15 @@ export class NewsCache {
       const realNews = await realNewsIngestor.ingestTodaysNews();
       
       if (realNews.length > 0) {
-        // Ensure imageUrl is always present (normalize undefined to null)
-      this.cache.articles = realNews.map(article => ({
-        ...article,
-        imageUrl: article.imageUrl ?? null
-      }));
+        this.cache.articles = realNews.map(article => ({
+          ...article,
+          imageUrl: article.imageUrl ?? null
+        }));
         this.cache.lastRefresh = new Date();
         this.cache.isRefreshing = false;
         console.log(`✅ Cache initialized with ${realNews.length} real news articles`);
+        
+        this.triggerBackgroundTranslation();
       } else {
         console.log('⚠️ No real news found, cache remains empty');
         this.cache.isRefreshing = false;
@@ -159,6 +161,7 @@ export class NewsCache {
       console.log(`📊 Article categories: ${this.getCategoryCounts()}`);
       console.log(`🔍 Sample article dates: ${uniqueArticles.slice(0, 3).map(a => new Date(a.time || new Date()).toISOString()).join(', ')}`);
 
+      this.triggerBackgroundTranslation();
     } catch (error) {
       console.error('❌ Error refreshing news:', error);
     } finally {
@@ -188,6 +191,36 @@ export class NewsCache {
     return Object.entries(counts)
       .map(([type, count]) => `${type}:${count}`)
       .join(', ');
+  }
+
+  private triggerBackgroundTranslation() {
+    const articlesToTranslate = this.cache.articles.slice(0, 20).map(a => ({
+      id: a.id,
+      title: a.title,
+      content: a.content
+    }));
+    
+    setTimeout(() => {
+      translationCache.translateBatch(articlesToTranslate);
+    }, 2000);
+  }
+
+  public getTranslations(): Map<number, { titleHi: string; contentHi: string }> {
+    const translations = new Map<number, { titleHi: string; contentHi: string }>();
+    const allTranslations = translationCache.getAllTranslations();
+    
+    allTranslations.forEach((value, key) => {
+      translations.set(key, {
+        titleHi: value.titleHi,
+        contentHi: value.contentHi
+      });
+    });
+    
+    return translations;
+  }
+
+  public getTranslationStats() {
+    return translationCache.getCacheStats();
   }
 
   public async getArticles(category?: string): Promise<Article[]> {

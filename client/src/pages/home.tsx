@@ -260,64 +260,65 @@ export default function Home({ initialCategory }: HomeProps = {}) {
     },
   });
 
+  // Fetch cached translations for instant toggle
+  const { data: cachedTranslations, refetch: refetchTranslations } = useQuery<{
+    translations: { [key: number]: { titleHi: string; contentHi: string } };
+    stats: { translatedCount: number; isTranslating: boolean };
+  }>({
+    queryKey: ['/api/translations'],
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+  });
+
   const translateMutation = useMutation({
     mutationFn: async (articles: Article[]) => {
-      console.log("🔄 Translation API call starting with", articles.length, "articles");
-      console.log("📄 Sample article for translation:", articles[0]);
+      console.log("🔄 Checking cached translations first...");
       
-      try {
-        console.log("🌐 Making API request to /api/translate-articles");
+      // First try to use cached translations (instant)
+      const cached = cachedTranslations?.translations || {};
+      const cachedCount = Object.keys(cached).length;
+      
+      if (cachedCount > 0) {
+        console.log(`✅ Found ${cachedCount} cached translations - using instantly!`);
         
-        // Use direct fetch with longer timeout for translation
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
-        
-        const response = await fetch('/api/translate-articles', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({ articles }),
-          signal: controller.signal
+        // Apply cached translations to articles
+        const translatedArticles = articles.map(article => {
+          const translation = cached[article.id];
+          if (translation) {
+            return {
+              ...article,
+              title: translation.titleHi,
+              content: translation.contentHi
+            };
+          }
+          return article;
         });
         
-        clearTimeout(timeoutId);
-        
-        console.log("📡 Raw response status:", response.status);
-        console.log("📡 Raw response headers:", Object.fromEntries(response.headers.entries()));
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("❌ API Error Response:", errorText);
-          throw new Error(`${response.status}: ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log("✅ Translation API response received", data.length, "translated articles");
-        console.log("📝 Sample translated article:", data[0]);
-        return data;
-      } catch (error) {
-        // Handle AbortError specifically
-        if (error.name === 'AbortError') {
-          console.error("⏰ Translation request timed out after 2 minutes");
-          throw new Error('Translation is taking longer than expected. Please try again with fewer articles.');
-        }
-        
-        // Handle quota exceeded errors with user-friendly message
-        if (error.message && error.message.includes('quota exceeded')) {
-          console.error("💰 OpenAI API quota exceeded");
-          throw new Error('Hindi translation temporarily unavailable due to API limits. Please try again later.');
-        }
-        
-        console.error("💥 Translation API error details:", {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
-          cause: error.cause
-        });
-        throw error;
+        return translatedArticles;
       }
+      
+      // Fallback: Call API for uncached translations
+      console.log("🌐 No cached translations, calling API...");
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      
+      const response = await fetch('/api/translate-articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ articles: articles.slice(0, 10) }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status}: ${errorText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: (data: Article[]) => {
       console.log("Translation success, processing", data.length, "articles");
@@ -329,8 +330,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       setIsTranslated(true);
       
       toast({
-        title: "Content translated",
-        description: "All articles have been translated to Hindi.",
+        title: "हिंदी में देखें",
+        description: "Articles translated to Hindi.",
       });
     },
     onError: (error: Error) => {

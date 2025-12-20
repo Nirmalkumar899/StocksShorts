@@ -233,6 +233,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(status);
   });
 
+  // Get cached translations (instant - no API call needed)
+  app.get("/api/translations", (req, res) => {
+    try {
+      const translations = newsCache.getTranslations();
+      const translationStats = newsCache.getTranslationStats();
+      
+      const translationsObj: { [key: number]: { titleHi: string; contentHi: string } } = {};
+      translations.forEach((value, key) => {
+        translationsObj[key] = value;
+      });
+      
+      res.json({
+        translations: translationsObj,
+        stats: translationStats
+      });
+    } catch (error) {
+      console.error('Error fetching translations:', error);
+      res.status(500).json({ message: 'Failed to fetch translations' });
+    }
+  });
+
   // Translation API using OpenAI SDK
   const openai = new OpenAI({ 
     apiKey: process.env.OPENAI_API_KEY 
