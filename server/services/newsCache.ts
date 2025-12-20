@@ -194,7 +194,7 @@ export class NewsCache {
   }
 
   private triggerBackgroundTranslation() {
-    const articlesToTranslate = this.cache.articles.slice(0, 20).map(a => ({
+    const articlesToTranslate = this.cache.articles.slice(0, 50).map(a => ({
       id: a.id,
       title: a.title,
       content: a.content
@@ -202,7 +202,7 @@ export class NewsCache {
     
     setTimeout(() => {
       translationCache.translateBatch(articlesToTranslate);
-    }, 2000);
+    }, 3000);
   }
 
   public getTranslations(): Map<number, { titleHi: string; contentHi: string }> {

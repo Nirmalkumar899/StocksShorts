@@ -74,14 +74,14 @@ CONTENT: [Hindi translation]`;
 
     try {
       const batchSize = 3;
-      for (let i = 0; i < Math.min(untranslated.length, 15); i += batchSize) {
+      for (let i = 0; i < Math.min(untranslated.length, 30); i += batchSize) {
         const batch = untranslated.slice(i, i + batchSize);
         await Promise.all(
           batch.map(article => this.translateArticle(article.id, article.title, article.content))
         );
         
         if (i + batchSize < untranslated.length) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
       console.log(`✅ Background translation complete: ${this.cache.size} articles cached`);

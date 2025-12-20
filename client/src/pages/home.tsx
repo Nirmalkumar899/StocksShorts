@@ -298,16 +298,16 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       }
       
       // Fallback: Call API for uncached translations
-      console.log("🌐 No cached translations, calling API...");
+      console.log("🌐 No cached translations, calling API for all articles...");
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      const timeoutId = setTimeout(() => controller.abort(), 180000);
       
       const response = await fetch('/api/translate-articles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ articles: articles.slice(0, 10) }),
+        body: JSON.stringify({ articles }),
         signal: controller.signal
       });
       
