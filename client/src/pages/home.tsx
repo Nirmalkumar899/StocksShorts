@@ -133,13 +133,7 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
             <h1 className="text-lg font-bold text-white truncate">⭐ StocksShorts Special</h1>
             <p className="text-white/80 text-xs">Exclusive insights & analysis</p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {translateMutation.isPending && (
-              <div className="absolute top-full left-0 right-0 bg-yellow-400 text-black text-center py-2 text-sm font-medium z-50">
-                <Loader2Icon className="h-4 w-4 animate-spin inline mr-2" />
-                Articles are being translated. Wait. / लेख अनुवादित हो रहे हैं। प्रतीक्षा करें।
-              </div>
-            )}
+          <div className="flex items-center gap-2 flex-shrink-0 relative">
             <Button
               variant="ghost"
               size="sm"
@@ -148,7 +142,7 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
               className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
                 !isTranslated 
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-blue-500/30 ring-2 ring-white' 
-                  : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/30 opacity-80'
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/30'
               }`}
               data-testid="button-special-english"
             >
@@ -162,12 +156,18 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
               className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
                 isTranslated 
                   ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-orange-500/30 ring-2 ring-white' 
-                  : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-orange-500/30 opacity-80'
+                  : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-orange-500/30'
               }`}
               data-testid="button-special-hindi"
             >
               हिंदी
             </Button>
+            {translateMutation.isPending && (
+              <div className="fixed top-14 left-0 right-0 bg-yellow-400 text-black text-center py-2 text-sm font-medium z-[100] shadow-lg">
+                <Loader2Icon className="h-4 w-4 animate-spin inline mr-2" />
+                Articles are being translated. Wait. / लेख अनुवादित हो रहे हैं। प्रतीक्षा करें।
+              </div>
+            )}
             <Button
               variant="ghost"
               size="sm"

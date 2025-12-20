@@ -107,25 +107,19 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
             </div>
           </Link>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
             {/* Language Buttons - English and Hindi */}
             {onTranslate && (
               <>
-                {isTranslating && (
-                  <div className="absolute top-full left-0 right-0 bg-yellow-400 text-black text-center py-2 text-sm font-medium z-50">
-                    <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-                    Articles are being translated. Wait. / लेख अनुवादित हो रहे हैं। प्रतीक्षा करें।
-                  </div>
-                )}
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => !isTranslated && onTranslate()}
+                  onClick={() => isTranslated && onTranslate()}
                   disabled={isTranslating || !isTranslated}
                   className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
                     !isTranslated 
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-blue-500/30 ring-2 ring-white' 
-                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/30 opacity-80'
+                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/30'
                   }`}
                   data-testid="button-language-english"
                 >
@@ -134,18 +128,24 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => isTranslated ? null : onTranslate()}
+                  onClick={() => !isTranslated && onTranslate()}
                   disabled={isTranslating || isTranslated}
                   className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
                     isTranslated 
                       ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-orange-500/30 ring-2 ring-white' 
-                      : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-orange-500/30 opacity-80'
+                      : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-orange-500/30'
                   }`}
                   data-testid="button-language-hindi"
                 >
                   हिंदी
                 </Button>
               </>
+            )}
+            {isTranslating && (
+              <div className="fixed top-14 left-0 right-0 bg-yellow-400 text-black text-center py-2 text-sm font-medium z-[100] shadow-lg">
+                <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                Articles are being translated. Wait. / लेख अनुवादित हो रहे हैं। प्रतीक्षा करें।
+              </div>
             )}
             
             <Button
