@@ -133,7 +133,11 @@ export class RealNewsIngestor {
     'awarded contract', 'order book', 'order inflow', 'secures order', 'wins contract',
     'financial results', 'q1 results', 'q2 results', 'q3 results', 'q4 results',
     'annual results', 'net profit', 'ebitda', 'eps', 'pat', 'top line', 'bottom line',
-    'board meeting', 'agm', 'egm', 'corporate announcement', 'filing', 'disclosure'
+    'board meeting', 'agm', 'egm', 'corporate announcement', 'filing', 'disclosure',
+    // F&O and Circuit specific keywords
+    'f&o', 'futures', 'options', 'call option', 'put option', 'expiry', 'open interest',
+    'stop loss', 'upper circuit', 'lower circuit', 'circuit limit', 'locked circuit',
+    'chart pattern', 'bullish breakout', 'bearish breakdown', 'trend line', 'moving average'
   ];
 
   // Keywords that indicate international/non-Indian news - filter these out
@@ -324,6 +328,35 @@ export class RealNewsIngestor {
   private categorizeArticle(title: string, description: string): string {
     const text = (title + ' ' + description).toLowerCase();
     
+    // Priority categories for stock traders
+    // 1. Chart Breakout Stocks
+    if (text.includes('breakout') || text.includes('break out') || text.includes('resistance break') || 
+        text.includes('technical breakout') || text.includes('chart pattern') || text.includes('bullish breakout')) {
+      return 'breakout-stocks';
+    }
+    
+    // 2. Order Wins
+    if (text.includes('order win') || text.includes('bags order') || text.includes('receives order') || 
+        text.includes('secures order') || text.includes('contract win') || text.includes('order book') ||
+        text.includes('new order') || text.includes('order worth') || text.includes('wins contract')) {
+      return 'order-win';
+    }
+    
+    // 3. F&O Support, Resistance and Target
+    if (text.includes('f&o') || text.includes('futures') || text.includes('options') || 
+        text.includes('support') || text.includes('resistance') || text.includes('target price') ||
+        text.includes('stop loss') || text.includes('call option') || text.includes('put option') ||
+        text.includes('expiry') || text.includes('open interest') || text.includes('nifty target')) {
+      return 'fno-analysis';
+    }
+    
+    // 4. Upper/Lower Circuit
+    if (text.includes('upper circuit') || text.includes('lower circuit') || text.includes('circuit limit') ||
+        text.includes('hit circuit') || text.includes('locked in circuit') || text.includes('circuit breaker')) {
+      return 'circuit-stocks';
+    }
+    
+    // Other categories
     if (text.includes('ipo') || text.includes('listing')) return 'ipo';
     if (text.includes('earnings') || text.includes('results') || text.includes('quarterly')) return 'research-report';
     if (text.includes('breaking') || text.includes('alert') || text.includes('urgent')) return 'trending';
@@ -350,9 +383,20 @@ export class RealNewsIngestor {
   private assignPriority(title: string, description: string): 'High' | 'Medium' | 'Low' {
     const text = (title + ' ' + description).toLowerCase();
     
+    // High priority for trader-focused content
+    const traderFocusedWords = [
+      'breakout', 'upper circuit', 'lower circuit', 'order win', 'bags order',
+      'f&o', 'futures', 'options', 'support', 'resistance', 'target price',
+      'stop loss', 'circuit', 'technical', 'chart pattern'
+    ];
+    
     const highPriorityWords = ['breaking', 'alert', 'nifty', 'sensex', 'rbi', 'sebi', 'major', 'significant'];
+    
+    const traderFocusedCount = traderFocusedWords.filter(word => text.includes(word)).length;
     const highPriorityCount = highPriorityWords.filter(word => text.includes(word)).length;
     
+    // Trader-focused content gets highest priority
+    if (traderFocusedCount >= 1) return 'High';
     if (highPriorityCount >= 2) return 'High';
     if (highPriorityCount >= 1) return 'Medium';
     return 'Low';
