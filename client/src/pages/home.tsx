@@ -133,26 +133,38 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
             <h1 className="text-lg font-bold text-white truncate">⭐ StocksShorts Special</h1>
             <p className="text-white/80 text-xs">Exclusive insights & analysis</p>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <button
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleTranslate}
               disabled={translateMutation.isPending}
-              className={`rounded-full px-2.5 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
                 isTranslated 
-                  ? 'bg-white text-orange-600' 
-                  : 'bg-white/30 text-white'
+                  ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-orange-500/30' 
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/30'
               }`}
               data-testid="button-special-translate"
             >
-              {translateMutation.isPending ? '...' : (isTranslated ? 'हिंदी' : 'EN')}
-            </button>
-            <button
+              {translateMutation.isPending ? (
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Languages className="h-4 w-4 mr-1" />
+                  {isTranslated ? 'हिंदी' : 'EN'}
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleInstallClick}
-              className="bg-white/30 text-white rounded-full px-2.5 py-1.5 text-xs font-bold"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-3 py-2 text-sm font-bold shadow-lg shadow-green-500/30"
               data-testid="button-special-save"
             >
+              <Download className="h-4 w-4 mr-1" />
               Save
-            </button>
+            </Button>
           </div>
         </div>
       </div>
