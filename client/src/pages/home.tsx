@@ -133,36 +133,32 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
             <h1 className="text-xl font-bold text-white">⭐ StocksShorts Special</h1>
             <p className="text-white/80 text-sm">Exclusive insights & analysis</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleTranslate}
               disabled={translateMutation.isPending}
-              className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
+              className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-md transition-all border ${
                 isTranslated 
-                  ? 'bg-white/90 text-orange-600 hover:bg-white' 
-                  : 'bg-white/20 text-white hover:bg-white/30'
+                  ? 'bg-white text-orange-600 hover:bg-white/90 border-white' 
+                  : 'bg-white/30 text-white hover:bg-white/40 border-white/50'
               }`}
               data-testid="button-special-translate"
             >
               {translateMutation.isPending ? (
-                <Loader2Icon className="h-4 w-4 animate-spin" />
+                <Loader2Icon className="h-3 w-3 animate-spin" />
               ) : (
-                <>
-                  <Languages className="h-4 w-4 mr-1" />
-                  {isTranslated ? 'हिंदी' : 'EN'}
-                </>
+                <span>{isTranslated ? 'हिंदी' : 'EN'}</span>
               )}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleInstallClick}
-              className="bg-white/20 hover:bg-white/30 text-white rounded-full px-3 py-2 text-sm font-bold"
+              className="bg-white/30 hover:bg-white/40 text-white rounded-full px-3 py-1.5 text-xs font-bold border border-white/50 shadow-md"
               data-testid="button-special-save"
             >
-              <Download className="h-4 w-4 mr-1" />
               Save
             </Button>
           </div>
