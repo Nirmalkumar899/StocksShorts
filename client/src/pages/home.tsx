@@ -127,40 +127,32 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
 
   return (
     <>
-      <div className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-white">⭐ StocksShorts Special</h1>
-            <p className="text-white/80 text-sm">Exclusive insights & analysis</p>
+      <div className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 p-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-white truncate">⭐ StocksShorts Special</h1>
+            <p className="text-white/80 text-xs">Exclusive insights & analysis</p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <button
               onClick={handleTranslate}
               disabled={translateMutation.isPending}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-md transition-all border ${
+              className={`rounded-full px-2.5 py-1.5 text-xs font-bold transition-all ${
                 isTranslated 
-                  ? 'bg-white text-orange-600 hover:bg-white/90 border-white' 
-                  : 'bg-white/30 text-white hover:bg-white/40 border-white/50'
+                  ? 'bg-white text-orange-600' 
+                  : 'bg-white/30 text-white'
               }`}
               data-testid="button-special-translate"
             >
-              {translateMutation.isPending ? (
-                <Loader2Icon className="h-3 w-3 animate-spin" />
-              ) : (
-                <span>{isTranslated ? 'हिंदी' : 'EN'}</span>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+              {translateMutation.isPending ? '...' : (isTranslated ? 'हिंदी' : 'EN')}
+            </button>
+            <button
               onClick={handleInstallClick}
-              className="bg-white/30 hover:bg-white/40 text-white rounded-full px-3 py-1.5 text-xs font-bold border border-white/50 shadow-md"
+              className="bg-white/30 text-white rounded-full px-2.5 py-1.5 text-xs font-bold"
               data-testid="button-special-save"
             >
               Save
-            </Button>
+            </button>
           </div>
         </div>
       </div>
