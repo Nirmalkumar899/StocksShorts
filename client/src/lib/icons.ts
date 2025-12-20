@@ -65,4 +65,5 @@ export {
   FileText,
   FolderOpen,
   LogOut,
+  Languages,
 } from "./custom-icons";
