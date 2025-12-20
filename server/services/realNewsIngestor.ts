@@ -365,8 +365,8 @@ export class RealNewsIngestor {
       .replace(/&[^;]+;/g, ' ')
       .trim();
     
-    // Take first 150 characters as summary
-    return cleanDesc.length > 150 ? cleanDesc.substring(0, 147) + '...' : cleanDesc;
+    // Take first 350 characters to allow for 6-7 lines of content display
+    return cleanDesc.length > 350 ? cleanDesc.substring(0, 347) + '...' : cleanDesc;
   }
 
   private calculateProvenanceScore(domain: string, publishedAt: Date): number {
