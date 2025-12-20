@@ -1,4 +1,4 @@
-import { Download } from "@/lib/icons";
+import { Download, Languages, Loader2 } from "@/lib/icons";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
@@ -107,16 +107,43 @@ export default function Header({ onRefresh, isRefreshing, onTranslate, isTransla
             </div>
           </Link>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleInstallClick}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-4 py-2 text-sm font-bold shadow-lg shadow-green-500/30"
-            data-testid="button-install-app"
-          >
-            <Download className="h-5 w-5 mr-2" />
-            Save App
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Language Toggle - English/Hindi */}
+            {onTranslate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onTranslate}
+                disabled={isTranslating}
+                className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
+                  isTranslated 
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-orange-500/30' 
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/30'
+                }`}
+                data-testid="button-language-toggle"
+              >
+                {isTranslating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Languages className="h-4 w-4 mr-1" />
+                    {isTranslated ? 'हिंदी' : 'EN'}
+                  </>
+                )}
+              </Button>
+            )}
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleInstallClick}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-full px-4 py-2 text-sm font-bold shadow-lg shadow-green-500/30"
+              data-testid="button-install-app"
+            >
+              <Download className="h-5 w-5 mr-2" />
+              Save App
+            </Button>
+          </div>
         </div>
       </div>
     </header>
