@@ -31,7 +31,9 @@ function Router() {
       <Route path="/trending">
         {() => <Home initialCategory="trending" />}
       </Route>
-      <Route path="/special" component={Home} />
+      <Route path="/special">
+        {() => <Home initialCategory="special" />}
+      </Route>
       <Route path="/breakout" component={Home} />
       <Route path="/kalkabazaar" component={Home} />
       <Route path="/warrants" component={Home} />
