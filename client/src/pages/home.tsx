@@ -205,8 +205,15 @@ interface HomeProps {
 
 export default function Home({ initialCategory }: HomeProps = {}) {
   const [location, setLocation] = useLocation();
-  // Remove category selection - show all articles in clean interface
-  const [activeSection, setActiveSection] = useState('home');
+  // Initialize activeSection based on initialCategory prop or URL
+  const getInitialSection = () => {
+    if (initialCategory === 'special') return 'special';
+    if (typeof window !== 'undefined' && window.location.pathname === '/special') return 'special';
+    if (typeof window !== 'undefined' && window.location.pathname === '/disclaimer') return 'disclaimer';
+    if (typeof window !== 'undefined' && window.location.pathname === '/profile') return 'profile';
+    return 'home';
+  };
+  const [activeSection, setActiveSection] = useState(getInitialSection);
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
   const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
