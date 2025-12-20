@@ -317,19 +317,29 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                     </div>
                   </div>
                 ) : shouldShowViewMore() ? (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                    {getTruncatedContent(article.content)}...{' '}
-                    <button
-                      onClick={handleViewMore}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline"
-                    >
-                      View More
-                    </button>
+                  <div 
+                    className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm overflow-hidden"
+                    style={{ 
+                      display: '-webkit-box', 
+                      WebkitLineClamp: MAX_LINES, 
+                      WebkitBoxOrient: 'vertical' as const,
+                      whiteSpace: 'pre-wrap'
+                    }}
+                  >
+                    {article.content?.trim()}
                   </div>
                 ) : (
                   <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-3">
                     {article.content?.trim() || 'No content available.'}
                   </div>
+                )}
+                {shouldShowViewMore() && (
+                  <button
+                    onClick={handleViewMore}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium underline mt-1"
+                  >
+                    View More
+                  </button>
                 )}
                 
                 {/* Source and Date in Black Highlighted Section */}
