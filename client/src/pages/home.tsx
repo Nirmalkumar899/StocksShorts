@@ -18,10 +18,15 @@ import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
 
+import { Download, Languages, Loader2 as Loader2Icon } from "@/lib/icons";
+
 function SpecialSection({ onBack }: { onBack: () => void }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
+  const [isTranslated, setIsTranslated] = useState(false);
+  const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   const { data: specialArticles = [], isLoading, error } = useQuery<Article[]>({
     queryKey: ['/api/special-articles'],
@@ -33,9 +38,76 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
     staleTime: 60 * 1000,
   });
 
-  const handleArticleClick = (article: Article) => {
-    // Modal is handled inside NewsCard - no navigation needed
+  const { data: cachedTranslations } = useQuery<{
+    translations: { [key: number]: { titleHi: string; contentHi: string } };
+  }>({
+    queryKey: ['/api/translations'],
+    staleTime: 30 * 1000,
+  });
+
+  const translateMutation = useMutation({
+    mutationFn: async (articles: Article[]) => {
+      const cached = cachedTranslations?.translations || {};
+      const translatedCount = articles.filter(a => cached[a.id]).length;
+      
+      if (translatedCount > 0) {
+        return articles.map(article => {
+          const translation = cached[article.id];
+          if (translation) {
+            return { ...article, title: translation.titleHi, content: translation.contentHi };
+          }
+          return article;
+        });
+      }
+      
+      const response = await fetch('/api/translate-articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ articles }),
+      });
+      if (!response.ok) throw new Error('Translation failed');
+      return response.json();
+    },
+    onSuccess: (data: Article[]) => {
+      const translatedMap: { [key: number]: Article } = {};
+      data.forEach(article => { translatedMap[article.id] = article; });
+      setTranslatedArticles(translatedMap);
+      setIsTranslated(true);
+      toast({ title: "हिंदी में देखें", description: "Articles translated to Hindi." });
+    },
+  });
+
+  const handleTranslate = () => {
+    if (isTranslated) {
+      setIsTranslated(false);
+      setTranslatedArticles({});
+      toast({ title: "English", description: "Showing original content." });
+    } else if (specialArticles.length > 0) {
+      translateMutation.mutate(specialArticles);
+    }
   };
+
+  const displayArticles = useMemo(() => {
+    if (!isTranslated) return specialArticles;
+    return specialArticles.map(article => translatedArticles[article.id] || article);
+  }, [specialArticles, isTranslated, translatedArticles]);
+
+  const getMobileInstructions = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    if (isIOS) {
+      return { title: "📱 Add to iPhone", steps: ["Tap Share (⬆️)", "Tap 'Add to Home Screen'"] };
+    }
+    return { title: "📱 Add to Android", steps: ["Tap menu (⋮)", "Tap 'Add to Home screen'"] };
+  };
+
+  const handleInstallClick = () => {
+    const instructions = getMobileInstructions();
+    alert(`${instructions.title}\n\n${instructions.steps.join('\n')}`);
+  };
+
+  const handleArticleClick = (article: Article) => {};
 
   const handleShare = (e: React.MouseEvent, article: Article) => {
     e.stopPropagation();
@@ -56,8 +128,45 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
   return (
     <>
       <div className="flex-shrink-0 bg-gradient-to-r from-yellow-400 to-orange-500 p-4">
-        <h1 className="text-xl font-bold text-white text-center">⭐ StocksShorts Special</h1>
-        <p className="text-white/80 text-center text-sm">Exclusive insights & analysis</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-white">⭐ StocksShorts Special</h1>
+            <p className="text-white/80 text-sm">Exclusive insights & analysis</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleTranslate}
+              disabled={translateMutation.isPending}
+              className={`rounded-full px-3 py-2 text-sm font-bold shadow-lg transition-all ${
+                isTranslated 
+                  ? 'bg-white/90 text-orange-600 hover:bg-white' 
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              }`}
+              data-testid="button-special-translate"
+            >
+              {translateMutation.isPending ? (
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Languages className="h-4 w-4 mr-1" />
+                  {isTranslated ? 'हिंदी' : 'EN'}
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleInstallClick}
+              className="bg-white/20 hover:bg-white/30 text-white rounded-full px-3 py-2 text-sm font-bold"
+              data-testid="button-special-save"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Save
+            </Button>
+          </div>
+        </div>
       </div>
       <div className="flex-1 overflow-hidden">
         {isLoading ? (
@@ -67,7 +176,7 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
               <p className="text-neutral-600 dark:text-neutral-400">Loading special articles...</p>
             </div>
           </div>
-        ) : !specialArticles || specialArticles.length === 0 ? (
+        ) : !displayArticles || displayArticles.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center px-4">
             <div className="text-6xl mb-4">⭐</div>
             <h3 className="text-lg font-semibold text-neutral-800 dark:text-white mb-2">No special articles yet</h3>
@@ -75,7 +184,7 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
           </div>
         ) : (
           <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
-            {specialArticles.map((article) => (
+            {displayArticles.map((article) => (
               <div key={article.id} className="min-h-[400px] h-full snap-start">
                 <NewsCard
                   article={article}
@@ -205,9 +314,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       });
       
       return processedData;
-      } catch (error) {
+      } catch (error: unknown) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('Request timed out. Please try again.');
         }
         throw error;
