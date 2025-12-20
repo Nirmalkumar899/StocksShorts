@@ -18,9 +18,10 @@ interface NewsCardProps {
   isExpanded?: boolean;
   onToggleExpanded?: () => void;
   onMarkAsRead?: (articleId: number) => void;
+  section?: 'allnews' | 'special' | string;
 }
 
-export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: NewsCardProps) {
+export default function NewsCard({ article, onClick, onShare, onMarkAsRead, section }: NewsCardProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -52,7 +53,8 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead }: Ne
     }
   };
 
-  const MAX_LINES = 6; // Content preview lines for All News section
+  // 6 lines for All News section, 10 lines for Special and other sections
+  const MAX_LINES = section === 'allnews' ? 6 : 10;
 
   const shouldShowViewMore = () => {
     // Don't show View More for Special articles if not authenticated

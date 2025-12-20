@@ -83,6 +83,7 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
                   onShare={(e) => handleShare(e, article)}
                   isExpanded={expandedArticles.has(article.id)}
                   onToggleExpanded={() => handleToggleExpanded(article.id)}
+                  section="special"
                 />
               </div>
             ))}
@@ -512,6 +513,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
                   isExpanded={expandedArticles.has(article.id)}
                   onToggleExpanded={() => handleToggleExpanded(article.id)}
                   onMarkAsRead={markAsRead}
+                  section="allnews"
                 />
               </div>
             ))}
