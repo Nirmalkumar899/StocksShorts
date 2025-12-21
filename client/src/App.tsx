@@ -62,7 +62,7 @@ function Router() {
 }
 
 function WhatsAppButton() {
-  const whatsappNumber = "971585649407";
+  const whatsappNumber = "917738621246";
   const message = "Hi! I have a query about StocksShorts.";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
   
