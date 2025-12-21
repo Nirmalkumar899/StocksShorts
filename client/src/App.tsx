@@ -13,6 +13,7 @@ import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
 import GmailConnect from "@/pages/GmailConnect";
 import SplashScreen from "@/components/splash-screen";
+import { SiWhatsapp } from "react-icons/si";
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -60,6 +61,25 @@ function Router() {
   );
 }
 
+function WhatsAppButton() {
+  const whatsappNumber = "971585649407";
+  const message = "Hi! I have a query about StocksShorts.";
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+  
+  return (
+    <a
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-20 right-4 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full p-3 shadow-lg shadow-green-500/30 transition-all hover:scale-110"
+      data-testid="button-whatsapp"
+      aria-label="Chat on WhatsApp"
+    >
+      <SiWhatsapp className="h-6 w-6" />
+    </a>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -67,6 +87,7 @@ function App() {
         <GoogleAnalytics />
         <Toaster />
         <Router />
+        <WhatsAppButton />
       </TooltipProvider>
     </QueryClientProvider>
   );
