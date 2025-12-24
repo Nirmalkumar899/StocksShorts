@@ -357,21 +357,23 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                     
                     {/* Right - Source Link and Social Icons */}
                     <div className="flex items-center gap-3">
-                      <button 
-                        type="button"
+                      <a 
+                        href={(article as any).sourceUrl || (article as any).primarySourceUrl || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
                         onClick={(e) => {
-                          e.preventDefault();
                           e.stopPropagation();
                           trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          const sourceUrl = (article as any).sourceUrl;
-                          if (sourceUrl) {
-                            window.open(sourceUrl, '_blank', 'noopener,noreferrer');
+                          const sourceUrl = (article as any).sourceUrl || (article as any).primarySourceUrl;
+                          if (!sourceUrl) {
+                            e.preventDefault();
                           }
                         }}
+                        data-testid="link-source-article"
                       >
                         {article.source}
-                      </button>
+                      </a>
                       
                       {/* Social Icons */}
                       <a
