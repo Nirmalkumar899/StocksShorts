@@ -54,7 +54,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
   };
 
   // 6 lines for All News section, 10 lines for Special and other sections
-  const MAX_LINES = section === 'allnews' ? 6 : 10;
+  const MAX_LINES = section === 'allnews' ? 6 : 5; // Reduced for special to fit on one page
 
   const shouldShowViewMore = () => {
     // Don't show View More for Special articles if not authenticated
@@ -103,7 +103,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
       }
     }
     
-    return truncatedContent || trimmed.substring(0, 300); // Fallback to character limit
+    return truncatedContent || trimmed.substring(0, 350); // Fallback to character limit
   };
 
   const handleViewMore = (e: React.MouseEvent) => {
@@ -305,7 +305,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
                   <div className="space-y-3 mb-4">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                      {article.content.substring(0, 150)}...
+                      {article.content.substring(0, 350)}...
                     </p>
                     <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-2.5 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
                       <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-1">
