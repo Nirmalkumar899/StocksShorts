@@ -1,5 +1,12 @@
-const CACHE_VERSION = 'v1.0.33';
+const CACHE_VERSION = 'v1.0.34';
 const CACHE_NAME = `stocksshorts-${CACHE_VERSION}`;
+
+// Force immediate activation
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
 
 const urlsToCache = [
   '/',

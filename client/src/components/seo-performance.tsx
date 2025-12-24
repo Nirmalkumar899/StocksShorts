@@ -17,10 +17,14 @@ export function SEOPerformanceOptimizer() {
     // Preload Inter font variants
     preloadFont('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2');
 
-    // Implement service worker for caching
+    // Implement service worker for caching with cache-busting
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('SW registered'))
+      navigator.serviceWorker.register('/sw.js?v=1.0.33')
+        .then((reg) => {
+          console.log('SW registered');
+          // Force update check
+          reg.update();
+        })
         .catch(() => console.log('SW registration failed'));
     }
 
