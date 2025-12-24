@@ -66,4 +66,6 @@ export {
   FolderOpen,
   LogOut,
   Languages,
+  Youtube,
+  Instagram,
 } from "./custom-icons";

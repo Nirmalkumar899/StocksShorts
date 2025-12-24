@@ -18,7 +18,7 @@ import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
 
-import { Download, Languages, Loader2 as Loader2Icon } from "@/lib/icons";
+import { Download, Languages, Loader2 as Loader2Icon, Youtube, Instagram } from "@/lib/icons";
 
 function SpecialSection({ onBack }: { onBack: () => void }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -666,6 +666,35 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       
       {/* Visitor Stats - Only show on home section */}
       {activeSection === 'home' && <VisitorStats />}
+      
+      {/* Social Links Footer Banner */}
+      {(activeSection === 'home' || activeSection === 'special') && (
+        <div className="flex-shrink-0 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Follow us:</span>
+            <a
+              href="https://www.youtube.com/@stocksshorts"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-full transition-colors"
+              data-testid="link-youtube-footer"
+            >
+              <Youtube className="w-3.5 h-3.5" />
+              <span>YouTube</span>
+            </a>
+            <a
+              href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs rounded-full transition-colors"
+              data-testid="link-instagram-footer"
+            >
+              <Instagram className="w-3.5 h-3.5" />
+              <span>Instagram</span>
+            </a>
+          </div>
+        </div>
+      )}
       
       {/* Fixed Bottom Navigation */}
       <div className="flex-shrink-0">

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { User, Phone, Plus, Check, BookmarkCheck, LogOut } from "@/lib/icons";
+import { User, Phone, Plus, Check, BookmarkCheck, LogOut, Youtube, Instagram } from "@/lib/icons";
 import MobileLogin from "./mobile-login";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -392,6 +392,37 @@ export default function Profile({ onBack }: ProfileProps) {
                   <p>• AI Stock Analysis (Beta Testing)</p>
                   <p>• Personalized investment insights</p>
                   <p>• Real-time market updates</p>
+                </div>
+
+                <Separator />
+
+                {/* Follow StocksShorts Section */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-center">
+                    Follow StocksShorts
+                  </h3>
+                  <div className="flex justify-center gap-4">
+                    <a
+                      href="https://www.youtube.com/@stocksshorts"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
+                      data-testid="link-youtube"
+                    >
+                      <Youtube className="w-5 h-5" />
+                      <span className="font-medium">YouTube</span>
+                    </a>
+                    <a
+                      href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white rounded-lg transition-colors shadow-md"
+                      data-testid="link-instagram"
+                    >
+                      <Instagram className="w-5 h-5" />
+                      <span className="font-medium">Instagram</span>
+                    </a>
+                  </div>
                 </div>
 
                 <Button 
