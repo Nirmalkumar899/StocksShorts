@@ -380,31 +380,33 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                   </div>
                 </div>
                 
-                {/* Social Links Row - Below black box */}
-                <div className="flex items-center justify-center gap-3 mt-3">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Follow us:</span>
-                  <a
-                    href="https://www.youtube.com/@stocksshorts"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-full transition-colors shadow-sm"
-                    data-testid="link-youtube-card"
-                  >
-                    <Youtube className="w-3 h-3" />
-                    <span>YouTube</span>
-                  </a>
-                  <a
-                    href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs rounded-full transition-colors shadow-sm"
-                    data-testid="link-instagram-card"
-                  >
-                    <Instagram className="w-3 h-3" />
-                    <span>Instagram</span>
-                  </a>
+                {/* Social Links Banner - Premium glassmorphism design */}
+                <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-blue-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 shadow-lg">
+                  <div className="flex items-center justify-center gap-4">
+                    <span className="text-xs text-gray-600 dark:text-gray-300 font-semibold tracking-wide">Follow StocksShorts</span>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href="https://www.youtube.com/@stocksshorts"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center justify-center w-10 h-10 bg-red-600 hover:bg-red-700 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110"
+                        data-testid="link-youtube-card"
+                      >
+                        <Youtube className="w-5 h-5" />
+                      </a>
+                      <a
+                        href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110"
+                        data-testid="link-instagram-card"
+                      >
+                        <Instagram className="w-5 h-5" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
