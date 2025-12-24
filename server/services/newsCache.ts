@@ -1,6 +1,10 @@
 import { Article } from '../../shared/schema';
 import { realNewsIngestor } from './realNewsIngestor';
 import { translationCache } from './translationCache';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const CACHE_FILE_PATH = path.join(process.cwd(), 'data', 'articles-cache.json');
 
 // Generate stable ID from article content (hash-based)
 function generateStableId(title: string, sourceUrl: string | null): number {
@@ -34,15 +38,78 @@ export class NewsCache {
   private refreshTimer?: NodeJS.Timeout;
 
   constructor() {
+    // INSTANT: Load cached articles from disk synchronously on startup
+    this.loadFromDisk();
+    
     // Start automatic refresh cycle
     this.startRefreshCycle();
-    // Generate initial articles immediately to avoid empty state
+    
+    // Refresh in background (don't block)
     this.initializeCache();
   }
 
-  private async initializeCache() {
+  private loadFromDisk() {
     try {
-      console.log('🚀 Initializing news cache...');
+      // Ensure data directory exists
+      const dataDir = path.dirname(CACHE_FILE_PATH);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
+      if (fs.existsSync(CACHE_FILE_PATH)) {
+        const data = fs.readFileSync(CACHE_FILE_PATH, 'utf-8');
+        const parsed = JSON.parse(data);
+        
+        if (parsed.articles && Array.isArray(parsed.articles) && parsed.articles.length > 0) {
+          // Convert date strings back to Date objects
+          this.cache.articles = parsed.articles.map((a: Article) => ({
+            ...a,
+            time: a.time ? new Date(a.time) : new Date(),
+            createdAt: a.createdAt ? new Date(a.createdAt) : new Date(),
+            primarySourcePublishedAt: a.primarySourcePublishedAt ? new Date(a.primarySourcePublishedAt) : null
+          }));
+          this.cache.lastRefresh = new Date(parsed.lastRefresh || Date.now());
+          console.log(`⚡ INSTANT: Loaded ${this.cache.articles.length} articles from disk cache`);
+          return;
+        }
+      }
+      console.log('📁 No disk cache found, will fetch fresh');
+    } catch (error) {
+      console.error('❌ Failed to load disk cache:', error);
+    }
+  }
+
+  private saveToDisk() {
+    try {
+      const dataDir = path.dirname(CACHE_FILE_PATH);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
+      const data = {
+        articles: this.cache.articles,
+        lastRefresh: this.cache.lastRefresh.toISOString()
+      };
+      
+      fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(data), 'utf-8');
+      console.log(`💾 Saved ${this.cache.articles.length} articles to disk cache`);
+    } catch (error) {
+      console.error('❌ Failed to save disk cache:', error);
+    }
+  }
+
+  private async initializeCache() {
+    // Skip if we already have articles from disk
+    if (this.cache.articles.length > 0) {
+      console.log('📊 Using disk cache, refreshing in background...');
+      // Still refresh in background to get latest
+      this.refreshArticles();
+      return;
+    }
+    
+    try {
+      console.log('🚀 Initializing news cache (no disk cache)...');
+      this.cache.isRefreshing = true;
       
       // Fetch real news from RSS feeds
       const realNews = await realNewsIngestor.ingestTodaysNews();
@@ -56,6 +123,9 @@ export class NewsCache {
         this.cache.isRefreshing = false;
         console.log(`✅ Cache initialized with ${realNews.length} real news articles`);
         
+        // Save to disk for next startup
+        this.saveToDisk();
+        
         this.triggerBackgroundTranslation();
       } else {
         console.log('⚠️ No real news found, cache remains empty');
@@ -64,11 +134,7 @@ export class NewsCache {
       
     } catch (error) {
       console.error('❌ Failed to initialize cache:', error);
-      // Use emergency fallback if real news ingestion fails
-      this.cache.articles = this.generateEmergencyFallback();
-      this.cache.lastRefresh = new Date();
       this.cache.isRefreshing = false;
-      console.log('🚨 Using emergency fallback articles');
     }
   }
 
@@ -178,6 +244,9 @@ export class NewsCache {
       console.log(`📊 Article categories: ${this.getCategoryCounts()}`);
       console.log(`🔍 Sample article dates: ${uniqueArticles.slice(0, 3).map(a => new Date(a.time || new Date()).toISOString()).join(', ')}`);
 
+      // Save to disk for instant loading on restart
+      this.saveToDisk();
+      
       this.triggerBackgroundTranslation();
     } catch (error) {
       console.error('❌ Error refreshing news:', error);
