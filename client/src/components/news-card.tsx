@@ -343,7 +343,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                   </button>
                 )}
                 
-                {/* Source and Date in Black Highlighted Section */}
+                {/* Source, Date and Social Links in Black Highlighted Section */}
                 <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
                   <div className="flex items-center justify-between text-sm">
                     {/* Left - Exact Date and Time */}
@@ -359,8 +359,8 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                       })}
                     </div>
                     
-                    {/* Right - Source Link - Opens original website in new window */}
-                    <div>
+                    {/* Right - Source Link and Social Icons */}
+                    <div className="flex items-center gap-3">
                       <button 
                         type="button"
                         className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
@@ -376,34 +376,27 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                       >
                         {article.source}
                       </button>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Social Links Banner - Premium glassmorphism design */}
-                <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-blue-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 shadow-lg">
-                  <div className="flex items-center justify-center gap-4">
-                    <span className="text-xs text-gray-600 dark:text-gray-300 font-semibold tracking-wide">Follow StocksShorts</span>
-                    <div className="flex items-center gap-3">
+                      
+                      {/* Social Icons */}
                       <a
                         href="https://www.youtube.com/@stocksshorts"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="flex items-center justify-center w-10 h-10 bg-red-600 hover:bg-red-700 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110"
+                        className="flex items-center justify-center w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded-full transition-all duration-200"
                         data-testid="link-youtube-card"
                       >
-                        <Youtube className="w-5 h-5" />
+                        <Youtube className="w-4 h-4" />
                       </a>
                       <a
                         href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-110"
+                        className="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 hover:from-purple-400 hover:via-pink-400 hover:to-orange-300 text-white rounded-full transition-all duration-200"
                         data-testid="link-instagram-card"
                       >
-                        <Instagram className="w-5 h-5" />
+                        <Instagram className="w-4 h-4" />
                       </a>
                     </div>
                   </div>
