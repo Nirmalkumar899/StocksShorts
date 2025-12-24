@@ -379,7 +379,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                       
                       {/* Social Icons */}
                       <a
-                        href="https://www.youtube.com/@stocksshorts"
+                        href="https://youtube.com/@stocksshortss?si=3-LCEG5WTMkdIlIA"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}

@@ -403,7 +403,7 @@ export default function Profile({ onBack }: ProfileProps) {
                   </h3>
                   <div className="flex justify-center gap-4">
                     <a
-                      href="https://www.youtube.com/@stocksshorts"
+                      href="https://youtube.com/@stocksshortss?si=3-LCEG5WTMkdIlIA"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
