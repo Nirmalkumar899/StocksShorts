@@ -291,13 +291,24 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
-                  <button
-                    onClick={handleShare}
-                    className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0"
-                    title="Share article"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={handleCopyLink}
+                      className="p-2 rounded-full bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                      title="Copy article link"
+                      data-testid="button-copy-link"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                      title="Share article"
+                      data-testid="button-share"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
                 
                 {/* Show only 150 characters with read more for Special articles */}

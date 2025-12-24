@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.30';
+const CACHE_VERSION = 'v1.0.31';
 const CACHE_NAME = `stocksshorts-${CACHE_VERSION}`;
 
 const urlsToCache = [
