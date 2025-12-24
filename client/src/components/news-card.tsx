@@ -336,7 +336,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                 )}
                 {/* Hint to read full article - Always visible */}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
-                  Click source link below to read full article
+                  {section === 'special' ? 'Click on the article to read full' : 'Click source link below to read full article'}
                 </p>
                 
                 {/* Source, Date and Social Links in Black Highlighted Section */}
@@ -357,7 +357,7 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                     
                     {/* Right - Source Link and Social Icons */}
                     <div className="flex items-center gap-3">
-                      {((article as any).sourceUrl || (article as any).primarySourceUrl) ? (
+                      {section !== 'special' && ((article as any).sourceUrl || (article as any).primarySourceUrl) && (
                         <a 
                           href={(article as any).sourceUrl || (article as any).primarySourceUrl}
                           target="_blank"
@@ -371,10 +371,6 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                         >
                           {article.source}
                         </a>
-                      ) : (
-                        <span className="text-white/80 font-medium">
-                          {article.source}
-                        </span>
                       )}
                       
                       {/* Social Icons */}
