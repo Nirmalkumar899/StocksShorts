@@ -357,23 +357,25 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                     
                     {/* Right - Source Link and Social Icons */}
                     <div className="flex items-center gap-3">
-                      <a 
-                        href={(article as any).sourceUrl || (article as any).primarySourceUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          const sourceUrl = (article as any).sourceUrl || (article as any).primarySourceUrl;
-                          if (!sourceUrl) {
-                            e.preventDefault();
-                          }
-                        }}
-                        data-testid="link-source-article"
-                      >
-                        {article.source}
-                      </a>
+                      {((article as any).sourceUrl || (article as any).primarySourceUrl) ? (
+                        <a 
+                          href={(article as any).sourceUrl || (article as any).primarySourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            trackEvent('article_source_click', 'engagement', article.type, article.id);
+                          }}
+                          data-testid="link-source-article"
+                        >
+                          {article.source}
+                        </a>
+                      ) : (
+                        <span className="text-white/80 font-medium">
+                          {article.source}
+                        </span>
+                      )}
                       
                       {/* Social Icons */}
                       <a
