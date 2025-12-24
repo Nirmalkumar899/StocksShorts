@@ -343,33 +343,6 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                   </button>
                 )}
                 
-                {/* Social Links Row - Always visible */}
-                <div className="flex items-center justify-center gap-3 mt-3 mb-2">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Follow us:</span>
-                  <a
-                    href="https://www.youtube.com/@stocksshorts"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-full transition-colors shadow-sm"
-                    data-testid="link-youtube-card"
-                  >
-                    <Youtube className="w-3 h-3" />
-                    <span>YouTube</span>
-                  </a>
-                  <a
-                    href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs rounded-full transition-colors shadow-sm"
-                    data-testid="link-instagram-card"
-                  >
-                    <Instagram className="w-3 h-3" />
-                    <span>Instagram</span>
-                  </a>
-                </div>
-                
                 {/* Source and Date in Black Highlighted Section */}
                 <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
                   <div className="flex items-center justify-between text-sm">
@@ -405,6 +378,33 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                       </button>
                     </div>
                   </div>
+                </div>
+                
+                {/* Social Links Row - Below black box */}
+                <div className="flex items-center justify-center gap-3 mt-3">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Follow us:</span>
+                  <a
+                    href="https://www.youtube.com/@stocksshorts"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-full transition-colors shadow-sm"
+                    data-testid="link-youtube-card"
+                  >
+                    <Youtube className="w-3 h-3" />
+                    <span>YouTube</span>
+                  </a>
+                  <a
+                    href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-xs rounded-full transition-colors shadow-sm"
+                    data-testid="link-instagram-card"
+                  >
+                    <Instagram className="w-3 h-3" />
+                    <span>Instagram</span>
+                  </a>
                 </div>
               </div>
             </div>
