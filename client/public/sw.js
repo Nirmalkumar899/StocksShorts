@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.0.39';
+const CACHE_VERSION = 'v1.0.40';
 const CACHE_NAME = `stocksshorts-${CACHE_VERSION}`;
 
 // Force immediate activation
