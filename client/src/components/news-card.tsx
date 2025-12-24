@@ -334,12 +334,10 @@ export default function NewsCard({ article, onClick, onShare, onMarkAsRead, sect
                     {article.content?.trim() || 'No content available.'}
                   </div>
                 )}
-                {/* Hint to read full article */}
-                {shouldShowViewMore() && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
-                    Click source link below to read full article
-                  </p>
-                )}
+                {/* Hint to read full article - Always visible */}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+                  Click source link below to read full article
+                </p>
                 
                 {/* Source, Date and Social Links in Black Highlighted Section */}
                 <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
