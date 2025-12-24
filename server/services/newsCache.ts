@@ -74,29 +74,46 @@ export class NewsCache {
 
   private generateEmergencyFallback(): Article[] {
     const now = new Date();
-    const fallbackTitle = "Indian Stock Markets Show Strong Performance Today";
-    const fallbackUrl = "https://economictimes.indiatimes.com/markets";
-    return [
+    const fallbacks = [
       {
-        id: generateStableId(fallbackTitle, fallbackUrl),
-        title: fallbackTitle,
-        content: "Indian equity markets displayed robust performance with both Nifty and Sensex posting gains. Banking and IT sectors led the rally supported by positive global cues.",
+        title: "Loading latest market news...",
+        content: "Fresh news articles are being fetched from financial sources. Real-time updates from BSE, NSE, Economic Times and other sources will appear shortly. Please wait a moment or swipe down to refresh.",
         type: "trending",
-        time: now,
-        source: "Market Update",
-        sentiment: "Positive",
+        source: "StocksShorts",
+        sentiment: "Neutral",
         priority: "High",
-        imageUrl: null,
-        sourceUrl: "https://economictimes.indiatimes.com/markets",
-        primarySourceUrl: "https://economictimes.indiatimes.com/markets",
-        primarySourceTitle: "Indian Stock Markets Show Strong Performance Today",
-        primarySourcePublishedAt: now,
-        sources: "Market Data",
-        contentType: "summary",
-        provenanceScore: 0.7,
-        createdAt: now
+        sourceUrl: "https://economictimes.indiatimes.com/markets"
+      },
+      {
+        title: "Market Update Coming Soon",
+        content: "We are fetching the latest stock market news, IPO updates, and trading insights for you. The page will automatically refresh with fresh content in a few seconds.",
+        type: "trending",
+        source: "StocksShorts",
+        sentiment: "Neutral",
+        priority: "Medium",
+        sourceUrl: "https://www.livemint.com/market"
       }
     ];
+
+    return fallbacks.map(fb => ({
+      id: generateStableId(fb.title, fb.sourceUrl),
+      title: fb.title,
+      content: fb.content,
+      type: fb.type,
+      time: now,
+      source: fb.source,
+      sentiment: fb.sentiment,
+      priority: fb.priority,
+      imageUrl: null,
+      sourceUrl: fb.sourceUrl,
+      primarySourceUrl: fb.sourceUrl,
+      primarySourceTitle: fb.title,
+      primarySourcePublishedAt: now,
+      sources: "StocksShorts",
+      contentType: "summary",
+      provenanceScore: 0.5,
+      createdAt: now
+    }));
   }
 
   private startRefreshCycle() {
@@ -224,23 +241,17 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty, wait for initialization to complete (with timeout)
+    // If cache is empty, return fallback immediately and trigger background initialization
     if (this.cache.articles.length === 0) {
-      console.log('📊 Cache empty, waiting for initialization...');
+      console.log('📊 Cache empty, returning fallback instantly');
       
-      // If not refreshing, start initialization
+      // Start background initialization if not already running
       if (!this.cache.isRefreshing) {
-        await this.initializeCache();
-      } else {
-        // Wait for ongoing refresh to complete (max 30 seconds)
-        let waitTime = 0;
-        while (this.cache.isRefreshing && waitTime < 30000) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          waitTime += 500;
-        }
+        this.initializeCache(); // Don't await - run in background
       }
       
-      console.log(`✅ Cache ready with ${this.cache.articles.length} articles`);
+      // Return emergency fallback immediately for instant page load
+      return this.generateEmergencyFallback();
     }
     
     // Check if we need to refresh (if cache is old)

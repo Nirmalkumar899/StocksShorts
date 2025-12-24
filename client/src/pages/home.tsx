@@ -343,7 +343,8 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       }
     },
     retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds for faster updates after fallback
+    refetchInterval: 10 * 1000, // Refetch every 10 seconds to get real news quickly
   });
 
   // Apply translations to articles and filter out read articles

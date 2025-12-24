@@ -19,7 +19,7 @@ export function SEOPerformanceOptimizer() {
 
     // Implement service worker for caching with cache-busting
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js?v=1.0.42')
+      navigator.serviceWorker.register('/sw.js?v=1.0.43')
         .then((reg) => {
           console.log('SW registered');
           // Force update check
