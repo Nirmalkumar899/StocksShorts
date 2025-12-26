@@ -136,9 +136,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
       
-      // Sort by priority (High > Medium > Low) then by time (most recent first)
+      // Sort by category type FIRST (research/breakout first), then priority, then time
+      const categoryPrecedence: Record<string, number> = {
+        'research-report': 5,    // Brokerage reports, analysis - HIGHEST
+        'breakout-stocks': 4,    // Chart breakout stocks
+        'fno-analysis': 3,       // F&O / technical analysis
+        'order-win': 2,          // Order wins
+        // All others default to 1
+      };
+      
       const sortedArticles = articles.sort((a, b) => {
-        // Priority ordering
+        // 1. Category type precedence (research/breakout first)
+        const categoryA = categoryPrecedence[a.type?.toLowerCase() || ''] || 1;
+        const categoryB = categoryPrecedence[b.type?.toLowerCase() || ''] || 1;
+        
+        if (categoryA !== categoryB) {
+          return categoryB - categoryA; // Higher precedence first
+        }
+        
+        // 2. Priority ordering (High > Medium > Low)
         const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
         const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
         const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
@@ -147,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return priorityB - priorityA; // Higher priority first
         }
         
-        // If same priority, sort by time (most recent first)
+        // 3. If same category and priority, sort by time (most recent first)
         const timeA = a.time ? new Date(a.time).getTime() : 0;
         const timeB = b.time ? new Date(b.time).getTime() : 0;
         return timeB - timeA;
