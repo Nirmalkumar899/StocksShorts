@@ -315,25 +315,9 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         return [];
       }
       
-      // Sort articles chronologically (latest first)
-      const processedData = data.sort((a: Article, b: Article) => {
-        // Parse timestamps, default to 12:01 AM (start of day) if missing
-        const getTimestamp = (article: Article) => {
-          if (!article.time) {
-            // Articles without timestamp are considered uploaded at 12:01 AM start of day
-            return new Date('2025-07-05T00:01:00Z').getTime();
-          }
-          return new Date(article.time).getTime();
-        };
-        
-        const aTime = getTimestamp(a);
-        const bTime = getTimestamp(b);
-        
-        // Sort by most recent first (descending order)
-        return bTime - aTime;
-      });
-      
-      return processedData;
+      // Keep backend sorting: research-report > breakout-stocks > fno-analysis > order-win > others
+      // Don't re-sort here - backend already sorted by category precedence
+      return data;
       } catch (error: unknown) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === 'AbortError') {
