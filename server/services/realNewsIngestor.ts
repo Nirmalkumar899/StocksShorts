@@ -328,41 +328,94 @@ export class RealNewsIngestor {
   private categorizeArticle(title: string, description: string): string {
     const text = (title + ' ' + description).toLowerCase();
     
-    // Priority categories for stock traders
-    // 1. Chart Breakout Stocks
-    if (text.includes('breakout') || text.includes('break out') || text.includes('resistance break') || 
-        text.includes('technical breakout') || text.includes('chart pattern') || text.includes('bullish breakout')) {
+    // Priority 1: TRUE Research Reports with Price Targets (brokerage reports)
+    // Must have explicit target price or buy/sell recommendation
+    const hasTargetPrice = /target\s*(price|of)?\s*₹?\s*\d+/i.test(text) || 
+                           /₹\s*\d+\s*target/i.test(text) ||
+                           text.includes('sets target') ||
+                           text.includes('target at ₹') ||
+                           text.includes('target rs') ||
+                           text.includes('price target') ||
+                           /target.*₹\s*\d+/i.test(text);
+    const hasBrokerageCall = text.includes('initiates coverage') || 
+                             text.includes('maintains buy') || 
+                             text.includes('maintains sell') ||
+                             text.includes('buy rating') || 
+                             text.includes('sell rating') ||
+                             text.includes('hold rating') ||
+                             text.includes('upgrades to') ||
+                             text.includes('downgrades to') ||
+                             text.includes('reiterate buy') ||
+                             text.includes('reiterate sell') ||
+                             /\d+%\s*upside/i.test(text) ||
+                             /\d+%\s*downside/i.test(text) ||
+                             text.includes('brokerage') ||
+                             text.includes('motilal oswal') ||
+                             text.includes('icici securities') ||
+                             text.includes('hdfc securities') ||
+                             text.includes('kotak') ||
+                             text.includes('jefferies') ||
+                             text.includes('morgan stanley') ||
+                             text.includes('goldman sachs') ||
+                             text.includes('citi') ||
+                             text.includes('ubs ') ||
+                             text.includes('clsa') ||
+                             text.includes('nomura') ||
+                             text.includes('jp morgan') ||
+                             text.includes('bofa') ||
+                             text.includes('nuvama');
+    
+    if (hasTargetPrice || hasBrokerageCall) {
+      return 'research-report';
+    }
+    
+    // Priority 2: TRUE Chart Breakout Stocks (technical analysis with chart patterns)
+    const hasBreakoutKeyword = text.includes('breakout') || text.includes('break out') || text.includes('breaks above');
+    const hasTechnicalTerm = text.includes('candlestick') || text.includes('rsi') || text.includes('macd') ||
+                             text.includes('chart pattern') || text.includes('cup and handle') ||
+                             text.includes('head and shoulder') || text.includes('double bottom') ||
+                             text.includes('double top') || text.includes('trendline') ||
+                             text.includes('moving average') || text.includes('52-week high') ||
+                             text.includes('52 week high') || text.includes('all-time high') ||
+                             text.includes('resistance level') || text.includes('support level') ||
+                             text.includes('volume surge') || text.includes('technical') ||
+                             text.includes('bullish pattern') || text.includes('bearish pattern');
+    
+    if (hasBreakoutKeyword && hasTechnicalTerm) {
       return 'breakout-stocks';
     }
     
-    // 2. Order Wins
+    // Priority 3: Order Wins (concrete order/contract wins with amounts)
     if (text.includes('order win') || text.includes('bags order') || text.includes('receives order') || 
-        text.includes('secures order') || text.includes('contract win') || text.includes('order book') ||
-        text.includes('new order') || text.includes('order worth') || text.includes('wins contract')) {
+        text.includes('secures order') || text.includes('contract win') ||
+        text.includes('order worth') || text.includes('wins contract') ||
+        /₹\s*\d+.*order/i.test(text) || /bags.*₹\s*\d+/i.test(text) ||
+        /order.*₹\s*\d+\s*(cr|crore|lakh)/i.test(text)) {
       return 'order-win';
     }
     
-    // 3. F&O Support, Resistance and Target
+    // Priority 4: F&O Analysis (derivatives/technical trading)
     if (text.includes('f&o') || text.includes('futures') || text.includes('options') || 
-        text.includes('support') || text.includes('resistance') || text.includes('target price') ||
         text.includes('stop loss') || text.includes('call option') || text.includes('put option') ||
-        text.includes('expiry') || text.includes('open interest') || text.includes('nifty target')) {
+        text.includes('expiry') || text.includes('open interest') || text.includes('nifty target') ||
+        text.includes('bank nifty') || text.includes('option chain')) {
       return 'fno-analysis';
     }
     
-    // 4. Upper/Lower Circuit
+    // Upper/Lower Circuit
     if (text.includes('upper circuit') || text.includes('lower circuit') || text.includes('circuit limit') ||
         text.includes('hit circuit') || text.includes('locked in circuit') || text.includes('circuit breaker')) {
       return 'circuit-stocks';
     }
     
-    // Other categories
-    if (text.includes('ipo') || text.includes('listing')) return 'ipo';
-    if (text.includes('earnings') || text.includes('results') || text.includes('quarterly')) return 'research-report';
-    if (text.includes('breaking') || text.includes('alert') || text.includes('urgent')) return 'trending';
-    if (text.includes('analysis') || text.includes('outlook') || text.includes('target')) return 'research-report';
-    if (text.includes('global') || text.includes('us market') || text.includes('wall street')) return 'us-market';
+    // IPO news
+    if (text.includes('ipo') || text.includes('listing') || text.includes('allotment')) return 'ipo';
     
+    // US/Global markets
+    if (text.includes('global') || text.includes('us market') || text.includes('wall street') ||
+        text.includes('nasdaq') || text.includes('dow jones') || text.includes('s&p 500')) return 'us-market';
+    
+    // Default to trending (includes results, earnings, general news)
     return 'trending';
   }
 
