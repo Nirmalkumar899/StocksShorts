@@ -329,7 +329,6 @@ export class RealNewsIngestor {
     const text = (title + ' ' + description).toLowerCase();
     
     // Priority 1: TRUE Research Reports with Price Targets (brokerage reports)
-    // Must have explicit target price or buy/sell recommendation
     const hasTargetPrice = /target\s*(price|of)?\s*₹?\s*\d+/i.test(text) || 
                            /₹\s*\d+\s*target/i.test(text) ||
                            text.includes('sets target') ||
@@ -363,24 +362,74 @@ export class RealNewsIngestor {
                              text.includes('nomura') ||
                              text.includes('jp morgan') ||
                              text.includes('bofa') ||
-                             text.includes('nuvama');
+                             text.includes('nuvama') ||
+                             text.includes('stocks to buy') ||
+                             text.includes('stock to buy') ||
+                             text.includes('top picks') ||
+                             text.includes('top pick') ||
+                             text.includes('analysts recommend') ||
+                             text.includes('analyst pick') ||
+                             text.includes('undervalued') ||
+                             text.includes('overvalued') ||
+                             text.includes('accumulate') ||
+                             text.includes('strong buy') ||
+                             text.includes('outperform') ||
+                             text.includes('underperform') ||
+                             text.includes('edelweiss') ||
+                             text.includes('axis securities') ||
+                             text.includes('sharekhan') ||
+                             text.includes('angel one') ||
+                             text.includes('geojit') ||
+                             text.includes('emkay') ||
+                             text.includes('prabhudas lilladher') ||
+                             text.includes('antique stock') ||
+                             text.includes('dolat capital') ||
+                             text.includes('religare') ||
+                             text.includes('sbi securities') ||
+                             text.includes('yes securities') ||
+                             text.includes('ventura') ||
+                             text.includes('investec') ||
+                             text.includes('bernstein') ||
+                             text.includes('deutsche bank') ||
+                             text.includes('credit suisse') ||
+                             text.includes('macquarie') ||
+                             text.includes('barclays');
     
     if (hasTargetPrice || hasBrokerageCall) {
       return 'research-report';
     }
     
-    // Priority 2: TRUE Chart Breakout Stocks (technical analysis with chart patterns)
-    const hasBreakoutKeyword = text.includes('breakout') || text.includes('break out') || text.includes('breaks above');
-    const hasTechnicalTerm = text.includes('candlestick') || text.includes('rsi') || text.includes('macd') ||
+    // Priority 2: Candlestick Chart Breakout/Breakdown Stocks (technical analysis)
+    const hasBreakoutKeyword = text.includes('breakout') || text.includes('break out') || 
+                               text.includes('breaks above') || text.includes('breakdown') ||
+                               text.includes('break down') || text.includes('breaks below');
+    const hasCandlestickPattern = text.includes('candlestick') || text.includes('candle pattern') ||
+                                  text.includes('doji') || text.includes('hammer') ||
+                                  text.includes('engulfing') || text.includes('morning star') ||
+                                  text.includes('evening star') || text.includes('shooting star') ||
+                                  text.includes('spinning top') || text.includes('marubozu') ||
+                                  text.includes('harami') || text.includes('piercing') ||
+                                  text.includes('dark cloud') || text.includes('three white soldiers') ||
+                                  text.includes('three black crows');
+    const hasTechnicalTerm = text.includes('rsi') || text.includes('macd') ||
                              text.includes('chart pattern') || text.includes('cup and handle') ||
                              text.includes('head and shoulder') || text.includes('double bottom') ||
                              text.includes('double top') || text.includes('trendline') ||
                              text.includes('moving average') || text.includes('52-week high') ||
                              text.includes('52 week high') || text.includes('all-time high') ||
                              text.includes('resistance level') || text.includes('support level') ||
-                             text.includes('volume surge') || text.includes('technical') ||
-                             text.includes('bullish pattern') || text.includes('bearish pattern');
+                             text.includes('volume surge') || text.includes('technical analysis') ||
+                             text.includes('bullish pattern') || text.includes('bearish pattern') ||
+                             text.includes('fibonacci') || text.includes('bollinger') ||
+                             text.includes('pivot point') || text.includes('flag pattern') ||
+                             text.includes('wedge pattern') || text.includes('triangle pattern') ||
+                             text.includes('ascending channel') || text.includes('descending channel');
     
+    // Candlestick patterns alone qualify for breakout-stocks
+    if (hasCandlestickPattern) {
+      return 'breakout-stocks';
+    }
+    // Breakout/breakdown with technical terms
     if (hasBreakoutKeyword && hasTechnicalTerm) {
       return 'breakout-stocks';
     }
