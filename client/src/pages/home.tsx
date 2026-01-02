@@ -181,6 +181,12 @@ function SpecialSection({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
+      {/* Disclaimer Banner */}
+      <div className="bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-3 py-2">
+        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center leading-tight">
+          None of the articles represent investment advice from StocksShorts. Kindly consult your financial advisor before making any investment decision.
+        </p>
+      </div>
       <div className="flex-1 overflow-hidden">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
@@ -570,7 +576,12 @@ export default function Home({ initialCategory }: HomeProps = {}) {
           isTranslated={isTranslated}
           isTranslating={translateMutation.isPending}
         />
-        {/* Category filter removed for clean Inshorts-style interface */}
+        {/* Disclaimer Banner */}
+        <div className="bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-3 py-2">
+          <p className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center leading-tight">
+            None of the articles represent investment advice from StocksShorts. Kindly consult your financial advisor before making any investment decision.
+          </p>
+        </div>
       </div>
 
       {/* Main Content Area */}
