@@ -256,7 +256,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   };
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/917021648038?text=Hi%20StocksShorts!%20I%20have%20a%20stock%20query.', '_blank');
+    window.open('https://wa.me/917738621246?text=Hi%20StocksShorts!%20I%20have%20a%20stock%20query.', '_blank');
     dismissWhatsAppNotification();
   };
   const { readArticleIds, markAsRead, clearReadHistory } = useReadArticles();
