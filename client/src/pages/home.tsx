@@ -228,13 +228,15 @@ interface HomeProps {
 
 export default function Home({ initialCategory }: HomeProps = {}) {
   const [location, setLocation] = useLocation();
-  // Initialize activeSection based on initialCategory prop or URL
+  // Initialize activeSection based on initialCategory prop or URL - default to 'special' for homepage
   const getInitialSection = () => {
     if (initialCategory === 'special') return 'special';
     if (typeof window !== 'undefined' && window.location.pathname === '/special') return 'special';
     if (typeof window !== 'undefined' && window.location.pathname === '/disclaimer') return 'disclaimer';
     if (typeof window !== 'undefined' && window.location.pathname === '/profile') return 'profile';
-    return 'home';
+    if (typeof window !== 'undefined' && window.location.pathname === '/all-news') return 'home';
+    // Default to special page for first-time visitors on root path
+    return 'special';
   };
   const [activeSection, setActiveSection] = useState(getInitialSection);
   const [isTranslated, setIsTranslated] = useState(false);
@@ -267,15 +269,15 @@ export default function Home({ initialCategory }: HomeProps = {}) {
 
   // Remove all category logic for clean Inshorts-style interface
 
-  // Set active section based on URL
+  // Set active section based on URL - default to special for root path
   useEffect(() => {
     if (location === '/disclaimer') {
       setActiveSection('disclaimer');
-    } else if (location === '/special') {
+    } else if (location === '/special' || location === '/') {
       setActiveSection('special');
     } else if (location === '/profile') {
       setActiveSection('profile');
-    } else {
+    } else if (location === '/all-news') {
       setActiveSection('home');
     }
   }, [location]);
