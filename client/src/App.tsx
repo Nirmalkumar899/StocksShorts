@@ -18,10 +18,10 @@ import { SiWhatsapp } from "react-icons/si";
 function Router() {
   const [location, setLocation] = useLocation();
   
-  // Redirect root to /home (All News) on first visit
+  // Redirect root to /special on first visit
   useEffect(() => {
     if (location === '/') {
-      setLocation('/home');
+      setLocation('/special');
     }
   }, []);
   
@@ -29,6 +29,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/home" component={Home} />
+      <Route path="/all-news" component={Home} />
       <Route path="/trending">
         {() => <Home initialCategory="trending" />}
       </Route>
