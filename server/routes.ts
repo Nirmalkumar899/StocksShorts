@@ -28,6 +28,11 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Redirect /home to / (Special page is now the default)
+  app.get('/home', (req, res) => {
+    res.redirect(301, '/');
+  });
+
   // Health check endpoint
   app.get('/health', (req, res) => {
     res.json({

@@ -277,8 +277,11 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       setActiveSection('special');
     } else if (location === '/profile') {
       setActiveSection('profile');
-    } else if (location === '/all-news') {
+    } else if (location === '/all-news' || location === '/home') {
       setActiveSection('home');
+    } else {
+      // Default to special for any unhandled routes
+      setActiveSection('special');
     }
   }, [location]);
 
