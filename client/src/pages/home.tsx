@@ -700,8 +700,11 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             <h1 className="text-3xl font-black text-white mb-4 leading-tight">
               Get Your Stock Queries Answered by a HUMAN!
             </h1>
-            <p className="text-xl text-white/90 mb-6 leading-relaxed font-medium">
+            <p className="text-xl text-white/90 mb-4 leading-relaxed font-medium">
               Not AI — a real human expert will help you <strong className="text-yellow-300">FREE of charge!</strong>
+            </p>
+            <p className="text-base text-white/90 mb-4 leading-relaxed">
+              From our expert with <strong className="text-yellow-300">10+ years of practical experience</strong> in investing and trading, generating healthy & wealthy returns.
             </p>
             <p className="text-lg text-white/80 mb-8">
               Yes, Human... Send us a text on WhatsApp and we're happy to help! 💬
