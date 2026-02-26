@@ -310,37 +310,42 @@ export class NewsCache {
   }
 
   public async getArticles(category?: string): Promise<Article[]> {
-    // If cache is empty, return fallback immediately and trigger background initialization
-    if (this.cache.articles.length === 0) {
-      console.log('📊 Cache empty, returning fallback instantly');
-      
-      // Start background initialization if not already running
-      if (!this.cache.isRefreshing) {
-        this.initializeCache(); // Don't await - run in background
-      }
-      
-      // Return emergency fallback immediately for instant page load
-      return this.generateEmergencyFallback();
-    }
-    
-    // Check if we need to refresh (if cache is old)
-    if (Date.now() - this.cache.lastRefresh.getTime() > this.REFRESH_INTERVAL * 2) {
-      // Start background refresh without blocking current request
-      this.refreshArticles();
-    }
-
     // Always filter articles to last 2 days + today (strict current date filtering)
     const now = new Date();
     const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.MAX_DAYS_OLD);
-    cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago from TODAY
+    cutoffDate.setHours(0, 0, 0, 0);
 
-    console.log(`🔍 Requested category: ${category}`);
-    console.log(`📊 Returning ${this.cache.articles.length} cached articles`);
-
-    let articles = this.cache.articles.filter(article => {
+    const getDateFilteredArticles = () => this.cache.articles.filter(article => {
       const articleDate = article.time ? new Date(article.time) : new Date();
       return articleDate >= cutoffDate;
     });
+
+    const freshArticles = getDateFilteredArticles();
+
+    // If no fresh articles after date filter (disk cache is old) OR cache is empty, refresh now and wait
+    if (freshArticles.length === 0) {
+      console.log('📊 No recent articles found, waiting for fresh fetch...');
+      if (!this.cache.isRefreshing) {
+        await this.refreshArticles();
+      } else {
+        // Already refreshing - wait up to 30 seconds for it to complete
+        let waited = 0;
+        while (this.cache.isRefreshing && waited < 30000) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          waited += 500;
+        }
+      }
+    } else if (Date.now() - this.cache.lastRefresh.getTime() > this.REFRESH_INTERVAL * 2) {
+      // Cache is stale but has articles - refresh in background
+      this.refreshArticles();
+    }
+
+    console.log(`🔍 Requested category: ${category}`);
+    console.log(`📊 Total cached articles: ${this.cache.articles.length}`);
+
+    let articles = getDateFilteredArticles();
+
+    console.log(`📊 After date filter: ${articles.length} articles`);
 
     // Filter by category if specified
     if (category && category !== 'all') {
@@ -348,6 +353,12 @@ export class NewsCache {
         article.type === category || 
         (category === 'trending' && ['trending', 'stocksshorts-special'].includes(article.type))
       );
+    }
+
+    // If still no articles, return fallback
+    if (articles.length === 0) {
+      console.log('⚠️ Still no articles after refresh, returning fallback');
+      return this.generateEmergencyFallback();
     }
 
     // Return latest 100 articles for display
