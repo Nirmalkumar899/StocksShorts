@@ -10,15 +10,15 @@
   "categories": ["finance", "news", "business"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='%231E40AF'><path d='M24 104h64V24H24v80zm0 64h64v-48H24v48zm80 0h64V88h-64v80zm40-144v32h24V24h-24z'/></svg>",
+      "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%231E40AF'><path d='M64 277.33h170.67V64H64v213.33zm0 170.67h170.67v-128H64v128zm213.33 0h170.67V234.67H277.33v213.33zm106.67-384v85.33H448V64h-64z'/></svg>",
+      "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

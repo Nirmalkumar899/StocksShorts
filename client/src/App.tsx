@@ -87,13 +87,28 @@ function WhatsAppButton() {
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem('splash_shown');
+  });
+
+  const handleSplashFinished = () => {
+    sessionStorage.setItem('splash_shown', 'true');
+    setShowSplash(false);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <GoogleAnalytics />
         <Toaster />
-        <Router />
-        <WhatsAppButton />
+        {showSplash ? (
+          <SplashScreen onFinished={handleSplashFinished} />
+        ) : (
+          <>
+            <Router />
+            <WhatsAppButton />
+          </>
+        )}
       </TooltipProvider>
     </QueryClientProvider>
   );
