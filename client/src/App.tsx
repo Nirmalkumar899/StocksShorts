@@ -13,6 +13,9 @@ import Profile from "@/pages/profile";
 import ArticlePage from "@/pages/article-new";
 import GmailConnect from "@/pages/GmailConnect";
 import SplashScreen from "@/components/splash-screen";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import Terms from "@/pages/terms";
+import About from "@/pages/about";
 import { SiWhatsapp } from "react-icons/si";
 
 function Router() {
@@ -56,6 +59,9 @@ function Router() {
       <Route path="/gmail-connect" component={GmailConnect} />
       <Route path="/disclaimer" component={Home} />
       <Route path="/article/:id" component={ArticlePage} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/about" component={About} />
       <Route component={NotFound} />
     </Switch>
   );
