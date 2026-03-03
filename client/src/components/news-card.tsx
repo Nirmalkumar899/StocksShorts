@@ -1,11 +1,9 @@
-// Build version: 2025-12-17-v12 - Source link opens original website in new window
-import React, { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { TrendingUp, TrendingDown, Minus, Copy, ExternalLink, Share2, Lock, Youtube, Instagram } from '@/lib/icons';
+import { useState } from 'react';
+import { Share2, Bookmark, Lock, Youtube, Instagram, Copy, ExternalLink } from '@/lib/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { getContextualImage } from '@/lib/imageUtils';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ImageLightbox from '@/components/image-lightbox';
 import { trackEvent } from '@/lib/analytics';
@@ -21,509 +19,252 @@ interface NewsCardProps {
   section?: 'allnews' | 'special' | string;
 }
 
-export default function NewsCard({ article, onClick, onShare, onMarkAsRead, section }: NewsCardProps) {
+export default function NewsCard({ article, onClick, onMarkAsRead, section }: NewsCardProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [saved, setSaved] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const formatTimeAgo = (date: Date): string => {
-    try {
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch (error) {
-      return 'unknown time';
-    }
+  const imgSrc = imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article));
+
+  const formatDate = (date: Date | string | null) => {
+    const d = new Date((date || new Date()) as string);
+    const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const day = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    return `${day} • ${time}`;
   };
 
-  const getSentimentIcon = () => {
-    // Icons removed as requested - returning empty for cleaner interface
-    return null;
-  };
-
-  const getSentimentBorderColor = () => {
-    switch (article.sentiment) {
-      case 'Positive':
-        return 'border-l-green-500';
-      case 'Negative':
-        return 'border-l-red-500';
-      default:
-        return 'border-l-gray-400';
-    }
-  };
-
-  // 6 lines for All News section, 10 lines for Special and other sections
-  const MAX_LINES = section === 'allnews' ? 6 : 5; // Reduced for special to fit on one page
-
-  const shouldShowViewMore = () => {
-    // Don't show View More for Special articles if not authenticated
+  const handleCardClick = () => {
     if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
-      return false;
-    }
-    if (!article.content) return false;
-    
-    // Count the number of lines by splitting on newlines and wrapping
-    const lines = article.content.trim().split('\n');
-    let totalLines = 0;
-    
-    lines.forEach(line => {
-      // Estimate lines based on character count (assuming ~50 characters per line on mobile)
-      const estimatedLinesForThisText = Math.ceil(line.length / 50) || 1;
-      totalLines += estimatedLinesForThisText;
-    });
-    
-    return totalLines > MAX_LINES;
-  };
-
-  const getTruncatedContent = (content: string) => {
-    if (!content || content.trim().length === 0) {
-      return 'No content available';
-    }
-    
-    const trimmed = content.trim();
-    const lines = trimmed.split('\n');
-    let totalLines = 0;
-    let truncatedContent = '';
-    
-    for (const line of lines) {
-      const estimatedLinesForThisText = Math.ceil(line.length / 50) || 1;
-      
-      if (totalLines + estimatedLinesForThisText <= MAX_LINES) {
-        truncatedContent += (truncatedContent ? '\n' : '') + line;
-        totalLines += estimatedLinesForThisText;
-      } else {
-        // Add partial line if we can fit some characters
-        const remainingLines = MAX_LINES - totalLines;
-        if (remainingLines > 0) {
-          const partialText = line.substring(0, remainingLines * 50);
-          truncatedContent += (truncatedContent ? '\n' : '') + partialText;
-        }
-        break;
-      }
-    }
-    
-    return truncatedContent || trimmed.substring(0, 350); // Fallback to character limit
-  };
-
-  const handleViewMore = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Check if this is a special article that requires authentication
-    if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
-      // Show login message instead of opening modal
-      toast({
-        title: "Login Required",
-        description: "Please go to Profile section to login and read the full article",
-        variant: "destructive",
-      });
+      toast({ title: "Login Required", description: "Go to Profile to login and read full article", variant: "destructive" });
       return;
     }
+    trackEvent('article_view', 'engagement', article.type, article.id);
     setIsModalOpen(true);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    trackEvent('article_share', 'engagement', article.type, article.id);
+    const shareUrl = `${window.location.origin}/article/${article.id}`;
+    const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;
+    if (navigator.share) {
+      try { await navigator.share({ title: article.title, text: shareText, url: shareUrl }); return; } catch {}
+    }
+    // Fallback
+    const dialog = document.createElement('div');
+    dialog.className = 'fixed inset-0 bg-black bg-opacity-60 flex items-end justify-center z-[999]';
+    dialog.innerHTML = `
+      <div class="bg-white dark:bg-gray-900 rounded-t-2xl p-5 w-full max-w-lg space-y-3 pb-8">
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Share via</p>
+        <button class="w-full bg-green-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+          onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}','_blank');document.body.removeChild(this.closest('.fixed'))">
+          WhatsApp
+        </button>
+        <button class="w-full bg-sky-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+          onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}','_blank');document.body.removeChild(this.closest('.fixed'))">
+          Twitter / X
+        </button>
+        <button class="w-full bg-blue-400 text-white px-4 py-2.5 rounded-xl text-sm font-medium"
+          onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}','_blank');document.body.removeChild(this.closest('.fixed'))">
+          Telegram
+        </button>
+        <button class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2.5 rounded-xl text-sm font-medium"
+          onclick="navigator.clipboard.writeText('${shareUrl}');document.body.removeChild(this.closest('.fixed'))">
+          Copy Link
+        </button>
+        <button class="w-full bg-gray-100 dark:bg-gray-800 text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium"
+          onclick="document.body.removeChild(this.closest('.fixed'))">
+          Cancel
+        </button>
+      </div>`;
+    dialog.addEventListener('click', (ev) => { if (ev.target === dialog) document.body.removeChild(dialog); });
+    document.body.appendChild(dialog);
+  };
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSaved(!saved);
+    toast({ title: saved ? "Removed from saved" : "Article saved!", description: saved ? "" : "Saved to your bookmarks." });
   };
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/article/${article.id}`;
     navigator.clipboard.writeText(url).then(() => {
-      // Track copy link event
       trackEvent('article_copy_link', 'engagement', article.type, article.id);
-      toast({
-        title: "Link copied!",
-        description: "Article link has been copied to your clipboard.",
-      });
+      toast({ title: "Link copied!", description: "Article link copied to clipboard." });
     });
-  };
-
-  const handleOpenArticle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Track article view event
-    trackEvent('article_view', 'engagement', article.type, article.id);
-    window.open(`/article/${article.id}`, '_blank');
-  };
-
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // Track share event
-    trackEvent('article_share', 'engagement', article.type, article.id);
-    
-    const shareUrl = `${window.location.origin}/article/${article.id}`;
-    const shareText = `${article.title}\n\n${article.content.substring(0, 200)}...`;
-    
-    // Try native sharing first (mobile)
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: article.title,
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      } catch (error) {
-        // Fall back to custom sharing if native sharing fails
-      }
-    }
-    
-    // Custom sharing options
-    const shareOptions = [
-      {
-        name: 'WhatsApp',
-        url: `https://wa.me/?text=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`,
-        color: 'bg-green-500 hover:bg-green-600'
-      },
-      {
-        name: 'Twitter',
-        url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
-        color: 'bg-blue-500 hover:bg-blue-600'
-      },
-      {
-        name: 'Telegram',
-        url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-        color: 'bg-blue-400 hover:bg-blue-500'
-      },
-      {
-        name: 'LinkedIn',
-        url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-        color: 'bg-blue-700 hover:bg-blue-800'
-      }
-    ];
-    
-    // Show share options in a temporary dialog
-    const shareDialog = document.createElement('div');
-    shareDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    shareDialog.innerHTML = `
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4">
-        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Share Article</h3>
-        <div class="space-y-2">
-          ${shareOptions.map(option => `
-            <button 
-              class="w-full ${option.color} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              onclick="window.open('${option.url}', '_blank'); document.body.removeChild(this.closest('.fixed'));"
-            >
-              Share on ${option.name}
-            </button>
-          `).join('')}
-          <button 
-            class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            onclick="navigator.clipboard.writeText('${shareUrl}'); document.body.removeChild(this.closest('.fixed'));"
-          >
-            Copy Link
-          </button>
-          <button 
-            class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            onclick="document.body.removeChild(this.closest('.fixed'));"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(shareDialog);
-    
-    // Close dialog when clicking outside
-    shareDialog.addEventListener('click', (event) => {
-      if (event.target === shareDialog) {
-        document.body.removeChild(shareDialog);
-      }
-    });
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
   };
 
   return (
     <>
-      <div 
-        className={`h-full w-full snap-start flex flex-col bg-white dark:bg-gray-900 relative overflow-hidden border-l-4 ${
-          getSentimentBorderColor()
-        } hover:shadow-lg transition-shadow duration-200`}
-        onClick={(e) => {
-          // Check if this is a special article that requires authentication
-          if (article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading) {
-            // Prevent navigation and show login message
-            e.preventDefault();
-            e.stopPropagation();
-            toast({
-              title: "Login Required",
-              description: "Please go to Profile section to login and read the full article",
-              variant: "destructive",
-            });
-            return;
-          }
-          // Open article in popup modal instead of navigating away
-          e.preventDefault();
-          e.stopPropagation();
-          trackEvent('article_view', 'engagement', article.type, article.id);
-          // Don't mark as read here - will mark when modal closes
-          setIsModalOpen(true);
-        }}
+      <div
+        className="h-full w-full snap-start flex flex-col bg-white dark:bg-black cursor-pointer"
+        onClick={handleCardClick}
       >
-        {/* Article Content Container - Inshorts Style */}
-        <div className="flex flex-col h-full">
+        {/* Image — full width */}
+        <div className="w-full flex-shrink-0" style={{ height: '52%' }}>
+          <img
+            src={imgSrc}
+            alt={article.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={() => setImageError(true)}
+            onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
+          />
+        </div>
 
-
-          {/* Image Section (Top - Full Width) */}
-          <div className="w-full h-64 relative bg-gray-100 dark:bg-gray-800">
-            <img
-              src={article.imageUrl || getContextualImage(article)}
-              alt={article.title}
-              className="w-full h-full object-cover object-center cursor-pointer"
-              onLoad={() => setImageLoaded(true)}
-              onError={(e) => {
-                // Only use fallback image if the provided image fails to load
-                if (!imageError) {
-                  setImageError(true);
-                  e.currentTarget.src = getContextualImage(article);
-                }
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsLightboxOpen(true);
-              }}
-            />
+        {/* Content area */}
+        <div className="flex-1 flex flex-col px-4 pt-3 pb-20 overflow-hidden">
+          {/* Bookmark + Share row aligned right */}
+          <div className="flex justify-end gap-4 mb-2">
+            <button
+              onClick={handleSave}
+              className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+              aria-label="Save article"
+              data-testid="button-save"
+            >
+              <Bookmark className={`h-5 w-5 ${saved ? 'fill-current text-black dark:text-white' : ''}`} />
+            </button>
+            <button
+              onClick={handleShare}
+              className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+              aria-label="Share article"
+              data-testid="button-share"
+            >
+              <Share2 className="h-5 w-5" />
+            </button>
           </div>
 
-          {/* Content Section (Bottom - Full Width) */}
-          <div className="flex-1 p-3 pb-16 flex flex-col justify-between">
-            <div className="h-full flex flex-col">
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-lg flex-1 line-clamp-2 pr-2">{article.title}</h3>
-                  <button
-                    onClick={handleShare}
-                    className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0"
-                    title="Share article"
-                    data-testid="button-share"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
-                </div>
-                
-                {/* Show only 150 characters with read more for Special articles */}
-                {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-                  <div className="space-y-3 mb-4">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                      {article.content.substring(0, 350)}...
-                    </p>
-                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-2.5 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
-                      <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-1">
-                        <Lock className="h-3 w-3" />
-                        <span className="text-xs font-bold">🔒 LOGIN REQUIRED</span>
-                      </div>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
-                        Go to Profile section to login and read full article
-                      </p>
-                    </div>
-                  </div>
-                ) : shouldShowViewMore() ? (
-                  <div 
-                    className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm overflow-hidden"
-                    style={{ 
-                      display: '-webkit-box', 
-                      WebkitLineClamp: MAX_LINES, 
-                      WebkitBoxOrient: 'vertical' as const,
-                      whiteSpace: 'pre-wrap'
-                    }}
-                  >
-                    {article.content?.trim()}
-                  </div>
-                ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm mb-3">
-                    {article.content?.trim() || 'No content available.'}
-                  </div>
+          {/* Title */}
+          <h2 className="font-bold text-[17px] leading-snug text-gray-900 dark:text-white mb-2 line-clamp-3">
+            {article.title}
+          </h2>
+
+          {/* Content */}
+          {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
+            <div>
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-4">
+                {article.content.substring(0, 200)}...
+              </p>
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                <Lock className="h-3 w-3" />
+                Login to read full article
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-5">
+              {article.content?.trim() || 'No content available.'}
+            </p>
+          )}
+
+          {/* Bottom bar — date + source + social */}
+          <div className="mt-auto pt-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                <span>{formatDate(article.time)}</span>
+                {((article as any).sourceUrl || (article as any).primarySourceUrl) && section !== 'special' && (
+                  <>
+                    <span>•</span>
+                    <a
+                      href={(article as any).sourceUrl || (article as any).primarySourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white font-medium underline underline-offset-2"
+                      onClick={(e) => { e.stopPropagation(); trackEvent('article_source_click', 'engagement', article.type, article.id); }}
+                      data-testid="link-source-article"
+                    >
+                      {article.source}
+                    </a>
+                  </>
                 )}
-                {/* Hint to read full article - Always visible */}
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
-                  {section === 'special' ? 'Click on the article to read full' : 'Click source link below to read full article'}
-                </p>
-                
-                {/* Source, Date and Social Links in Black Highlighted Section */}
-                <div className="bg-black dark:bg-black text-white p-3 rounded-lg mt-3">
-                  <div className="flex items-center justify-between text-sm">
-                    {/* Left - Exact Date and Time */}
-                    <div className="text-white/90">
-                      {new Date((article.time || new Date()) as string | Date).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })} • {new Date((article.time || new Date()) as string | Date).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </div>
-                    
-                    {/* Right - Source Link and Social Icons */}
-                    <div className="flex items-center gap-3">
-                      {section !== 'special' && ((article as any).sourceUrl || (article as any).primarySourceUrl) && (
-                        <a 
-                          href={(article as any).sourceUrl || (article as any).primarySourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-300 hover:text-blue-100 underline font-medium transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            trackEvent('article_source_click', 'engagement', article.type, article.id);
-                          }}
-                          data-testid="link-source-article"
-                        >
-                          {article.source}
-                        </a>
-                      )}
-                      
-                      {/* Social Icons */}
-                      <a
-                        href="https://youtube.com/@stocksshortss?si=3-LCEG5WTMkdIlIA"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center justify-center w-7 h-7 bg-red-600 hover:bg-red-500 text-white rounded-full transition-all duration-200"
-                        data-testid="link-youtube-card"
-                      >
-                        <Youtube className="w-4 h-4" />
-                      </a>
-                      <a
-                        href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center justify-center w-7 h-7 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 hover:from-purple-400 hover:via-pink-400 hover:to-orange-300 text-white rounded-full transition-all duration-200"
-                        data-testid="link-instagram-card"
-                      >
-                        <Instagram className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
+              </div>
+              {/* Social icons */}
+              <div className="flex items-center gap-2">
+                <a href="https://youtube.com/@stocksshortss?si=3-LCEG5WTMkdIlIA" target="_blank" rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-6 h-6 flex items-center justify-center bg-red-600 rounded-full text-white">
+                  <Youtube className="w-3 h-3" />
+                </a>
+                <a href="https://www.instagram.com/stocksshorts?igsh=MWZhdmhneXR1emxibg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-6 h-6 flex items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 rounded-full text-white">
+                  <Instagram className="w-3 h-3" />
+                </a>
               </div>
             </div>
           </div>
         </div>
-        
-
-
-        {/* Image Lightbox */}
-        <ImageLightbox
-          src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-          alt={article.title}
-          isOpen={isLightboxOpen}
-          onClose={() => setIsLightboxOpen(false)}
-        />
       </div>
 
-      {/* Full Article Modal - Enhanced for all screens */}
+      {/* Lightbox */}
+      <ImageLightbox src={imgSrc} alt={article.title} isOpen={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} />
+
+      {/* Full article modal */}
       <Dialog open={isModalOpen} onOpenChange={(open) => {
         setIsModalOpen(open);
-        // Mark article as read when modal closes
-        if (!open && onMarkAsRead) {
-          onMarkAsRead(article.id);
-        }
+        if (!open && onMarkAsRead) onMarkAsRead(article.id);
       }}>
-        <DialogContent className="modal-content w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0 pb-4">
-            <DialogTitle className="text-lg font-bold pr-8 line-clamp-2">
-              {article.title}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Full article content for {article.title}
-            </DialogDescription>
+        <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-3">
+            <DialogTitle className="text-base font-bold pr-8 line-clamp-3">{article.title}</DialogTitle>
+            <DialogDescription className="sr-only">Full article content</DialogDescription>
             <DialogClose asChild>
-              <Button variant="ghost" size="icon" className="absolute right-4 top-4 z-50">
-                <span className="sr-only">Close</span>
-                ×
-              </Button>
+              <Button variant="ghost" size="icon" className="absolute right-3 top-3 z-50 h-8 w-8">×</Button>
             </DialogClose>
           </DialogHeader>
-          
-          {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto modal-scroll">
-            <div className="space-y-6 pb-6">
-              {/* Article image in modal */}
-              <div className="w-full max-h-80 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-                <img
-                  src={imageError ? getContextualImage(article) : (article.imageUrl || getContextualImage(article))}
-                  alt={article.title}
-                  className="w-full h-auto object-contain transition-all duration-300"
-                  onError={(e) => {
-                    e.currentTarget.src = getContextualImage(article);
-                  }}
-                />
+
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-4 pb-4">
+              <div className="w-full max-h-60 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+                <img src={imgSrc} alt={article.title} className="w-full h-auto object-contain"
+                  onError={(e) => { e.currentTarget.src = getContextualImage(article); }} />
               </div>
-              
-              {/* Full article content */}
-              <div className="prose dark:prose-invert max-w-none">
+
+              <div className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
                 {article.type === 'StocksShorts Special' && !isAuthenticated && !authLoading ? (
-                  <div className="space-y-4">
-                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                      {article.content.substring(0, 150)}...
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 p-4 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-sm">
-                      <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200 mb-2">
-                        <Lock className="h-4 w-4" />
-                        <span className="text-sm font-bold">🔒 LOGIN REQUIRED TO READ FULL ARTICLE</span>
+                  <div>
+                    <p>{article.content.substring(0, 150)}...</p>
+                    <div className="mt-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 text-xs font-semibold mb-1">
+                        <Lock className="h-3 w-3" /> Login Required
                       </div>
-                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                        Please go to Profile section to login and read the complete article
-                      </p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">Go to Profile to login and read the full article</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-                    {article.content?.trim() || 'No content available.'}
-                  </div>
+                  article.content?.trim() || 'No content available.'
                 )}
               </div>
             </div>
           </div>
-          
-          {/* Fixed footer with actions */}
-          <div className="flex-shrink-0 pt-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            {/* Source and Date Row */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-400">
-                <span className="flex items-center space-x-1">
-                  {getSentimentIcon()}
-                  <span className="capitalize font-medium">{article.sentiment}</span>
-                </span>
-                <span>•</span>
-                <span className="font-medium">Source: {article.source}</span>
-                <span>•</span>
-                <span>Published: {formatTimeAgo((article.time || new Date('2025-07-05T00:01:00Z')) as Date)}</span>
-              </div>
+
+          <div className="flex-shrink-0 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mb-3">
+              <span>{formatDate(article.time)} • {article.source}</span>
+              <span className="capitalize">{article.sentiment}</span>
             </div>
-            
-            {/* Action Buttons Row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyLink}
-                  className="transition-all duration-200 hover:scale-105"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Link
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShare(e);
-                  }}
-                  className="transition-all duration-200 hover:scale-105"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCopyLink} className="text-xs">
+                <Copy className="h-3 w-3 mr-1.5" /> Copy Link
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleShare} className="text-xs">
+                <Share2 className="h-3 w-3 mr-1.5" /> Share
+              </Button>
+              {((article as any).sourceUrl || (article as any).primarySourceUrl) && (
+                <a href={(article as any).sourceUrl || (article as any).primarySourceUrl} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <ExternalLink className="h-3 w-3 mr-1.5" /> Source
+                  </Button>
+                </a>
+              )}
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
     </>
   );
 }

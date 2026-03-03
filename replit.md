@@ -25,7 +25,17 @@ Preferred communication style: Simple, everyday language.
 - AskQuery (Contact): Chat interface with instant messaging via email - type message and press Enter or click send
 - Profile: Gmail-only authentication with no additional forms or information required
 
-## Recent Changes (August 30, 2025)
+## Recent Changes (March 3, 2026)
+- **UI OVERHAUL**: Complete redesign to match Inshorts-style layout
+  - Header replaced with horizontal tab strip: "My Feed" | "⭐ Specials" — no logo icon
+  - Bottom navigation simplified to 3 icons: Search | Home | Profile
+  - News card redesigned: full-width image top, bookmark + share icons top-right of content, bold title, content, timestamp+source at bottom
+  - Search screen: tap magnifying glass, search any company/keyword from live article database
+  - Save App (install) button moved to header area, smaller
+- **Article Rewriting**: OpenAI GPT-4o-mini rewrites each article in StocksShorts' own words at ingestion time; falls back gracefully if API quota exceeded
+- **AI rewriting active**: Will activate automatically when OpenAI credits are topped up at platform.openai.com
+
+## Previous Changes (August 30, 2025)
 - **MAJOR UPDATE**: Completely replaced Google Sheets with AI-powered news generation using OpenAI GPT-4o
 - **Interface**: Removed ALL icons, category filters, and visual elements for ultra-clean text-only design like Inshorts
 - **Date Filtering**: Implemented strict 2-day article limit - only shows articles from today and last 2 days

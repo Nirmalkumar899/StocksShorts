@@ -1,5 +1,40 @@
 import { Article } from '@shared/schema';
 import axios from 'axios';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function rewriteArticle(title: string, content: string, source: string): Promise<{ title: string; content: string }> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a concise Indian financial news writer for StocksShorts, an Inshorts-style app. Rewrite news in your own unique words. Never copy the original wording. Keep all facts, numbers, company names, and percentages accurate. Write in simple English for retail investors.'
+        },
+        {
+          role: 'user',
+          content: `Source: ${source}\nOriginal headline: ${title}\nOriginal content: ${content}\n\nRewrite this as:\n1. A punchy SEO-friendly headline (max 90 characters, different from original)\n2. A concise 2-3 sentence summary (max 280 characters)\n\nRespond in JSON format: {"title": "...", "content": "..."}`
+        }
+      ],
+      max_tokens: 300,
+      temperature: 0.7,
+    });
+
+    const text = response.choices[0]?.message?.content || '';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed.title && parsed.content) {
+        return { title: parsed.title.substring(0, 90), content: parsed.content.substring(0, 500) };
+      }
+    }
+  } catch {
+    // Silently fall back to original — quota exceeded or other error
+  }
+  return { title, content };
+}
 
 // Generate stable ID from article content (hash-based)
 function generateStableId(title: string, sourceUrl: string | null): number {
@@ -190,6 +225,22 @@ export class RealNewsIngestor {
     const sortedArticles = uniqueArticles
       .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
       .slice(0, 50);
+
+    // Rewrite articles in batches of 3 to avoid rate limits
+    console.log(`✍️ Rewriting ${sortedArticles.length} articles with AI...`);
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < sortedArticles.length; i += BATCH_SIZE) {
+      const batch = sortedArticles.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map(async (article) => {
+        console.log(`✍️ Rewriting: ${article.title.substring(0, 60)}...`);
+        const rewritten = await rewriteArticle(article.title, article.content, article.source);
+        article.title = rewritten.title;
+        article.content = rewritten.content;
+      }));
+      if (i + BATCH_SIZE < sortedArticles.length) {
+        await this.delay(500);
+      }
+    }
 
     console.log(`✅ Ingested ${sortedArticles.length} unique articles from today`);
     return sortedArticles;

@@ -1,55 +1,64 @@
-import { Button } from "@/components/ui/button";
+import { Search, Home, User } from "@/lib/icons";
 import { useLocation } from "wouter";
 
 interface BottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onSearchClick?: () => void;
 }
 
-const navItems = [
-  { id: 'home', label: 'All News', icon: null, url: '/', highlight: false },
-  { id: 'special', label: 'Special', icon: null, url: '/special', highlight: true },
-  { id: 'profile', label: 'Profile', icon: null, url: '/profile', highlight: false },
-  { id: 'disclaimer', label: 'Disclaimer', icon: null, url: '/disclaimer', highlight: false },
-];
-// v7.3 - 4 tabs with highlighted Special section
-
-export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
+export default function BottomNavigation({ activeTab, onTabChange, onSearchClick }: BottomNavigationProps) {
   const [, setLocation] = useLocation();
 
-  const handleTabClick = (item: any) => {
-    onTabChange(item.id);
-    setLocation(item.url);
+  const handleHome = () => {
+    onTabChange('home');
+    setLocation('/');
   };
 
+  const handleProfile = () => {
+    onTabChange('profile');
+    setLocation('/profile');
+  };
+
+  const handleSearch = () => {
+    if (onSearchClick) onSearchClick();
+    else onTabChange('search');
+  };
+
+  const isActive = (tab: string) => activeTab === tab;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 z-[9999]">
-      <div className="flex items-center py-2">
-        {navItems.map((item) => {
-          const isActive = activeTab === item.id;
-          
-          const isSpecial = item.highlight;
-          
-          return (
-            <Button
-              key={item.id}
-              variant="ghost"
-              onClick={() => handleTabClick(item)}
-              data-testid={`nav-${item.id}`}
-              className={`flex flex-col items-center py-2 px-2 transition-colors min-w-0 flex-1 ${
-                isSpecial && !isActive
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg mx-1 animate-pulse shadow-lg'
-                  : isActive 
-                    ? 'text-primary' 
-                    : 'text-neutral-400 hover:text-primary dark:text-neutral-500 dark:hover:text-primary'
-              } ${isSpecial && isActive ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-lg mx-1 shadow-lg' : ''}`}
-            >
-              <span className={`text-[10px] font-medium text-center leading-tight ${isSpecial ? 'font-bold' : ''}`}>
-                {isSpecial ? '⭐ ' + item.label : item.label}
-              </span>
-            </Button>
-          );
-        })}
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-gray-200 dark:border-neutral-800 z-[9999]">
+      <div className="flex items-center justify-around py-3 px-6">
+        <button
+          onClick={handleSearch}
+          className={`flex flex-col items-center gap-1 transition-colors ${
+            isActive('search') ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500'
+          }`}
+          data-testid="nav-search"
+        >
+          <Search className="h-6 w-6" />
+        </button>
+
+        <button
+          onClick={handleHome}
+          className={`flex flex-col items-center gap-1 transition-colors ${
+            isActive('home') ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500'
+          }`}
+          data-testid="nav-home"
+        >
+          <Home className="h-6 w-6" />
+        </button>
+
+        <button
+          onClick={handleProfile}
+          className={`flex flex-col items-center gap-1 transition-colors ${
+            isActive('profile') ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500'
+          }`}
+          data-testid="nav-profile"
+        >
+          <User className="h-6 w-6" />
+        </button>
       </div>
     </nav>
   );

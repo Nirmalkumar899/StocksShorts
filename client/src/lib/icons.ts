@@ -68,4 +68,5 @@ export {
   Languages,
   Youtube,
   Instagram,
+  Bookmark,
 } from "./custom-icons";
