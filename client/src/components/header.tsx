@@ -1,5 +1,4 @@
-import { Download, Languages, Loader2 } from "@/lib/icons";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "@/lib/icons";
 
 interface HeaderProps {
   activeSection: string;
@@ -10,23 +9,6 @@ interface HeaderProps {
 }
 
 export default function Header({ activeSection, onSectionChange, onTranslate, isTranslated, isTranslating }: HeaderProps) {
-  const getMobileInstructions = () => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(userAgent);
-    const isAndroid = /android/.test(userAgent);
-    if (isIOS) {
-      return { title: "Add to iPhone Home Screen", steps: ["Tap Share (⬆️) in Safari", "Tap 'Add to Home Screen'", "Tap 'Add'"] };
-    } else if (isAndroid) {
-      return { title: "Add to Android Home Screen", steps: ["Tap menu (⋮) in Chrome", "Tap 'Add to Home screen'", "Tap 'Add'"] };
-    }
-    return { title: "Add to Home Screen", steps: ["Open on mobile for the best experience"] };
-  };
-
-  const handleInstallClick = () => {
-    const instructions = getMobileInstructions();
-    alert(`${instructions.title}\n\n${instructions.steps.join('\n')}`);
-  };
-
   const tabs = [
     { id: 'home', label: 'My Feed' },
     { id: 'special', label: '⭐ Specials' },
@@ -36,7 +18,7 @@ export default function Header({ activeSection, onSectionChange, onTranslate, is
     <>
       <header className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gray-100 dark:border-neutral-900">
         <div className="flex items-center justify-between px-4 pt-3 pb-0">
-          {/* Scrollable Tab Row */}
+          {/* Tab Row */}
           <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide flex-1">
             {tabs.map(tab => (
               <button
@@ -53,45 +35,35 @@ export default function Header({ activeSection, onSectionChange, onTranslate, is
             ))}
           </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-2 flex-shrink-0 pb-2">
-            {onTranslate && (
-              <>
-                <button
-                  onClick={() => isTranslated && onTranslate()}
-                  disabled={isTranslating || !isTranslated}
-                  className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${
-                    !isTranslated
-                      ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
-                      : 'bg-transparent text-gray-500 border-gray-300 dark:border-gray-600'
-                  }`}
-                  data-testid="button-language-english"
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => !isTranslated && onTranslate()}
-                  disabled={isTranslating || isTranslated}
-                  className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${
-                    isTranslated
-                      ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
-                      : 'bg-transparent text-gray-500 border-gray-300 dark:border-gray-600'
-                  }`}
-                  data-testid="button-language-hindi"
-                >
-                  हिं
-                </button>
-              </>
-            )}
-            <button
-              onClick={handleInstallClick}
-              className="text-xs font-bold px-3 py-1 rounded-full bg-green-500 text-white flex items-center gap-1"
-              data-testid="button-install-app"
-            >
-              <Download className="h-3 w-3" />
-              Save
-            </button>
-          </div>
+          {/* EN / हिं toggle — only when translate is available */}
+          {onTranslate && (
+            <div className="flex items-center gap-2 flex-shrink-0 pb-2">
+              <button
+                onClick={() => isTranslated && onTranslate()}
+                disabled={isTranslating || !isTranslated}
+                className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${
+                  !isTranslated
+                    ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
+                    : 'bg-transparent text-gray-500 border-gray-300 dark:border-gray-600'
+                }`}
+                data-testid="button-language-english"
+              >
+                EN
+              </button>
+              <button
+                onClick={() => !isTranslated && onTranslate()}
+                disabled={isTranslating || isTranslated}
+                className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${
+                  isTranslated
+                    ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
+                    : 'bg-transparent text-gray-500 border-gray-300 dark:border-gray-600'
+                }`}
+                data-testid="button-language-hindi"
+              >
+                हिं
+              </button>
+            </div>
+          )}
         </div>
 
         {isTranslating && (

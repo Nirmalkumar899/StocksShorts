@@ -15,12 +15,15 @@ import { useReadArticles } from '@/hooks/useReadArticles';
 import Contact from '@/pages/contact';
 import Profile from '@/pages/profile';
 import Disclaimer from '@/pages/disclaimer';
-import { Download } from "@/lib/icons";
 
-function SpecialSection() {
+interface SpecialSectionProps {
+  onTranslate: () => void;
+  isTranslated: boolean;
+  isTranslating: boolean;
+}
+
+function SpecialSection({ onTranslate, isTranslated, isTranslating }: SpecialSectionProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [expandedArticles, setExpandedArticles] = useState<Set<number>>(new Set());
-  const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
   const { toast } = useToast();
 
@@ -64,94 +67,53 @@ function SpecialSection() {
       const map: { [key: number]: Article } = {};
       data.forEach(a => { map[a.id] = a; });
       setTranslatedArticles(map);
-      setIsTranslated(true);
       toast({ title: "हिंदी में देखें", description: "Articles translated to Hindi." });
     },
   });
 
-  const handleTranslate = () => {
-    if (isTranslated) {
-      setIsTranslated(false);
+  useEffect(() => {
+    if (!isTranslated) {
       setTranslatedArticles({});
-      toast({ title: "English", description: "Showing original content." });
-    } else if (specialArticles.length > 0) {
+    } else if (specialArticles.length > 0 && Object.keys(translatedArticles).length === 0) {
       translateMutation.mutate(specialArticles);
     }
-  };
+  }, [isTranslated]);
 
   const displayArticles = useMemo(() => {
     if (!isTranslated) return specialArticles;
     return specialArticles.map(a => translatedArticles[a.id] || a);
   }, [specialArticles, isTranslated, translatedArticles]);
 
-  const getMobileInstructions = () => {
-    const ua = navigator.userAgent.toLowerCase();
-    if (/iphone|ipad|ipod/.test(ua)) return { title: "📱 Add to iPhone", steps: ["Tap Share (⬆️)", "Tap 'Add to Home Screen'"] };
-    return { title: "📱 Add to Android", steps: ["Tap menu (⋮)", "Tap 'Add to Home screen'"] };
-  };
-
   return (
-    <>
-      {/* Special section sub-header */}
-      <div className="flex-shrink-0 bg-white dark:bg-black border-b border-gray-100 dark:border-neutral-900 px-4 py-2 flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-800 dark:text-white">⭐ StocksShorts Specials</span>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => isTranslated && handleTranslate()}
-            disabled={translateMutation.isPending || !isTranslated}
-            className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${!isTranslated ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white' : 'bg-transparent text-gray-400 border-gray-300'}`}
-          >EN</button>
-          <button
-            onClick={() => !isTranslated && handleTranslate()}
-            disabled={translateMutation.isPending || isTranslated}
-            className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${isTranslated ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white' : 'bg-transparent text-gray-400 border-gray-300'}`}
-          >हिं</button>
-          <button
-            onClick={() => { const i = getMobileInstructions(); alert(`${i.title}\n\n${i.steps.join('\n')}`); }}
-            className="text-xs font-bold px-3 py-1 rounded-full bg-green-500 text-white flex items-center gap-1"
-          >
-            <Download className="h-3 w-3" /> Save
-          </button>
+    <div className="h-full overflow-hidden">
+      {isLoading ? (
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-orange-500" />
+            <p className="text-gray-500 text-sm">Loading specials...</p>
+          </div>
         </div>
-      </div>
-      {translateMutation.isPending && (
-        <div className="bg-yellow-400 text-black text-center py-1.5 text-xs font-medium flex items-center justify-center gap-2">
-          <Loader2 className="h-3 w-3 animate-spin" /> Translating...
+      ) : !displayArticles || displayArticles.length === 0 ? (
+        <div className="h-full flex flex-col items-center justify-center px-4">
+          <div className="text-5xl mb-3">⭐</div>
+          <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-1">No special articles yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Check back soon!</p>
+        </div>
+      ) : (
+        <div ref={scrollContainerRef} className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+          {displayArticles.map((article) => (
+            <div key={article.id} className="h-full w-full snap-start snap-always flex-shrink-0">
+              <NewsCard
+                article={article}
+                onClick={() => {}}
+                onShare={(e) => e.stopPropagation()}
+                section="special"
+              />
+            </div>
+          ))}
         </div>
       )}
-      <div className="bg-gray-50 dark:bg-neutral-950 px-3 py-1 border-b border-gray-100 dark:border-neutral-900">
-        <p className="text-[9px] text-gray-400 dark:text-neutral-600 text-center">Not investment advice. Consult your financial advisor before investing.</p>
-      </div>
-      <div className="flex-1 overflow-hidden">
-        {isLoading ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-orange-500" />
-              <p className="text-gray-500 text-sm">Loading specials...</p>
-            </div>
-          </div>
-        ) : !displayArticles || displayArticles.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center px-4">
-            <div className="text-5xl mb-3">⭐</div>
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-1">No special articles yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Check back soon!</p>
-          </div>
-        ) : (
-          <div ref={scrollContainerRef} className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide">
-            {displayArticles.map((article) => (
-              <div key={article.id} className="h-full snap-start">
-                <NewsCard
-                  article={article}
-                  onClick={() => {}}
-                  onShare={(e) => e.stopPropagation()}
-                  section="special"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+    </div>
   );
 }
 
@@ -248,6 +210,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   const [showSearch, setShowSearch] = useState(false);
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedArticles, setTranslatedArticles] = useState<{ [key: number]: Article }>({});
+  const [isSpecialTranslated, setIsSpecialTranslated] = useState(false);
   const [showWhatsAppNotification, setShowWhatsAppNotification] = useState(() => {
     if (typeof window !== 'undefined') return !sessionStorage.getItem('whatsapp_notification_seen');
     return false;
@@ -400,16 +363,21 @@ export default function Home({ initialCategory }: HomeProps = {}) {
       case 'disclaimer':
         return <Disclaimer onBack={() => setActiveSection('home')} />;
       case 'special':
-        return <SpecialSection />;
+        return (
+          <SpecialSection
+            onTranslate={() => setIsSpecialTranslated(v => !v)}
+            isTranslated={isSpecialTranslated}
+            isTranslating={false}
+          />
+        );
       default:
         return renderHomeContent();
     }
   };
 
   const renderHomeContent = () => (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-hidden">
-        {isLoading ? (
+    <div className="h-full overflow-hidden">
+      {isLoading ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
@@ -428,10 +396,10 @@ export default function Home({ initialCategory }: HomeProps = {}) {
         ) : (
           <div
             ref={scrollContainerRef}
-            className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
+            className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
           >
             {articles.map((article) => (
-              <div key={article.id} className="h-full snap-start">
+              <div key={article.id} className="h-full w-full snap-start snap-always flex-shrink-0">
                 <NewsCard
                   article={article}
                   onClick={() => {}}
@@ -443,7 +411,6 @@ export default function Home({ initialCategory }: HomeProps = {}) {
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 
@@ -455,8 +422,12 @@ export default function Home({ initialCategory }: HomeProps = {}) {
           <Header
             activeSection={activeSection}
             onSectionChange={handleSectionChange}
-            onTranslate={activeSection === 'home' ? handleTranslate : undefined}
-            isTranslated={isTranslated}
+            onTranslate={
+              activeSection === 'home' ? handleTranslate :
+              activeSection === 'special' ? () => setIsSpecialTranslated(v => !v) :
+              undefined
+            }
+            isTranslated={activeSection === 'special' ? isSpecialTranslated : isTranslated}
             isTranslating={translateMutation.isPending}
           />
         </div>
