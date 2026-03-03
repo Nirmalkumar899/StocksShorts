@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockShorts - Indian Stock Market News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#1E40AF',
+                        'success': '#059669',
+                        'danger': '#DC2626',
+                        'neutral-50': '#F8FAFC',
+                        'neutral-600': '#475569',
+                        'neutral-800': '#1E293B',
+                        'neutral-900': '#0F172A',
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.2s ease-out',
+                        'pulse-soft': 'pulseSoft 2s infinite',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        pulseSoft: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' },
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-neutral-50 font-inter">
+    <!-- @COMPONENT: Header -->
+    <header class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-neutral-800">StockShorts</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:refreshFeed">
+                        <i class="fas fa-sync-alt text-neutral-600"></i>
+                    </button>
+                    <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors" data-event="click:toggleTheme">
+                        <i class="fas fa-moon text-neutral-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: CategoryFilter -->
+    <div class="bg-white border-b border-gray-100 px-4 py-3">
+        <div class="flex space-x-2 overflow-x-auto scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <button class="flex-shrink-0 px-4 py-2 bg-primary text-white rounded-full text-sm font-medium transition-all" data-category="all">
+                <i class="fas fa-globe mr-2"></i>All
+            </button>
+            <button class="flex-shrink-0 px-4 py-2 bg-gray-100 text-neutral-600 rounded-full text-sm font-medium hover:bg-gray-200 transition-all" data-category="nifty">
+                <i class="fas fa-chart-bar mr-2"></i>Nifty
+            </button>
+            <button class="flex-shrink-0 px-4 py-2 bg-gray-100 text-neutral-600 rounded-full text-sm font-medium hover:bg-gray-200 transition-all" data-category="sensex">
+                <i class="fas fa-trending-up mr-2"></i>Sensex
+            </button>
+            <button class="flex-shrink-0 px-4 py-2 bg-gray-100 text-neutral-600 rounded-full text-sm font-medium hover:bg-gray-200 transition-all" data-category="ipos">
+                <i class="fas fa-rocket mr-2"></i>IPOs
+            </button>
+            <button class="flex-shrink-0 px-4 py-2 bg-gray-100 text-neutral-600 rounded-full text-sm font-medium hover:bg-gray-200 transition-all" data-category="mutual-funds">
+                <i class="fas fa-piggy-bank mr-2"></i>Mutual Funds
+            </button>
+            <button class="flex-shrink-0 px-4 py-2 bg-gray-100 text-neutral-600 rounded-full text-sm font-medium hover:bg-gray-200 transition-all" data-category="crypto">
+                <i class="fab fa-bitcoin mr-2"></i>Crypto
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CategoryFilter -->
+
+    <!-- @COMPONENT: NewsCardContainer -->
+    <main class="pb-20" id="newsContainer">
+        <!-- Loading State -->
+        <div id="loadingState" class="px-4 py-6 space-y-4">
+            <div class="animate-pulse">
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-6 h-6 bg-gray-200 rounded"></div>
+                        <div class="h-4 bg-gray-200 rounded w-20"></div>
+                        <div class="h-3 bg-gray-200 rounded w-16 ml-auto"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="h-5 bg-gray-200 rounded w-full"></div>
+                        <div class="h-5 bg-gray-200 rounded w-4/5"></div>
+                    </div>
+                    <div class="space-y-2 mt-3">
+                        <div class="h-4 bg-gray-200 rounded w-full"></div>
+                        <div class="h-4 bg-gray-200 rounded w-full"></div>
+                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    </div>
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="h-3 bg-gray-200 rounded w-24"></div>
+                        <div class="h-3 bg-gray-200 rounded w-20"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Cards -->
+        <div id="newsCards" class="hidden space-y-1">
+            <!-- @MAP: articles.map(article => ( -->
+            
+            <!-- News Card 1 - Positive Sentiment -->
+            <article class="bg-white shadow-sm border-l-4 border-l-success hover:shadow-md transition-all duration-200 cursor-pointer" data-mock="true" data-bind="article.id" data-event="click:openArticleDetails">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-line text-success text-xs"></i>
+                            </div>
+                            <span class="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full" data-bind="article.type">NIFTY</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-success font-medium" data-bind="article.sentiment">Positive</span>
+                            <span class="text-xs text-neutral-400" data-bind="article.priority">High</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-lg font-semibold text-neutral-800 leading-tight mb-3" data-bind="article.title">
+                        Nifty 50 hits new all-time high as banking stocks surge on strong Q3 earnings expectations
+                    </h2>
+                    
+                    <p class="text-neutral-600 text-sm leading-relaxed line-clamp-4" data-bind="article.content">
+                        Indian benchmark indices reached record highs today with Nifty 50 crossing 21,800 marks. Banking heavyweights HDFC Bank, ICICI Bank led the rally amid optimism over Q3 earnings. FII inflows continued for the third consecutive week, boosting market sentiment across sectors.
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-neutral-500" data-bind="article.timeAgo">2 hours ago</span>
+                            <span class="text-xs text-neutral-400">•</span>
+                            <span class="text-xs text-neutral-500 font-medium" data-bind="article.source">Economic Times</span>
+                        </div>
+                        <button class="text-neutral-400 hover:text-neutral-600 transition-colors" data-event="click:shareArticle">
+                            <i class="fas fa-share text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- News Card 2 - Negative Sentiment -->
+            <article class="bg-white shadow-sm border-l-4 border-l-danger hover:shadow-md transition-all duration-200 cursor-pointer" data-mock="true" data-bind="article.id" data-event="click:openArticleDetails">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-danger/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-line-down text-danger text-xs"></i>
+                            </div>
+                            <span class="text-xs font-medium text-danger bg-danger/10 px-2 py-1 rounded-full" data-bind="article.type">MARKET</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-danger font-medium" data-bind="article.sentiment">Negative</span>
+                            <span class="text-xs text-neutral-400" data-bind="article.priority">Medium</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-lg font-semibold text-neutral-800 leading-tight mb-3" data-bind="article.title">
+                        IT stocks under pressure as TCS guidance disappoints, rupee weakness adds to concerns
+                    </h2>
+                    
+                    <p class="text-neutral-600 text-sm leading-relaxed line-clamp-4" data-bind="article.content">
+                        Technology stocks declined sharply after TCS issued cautious guidance for FY24. The sector faced additional headwinds from rupee depreciation and delayed client spending decisions. Infosys, Wipro, and HCL Tech all ended in red territory.
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-neutral-500" data-bind="article.timeAgo">4 hours ago</span>
+                            <span class="text-xs text-neutral-400">•</span>
+                            <span class="text-xs text-neutral-500 font-medium" data-bind="article.source">Business Standard</span>
+                        </div>
+                        <button class="text-neutral-400 hover:text-neutral-600 transition-colors" data-event="click:shareArticle">
+                            <i class="fas fa-share text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- News Card 3 - Neutral Sentiment -->
+            <article class="bg-white shadow-sm border-l-4 border-l-primary hover:shadow-md transition-all duration-200 cursor-pointer" data-mock="true" data-bind="article.id" data-event="click:openArticleDetails">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-rocket text-primary text-xs"></i>
+                            </div>
+                            <span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full" data-bind="article.type">IPO</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-neutral-600 font-medium" data-bind="article.sentiment">Neutral</span>
+                            <span class="text-xs text-neutral-400" data-bind="article.priority">High</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-lg font-semibold text-neutral-800 leading-tight mb-3" data-bind="article.title">
+                        Tata Technologies IPO subscribed 69 times on final day, retail investors show strong interest
+                    </h2>
+                    
+                    <p class="text-neutral-600 text-sm leading-relaxed line-clamp-4" data-bind="article.content">
+                        The public issue of Tata Technologies was subscribed 69.43 times with retail portion booked 25.89 times. QIBs subscribed 73.16 times while HNIs booked 157.01 times. The company plans to list shares on BSE and NSE next week.
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-neutral-500" data-bind="article.timeAgo">6 hours ago</span>
+                            <span class="text-xs text-neutral-400">•</span>
+                            <span class="text-xs text-neutral-500 font-medium" data-bind="article.source">Moneycontrol</span>
+                        </div>
+                        <button class="text-neutral-400 hover:text-neutral-600 transition-colors" data-event="click:shareArticle">
+                            <i class="fas fa-share text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- News Card 4 - With Image Background -->
+            <article class="relative bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden" data-mock="true" data-bind="article.id" data-event="click:openArticleDetails">
+                <!-- Indian stock market trading floor with busy traders -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10"></div>
+                <div class="relative h-48 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400');">
+                    <div class="absolute bottom-0 left-0 right-0 p-4 z-20">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-medium text-white bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full" data-bind="article.type">MARKET</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-success font-medium" data-bind="article.sentiment">Positive</span>
+                            </div>
+                        </div>
+                        
+                        <h2 class="text-lg font-semibold text-white leading-tight mb-2" data-bind="article.title">
+                            Indian markets outperform global peers, FII inflows reach $2.5 billion in November
+                        </h2>
+                        
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-white/80" data-bind="article.timeAgo">8 hours ago</span>
+                            <span class="text-xs text-white/60">•</span>
+                            <span class="text-xs text-white/80 font-medium" data-bind="article.source">Reuters</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- News Card 5 - Crypto Related -->
+            <article class="bg-white shadow-sm border-l-4 border-l-orange-500 hover:shadow-md transition-all duration-200 cursor-pointer" data-mock="true" data-bind="article.id" data-event="click:openArticleDetails">
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fab fa-bitcoin text-orange-500 text-xs"></i>
+                            </div>
+                            <span class="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full" data-bind="article.type">CRYPTO</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-success font-medium" data-bind="article.sentiment">Positive</span>
+                            <span class="text-xs text-neutral-400" data-bind="article.priority">Medium</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-lg font-semibold text-neutral-800 leading-tight mb-3" data-bind="article.title">
+                        WazirX parent company announces crypto tax clarity, Indian investors show renewed interest
+                    </h2>
+                    
+                    <p class="text-neutral-600 text-sm leading-relaxed line-clamp-4" data-bind="article.content">
+                        Following government clarification on cryptocurrency taxation, Indian crypto exchanges report 40% increase in trading volumes. WazirX, CoinDCX lead the recovery as retail investors return to digital asset investments amid regulatory certainty.
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-neutral-500" data-bind="article.timeAgo">12 hours ago</span>
+                            <span class="text-xs text-neutral-400">•</span>
+                            <span class="text-xs text-neutral-500 font-medium" data-bind="article.source">CoinDesk India</span>
+                        </div>
+                        <button class="text-neutral-400 hover:text-neutral-600 transition-colors" data-event="click:shareArticle">
+                            <i class="fas fa-share text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- @END_MAP )) -->
+        </div>
+
+        <!-- Load More Button -->
+        <div class="px-4 py-6">
+            <button class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-neutral-600 rounded-xl font-medium transition-colors" data-event="click:loadMoreArticles">
+                Load More Articles
+            </button>
+        </div>
+    </main>
+    <!-- @END_COMPONENT: NewsCardContainer -->
+
+    <!-- @COMPONENT: FloatingActionButton -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button class="w-14 h-14 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center" data-event="click:scrollToTop">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+    <!-- @END_COMPONENT: FloatingActionButton -->
+
+    <!-- @COMPONENT: BottomNavigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+        <div class="flex items-center justify-around py-2">
+            <button class="flex flex-col items-center py-2 px-4 text-primary" data-event="click:navigateHome">
+                <i class="fas fa-home text-lg mb-1"></i>
+                <span class="text-xs font-medium">Home</span>
+            </button>
+            <button class="flex flex-col items-center py-2 px-4 text-neutral-400 hover:text-primary transition-colors" data-event="click:navigateBookmarks">
+                <i class="fas fa-bookmark text-lg mb-1"></i>
+                <span class="text-xs font-medium">Saved</span>
+            </button>
+            <button class="flex flex-col items-center py-2 px-4 text-neutral-400 hover:text-primary transition-colors" data-event="click:navigateSearch">
+                <i class="fas fa-search text-lg mb-1"></i>
+                <span class="text-xs font-medium">Search</span>
+            </button>
+            <button class="flex flex-col items-center py-2 px-4 text-neutral-400 hover:text-primary transition-colors" data-event="click:navigateProfile">
+                <i class="fas fa-user text-lg mb-1"></i>
+                <span class="text-xs font-medium">Profile</span>
+            </button>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: BottomNavigation -->
+
+    <!-- @COMPONENT: Toast Notification -->
+    <div id="toast" class="fixed top-20 left-4 right-4 z-50 transform -translate-y-full opacity-0 transition-all duration-300">
+        <div class="bg-success text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3">
+            <i class="fas fa-check-circle"></i>
+            <span class="font-medium">Articles refreshed successfully!</span>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Toast -->
+
+    <script>
+        (function() {
+            // TODO: Implement Google Sheets API integration
+            // TODO: Implement real-time data fetching
+            // TODO: Implement article sentiment analysis
+            // TODO: Implement user authentication
+            // TODO: Implement bookmark functionality
+            // TODO: Implement push notifications
+            
+            // @STATE: articles:Array = []
+            // @STATE: loading:boolean = true
+            // @STATE: selectedCategory:string = 'all'
+            // @STATE: darkMode:boolean = false
+
+            // Simulate loading completion
+            setTimeout(() => {
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('newsCards').classList.remove('hidden');
+            }, 2000);
+
+            // Category filter functionality
+            const categoryButtons = document.querySelectorAll('[data-category]');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    categoryButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-gray-100', 'text-neutral-600');
+                    });
+                    
+                    // Add active class to clicked button
+                    this.classList.remove('bg-gray-100', 'text-neutral-600');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // TODO: Filter articles based on category
+                    console.log('Filtering by category:', this.dataset.category);
+                });
+            });
+
+            // Scroll to top functionality
+            document.querySelector('[data-event="click:scrollToTop"]').addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Refresh feed functionality
+            document.querySelector('[data-event="click:refreshFeed"]').addEventListener('click', function() {
+                // Show toast notification
+                const toast = document.getElementById('toast');
+                toast.classList.remove('-translate-y-full', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                
+                setTimeout(() => {
+                    toast.classList.add('-translate-y-full', 'opacity-0');
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                }, 3000);
+                
+                // TODO: Fetch latest articles from Google Sheets
+                console.log('Refreshing feed...');
+            });
+
+            // Article card click handlers
+            document.querySelectorAll('[data-event="click:openArticleDetails"]').forEach(card => {
+                card.addEventListener('click', function() {
+                    // TODO: Open article detail modal or navigate to detail page
+                    console.log('Opening article details for:', this.dataset.bind);
+                });
+            });
+
+            // Share functionality
+            document.querySelectorAll('[data-event="click:shareArticle"]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // TODO: Implement native share API
+                    console.log('Sharing article...');
+                });
+            });
+
+            // Load more articles
+            document.querySelector('[data-event="click:loadMoreArticles"]').addEventListener('click', function() {
+                // TODO: Implement pagination for Google Sheets data
+                console.log('Loading more articles...');
+            });
+
+            // Navigation handlers
+            document.querySelectorAll('[data-event^="click:navigate"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    // TODO: Implement navigation between different sections
+                    console.log('Navigating to:', this.dataset.event.split(':')[1]);
+                });
+            });
+
+            // Pull to refresh (for mobile)
+            let startY = 0;
+            let pullDistance = 0;
+            const pullThreshold = 100;
+
+            document.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchmove', function(e) {
+                if (window.scrollY === 0) {
+                    pullDistance = e.touches[0].clientY - startY;
+                    if (pullDistance > 0) {
+                        e.preventDefault();
+                        // TODO: Show pull to refresh indicator
+                    }
+                }
+            });
+
+            document.addEventListener('touchend', function(e) {
+                if (pullDistance > pullThreshold) {
+                    // TODO: Trigger refresh
+                    console.log('Pull to refresh triggered');
+                }
+                pullDistance = 0;
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    document.querySelector('[data-event="click:refreshFeed"]').click();
+                }
+            });
+            
+        })();
+    </script>
+</body>
+</html>

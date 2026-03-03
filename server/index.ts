@@ -1,13 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupProductionStatic } from "./static-server";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
 
 // Force development mode for Replit preview
 if (!process.env.NODE_ENV) {
@@ -30,10 +29,10 @@ if (isProduction) {
   // Set shorter timeouts for production deployment
   process.env.DB_TIMEOUT = '3000';
   process.env.REQUEST_TIMEOUT = '10000';
-  
+
   // Deployment memory optimizations
   process.env.NODE_OPTIONS = '--max-old-space-size=512';
-  
+
   // Disable unnecessary features for deployment
   process.env.VITE_DEV_TOOLS = 'false';
 }
@@ -110,65 +109,65 @@ app.use((req, res, next) => {
     console.log('Starting server initialization...');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('PORT:', process.env.PORT);
-    
+
     const server = await registerRoutes(app);
     console.log('Routes registered successfully');
 
-  // Add a health check route for external domains
-  app.get('/health', (req: Request, res: Response) => {
-    res.json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
-      port: process.env.PORT || 5000
-    });
-  });
-
-  // Add a catch-all route for debugging
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`🔍 Request: ${req.method} ${req.path} from ${req.headers.host}`);
-    next();
-  });
-
-  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    console.error('🚨 DETAILED SERVER ERROR:', {
-      errorName: err.name,
-      errorMessage: err.message,
-      errorCode: err.code,
-      errorStack: err.stack,
-      requestUrl: req.url,
-      requestMethod: req.method,
-      requestHost: req.headers.host,
-      userAgent: req.headers['user-agent'],
-      timestamp: new Date().toISOString(),
-      nodeEnv: process.env.NODE_ENV,
-      replitDeployment: process.env.REPLIT_DEPLOYMENT,
-      replitCluster: process.env.REPLIT_CLUSTER
-    });
-    
-    if (!res.headersSent) {
-      res.status(status).json({ 
-        message,
+    // Add a health check route for external domains
+    app.get('/health', (req: Request, res: Response) => {
+      res.json({
+        status: 'ok',
         timestamp: new Date().toISOString(),
-        path: req.path,
         environment: process.env.NODE_ENV,
-        error: err.message,
-        details: status === 500 ? 'Check server logs for details' : 'Request failed'
+        port: process.env.PORT || 5000
       });
-    }
-  });
+    });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
-  } else {
-    setupProductionStatic(app);
-  }
+    // Add a catch-all route for debugging
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      console.log(`🔍 Request: ${req.method} ${req.path} from ${req.headers.host}`);
+      next();
+    });
+
+    app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      console.error('🚨 DETAILED SERVER ERROR:', {
+        errorName: err.name,
+        errorMessage: err.message,
+        errorCode: err.code,
+        errorStack: err.stack,
+        requestUrl: req.url,
+        requestMethod: req.method,
+        requestHost: req.headers.host,
+        userAgent: req.headers['user-agent'],
+        timestamp: new Date().toISOString(),
+        nodeEnv: process.env.NODE_ENV,
+        replitDeployment: process.env.REPLIT_DEPLOYMENT,
+        replitCluster: process.env.REPLIT_CLUSTER
+      });
+
+      if (!res.headersSent) {
+        res.status(status).json({
+          message,
+          timestamp: new Date().toISOString(),
+          path: req.path,
+          environment: process.env.NODE_ENV,
+          error: err.message,
+          details: status === 500 ? 'Check server logs for details' : 'Request failed'
+        });
+      }
+    });
+
+    // importantly only setup vite in development and after
+    // setting up all the other routes so the catch-all route
+    // doesn't interfere with the other routes
+    if (process.env.NODE_ENV === "development") {
+      await setupVite(app, server);
+    } else {
+      setupProductionStatic(app);
+    }
 
     // Use environment port for Replit deployment, fallback to 5000 for local development
     const port = parseInt(process.env.PORT || '5000', 10);

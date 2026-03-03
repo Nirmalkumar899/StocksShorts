@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockShorts - Indian Stock Market News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'financial-blue': '#1E40AF',
+                        'market-green': '#059669',
+                        'alert-red': '#DC2626',
+                        'sentiment-positive': '#10B981',
+                        'sentiment-negative': '#EF4444',
+                        'sentiment-neutral': '#6B7280'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-financial-blue rounded-full flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">StockShorts</h1>
+                </div>
+                <button class="p-2 text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-bell text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Navigation -->
+    <nav class="bg-white border-b border-gray-200 sticky top-16 z-40">
+        <div class="max-w-md mx-auto px-4 py-3">
+            <div class="flex space-x-4 overflow-x-auto scrollbar-hide">
+                <button data-category="all" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-financial-blue text-white text-sm font-medium whitespace-nowrap">
+                    <i class="fas fa-home"></i>
+                    <span>All</span>
+                </button>
+                <button data-category="market" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Market</span>
+                </button>
+                <button data-category="stocks" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fas fa-building"></i>
+                    <span>Stocks</span>
+                </button>
+                <button data-category="mutual-funds" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Mutual Funds</span>
+                </button>
+                <button data-category="commodities" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fas fa-coins"></i>
+                    <span>Commodities</span>
+                </button>
+                <button data-category="crypto" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fab fa-bitcoin"></i>
+                    <span>Crypto</span>
+                </button>
+                <button data-category="ipos" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fas fa-rocket"></i>
+                    <span>IPOs</span>
+                </button>
+                <button data-category="policy" class="category-btn flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap hover:bg-gray-200">
+                    <i class="fas fa-gavel"></i>
+                    <span>Policy</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-md mx-auto bg-white min-h-screen">
+        <!-- Loading State -->
+        <div id="loading-state" class="hidden p-6">
+            <div class="animate-pulse space-y-4">
+                <div class="h-48 bg-gray-200 rounded-lg"></div>
+                <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+        </div>
+
+        <!-- News Cards Container -->
+        <div id="news-container" class="divide-y divide-gray-100">
+            
+            <!-- @COMPONENT: NewsCard [article data] -->
+            <!-- Sample Article Card 1 -->
+            <article class="news-card p-6 cursor-pointer hover:bg-gray-50 transition-colors" data-mock="true">
+                <div class="space-y-4">
+                    <!-- A busy Indian stock exchange trading floor with multiple screens displaying market data -->
+                    <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" alt="Indian stock market trading floor" class="w-full h-48 object-cover rounded-lg" />
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold text-gray-900 leading-tight" data-bind="article.title">
+                                Sensex Surges 450 Points as Banking Stocks Rally
+                            </h2>
+                        </div>
+                        <div class="ml-3 flex items-center space-x-1">
+                            <div class="w-3 h-3 bg-sentiment-positive rounded-full" title="Positive Sentiment"></div>
+                            <span class="text-xs text-gray-500 font-medium">HIGH</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-base leading-relaxed" data-bind="article.content">
+                        Indian benchmark indices ended higher today with Sensex gaining 450 points driven by strong buying in banking and IT stocks. HDFC Bank, ICICI Bank, and TCS were among top gainers. Market experts attribute the rally to positive global cues and strong Q3 earnings expectations from major companies.
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span data-bind="article.timeAgo">2 hours ago</span>
+                            <span data-bind="article.source" class="font-medium">Economic Times</span>
+                        </div>
+                        <button class="p-1 hover:text-gray-700">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+            <!-- @END_COMPONENT: NewsCard -->
+
+            <!-- Sample Article Card 2 -->
+            <article class="news-card p-6 cursor-pointer hover:bg-gray-50 transition-colors" data-mock="true">
+                <div class="space-y-4">
+                    <!-- Financial charts and graphs displayed on multiple computer monitors in a modern office -->
+                    <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" alt="Financial analysis charts on computer screens" class="w-full h-48 object-cover rounded-lg" />
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold text-gray-900 leading-tight">
+                                RBI Maintains Repo Rate at 6.5% in Policy Review
+                            </h2>
+                        </div>
+                        <div class="ml-3 flex items-center space-x-1">
+                            <div class="w-3 h-3 bg-sentiment-neutral rounded-full" title="Neutral Sentiment"></div>
+                            <span class="text-xs text-gray-500 font-medium">MED</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-base leading-relaxed">
+                        Reserve Bank of India keeps the benchmark repo rate unchanged at 6.5% in its latest monetary policy committee meeting. The central bank maintains a cautious stance on inflation while supporting economic growth. Banking stocks show mixed reactions to the announcement.
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span>4 hours ago</span>
+                            <span class="font-medium">Business Standard</span>
+                        </div>
+                        <button class="p-1 hover:text-gray-700">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Sample Article Card 3 -->
+            <article class="news-card p-6 cursor-pointer hover:bg-gray-50 transition-colors" data-mock="true">
+                <div class="space-y-4">
+                    <!-- Modern office building representing corporate headquarters with glass facade -->
+                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" alt="Modern corporate office building" class="w-full h-48 object-cover rounded-lg" />
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold text-gray-900 leading-tight">
+                                Reliance Industries Reports 12% Jump in Q3 Profits
+                            </h2>
+                        </div>
+                        <div class="ml-3 flex items-center space-x-1">
+                            <div class="w-3 h-3 bg-sentiment-positive rounded-full" title="Positive Sentiment"></div>
+                            <span class="text-xs text-gray-500 font-medium">HIGH</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-base leading-relaxed">
+                        Reliance Industries posted strong Q3 results with net profit rising 12% YoY to ₹18,540 crores. The conglomerate's retail and digital businesses showed robust growth while petrochemicals segment recovered. Stock surged 3% in after-hours trading on the positive results.
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span>6 hours ago</span>
+                            <span class="font-medium">Mint</span>
+                        </div>
+                        <button class="p-1 hover:text-gray-700">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Sample Article Card 4 -->
+            <article class="news-card p-6 cursor-pointer hover:bg-gray-50 transition-colors" data-mock="true">
+                <div class="space-y-4">
+                    <!-- Digital cryptocurrency and blockchain concept with glowing bitcoin symbols -->
+                    <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" alt="Digital cryptocurrency blockchain concept" class="w-full h-48 object-cover rounded-lg" />
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold text-gray-900 leading-tight">
+                                Bitcoin Crosses $45K; Indian Crypto Platforms See Volume Surge
+                            </h2>
+                        </div>
+                        <div class="ml-3 flex items-center space-x-1">
+                            <div class="w-3 h-3 bg-sentiment-positive rounded-full" title="Positive Sentiment"></div>
+                            <span class="text-xs text-gray-500 font-medium">MED</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-base leading-relaxed">
+                        Bitcoin breaks the $45,000 resistance level amid institutional buying and ETF optimism. Indian crypto exchanges WazirX and CoinDCX report 40% increase in trading volumes. Regulatory clarity expectations boost investor confidence in the domestic crypto market segment.
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span>8 hours ago</span>
+                            <span class="font-medium">MoneyControl</span>
+                        </div>
+                        <button class="p-1 hover:text-gray-700">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Sample Article Card 5 -->
+            <article class="news-card p-6 cursor-pointer hover:bg-gray-50 transition-colors" data-mock="true">
+                <div class="space-y-4">
+                    <!-- Industrial manufacturing facility with smokestacks and machinery -->
+                    <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" alt="Industrial manufacturing facility" class="w-full h-48 object-cover rounded-lg" />
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold text-gray-900 leading-tight">
+                                Tata Steel Announces ₹8,000 Cr Expansion Plan for Odisha Plant
+                            </h2>
+                        </div>
+                        <div class="ml-3 flex items-center space-x-1">
+                            <div class="w-3 h-3 bg-sentiment-positive rounded-full" title="Positive Sentiment"></div>
+                            <span class="text-xs text-gray-500 font-medium">HIGH</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-base leading-relaxed">
+                        Tata Steel unveils massive ₹8,000 crore expansion plan for its Kalinganagar plant in Odisha. The investment will boost production capacity by 2 million tonnes annually. Steel sector analysts view this as positive for long-term growth amid infrastructure demand uptick.
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span>10 hours ago</span>
+                            <span class="font-medium">Financial Express</span>
+                        </div>
+                        <button class="p-1 hover:text-gray-700">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Sample Article Card 6 -->
+            <article class="news-card p-6 cursor-pointer hover:bg-gray-50 transition-colors" data-mock="true">
+                <div class="space-y-4">
+                    <!-- Mobile phone showing financial app interface with stock charts -->
+                    <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400" alt="Mobile financial app with stock charts" class="w-full h-48 object-cover rounded-lg" />
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-semibold text-gray-900 leading-tight">
+                                Foreign Investors Pull Out ₹12,400 Cr from Indian Markets
+                            </h2>
+                        </div>
+                        <div class="ml-3 flex items-center space-x-1">
+                            <div class="w-3 h-3 bg-sentiment-negative rounded-full" title="Negative Sentiment"></div>
+                            <span class="text-xs text-gray-500 font-medium">HIGH</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-base leading-relaxed">
+                        Foreign portfolio investors continued their selling spree, withdrawing ₹12,400 crores from Indian equity markets this month. Rising US bond yields and global uncertainty drive the outflows. Domestic institutional investors provide support with net buying of ₹8,200 crores.
+                    </p>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span>12 hours ago</span>
+                            <span class="font-medium">BloombergQuint</span>
+                        </div>
+                        <button class="p-1 hover:text-gray-700">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Load More Button -->
+            <div class="p-6 text-center border-t border-gray-100">
+                <button id="load-more-btn" class="w-full py-3 px-6 bg-financial-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Load More Stories
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation (Optional) -->
+    <nav class="max-w-md mx-auto bg-white border-t border-gray-200 sticky bottom-0">
+        <div class="grid grid-cols-4 py-2">
+            <button class="flex flex-col items-center py-2 text-financial-blue">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs mt-1">Home</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-bookmark text-lg"></i>
+                <span class="text-xs mt-1">Saved</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="text-xs mt-1">Markets</span>
+            </button>
+            <button class="flex flex-col items-center py-2 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-user text-lg"></i>
+                <span class="text-xs mt-1">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        (function() {
+            // Category filtering functionality
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            const newsCards = document.querySelectorAll('.news-card');
+            
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active state from all buttons
+                    categoryButtons.forEach(btn => {
+                        btn.classList.remove('bg-financial-blue', 'text-white');
+                        btn.classList.add('bg-gray-100', 'text-gray-700');
+                    });
+                    
+                    // Add active state to clicked button
+                    this.classList.remove('bg-gray-100', 'text-gray-700');
+                    this.classList.add('bg-financial-blue', 'text-white');
+                    
+                    const category = this.getAttribute('data-category');
+                    // TODO: Implement filtering logic based on category
+                    console.log('Filter by category:', category);
+                });
+            });
+
+            // Card click handlers
+            newsCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // TODO: Implement article detail view or external link
+                    console.log('Article clicked');
+                });
+            });
+
+            // Load more functionality
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            loadMoreBtn.addEventListener('click', function() {
+                // TODO: Implement pagination/infinite scroll
+                // TODO: Fetch more articles from Google Sheets
+                console.log('Load more articles');
+                
+                // Show loading state
+                this.textContent = 'Loading...';
+                this.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    this.textContent = 'Load More Stories';
+                    this.disabled = false;
+                }, 2000);
+            });
+
+            // Touch/swipe gestures for mobile
+            let startY, endY;
+            document.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchend', function(e) {
+                endY = e.changedTouches[0].clientY;
+                const deltaY = startY - endY;
+                
+                // Pull to refresh gesture
+                if (deltaY < -100 && window.scrollY === 0) {
+                    // TODO: Implement pull to refresh
+                    console.log('Pull to refresh triggered');
+                }
+            });
+
+            // Google Sheets integration placeholder
+            async function fetchArticlesFromGoogleSheets() {
+                // TODO: Implement Google Sheets API integration
+                // const SHEET_ID = 'your-sheet-id';
+                // const API_KEY = 'your-api-key';
+                // const range = 'Sheet1!A:H'; // ID, Title, Content, Type, Time, Source, Sentiment, Priority
+                
+                try {
+                    // const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?key=${API_KEY}`);
+                    // const data = await response.json();
+                    // return data.values;
+                    console.log('Fetching from Google Sheets...');
+                } catch (error) {
+                    console.error('Error fetching from Google Sheets:', error);
+                }
+            }
+
+            // Time formatting utility
+            function formatTimeAgo(timestamp) {
+                const now = new Date();
+                const articleTime = new Date(timestamp);
+                const diffInHours = Math.floor((now - articleTime) / (1000 * 60 * 60));
+                
+                if (diffInHours < 1) return 'Just now';
+                if (diffInHours < 24) return `${diffInHours} hours ago`;
+                return `${Math.floor(diffInHours / 24)} days ago`;
+            }
+
+            // Initialize app
+            function initApp() {
+                // TODO: Load initial articles from Google Sheets
+                // TODO: Set up real-time updates
+                // TODO: Implement offline caching
+                console.log('StockShorts app initialized');
+            }
+
+            // Start the app
+            initApp();
+        })();
+    </script>
+
+    <style>
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Smooth transitions for better UX */
+        .news-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .news-card:active {
+            transform: scale(0.98);
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</body>
+</html>
