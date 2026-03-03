@@ -407,7 +407,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
   };
 
   const renderHomeContent = () => (
-    <>
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-hidden">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
@@ -444,7 +444,7 @@ export default function Home({ initialCategory }: HomeProps = {}) {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 
   return (
