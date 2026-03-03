@@ -29,15 +29,25 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Source code download route
-  app.get('/download-source', (req, res) => {
-    const filePath = path.join(process.cwd(), 'client', 'public', 'stocksshorts-code.tar.gz');
-    if (fs.existsSync(filePath)) {
+  // Source code download route - generates archive on demand
+  app.get('/download-source', async (req, res) => {
+    try {
+      const { execSync } = await import('child_process');
+      const workDir = process.cwd();
+      const outputPath = '/tmp/stocksshorts-source.tar.gz';
+
+      // Generate the archive fresh every time
+      execSync(
+        `tar --exclude='./node_modules' --exclude='./.git' --exclude='./dist' --exclude='./.cache' --exclude='./.local' --exclude='./stocksshorts-code.tar.gz' --exclude='./stocksshorts-source.tar.gz' -czf ${outputPath} .`,
+        { cwd: workDir, timeout: 60000 }
+      );
+
       res.setHeader('Content-Disposition', 'attachment; filename="stocksshorts-code.tar.gz"');
       res.setHeader('Content-Type', 'application/gzip');
-      res.sendFile(filePath);
-    } else {
-      res.status(404).json({ message: 'File not found' });
+      res.sendFile(outputPath);
+    } catch (error) {
+      console.error('Download source error:', error);
+      res.status(500).json({ message: 'Failed to generate archive' });
     }
   });
 
