@@ -2,92 +2,44 @@ const CACHE_VERSION = 'v1.0.57';
 const CACHE_NAME = `stocksshorts-${CACHE_VERSION}`;
 const API_CACHE_NAME = 'stocksshorts-api-cache';
 
-// Force immediate activation
 self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
   }
 });
 
-const urlsToCache = [
-  '/',
-  '/manifest.json'
-];
-
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.keys().then((cacheNames) => {
+      return Promise.all(cacheNames.map((name) => caches.delete(name)));
+    })
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+      return Promise.all(cacheNames.map((name) => caches.delete(name)));
     }).then(() => {
       return self.clients.claim();
+    }).then(() => {
+      // Unregister this SW so the app runs without caching interference
+      return self.registration.unregister();
+    }).then(() => {
+      // Tell all clients to reload so they get fresh files
+      return self.clients.matchAll({ type: 'window' });
+    }).then((clients) => {
+      clients.forEach((client) => client.navigate(client.url));
     })
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  // Stale-while-revalidate for /api/articles - serve cached first, then update
-  if (event.request.url.includes('/api/articles')) {
-    event.respondWith(
-      caches.open(API_CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(event.request);
-        
-        // Fetch in background and update cache
-        const fetchPromise = fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        }).catch(() => null);
-        
-        // Return cached immediately if available, otherwise wait for network
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetchPromise;
-      })
-    );
-    return;
-  }
-  
-  // Other API calls - network only
+  // Never serve from cache — always go to network
   if (event.request.url.includes('/api/')) {
     event.respondWith(fetch(event.request));
     return;
   }
-  
-  if (event.request.url.includes('/assets/')) {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-  
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  event.respondWith(fetch(event.request));
 });
