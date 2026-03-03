@@ -170,12 +170,17 @@ app.use((req, res, next) => {
     }
 
     // Use environment port for Replit deployment, fallback to 5000 for local development
-    const port = parseInt(process.env.PORT || '5000', 10);
-    server.listen(port, "0.0.0.0", () => {
-      log(`serving on port ${port}`);
-    });
+    if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+      const port = parseInt(process.env.PORT || '5000', 10);
+      server.listen(port, "0.0.0.0", () => {
+        log(`serving on port ${port}`);
+      });
+    }
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
   }
 })();
+
+// Export the app for Vercel serverless deployment
+export default app;
