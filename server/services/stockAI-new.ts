@@ -6,8 +6,8 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error('OPENAI_API_KEY is required for stock analysis');
 }
 
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard"
 });
 
 export class StockAIService {
@@ -17,12 +17,12 @@ export class StockAIService {
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: "You are a financial research assistant. Search and read the official company website to provide comprehensive company overviews. Focus only on official company sources."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Search and read the official website of ${companyName} (${symbol}) to provide a comprehensive overview covering:
 
 1. What the company does (core business model and main products/services)
@@ -51,12 +51,12 @@ Please visit the company's official website directly and extract factual informa
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: "You are a financial analyst specializing in earnings call analysis. Search for and analyze the latest quarterly conference call transcripts from company websites and official sources only."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Search for and analyze the latest quarterly earnings conference call transcript for ${companyName} (${symbol}) from their official website investor relations section. Extract:
 
 **KEY QUARTER HIGHLIGHTS:**
@@ -96,12 +96,12 @@ Search the company's official investor relations page for earnings call transcri
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: "You are a financial analyst specializing in investor presentation analysis. Search company websites directly for investor presentations and extract strategic insights."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Search the official website of ${companyName} (${symbol}) for their latest investor presentation or annual report from their investor relations section. Analyze:
 
 **STRATEGIC HIGHLIGHTS:**
@@ -143,25 +143,25 @@ Please visit the company's official investor relations page and look for recent 
     try {
       const companyName = query.trim();
       const symbol = companyName.toUpperCase();
-      
+
       console.log(`Starting comprehensive analysis for ${companyName}...`);
-      
+
       // Step 1: Company overview from website
       const companyOverview = await this.getCompanyOverview(companyName, symbol);
-      
+
       // Step 2: Latest quarter conference call transcript
       const conferenceCallInsights = await this.getConferenceCallTranscript(companyName, symbol);
-      
+
       // Step 3: Investor presentation insights
       const investorPresentationInsights = await this.getInvestorPresentationInsights(companyName, symbol);
-      
+
       // Step 4: Generate comprehensive analysis using OpenAI
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       const analysisResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: `You are a comprehensive stock analyst. Create a detailed, well-formatted analysis using the provided company information. Structure your response with clear markdown headings and professional formatting.
 
 Format your analysis as follows:
@@ -186,8 +186,8 @@ Format your analysis as follows:
 ---
 ⚠️ **Disclaimer**: This analysis is for educational purposes only. Always conduct your own research and consult with qualified financial advisors before making investment decisions.`
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Provide comprehensive analysis for ${companyName} using the following research:
 
 ## COMPANY OVERVIEW:
@@ -213,7 +213,7 @@ Please create a comprehensive analysis that:
       });
 
       return analysisResponse.choices[0].message.content || "Analysis could not be completed at this time.";
-      
+
     } catch (error) {
       console.error("Stock analysis error:", error);
       return `I encountered an error while analyzing the stock. Please try again with a different company name.`;

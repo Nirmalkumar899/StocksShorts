@@ -4,7 +4,9 @@ import { translationCache } from './translationCache';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const CACHE_FILE_PATH = path.join(process.cwd(), 'data', 'articles-cache.json');
+const CACHE_FILE_PATH = process.env.VERCEL
+  ? path.join('/tmp', 'articles-cache.json')
+  : path.join(process.cwd(), 'data', 'articles-cache.json');
 
 // Generate stable ID from article content (hash-based)
 function generateStableId(title: string, sourceUrl: string | null): number {
@@ -40,10 +42,10 @@ export class NewsCache {
   constructor() {
     // INSTANT: Load cached articles from disk synchronously on startup
     this.loadFromDisk();
-    
+
     // Start automatic refresh cycle
     this.startRefreshCycle();
-    
+
     // Refresh in background (don't block)
     this.initializeCache();
   }
@@ -55,11 +57,11 @@ export class NewsCache {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       if (fs.existsSync(CACHE_FILE_PATH)) {
         const data = fs.readFileSync(CACHE_FILE_PATH, 'utf-8');
         const parsed = JSON.parse(data);
-        
+
         if (parsed.articles && Array.isArray(parsed.articles) && parsed.articles.length > 0) {
           // Convert date strings back to Date objects
           this.cache.articles = parsed.articles.map((a: Article) => ({
@@ -85,12 +87,12 @@ export class NewsCache {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       const data = {
         articles: this.cache.articles,
         lastRefresh: this.cache.lastRefresh.toISOString()
       };
-      
+
       fs.writeFileSync(CACHE_FILE_PATH, JSON.stringify(data), 'utf-8');
       console.log(`💾 Saved ${this.cache.articles.length} articles to disk cache`);
     } catch (error) {
@@ -106,14 +108,14 @@ export class NewsCache {
       this.refreshArticles();
       return;
     }
-    
+
     try {
       console.log('🚀 Initializing news cache (no disk cache)...');
       this.cache.isRefreshing = true;
-      
+
       // Fetch real news from RSS feeds
       const realNews = await realNewsIngestor.ingestTodaysNews();
-      
+
       if (realNews.length > 0) {
         this.cache.articles = realNews.map(article => ({
           ...article,
@@ -122,16 +124,16 @@ export class NewsCache {
         this.cache.lastRefresh = new Date();
         this.cache.isRefreshing = false;
         console.log(`✅ Cache initialized with ${realNews.length} real news articles`);
-        
+
         // Save to disk for next startup
         this.saveToDisk();
-        
+
         this.triggerBackgroundTranslation();
       } else {
         console.log('⚠️ No real news found, cache remains empty');
         this.cache.isRefreshing = false;
       }
-      
+
     } catch (error) {
       console.error('❌ Failed to initialize cache:', error);
       this.cache.isRefreshing = false;
@@ -202,25 +204,25 @@ export class NewsCache {
       console.log('🔄 Starting news refresh...');
 
       const newArticles = await realNewsIngestor.ingestTodaysNews();
-      
+
       // Filter articles to only include those from last 2 days + today (strict current date filtering)
       const now = new Date();
       const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - this.MAX_DAYS_OLD);
       cutoffDate.setHours(0, 0, 0, 0); // Start of day 2 days ago from TODAY
-      
+
       const filteredNewArticles = newArticles.filter(article => {
         const articleDate = article.time ? new Date(article.time) : new Date();
         return articleDate >= cutoffDate;
       });
-      
+
       const filteredExistingArticles = this.cache.articles.filter(article => {
         const articleDate = article.time ? new Date(article.time) : new Date();
         return articleDate >= cutoffDate;
       });
-      
+
       // Merge filtered articles
       const allArticles = [...filteredNewArticles, ...filteredExistingArticles];
-      
+
       // Sort by time (newest first) and keep only MAX_ARTICLES
       const sortedArticles = allArticles
         .sort((a, b) => {
@@ -239,14 +241,14 @@ export class NewsCache {
         imageUrl: article.imageUrl ?? null
       }));
       this.cache.lastRefresh = new Date();
-      
+
       console.log(`✅ News refreshed: ${uniqueArticles.length} articles in cache (last ${this.MAX_DAYS_OLD} days + today)`);
       console.log(`📊 Article categories: ${this.getCategoryCounts()}`);
       console.log(`🔍 Sample article dates: ${uniqueArticles.slice(0, 3).map(a => new Date(a.time || new Date()).toISOString()).join(', ')}`);
 
       // Save to disk for instant loading on restart
       this.saveToDisk();
-      
+
       this.triggerBackgroundTranslation();
     } catch (error) {
       console.error('❌ Error refreshing news:', error);
@@ -273,7 +275,7 @@ export class NewsCache {
     this.cache.articles.forEach(article => {
       counts[article.type] = (counts[article.type] || 0) + 1;
     });
-    
+
     return Object.entries(counts)
       .map(([type, count]) => `${type}:${count}`)
       .join(', ');
@@ -285,7 +287,7 @@ export class NewsCache {
       title: a.title,
       content: a.content
     }));
-    
+
     setTimeout(() => {
       translationCache.translateBatch(articlesToTranslate);
     }, 3000);
@@ -294,14 +296,14 @@ export class NewsCache {
   public getTranslations(): Map<number, { titleHi: string; contentHi: string }> {
     const translations = new Map<number, { titleHi: string; contentHi: string }>();
     const allTranslations = translationCache.getAllTranslations();
-    
+
     allTranslations.forEach((value, key) => {
       translations.set(key, {
         titleHi: value.titleHi,
         contentHi: value.contentHi
       });
     });
-    
+
     return translations;
   }
 
@@ -349,8 +351,8 @@ export class NewsCache {
 
     // Filter by category if specified
     if (category && category !== 'all') {
-      articles = articles.filter(article => 
-        article.type === category || 
+      articles = articles.filter(article =>
+        article.type === category ||
         (category === 'trending' && ['trending', 'stocksshorts-special'].includes(article.type))
       );
     }
@@ -367,7 +369,7 @@ export class NewsCache {
 
   public async forceRefresh(): Promise<Article[]> {
     await this.refreshArticles();
-    
+
     // Apply date filter when returning articles
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.MAX_DAYS_OLD);
@@ -406,7 +408,7 @@ export class NewsCache {
     }
 
     if (this.cache.articles.length === 0) {
-      console.log(`⚠️ Cache still empty after ${maxWait/1000}s wait`);
+      console.log(`⚠️ Cache still empty after ${maxWait / 1000}s wait`);
       return null;
     }
 

@@ -1,6 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Ensure OpenAI client doesn't crash the server synchronously if key is forgotten in Vercel dashboard
+if (!process.env.OPENAI_API_KEY) {
+  process.env.OPENAI_API_KEY = "missing_key_from_vercel_dashboard";
+}
+
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -165,7 +170,8 @@ app.use((req, res, next) => {
     // doesn't interfere with the other routes
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
-    } else {
+    } else if (!process.env.VERCEL) {
+      // Vercel Edge/CDN handles static files automatically, so we skip static setup
       setupProductionStatic(app);
     }
 

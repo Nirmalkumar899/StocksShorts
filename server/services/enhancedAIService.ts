@@ -4,7 +4,7 @@ import { googleDriveService } from './googleDriveService';
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard",
 });
 
 export class EnhancedAIService {
@@ -12,9 +12,9 @@ export class EnhancedAIService {
     try {
       // Search for company-related data in your articles database
       const articles = await storage.getStoredAiArticles(100);
-      
+
       // Filter articles related to the company
-      const companyArticles = articles.filter(article => 
+      const companyArticles = articles.filter(article =>
         article.title.toLowerCase().includes(companyName.toLowerCase()) ||
         article.content.toLowerCase().includes(companyName.toLowerCase())
       );
@@ -29,8 +29,8 @@ export class EnhancedAIService {
   private async getPersonalizedArticles(companyName: string): Promise<any[]> {
     try {
       const personalizedArticles = await storage.getPersonalizedArticles(50);
-      
-      const companyRelated = personalizedArticles.filter(article => 
+
+      const companyRelated = personalizedArticles.filter(article =>
         article.title.toLowerCase().includes(companyName.toLowerCase()) ||
         article.content.toLowerCase().includes(companyName.toLowerCase())
       );
@@ -63,7 +63,7 @@ export class EnhancedAIService {
     };
 
     const queryLower = query.toLowerCase();
-    
+
     // Check for exact mappings first
     for (const [key, value] of Object.entries(companyMappings)) {
       if (queryLower.includes(key)) {
@@ -73,10 +73,10 @@ export class EnhancedAIService {
 
     // Extract potential company names from the query
     const words = query.split(' ');
-    const potentialCompanies = words.filter(word => 
-      word.length > 2 && 
+    const potentialCompanies = words.filter(word =>
+      word.length > 2 &&
       (word.toUpperCase() === word || // All caps (like TCS, HDFC)
-       word.charAt(0) === word.charAt(0).toUpperCase()) // Capitalized
+        word.charAt(0) === word.charAt(0).toUpperCase()) // Capitalized
     );
 
     // Return the first potential company name or the whole query if no clear company
@@ -91,17 +91,17 @@ export class EnhancedAIService {
   }> {
     try {
       const companyName = this.extractCompanyName(query);
-      
+
       // Only use Google Drive data - no database or other sources
       let driveData = { folders: [], documents: [], sheets: [], content: [], documentNames: [] };
-      
+
       // Only attempt Google Drive if we have proper service account credentials
       if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
         try {
           console.log(`Searching for company: ${companyName}`);
           driveData = await googleDriveService.searchCompanyData(companyName);
           console.log(`Found: ${driveData.folders.length} folders, ${driveData.documents.length} documents, ${driveData.sheets.length} sheets, ${driveData.content.length} content items`);
-          
+
           // Log specific documents being analyzed
           if (driveData.documentNames && driveData.documentNames.length > 0) {
             console.log(`AI analyzing documents: ${driveData.documentNames.join(', ')}`);
@@ -129,7 +129,7 @@ export class EnhancedAIService {
             sources.push(docName);
           });
         }
-        
+
         // Debug log to check content
         console.log(`Context length: ${context.length} characters`);
         console.log(`First 500 characters of context:`, context.substring(0, 500));
@@ -138,7 +138,7 @@ export class EnhancedAIService {
       // 5. Create enhanced prompt for OpenAI with instructions
       const hasData = context.trim() !== '';
       const sourcesList = sources.length > 0 ? sources.join(', ') : 'No documents available';
-      
+
       const enhancedPrompt = `
 USER QUERY: ${query}
 
@@ -146,9 +146,9 @@ AVAILABLE DATA:
 ${context}
 
 INSTRUCTIONS:
-${!hasData ? 
-  'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' : 
-  `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis with clear formatting.
+${!hasData ?
+          'NO DATA AVAILABLE - Respond: "Sorry, this information is not available in our current data. We are working on expanding our coverage."' :
+          `ANALYZE THE PROVIDED DOCUMENTS and provide a comprehensive investment analysis with clear formatting.
 
 Structure your response as:
 
@@ -175,7 +175,7 @@ Structure your response as:
 **Documents Analyzed:** ${sourcesList}
 
 IMPORTANT: Use exact numbers, percentages, and dates from documents. Provide specific data points with clear explanations. Focus on actionable investment insights with professional formatting.`
-}
+        }
 `;
 
       // 5. Get OpenAI response with timeout and error handling
@@ -184,7 +184,7 @@ IMPORTANT: Use exact numbers, percentages, and dates from documents. Provide spe
         console.log('Sending to OpenAI - hasData:', hasData);
         console.log('Source list:', sourcesList);
         console.log('Prompt preview:', enhancedPrompt.substring(0, 300) + '...');
-        
+
         const completion = await Promise.race([
           openai.chat.completions.create({
             model: "gpt-4o",
@@ -201,11 +201,11 @@ IMPORTANT: Use exact numbers, percentages, and dates from documents. Provide spe
             max_tokens: 2000,
             temperature: 0.3
           }),
-          new Promise<never>((_, reject) => 
+          new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('OpenAI request timeout')), 30000)
           )
         ]);
-        
+
         response = completion.choices[0].message.content || "Sorry, this information is not available in our current data. We are working on expanding our coverage.";
         console.log('OpenAI response received successfully');
         console.log('Response preview:', response.substring(0, 200) + '...');

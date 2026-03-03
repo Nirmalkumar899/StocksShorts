@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard" });
 
 interface TranslatedContent {
   titleHi: string;
@@ -40,7 +40,7 @@ CONTENT: [Hindi translation]`;
       });
 
       const translatedText = response.choices[0].message.content || '';
-      
+
       const titleMatch = translatedText.match(/TITLE:\s*(.+?)(?=\n|CONTENT:|$)/s);
       const contentMatch = translatedText.match(/CONTENT:\s*(.+)/s);
 
@@ -79,7 +79,7 @@ CONTENT: [Hindi translation]`;
         await Promise.all(
           batch.map(article => this.translateArticle(article.id, article.title, article.content))
         );
-        
+
         if (i + batchSize < untranslated.length) {
           await new Promise(resolve => setTimeout(resolve, 300));
         }

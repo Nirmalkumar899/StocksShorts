@@ -3,7 +3,7 @@ import { Article, SourceValidatedAiArticle } from '../../shared/schema';
 import { realNewsSearchService } from './realNewsSearchService';
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard" });
 
 interface NewsSource {
   name: string;
@@ -32,8 +32,8 @@ export class AINewsGenerator {
   ];
 
   private readonly brokerages: string[] = [
-    'Motilal Oswal', 'ICICI Securities', 'HDFC Securities', 'Kotak Securities', 
-    'Axis Securities', 'Angel Broking', 'Sharekhan', 'Zerodha', '5paisa', 
+    'Motilal Oswal', 'ICICI Securities', 'HDFC Securities', 'Kotak Securities',
+    'Axis Securities', 'Angel Broking', 'Sharekhan', 'Zerodha', '5paisa',
     'Upstox', 'Edelweiss Securities', 'IIFL Securities'
   ];
 
@@ -45,11 +45,11 @@ export class AINewsGenerator {
     // Generate dates ONLY from today back to 2 days ago (total 3 days max)
     const now = new Date(); // Current date and time
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today at 00:00:00
-    
+
     const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back from today
     const articleDate = new Date(today);
     articleDate.setDate(today.getDate() - daysBack);
-    
+
     // Set random hour between 6 AM and current time for today, or 6 AM to 11 PM for past days
     if (daysBack === 0) {
       // For today, use time up to current hour
@@ -64,24 +64,24 @@ export class AINewsGenerator {
       const minute = Math.floor(Math.random() * 60);
       articleDate.setHours(hour, minute, 0, 0);
     }
-    
+
     return articleDate;
   }
 
   async generateStockMarketNews(): Promise<Article[]> {
     try {
       console.log('🔄 Starting source-first news generation...');
-      
+
       // Use the new source-first approach
       await realNewsSearchService.generateAndStoreVerifiedNews();
-      
+
       // The realNewsSearchService stores articles in the database
       // For this method, we'll generate a hybrid approach:
       // 1. Some articles from real sources (via realNewsSearchService)
       // 2. Some analysis articles (original content with proper attribution)
-      
+
       const hybridArticles = await this.generateHybridContent();
-      
+
       console.log(`✅ Generated ${hybridArticles.length} hybrid source-first articles`);
       return hybridArticles;
     } catch (error) {
@@ -92,26 +92,26 @@ export class AINewsGenerator {
 
   private async generateHybridContent(): Promise<Article[]> {
     const articles: Article[] = [];
-    
+
     // Generate analysis articles with proper attribution
     const analysisTopics = [
       'Indian market technical analysis trends',
-      'Sectoral rotation patterns in Indian markets', 
+      'Sectoral rotation patterns in Indian markets',
       'FII investment flows impact analysis',
       'Rupee movement effects on export stocks',
       'Interest rate outlook for banking sector'
     ];
-    
+
     for (const topic of analysisTopics) {
       const analysisArticle = await this.generateAnalysisArticle(topic);
       if (analysisArticle) {
         articles.push(analysisArticle);
       }
     }
-    
+
     return articles;
   }
-  
+
   private async generateAnalysisArticle(topic: string): Promise<Article | null> {
     try {
       const response = await openai.chat.completions.create({
@@ -131,7 +131,7 @@ IMPORTANT RULES:
 7. No specific stock tips or recommendations`
           },
           {
-            role: "user", 
+            role: "user",
             content: `Write an original analysis article about: ${topic}
 
 Provide insights on market patterns, trends, and dynamics. Focus on educational content that helps readers understand market mechanics.
@@ -151,13 +151,13 @@ Return JSON format:
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
-      
+
       if (!result.title || !result.content) {
         return null;
       }
 
       const articleDate = this.getRealisticArticleDate();
-      
+
       return {
         id: Date.now() + Math.floor(Math.random() * 1000),
         title: result.title,
@@ -265,7 +265,7 @@ JSON format:
       });
 
       const responseContent = response.choices[0].message.content || '{"reports":[]}';
-      
+
       // Validate and safely parse JSON
       let result;
       try {
@@ -277,7 +277,7 @@ JSON format:
           .replace(/\n/g, '\\n')
           .replace(/\t/g, '\\t')
           .replace(/\r/g, '\\r');
-        
+
         try {
           result = JSON.parse(fixedContent);
         } catch (secondError) {
@@ -285,7 +285,7 @@ JSON format:
           result = { reports: [] };
         }
       }
-      
+
       return result.reports.map((report: any, index: number) => {
         const source = this.getRandomSource();
         const articleDate = this.getRealisticArticleDate();
@@ -341,7 +341,7 @@ JSON format:
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"global_news":[]}');
-      
+
       return result.global_news.map((news: any, index: number) => {
         const source = this.getRandomSource();
         const articleDate = this.getRealisticArticleDate();
@@ -368,7 +368,7 @@ JSON format:
 
   async generateAllNews(): Promise<Article[]> {
     console.log('🚀 Starting comprehensive AI news generation...');
-    
+
     try {
       // First check if we're hitting rate limits
       try {
@@ -383,7 +383,7 @@ JSON format:
           return this.generateFallbackNews();
         }
       }
-      
+
       const [marketNews, brokerageReports, globalNews] = await Promise.all([
         this.generateStockMarketNews(),
         this.generateBrokerageReports(),
@@ -391,14 +391,14 @@ JSON format:
       ]);
 
       const allNews = [...marketNews, ...brokerageReports, ...globalNews];
-      
+
       console.log(`✅ Total articles generated: ${allNews.length}`);
       console.log(`📊 Market News: ${marketNews.length}`);
       console.log(`📈 Brokerage Reports: ${brokerageReports.length}`);
       console.log(`🌍 Global News: ${globalNews.length}`);
-      
+
       return allNews;
-      
+
     } catch (error) {
       console.error('❌ Error in comprehensive news generation:', error);
       return this.generateFallbackNews();
@@ -425,7 +425,7 @@ JSON format:
         id: Date.now() + 2,
         title: "TCS Reports Strong Q2 Results with 15% Growth",
         content: "Tata Consultancy Services reported strong quarterly results with revenue growth of 15% year-on-year. The company's digital transformation services continue to drive demand.",
-        type: "research-report", 
+        type: "research-report",
         time: new Date(now.getTime() - 1000 * 60 * 60).toISOString(),
         source: "Economic Times",
         sentiment: "Positive",
@@ -441,7 +441,7 @@ JSON format:
         type: "research-report",
         time: new Date(now.getTime() - 1000 * 60 * 90).toISOString(),
         source: "CNBC TV18",
-        sentiment: "Positive", 
+        sentiment: "Positive",
         priority: "Medium",
         imageUrl: null,
         createdAt: now.toISOString(),

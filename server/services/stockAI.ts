@@ -7,21 +7,21 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error('OPENAI_API_KEY is required for stock analysis');
 }
 
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard"
 });
 
 export class StockAIService {
   private async identifyStock(query: string): Promise<{ fullName: string; symbol: string; currentPrice: string; category: string; screenerData?: any }> {
     const queryLower = query.toLowerCase().trim();
-    
+
     // Try to get live market data first
     try {
       const liveData = await stockDataProvider.getLiveStockData(queryLower);
       if (liveData) {
         // Also try to get screener data for financial metrics
         const screenerData = await screenerService.getStockByName(liveData.name);
-        
+
         return {
           fullName: liveData.name,
           symbol: liveData.symbol,
@@ -61,7 +61,7 @@ export class StockAIService {
         return knownStocks[key];
       }
     }
-    
+
     // Check additional newer stocks
     const additionalStocks = this.getAdditionalStocks();
     const additionalKeys = Object.keys(additionalStocks).sort((a, b) => b.length - a.length);
@@ -70,7 +70,7 @@ export class StockAIService {
         return additionalStocks[key];
       }
     }
-    
+
     // For unknown stocks, extract likely stock symbol/name and let AI handle it
     const extractedStock = this.extractStockInfo(query);
     return extractedStock;
@@ -205,7 +205,7 @@ export class StockAIService {
     // Clean the query to extract stock name/symbol
     const cleanQuery = query.replace(/analyze|analysis|stock|share|company/gi, '').trim();
     const possibleSymbol = cleanQuery.toUpperCase().replace(/\s+/g, '');
-    
+
     // Return dynamic stock info for unknown stocks - let AI handle identification
     return {
       fullName: cleanQuery || 'Indian Listed Company',
@@ -219,7 +219,7 @@ export class StockAIService {
     // Extract numeric value from price string like "₹3,650"
     const numericPrice = parseFloat(currentPrice.replace(/[₹,]/g, ''));
     if (isNaN(numericPrice)) return currentPrice;
-    
+
     // Calculate 5-8% upside target
     const targetPrice = Math.round(numericPrice * 1.07);
     return `₹${targetPrice.toLocaleString('en-IN')}`;
@@ -228,7 +228,7 @@ export class StockAIService {
   private calculateSupport(currentPrice: string): string {
     const numericPrice = parseFloat(currentPrice.replace(/[₹,]/g, ''));
     if (isNaN(numericPrice)) return currentPrice;
-    
+
     // Calculate 3-5% downside support
     const supportPrice = Math.round(numericPrice * 0.96);
     return `₹${supportPrice.toLocaleString('en-IN')}`;
@@ -237,7 +237,7 @@ export class StockAIService {
   private calculateResistance(currentPrice: string): string {
     const numericPrice = parseFloat(currentPrice.replace(/[₹,]/g, ''));
     if (isNaN(numericPrice)) return currentPrice;
-    
+
     // Calculate 2-4% upside resistance
     const resistancePrice = Math.round(numericPrice * 1.03);
     return `₹${resistancePrice.toLocaleString('en-IN')}`;
@@ -247,13 +247,13 @@ export class StockAIService {
     try {
       // Use the comprehensive financial data provider with GPT-powered extraction
       const { financialDataProvider } = await import('./financialDataProvider.js');
-      
+
       console.log(`Fetching comprehensive financial data for ${symbol} from multiple sources`);
       const financialData = await financialDataProvider.getFinancialData(symbol);
-      
+
       if (financialData && (financialData.currentPrice || financialData.pe || financialData.marketCap)) {
         console.log(`Successfully retrieved authentic data for ${symbol} from ${financialData.source}:`, financialData);
-        
+
         // Also fetch conference call data and merge it
         try {
           const { conferenceCallService } = await import('./conferenceCallService.js');
@@ -268,7 +268,7 @@ export class StockAIService {
         } catch (error) {
           console.log(`Error fetching conference call data for ${symbol}:`, error);
         }
-        
+
         return financialData;
       }
 
@@ -293,7 +293,7 @@ export class StockAIService {
       console.log(`Error fetching financial data for ${symbol}:`, error);
       return {
         symbol: symbol,
-        currentPrice: 'Market Price', 
+        currentPrice: 'Market Price',
         pe: null,
         marketCap: null,
         source: 'Testing Phase',
@@ -307,7 +307,7 @@ export class StockAIService {
     try {
       // NSE Corporate Actions and Announcements
       console.log(`Fetching NSE conference call data for ${symbol}`);
-      
+
       const nseCorpResponse = await fetch(`https://www.nseindia.com/api/corporate-actions?index=equities&symbol=${symbol}`, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -319,7 +319,7 @@ export class StockAIService {
       if (nseCorpResponse.ok) {
         const corpData = await nseCorpResponse.json();
         console.log(`NSE Corporate data for ${symbol}:`, corpData);
-        
+
         // Look for recent earnings calls, investor presentations
         const conferenceData = {
           earningsCallDates: [],
@@ -377,10 +377,10 @@ export class StockAIService {
           if (companyResponse.ok) {
             const htmlContent = await companyResponse.text();
             console.log(`Successfully fetched HTML for ${symbol}, length: ${htmlContent.length}`);
-            
+
             // Extract financial data from HTML
             const financialData = await this.extractFinancialDataFromHTML(htmlContent);
-            
+
             if (Object.keys(financialData).length > 0) {
               return financialData;
             }
@@ -406,7 +406,7 @@ export class StockAIService {
         if (searchData && searchData.length > 0) {
           const companyId = searchData[0].id;
           console.log(`Found company ID: ${companyId} for ${symbol}`);
-          
+
           const directUrl = `https://www.screener.in/company/${companyId}/`;
           const directResponse = await fetch(directUrl, {
             headers: {
@@ -433,7 +433,7 @@ export class StockAIService {
   private async extractFinancialDataFromHTML(html: string): Promise<any> {
     try {
       const data: any = {};
-      
+
       // Extract current price with enhanced screener.in patterns
       const pricePatterns = [
         /<span[^>]*class="[^"]*number[^"]*"[^>]*>₹\s*([\d,]+\.?\d*)/,
@@ -445,7 +445,7 @@ export class StockAIService {
         /Current Price[^>]*>\s*₹\s*([\d,]+\.?\d*)/i,
         /<td[^>]*>\s*Current Price\s*<\/td>\s*<td[^>]*>\s*₹\s*([\d,]+\.?\d*)/i
       ];
-      
+
       for (const pattern of pricePatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -453,7 +453,7 @@ export class StockAIService {
           break;
         }
       }
-      
+
       // Extract PE ratio with comprehensive patterns targeting screener.in structure
       const pePatterns = [
         /Stock P\/E.*?<span[^>]*class="[^"]*number[^"]*"[^>]*>([\d.]+)<\/span>/i,
@@ -465,7 +465,7 @@ export class StockAIService {
         /Price to Earning.*?(\d+\.?\d*)/i,
         /P\/E Ratio.*?(\d+\.?\d*)/i
       ];
-      
+
       for (const pattern of pePatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -473,7 +473,7 @@ export class StockAIService {
           break;
         }
       }
-      
+
       // Extract Market Cap with screener.in specific patterns
       const mcapPatterns = [
         /Market Cap.*?<span[^>]*class="[^"]*number[^"]*"[^>]*>₹\s*([\d,]+(?:\.\d+)?)\s*Cr<\/span>/i,
@@ -484,7 +484,7 @@ export class StockAIService {
         /"market_cap":\s*([\d.]+)/,
         /Mkt\s*Cap.*?₹\s*([\d,]+(?:\.\d+)?)\s*Cr/i
       ];
-      
+
       for (const pattern of mcapPatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -492,14 +492,14 @@ export class StockAIService {
           break;
         }
       }
-      
+
       // Extract ROE
       const roePatterns = [
         /ROE[^>]*>\s*([\d.]+)%/i,
         /"roe":\s*([\d.]+)/,
         /Return on Equity[^>]*>\s*([\d.]+)/i
       ];
-      
+
       for (const pattern of roePatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -507,14 +507,14 @@ export class StockAIService {
           break;
         }
       }
-      
+
       // Extract Debt to Equity
       const debtPatterns = [
         /Debt to [Ee]quity[^>]*>\s*([\d.]+)/i,
         /"debt_to_equity":\s*([\d.]+)/,
         /D\/E[^>]*>\s*([\d.]+)/i
       ];
-      
+
       for (const pattern of debtPatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -522,14 +522,14 @@ export class StockAIService {
           break;
         }
       }
-      
+
       // Extract Revenue Growth
       const revenueGrowthPatterns = [
         /Sales Growth[^>]*>\s*([\d.-]+)%/i,
         /"revenue_growth":\s*([\d.-]+)/,
         /Revenue Growth[^>]*>\s*([\d.-]+)/i
       ];
-      
+
       for (const pattern of revenueGrowthPatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -537,14 +537,14 @@ export class StockAIService {
           break;
         }
       }
-      
+
       // Extract Profit Margins
       const marginPatterns = [
         /OPM[^>]*>\s*([\d.]+)%/i,
         /"profit_margin":\s*([\d.]+)/,
         /Operating Margin[^>]*>\s*([\d.]+)/i
       ];
-      
+
       for (const pattern of marginPatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -552,9 +552,9 @@ export class StockAIService {
           break;
         }
       }
-      
+
       console.log(`Extracted financial data for ${data.symbol || 'unknown'}:`, data);
-      
+
       // If we have minimal data, try additional extraction methods
       if (Object.keys(data).length <= 2) {
         // Try to extract from JSON data embedded in the page
@@ -571,7 +571,7 @@ export class StockAIService {
             console.log('Failed to parse embedded JSON data');
           }
         }
-        
+
         // Try alternate API endpoints if available
         const companyIdMatch = html.match(/company\/(\d+)\//);
         if (companyIdMatch) {
@@ -590,7 +590,7 @@ export class StockAIService {
           }
         }
       }
-      
+
       return data;
     } catch (error) {
       console.log('Error extracting financial data:', error);
@@ -614,7 +614,7 @@ export class StockAIService {
         const quarterlyData = await response.json();
         return quarterlyData;
       }
-      
+
       return null;
     } catch (error) {
       return null;
@@ -651,7 +651,7 @@ export class StockAIService {
       'BAJFINANCE': 'BAJFINANCE.NS',
       'BAJAJ FINANCE': 'BAJFINANCE.NS'
     };
-    
+
     return mappings[symbol.toUpperCase()] || null;
   }
 
@@ -661,12 +661,12 @@ export class StockAIService {
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: "You are a financial research assistant. Search and read the official company website to provide comprehensive company overviews. Focus only on official company sources."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Search and read the official website of ${companyName} (${symbol}) to provide a comprehensive overview covering:
 
 1. What the company does (core business model and main products/services)
@@ -695,12 +695,12 @@ Please visit the company's official website directly and extract factual informa
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: "You are a financial analyst specializing in earnings call analysis. Search for and analyze the latest quarterly conference call transcripts from company websites and official sources only."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Search for and analyze the latest quarterly earnings conference call transcript for ${companyName} (${symbol}) from their official website investor relations section. Extract:
 
 **KEY QUARTER HIGHLIGHTS:**
@@ -740,12 +740,12 @@ Search the company's official investor relations page for earnings call transcri
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { 
-            role: "system", 
+          {
+            role: "system",
             content: "You are a financial analyst specializing in investor presentation analysis. Search company websites directly for investor presentations and extract strategic insights."
           },
-          { 
-            role: "user", 
+          {
+            role: "user",
             content: `Search the official website of ${companyName} (${symbol}) for their latest investor presentation or annual report from their investor relations section. Analyze:
 
 **STRATEGIC HIGHLIGHTS:**
@@ -786,53 +786,53 @@ Please visit the company's official investor relations page and look for recent 
   async analyzeStock(query: string): Promise<string> {
     try {
       const stockInfo = await this.identifyStock(query);
-      
+
       // Get comprehensive company information
       console.log(`Fetching comprehensive analysis for ${stockInfo.symbol}...`);
-      
+
       // Step 1: Company overview from website
       const companyOverview = await this.getCompanyOverview(stockInfo.fullName, stockInfo.symbol);
-      
+
       // Step 2: Latest quarter conference call transcript
       const conferenceCallInsights = await this.getConferenceCallTranscript(stockInfo.fullName, stockInfo.symbol);
-      
+
       // Step 3: Investor presentation insights
       const investorPresentationInsights = await this.getInvestorPresentationInsights(stockInfo.fullName, stockInfo.symbol);
-      
+
       // Step 4: Cross-verify financial data from multiple sources
       console.log(`Cross-verifying financial data for ${stockInfo.symbol} across multiple sources...`);
       const verifiedData = await dataVerification.getVerifiedFinancialData(stockInfo.symbol);
-      
+
       // Prepare authenticated financial metrics
       let authenticMetrics: any = {};
       let verificationSummary = '';
-      
+
       // Filter only verified metrics (variance < 5%)
       for (const [metric, data] of Object.entries(verifiedData)) {
         if (data.verified) {
           authenticMetrics[metric] = data.value;
         }
       }
-      
+
       const verifiedCount = Object.keys(authenticMetrics).length;
       const totalChecked = Object.keys(verifiedData).length;
-      verificationSummary = verifiedCount > 0 ? 
-        `${verifiedCount}/${totalChecked} metrics cross-verified (<5% variance)` : 
+      verificationSummary = verifiedCount > 0 ?
+        `${verifiedCount}/${totalChecked} metrics cross-verified (<5% variance)` :
         'Unable to cross-verify data';
-      
+
       // Try to fetch additional financial data as backup
       let marketDataText = "";
       const realFinancialData = await this.fetchRealFinancialData(stockInfo.symbol);
-      
+
       // Check if we have sufficient data to proceed (either verified or fallback)
       const hasMinimumData = realFinancialData && !realFinancialData.testingPhase;
-      
+
       if (hasMinimumData) {
         let dataSource = "Screener.in";
         if (!realFinancialData.pe && !realFinancialData.marketCap) {
           dataSource = "Yahoo Finance";
         }
-        
+
         // Calculate intelligent PE ratios based on sector-specific logic
         let peAnalysis = '';
         if (realFinancialData.marketCap) {
@@ -844,9 +844,9 @@ Please visit the company's official investor relations page and look for recent 
             sector: realFinancialData.sector || 'default',
             symbol: stockInfo.symbol
           });
-          
+
           const sectorInsights = peRatioCalculator.getSectorInsights(realFinancialData.sector || 'default');
-          
+
           peAnalysis = `
 INTELLIGENT PE ANALYSIS:
 - Current PE: ${peMetrics.currentPE}x (${peMetrics.calculationMethod})
@@ -856,18 +856,18 @@ INTELLIGENT PE ANALYSIS:
         }
 
         // Use cross-verified data when available, fallback to single source
-        const displayPE = authenticMetrics.pe ? authenticMetrics.pe.toFixed(1) + 'x ✓' : 
-                         (realFinancialData.pe ? realFinancialData.pe.toFixed(1) + 'x' : 'N/A');
-        const displayMarketCap = authenticMetrics.marketCap ? '₹' + (authenticMetrics.marketCap / 10000000).toFixed(0) + ' cr ✓' : 
-                                (realFinancialData.marketCap ? '₹' + (realFinancialData.marketCap / 10000000).toFixed(0) + ' cr' : 'N/A');
-        const displayProfitMargin = authenticMetrics.profitMargin ? (authenticMetrics.profitMargin * 100).toFixed(1) + '% ✓' : 
-                                   (realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A');
-        const displayRevGrowth = authenticMetrics.revenueGrowth ? (authenticMetrics.revenueGrowth * 100).toFixed(1) + '% ✓' : 
-                                (realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A');
-        const displayROE = authenticMetrics.roe ? (authenticMetrics.roe * 100).toFixed(1) + '% ✓' : 
-                          (realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A');
-        const displayDebtEquity = authenticMetrics.debtToEquity ? authenticMetrics.debtToEquity.toFixed(2) + ' ✓' : 
-                                 (realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A');
+        const displayPE = authenticMetrics.pe ? authenticMetrics.pe.toFixed(1) + 'x ✓' :
+          (realFinancialData.pe ? realFinancialData.pe.toFixed(1) + 'x' : 'N/A');
+        const displayMarketCap = authenticMetrics.marketCap ? '₹' + (authenticMetrics.marketCap / 10000000).toFixed(0) + ' cr ✓' :
+          (realFinancialData.marketCap ? '₹' + (realFinancialData.marketCap / 10000000).toFixed(0) + ' cr' : 'N/A');
+        const displayProfitMargin = authenticMetrics.profitMargin ? (authenticMetrics.profitMargin * 100).toFixed(1) + '% ✓' :
+          (realFinancialData.profitMargin ? (realFinancialData.profitMargin * 100).toFixed(1) + '%' : 'N/A');
+        const displayRevGrowth = authenticMetrics.revenueGrowth ? (authenticMetrics.revenueGrowth * 100).toFixed(1) + '% ✓' :
+          (realFinancialData.revenueGrowth ? (realFinancialData.revenueGrowth * 100).toFixed(1) + '%' : 'N/A');
+        const displayROE = authenticMetrics.roe ? (authenticMetrics.roe * 100).toFixed(1) + '% ✓' :
+          (realFinancialData.roe ? (realFinancialData.roe * 100).toFixed(1) + '%' : 'N/A');
+        const displayDebtEquity = authenticMetrics.debtToEquity ? authenticMetrics.debtToEquity.toFixed(2) + ' ✓' :
+          (realFinancialData.debtToEquity ? realFinancialData.debtToEquity.toFixed(2) : 'N/A');
 
         marketDataText = `
 CROSS-VERIFIED FINANCIAL DATA (${verificationSummary}):
@@ -902,7 +902,7 @@ RECENT QUARTER PERFORMANCE:
         console.log(`Stock ${stockInfo.symbol} - insufficient data for analysis. Verified: ${verifiedCount}, Testing phase: ${realFinancialData?.testingPhase}`);
         marketDataText = `I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now.`;
       }
-      
+
       // If we have testing phase data, return it immediately without API call
       if (marketDataText.includes('testing phase')) {
         return marketDataText;
@@ -911,7 +911,7 @@ RECENT QUARTER PERFORMANCE:
       // Add timeout controller for API call
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
-      
+
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {
@@ -922,12 +922,12 @@ RECENT QUARTER PERFORMANCE:
         body: JSON.stringify({
           model: "llama-3.1-sonar-small-128k-online",
           messages: [
-            { 
-              role: "system", 
+            {
+              role: "system",
               content: "You are providing educational stock information only. Create a well-formatted, professional analysis with clear sections and visual hierarchy.\n\n# CRITICAL DATA POLICY:\n- If the provided data shows 'TESTING PHASE' or 'Unable to fetch correct numbers', DO NOT attempt to provide any analysis\n- Instead, return the exact testing phase message as provided in the data\n- NEVER create or estimate financial numbers when data is unavailable\n- Only proceed with analysis if authentic, cross-verified financial data is provided\n\n# FORMAT REQUIREMENTS (only if authentic data available):\n- Use clean markdown formatting with proper headings\n- Include bullet points and numbered lists for clarity\n- Highlight key metrics with **bold** text\n- Use line breaks and spacing for readability\n- Structure content logically with clear sections\n\n# ANALYSIS STRUCTURE (only if verified data available):\n\n## 📊 **[COMPANY NAME] - Educational Analysis**\n\n### 🏢 **Business Overview**\nExplain the company's core business model, revenue streams, and market position. Keep it educational and informative.\n\n### 📈 **Financial Performance**\n**Cross-Verified Metrics:**\n- Revenue: **₹X,XXX crores** (Growth: +X.X%)\n- Profit Margin: **X.X%**\n- Market Cap: **₹X,XXX crores**\n\n### 💡 **Management Insights**\nKey guidance and outlook from recent management commentary (use only authentic data provided).\n\n### 🎯 **Valuation Analysis**\n**Key Ratios:**\n- PE Ratio: **X.Xx** (Current) | **X.Xx** (Projected)\n- ROE: **X.X%**\n- Debt/Equity: **X.XX**\n\n### 📊 **Technical Context**\nCurrent price levels and technical patterns for educational reference.\n\n### 🎓 **Educational Summary**\nKey learning points about the company's financial profile and sector dynamics.\n\n---\n\n⚠️ **Educational Purpose Only** - This analysis is for learning purposes. Always verify data independently and consult SEBI-registered advisors for investment decisions.\n\n# CRITICAL REQUIREMENTS:\n- If data shows testing phase message, return it exactly as provided\n- Use ONLY cross-verified authentic numbers (marked with ✓)\n- Never estimate or create financial metrics\n- Format with clear visual hierarchy\n- Include proper spacing and bullet points\n- Mark all data sources clearly\n- Use educational language only\n- No investment recommendations"
             },
-            { 
-              role: "user", 
+            {
+              role: "user",
               content: `Provide comprehensive analysis for ${stockInfo.fullName} (${stockInfo.symbol}) - Current Price: ${stockInfo.currentPrice}.
 
 ## COMPANY OVERVIEW:
@@ -949,7 +949,7 @@ ANALYSIS INSTRUCTIONS:
 - Use the authentic financial metrics provided
 - Structure as: Company Business → Conference Call Key Points → Management Growth Outlook → Investor Presentation Strategy → Financial Analysis → Investment Summary
 - Provide specific numbers, percentages, and quotes from the data sources
-- Write in clear, educational format with proper headings` 
+- Write in clear, educational format with proper headings`
             }
           ],
           max_tokens: 1200,
@@ -971,15 +971,15 @@ ANALYSIS INSTRUCTIONS:
       const data = await response.json();
 
       return data.choices[0].message.content || this.generateFallbackAnalysis(stockInfo);
-      
+
     } catch (error: any) {
       console.error("Perplexity API error:", error);
-      
+
       // If it was a timeout or abort error, return testing phase message for data integrity
       if (error?.name === 'AbortError' || error?.message?.includes('timeout')) {
         return 'I am still in testing phase and unable to fetch correct numbers. Kindly look for another stock for now.';
       }
-      
+
       // For other errors, generate fallback analysis
       return this.generateFallbackAnalysis(stockInfo);
     }
@@ -1016,7 +1016,7 @@ Please try analyzing a different stock or check back later when the data verific
 
   private getSectorAnalysis(category: string) {
     type AnalysisCategory = 'large' | 'mid' | 'small' | 'micro';
-    
+
     const analyses: Record<AnalysisCategory, {
       recommendation: string;
       thesis: string;
@@ -1073,13 +1073,13 @@ Please try analyzing a different stock or check back later when the data verific
         verdict: 'Only for experienced investors with high risk tolerance. Monitor closely for fundamental improvements.'
       }
     };
-    
+
     return analyses[category as AnalysisCategory] || analyses['large'];
   }
 
   private getSectorAnalysisWithNumbers(category: string) {
     type AnalysisCategory = 'large' | 'mid' | 'small' | 'micro';
-    
+
     const analysesWithNumbers: Record<AnalysisCategory, {
       sector: string;
       revenue: string;
@@ -1236,23 +1236,23 @@ Please try analyzing a different stock or check back later when the data verific
         recommendation: 'HOLD'
       }
     };
-    
+
     return analysesWithNumbers[category as AnalysisCategory] || analysesWithNumbers['large'];
   }
 
   private isSectorAppropriateData(companyName: string, conferenceData: any): boolean {
     const name = companyName.toLowerCase();
-    
+
     // Asset management companies shouldn't have capex guidance
     if (name.includes('wealth') || name.includes('asset management') || name.includes('mutual fund') || name.includes('nuvama')) {
       return !conferenceData.capexGuidance || conferenceData.capexGuidance === '';
     }
-    
+
     // Banks and financial services have different metrics
     if (name.includes('bank') || name.includes('financial')) {
       return true;
     }
-    
+
     return true;
   }
 }

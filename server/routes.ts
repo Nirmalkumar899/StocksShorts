@@ -87,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.path === '/api/translate-articles' || req.path === '/api/stock-ai/query' || req.path === '/api/articles/refresh' || req.path.match(/^\/api\/articles\/\d+$/)) {
       return next();
     }
-    
+
     const timeout = process.env.NODE_ENV === 'production' ? 10000 : 30000;
     const timer = setTimeout(() => {
       if (!res.headersSent) {
@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(408).json({ error: 'Request timeout' });
       }
     }, timeout);
-    
+
     res.on('finish', () => clearTimeout(timer));
     res.on('close', () => clearTimeout(timer));
     next();
@@ -137,8 +137,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔄 Manual news refresh requested');
       const refreshedArticles = await newsCache.forceRefresh();
       console.log(`✅ Manual refresh completed with ${refreshedArticles.length} articles`);
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: `Refreshed ${refreshedArticles.length} articles`,
         articleCount: refreshedArticles.length
       });
@@ -153,12 +153,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const category = req.query.category as string;
       console.log('🔍 Requested category:', category);
-      
+
       // Get articles from cache (automatically refreshes if needed)
       const articles = await newsCache.getArticles(category);
-      
+
       console.log(`📊 Returning ${articles.length} cached articles${category ? ` for category: ${category}` : ''}`);
-      
+
       // Sort by category type FIRST (research/breakout first), then priority, then time
       const categoryPrecedence: Record<string, number> = {
         'research-report': 5,    // Brokerage reports, analysis - HIGHEST
@@ -167,31 +167,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'order-win': 2,          // Order wins
         // All others default to 1
       };
-      
+
       const sortedArticles = articles.sort((a, b) => {
         // 1. Category type precedence (research/breakout first)
         const categoryA = categoryPrecedence[a.type?.toLowerCase() || ''] || 1;
         const categoryB = categoryPrecedence[b.type?.toLowerCase() || ''] || 1;
-        
+
         if (categoryA !== categoryB) {
           return categoryB - categoryA; // Higher precedence first
         }
-        
+
         // 2. Priority ordering (High > Medium > Low)
         const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
         const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
         const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
-        
+
         if (priorityA !== priorityB) {
           return priorityB - priorityA; // Higher priority first
         }
-        
+
         // 3. If same category and priority, sort by time (most recent first)
         const timeA = a.time ? new Date(a.time).getTime() : 0;
         const timeB = b.time ? new Date(b.time).getTime() : 0;
         return timeB - timeA;
       });
-      
+
       // Set cache headers and respond (avoid duplicate headers)
       if (!res.headersSent) {
         res.set({
@@ -199,12 +199,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Content-Type': 'application/json; charset=utf-8'
         });
       }
-      
+
       return res.json(sortedArticles);
     } catch (error) {
       console.error('❌ Error fetching cached articles:', error);
       if (!res.headersSent) {
-        return res.status(500).json({ 
+        return res.status(500).json({
           message: error instanceof Error ? error.message : 'Failed to fetch articles'
         });
       }
@@ -220,10 +220,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`📖 Article request: ${id}`);
-      
+
       // Use dedicated method that waits for cache initialization
       const article = await newsCache.getArticleById(id);
-      
+
       if (!article) {
         console.log(`❌ Article ${id} not found in cache`);
         return res.status(404).json({ message: 'Article not found' });
@@ -233,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(article);
     } catch (error) {
       console.error('Error fetching cached article:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to fetch article'
       });
     }
@@ -243,14 +243,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/articles/refresh", async (req, res) => {
     try {
       console.log('🔄 Force refreshing cached news...');
-      
+
       const articles = await newsCache.forceRefresh();
       const uniqueCategories = Array.from(new Set(articles.map(a => a.type)));
       const cacheStatus = newsCache.getCacheStatus();
-      
+
       // Send response immediately to avoid double response issue
-      return res.json({ 
-        message: 'News cache refreshed successfully', 
+      return res.json({
+        message: 'News cache refreshed successfully',
         count: articles.length,
         categories: uniqueCategories,
         cacheStatus,
@@ -259,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error refreshing news cache:', error);
       if (!res.headersSent) {
-        return res.status(500).json({ 
+        return res.status(500).json({
           message: error instanceof Error ? error.message : 'Failed to refresh news cache'
         });
       }
@@ -277,12 +277,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const translations = newsCache.getTranslations();
       const translationStats = newsCache.getTranslationStats();
-      
+
       const translationsObj: { [key: number]: { titleHi: string; contentHi: string } } = {};
       translations.forEach((value, key) => {
         translationsObj[key] = value;
       });
-      
+
       res.json({
         translations: translationsObj,
         stats: translationStats
@@ -294,22 +294,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Translation API using OpenAI SDK
-  const openai = new OpenAI({ 
-    apiKey: process.env.OPENAI_API_KEY 
-  });
-  
+  const openaiArgs: any = {};
+  if (process.env.OPENAI_API_KEY) {
+    openaiArgs.apiKey = process.env.OPENAI_API_KEY;
+  } else {
+    console.warn("OPENAI_API_KEY is not set. Translation and AI features will be disabled.");
+  }
+  const openai = new OpenAI(openaiArgs);
+
   app.post('/api/translate-articles', async (req, res) => {
     console.log('🌐 Translation API called from:', req.headers.origin);
     console.log('📋 Request body:', req.body ? 'Present' : 'Missing');
-    
+
     try {
       const { articles } = req.body;
-      
+
       if (!articles || !Array.isArray(articles)) {
-        console.log('❌ Invalid articles data:', { 
-          articlesExists: !!articles, 
+        console.log('❌ Invalid articles data:', {
+          articlesExists: !!articles,
           isArray: Array.isArray(articles),
-          length: articles?.length 
+          length: articles?.length
         });
         return res.status(400).json({ message: 'Articles array is required' });
       }
@@ -320,25 +324,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`🚀 Starting translation of ${articles.length} articles...`);
-      
+
       // Process articles in smaller batches to avoid timeout
       const batchSize = 5;
       const batches = [];
       for (let i = 0; i < articles.length; i += batchSize) {
         batches.push(articles.slice(i, i + batchSize));
       }
-      
+
       const allTranslatedArticles = [];
 
       for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
         const batch = batches[batchIndex];
         console.log(`Processing batch ${batchIndex + 1}/${batches.length} with ${batch.length} articles...`);
-        
+
         const batchTranslatedArticles = await Promise.all(
           batch.map(async (article: any) => {
             try {
               console.log(`🌐 Translating article ${article.id}: ${article.title?.substring(0, 30)}...`);
-              
+
               const prompt = `Translate this stock market article to Hindi. Keep financial terms, company names, and numbers in English/digits.
 
 Title: ${article.title}
@@ -354,28 +358,28 @@ CONTENT: [Hindi translation]`;
                 messages: [{ role: 'user', content: prompt }],
                 max_completion_tokens: 1000
               });
-              
+
               const translatedText = response.choices[0].message.content;
               console.log(`✅ Translation received for article ${article.id}`);
-              
+
               // Parse the translated response
               const titleMatch = translatedText.match(/TITLE:\s*(.*?)(?=\nCONTENT:|$)/s);
               const contentMatch = translatedText.match(/CONTENT:\s*([\s\S]*?)$/s);
-              
+
               return {
                 id: article.id,
                 title: titleMatch ? titleMatch[1].trim() : article.title,
                 content: contentMatch ? contentMatch[1].trim() : article.content
               };
-              
+
             } catch (error) {
               console.error(`❌ Translation error for article ${article.id}:`, error.message);
-              
+
               // Check if it's a quota exceeded error
               if (error.message && error.message.includes('exceeded your current quota')) {
                 throw new Error('Translation service quota exceeded. Please try again later or contact support.');
               }
-              
+
               // Return original article for other errors
               return {
                 id: article.id,
@@ -385,9 +389,9 @@ CONTENT: [Hindi translation]`;
             }
           })
         );
-        
+
         allTranslatedArticles.push(...batchTranslatedArticles);
-        
+
         // Add small delay between batches to avoid rate limiting
         if (batchIndex < batches.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -395,19 +399,19 @@ CONTENT: [Hindi translation]`;
       }
 
       console.log(`🎉 Translation completed for ${allTranslatedArticles.length} articles`);
-      
+
       // Check if response has already been sent
       if (!res.headersSent) {
         res.json(allTranslatedArticles);
       }
-      
+
     } catch (error) {
       console.error('💥 Translation API error:', error);
       console.error('💥 Error stack:', error.stack);
-      
+
       // Only send error response if headers haven't been sent
       if (!res.headersSent) {
-        res.status(500).json({ 
+        res.status(500).json({
           message: error instanceof Error ? error.message : 'Translation failed',
           details: error.stack
         });
@@ -421,7 +425,7 @@ CONTENT: [Hindi translation]`;
     try {
       const articles = await googleSheetsService.fetchArticles();
       const slug = req.params.slug.toLowerCase();
-      
+
       // Find article by matching title slug
       const article = articles.find(a => {
         const titleSlug = a.title
@@ -432,15 +436,15 @@ CONTENT: [Hindi translation]`;
           .trim();
         return titleSlug.includes(slug) || slug.includes(titleSlug);
       });
-      
+
       if (!article) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           message: 'Article not found',
           searchedSlug: slug,
           suggestion: 'Try using the article ID instead'
         });
       }
-      
+
       // Add metadata for auto-updating
       const articleWithMeta = {
         ...article,
@@ -455,11 +459,11 @@ CONTENT: [Hindi translation]`;
           .trim(),
         totalArticlesInSheet: articles.length
       };
-      
+
       res.json(articleWithMeta);
     } catch (error) {
       console.error('Error fetching article by slug:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to fetch article'
       });
     }
@@ -472,16 +476,16 @@ CONTENT: [Hindi translation]`;
     try {
       const { symbol } = req.params;
       const claimedPrice = parseFloat(req.query.price as string);
-      
+
       if (!symbol || !claimedPrice) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: 'Symbol and price parameters required',
           example: '/api/verify-price/RELIANCE?price=1500'
         });
       }
 
       const authenticPrice = await authenticDataProvider.getAuthenticStockPrice(symbol);
-      
+
       if (!authenticPrice) {
         return res.json({
           symbol: symbol,
@@ -507,7 +511,7 @@ CONTENT: [Hindi translation]`;
 
     } catch (error) {
       console.error('Price verification error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: 'Price verification failed',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -517,21 +521,21 @@ CONTENT: [Hindi translation]`;
   app.post("/api/ai-articles/:id/report", async (req, res) => {
     try {
       const articleId = parseInt(req.params.id);
-      
+
       if (isNaN(articleId)) {
         return res.status(400).json({ message: 'Invalid article ID' });
       }
 
       // Flag the reported article for investigation
       // Verified news articles cannot be reported as they come from authorized sources
-      
-      res.json({ 
+
+      res.json({
         message: 'Report received. Our team will investigate this content and take appropriate action.',
         status: 'flagged_for_review'
       });
     } catch (error) {
       console.error('Error reporting AI article:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to report article'
       });
     }
@@ -554,7 +558,7 @@ CONTENT: [Hindi translation]`;
       const { articleId, content, parentId } = req.body;
       const userId = (req.session as any).userId;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(401).json({ message: 'User not found' });
       }
@@ -578,7 +582,7 @@ CONTENT: [Hindi translation]`;
     try {
       const commentId = parseInt(req.params.id);
       const userId = (req.session as any).userId;
-      
+
       const success = await storage.deleteComment(commentId, userId);
       if (success) {
         res.json({ message: 'Comment deleted successfully' });
@@ -596,7 +600,7 @@ CONTENT: [Hindi translation]`;
     // Set longer timeout for AI processing
     req.setTimeout(180000); // 3 minutes
     res.setTimeout(180000); // 3 minutes
-    
+
     try {
       const { query } = req.body;
       if (!query || typeof query !== 'string') {
@@ -604,19 +608,19 @@ CONTENT: [Hindi translation]`;
       }
 
       console.log(`🤖 Processing AI query: ${query}`);
-      
+
       // Use enhanced AI service with extended timeout
       const result = await Promise.race([
         enhancedAIService.processAIQuery(query, req.session?.user?.id),
-        new Promise((_, reject) => 
+        new Promise((_, reject) =>
           setTimeout(() => reject(new Error('AI processing timeout after 150 seconds')), 150000)
         )
       ]) as any;
-      
+
       console.log('✅ AI processing completed successfully');
-      
+
       if (!res.headersSent) {
-        res.json({ 
+        res.json({
           analysis: result.response,
           sources: result.sources,
           databaseResults: result.databaseResults,
@@ -626,12 +630,12 @@ CONTENT: [Hindi translation]`;
       }
     } catch (error) {
       console.error('Enhanced AI query error:', error);
-      
+
       if (!res.headersSent) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to process AI query';
-        res.status(errorMessage.includes('timeout') ? 408 : 500).json({ 
+        res.status(errorMessage.includes('timeout') ? 408 : 500).json({
           message: errorMessage,
-          details: errorMessage.includes('timeout') ? 
+          details: errorMessage.includes('timeout') ?
             'AI analysis is taking longer than expected. Please try a simpler query or try again.' :
             'The AI analysis system encountered an error. Please try again.'
         });
@@ -651,7 +655,7 @@ CONTENT: [Hindi translation]`;
       res.json(suggestions);
     } catch (error) {
       console.error('Company setup error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to generate setup suggestions'
       });
     }
@@ -672,7 +676,7 @@ CONTENT: [Hindi translation]`;
       });
     } catch (error) {
       console.error('Company search error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to search company data'
       });
     }
@@ -689,7 +693,7 @@ CONTENT: [Hindi translation]`;
       });
     } catch (error) {
       console.error('List folders error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to list folders'
       });
     }
@@ -716,7 +720,7 @@ CONTENT: [Hindi translation]`;
       }
     } catch (error) {
       console.error('Test drive error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to test Google Drive access'
       });
@@ -728,11 +732,11 @@ CONTENT: [Hindi translation]`;
     try {
       const companyName = req.params.companyName;
       console.log(`DEBUG: Checking folder contents for ${companyName}`);
-      
+
       // Find company folders
       const folders = await googleDriveService.searchCompanyFolders(companyName);
       console.log(`DEBUG: Found ${folders.length} folders for ${companyName}`);
-      
+
       if (folders.length === 0) {
         return res.json({
           success: false,
@@ -740,14 +744,14 @@ CONTENT: [Hindi translation]`;
           folders: []
         });
       }
-      
+
       // Check files in each folder
       const folderContents = [];
       for (const folder of folders) {
         console.log(`DEBUG: Checking files in folder ${folder.name} (${folder.id})`);
         const files = await googleDriveService.getFilesFromFolder(folder.id);
         console.log(`DEBUG: Found ${files.length} files in ${folder.name}`);
-        
+
         folderContents.push({
           folderName: folder.name,
           folderId: folder.id,
@@ -760,7 +764,7 @@ CONTENT: [Hindi translation]`;
           }))
         });
       }
-      
+
       res.json({
         success: true,
         companyName,
@@ -768,7 +772,7 @@ CONTENT: [Hindi translation]`;
       });
     } catch (error) {
       console.error('Debug folder error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to debug folder'
       });
@@ -785,7 +789,7 @@ CONTENT: [Hindi translation]`;
       res.json(articles);
     } catch (error) {
       console.error('Error fetching special articles:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to fetch special articles'
       });
     }
@@ -799,7 +803,7 @@ CONTENT: [Hindi translation]`;
       res.json(advisors);
     } catch (error) {
       console.error('Error fetching investment advisors:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to fetch investment advisors'
       });
     }
@@ -809,22 +813,22 @@ CONTENT: [Hindi translation]`;
   app.post("/api/investment-advisors/refresh", async (req, res) => {
     try {
       console.log('🔄 Force refreshing investment advisors data...');
-      
+
       // Clear the cache to force fresh data fetch
       googleSheetsService.clearCache();
-      
+
       // Fetch fresh data
       const advisors = await googleSheetsService.fetchInvestmentAdvisors();
       console.log(`✅ Refreshed ${advisors.length} advisors from Google Sheets`);
-      
-      res.json({ 
-        message: 'Investment advisors data refreshed successfully', 
+
+      res.json({
+        message: 'Investment advisors data refreshed successfully',
         count: advisors.length,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.error('Error refreshing investment advisors:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to refresh investment advisors'
       });
     }
@@ -838,18 +842,18 @@ CONTENT: [Hindi translation]`;
   app.put('/api/auth/profile', mobileAuth.isAuthenticated, mobileAuth.updateProfile);
 
   // Article Sharing and Export Routes
-  
+
   // Generate shareable link with metadata for any article
   app.get("/api/articles/:id/share", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const articles = await googleSheetsService.fetchArticles();
       const article = articles.find(a => a.id === id);
-      
+
       if (!article) {
         return res.status(404).json({ message: 'Article not found' });
       }
-      
+
       const shareData = {
         article,
         shareableLink: `${req.protocol}://${req.get('host')}/article/${article.id}`,
@@ -866,11 +870,11 @@ CONTENT: [Hindi translation]`;
           autoRefresh: true
         }
       };
-      
+
       res.json(shareData);
     } catch (error) {
       console.error('Error generating share data:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to generate share data'
       });
     }
@@ -881,7 +885,7 @@ CONTENT: [Hindi translation]`;
     try {
       const articles = await googleSheetsService.fetchArticles();
       const baseUrl = `${req.protocol}://${req.get('host')}`;
-      
+
       const exportData = {
         totalArticles: articles.length,
         generatedAt: new Date().toISOString(),
@@ -902,11 +906,11 @@ CONTENT: [Hindi translation]`;
             .trim()
         }))
       };
-      
+
       res.json(exportData);
     } catch (error) {
       console.error('Error exporting article links:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: error instanceof Error ? error.message : 'Failed to export article links'
       });
     }
@@ -915,13 +919,13 @@ CONTENT: [Hindi translation]`;
 
 
   // Financial Data Testing Endpoints
-  
+
   // Test all 20 major Indian stocks with comprehensive metrics
   app.post("/api/stock-testing/test-all", async (req, res) => {
     try {
       console.log('Starting comprehensive 20-stock testing...');
       const { results, summary } = await stockTester.testAllStocks();
-      
+
       res.json({
         message: 'Comprehensive stock testing completed',
         summary,
@@ -940,14 +944,14 @@ CONTENT: [Hindi translation]`;
   app.post("/api/stock-testing/test-stocks", async (req, res) => {
     try {
       const { symbols } = req.body;
-      
+
       if (!symbols || !Array.isArray(symbols)) {
         return res.status(400).json({ message: 'Symbols array is required' });
       }
 
       console.log(`Testing ${symbols.length} specific stocks:`, symbols);
       const results = await stockTester.testSpecificStocks(symbols);
-      
+
       res.json({
         message: `Testing completed for ${symbols.length} stocks`,
         results,
@@ -965,14 +969,14 @@ CONTENT: [Hindi translation]`;
   app.get("/api/stock-testing/validate/:symbol", async (req, res) => {
     try {
       const { symbol } = req.params;
-      
+
       if (!symbol) {
         return res.status(400).json({ message: 'Stock symbol is required' });
       }
 
       console.log(`Validating data quality for ${symbol}...`);
       const validation = await stockTester.validateDataQuality(symbol.toUpperCase());
-      
+
       res.json({
         message: `Data quality validation for ${symbol}`,
         validation,
@@ -990,14 +994,14 @@ CONTENT: [Hindi translation]`;
   app.get("/api/financial-data/:symbol", async (req, res) => {
     try {
       const { symbol } = req.params;
-      
+
       if (!symbol) {
         return res.status(400).json({ message: 'Stock symbol is required' });
       }
 
       console.log(`Fetching comprehensive financial data for ${symbol}...`);
       const data = await financialDataProvider.getFinancialData(symbol.toUpperCase());
-      
+
       if (data) {
         res.json({
           message: `Financial data retrieved for ${symbol}`,
@@ -1019,19 +1023,19 @@ CONTENT: [Hindi translation]`;
   });
 
   // Conference Call and Management Guidance Endpoints
-  
+
   // Get conference call transcripts and management guidance
   app.get("/api/conference-calls/:symbol", async (req, res) => {
     try {
       const { symbol } = req.params;
-      
+
       if (!symbol) {
         return res.status(400).json({ message: 'Stock symbol is required' });
       }
 
       console.log(`Fetching conference call data for ${symbol}...`);
       const data = await conferenceCallService.getConferenceCallData(symbol.toUpperCase());
-      
+
       if (data) {
         res.json({
           message: `Conference call data retrieved for ${symbol}`,
@@ -1056,14 +1060,14 @@ CONTENT: [Hindi translation]`;
   app.get("/api/management-guidance/:symbol", async (req, res) => {
     try {
       const { symbol } = req.params;
-      
+
       if (!symbol) {
         return res.status(400).json({ message: 'Stock symbol is required' });
       }
 
       console.log(`Fetching management guidance for ${symbol}...`);
       const conferenceData = await conferenceCallService.getConferenceCallData(symbol.toUpperCase());
-      
+
       if (conferenceData) {
         const guidanceData = {
           symbol: symbol.toUpperCase(),
@@ -1099,14 +1103,14 @@ CONTENT: [Hindi translation]`;
   app.get("/api/company-news/:symbol", async (req, res) => {
     try {
       const { symbol } = req.params;
-      
+
       if (!symbol) {
         return res.status(400).json({ message: 'Stock symbol is required' });
       }
 
       console.log(`Fetching recent company news for ${symbol}...`);
       const conferenceData = await conferenceCallService.getConferenceCallData(symbol.toUpperCase());
-      
+
       if (conferenceData && conferenceData.recentNews) {
         const newsData = {
           symbol: symbol.toUpperCase(),
@@ -1151,14 +1155,14 @@ CONTENT: [Hindi translation]`;
   app.post("/api/gmail/callback", async (req, res) => {
     try {
       const { code, userId } = req.body;
-      
+
       if (!code) {
         return res.status(400).json({ message: "Authorization code required" });
       }
 
       // Exchange code for tokens
       const tokens = await gmailTracker.exchangeCodeForTokens(code);
-      
+
       // Store credentials
       await storage.storeGmailCredentials({
         userId: userId || 1, // Default to user 1 for now
@@ -1170,7 +1174,7 @@ CONTENT: [Hindi translation]`;
 
       // Initialize Gmail tracker
       await gmailTracker.initialize(tokens);
-      
+
       res.json({ success: true, message: "Gmail connected successfully" });
     } catch (error) {
       console.error("Error handling Gmail callback:", error);
@@ -1182,7 +1186,7 @@ CONTENT: [Hindi translation]`;
     try {
       // Get user credentials
       const credentials = await storage.getGmailCredentials(1); // Default user 1
-      
+
       if (!credentials) {
         return res.status(400).json({ message: "Gmail not connected. Please connect your Gmail first." });
       }
@@ -1195,7 +1199,7 @@ CONTENT: [Hindi translation]`;
       });
 
       await gmailTracker.processEmailTracking();
-      
+
       res.json({ success: true, message: "Email scanning completed" });
     } catch (error) {
       console.error("Error scanning emails:", error);
@@ -1218,12 +1222,12 @@ CONTENT: [Hindi translation]`;
   app.get('/attachments/:filename', (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(process.cwd(), 'attached_assets', filename);
-    
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Asset not found' });
     }
-    
+
     // Serve the file with proper content type
     res.sendFile(filePath);
   });

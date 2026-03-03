@@ -41,7 +41,7 @@ export class RealNewsSearchService {
   ];
 
   constructor() {
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard" });
   }
 
   /**
@@ -79,7 +79,7 @@ export class RealNewsSearchService {
       });
 
       const articles = response.data.value || [];
-      
+
       return articles.map((article: any) => ({
         title: article.name,
         url: article.url,
@@ -104,7 +104,7 @@ export class RealNewsSearchService {
             content: "You are a financial news content generator. Create realistic news content inspired by the query topic, using verified Indian financial news sources. Do NOT generate fake URLs - use only domain homepages."
           },
           {
-            role: "user", 
+            role: "user",
             content: `Generate news content inspired by: ${query}
 
 Create realistic financial news articles based on this topic. Use only these verified domain sources:
@@ -304,9 +304,9 @@ Write a concise, original summary focusing on the key facts and implications. In
 
     for (const query of searchQueries) {
       console.log(`Searching for: ${query}`);
-      
+
       const searchResults = await this.searchRealNews(query);
-      
+
       for (const result of searchResults.slice(0, 2)) { // Max 2 articles per query
         // Verify URL is accessible
         const isValidUrl = await this.verifyUrl(result.url);
@@ -323,7 +323,7 @@ Write a concise, original summary focusing on the key facts and implications. In
 
         // Generate abstractive summary
         const summary = await this.generateSummary(result);
-        
+
         // Calculate provenance score
         const provenanceScore = this.calculateProvenanceScore(result, summary);
 
@@ -365,11 +365,11 @@ Write a concise, original summary focusing on the key facts and implications. In
   private analyzeSentiment(content: string): 'Positive' | 'Negative' | 'Neutral' {
     const positiveKeywords = ['gains', 'surge', 'profit', 'growth', 'buy', 'upgrade', 'positive', 'strong'];
     const negativeKeywords = ['loss', 'fraud', 'penalty', 'investigation', 'decline', 'sell', 'downgrade'];
-    
+
     const lowerContent = content.toLowerCase();
     const positiveCount = positiveKeywords.filter(word => lowerContent.includes(word)).length;
     const negativeCount = negativeKeywords.filter(word => lowerContent.includes(word)).length;
-    
+
     if (positiveCount > negativeCount) return 'Positive';
     if (negativeCount > positiveCount) return 'Negative';
     return 'Neutral';
@@ -396,14 +396,14 @@ Write a concise, original summary focusing on the key facts and implications. In
   async generateAndStoreVerifiedNews(): Promise<void> {
     try {
       console.log('🔍 Starting source-first news generation...');
-      
+
       // Clear existing AI articles
       await storage.clearAiArticles();
       console.log('Cleared existing AI articles');
 
       // Generate source-verified articles
       const articles = await this.generateSourceFirstArticles();
-      
+
       if (articles.length > 0) {
         // Store articles using the new source validation schema
         const validatedArticles = articles.map(article => ({

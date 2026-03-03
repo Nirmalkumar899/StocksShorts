@@ -6,7 +6,7 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard",
 });
 
 interface NewsArticle {
@@ -32,12 +32,12 @@ export class OpenAINewsService {
   private getRelevantTradingDays(): Date[] {
     const today = new Date();
     const days: Date[] = [];
-    
+
     // Add today if it's a working day
     if (this.isMarketDay(today)) {
       days.push(new Date(today));
     }
-    
+
     // Find the last working day
     let lastWorkingDay = new Date(today);
     lastWorkingDay.setDate(lastWorkingDay.getDate() - 1);
@@ -45,7 +45,7 @@ export class OpenAINewsService {
       lastWorkingDay.setDate(lastWorkingDay.getDate() - 1);
     }
     days.push(lastWorkingDay);
-    
+
     return days;
   }
 
@@ -61,7 +61,7 @@ export class OpenAINewsService {
     try {
       const tradingDays = this.getRelevantTradingDays();
       const dateStrings = tradingDays.map(d => this.formatDate(d));
-      
+
       console.log(`Fetching real news for trading days: ${dateStrings.join(', ')}`);
 
       // Using GPT-4o model for enhanced financial news generation
@@ -133,14 +133,14 @@ Return realistic news with proper source attribution using REAL company names.`
       });
 
       const responseText = response.choices[0].message.content;
-      
+
       if (!responseText || responseText.includes('NO_REAL_NEWS_FOUND')) {
         console.log('No real news found for trading days');
         return [];
       }
 
       const parsedResponse = JSON.parse(responseText);
-      
+
       if (!parsedResponse.articles || !Array.isArray(parsedResponse.articles)) {
         console.log('Invalid response format from OpenAI');
         return [];
@@ -150,7 +150,7 @@ Return realistic news with proper source attribution using REAL company names.`
         // Use the most recent trading day for the article
         const relevantDate = tradingDays[0];
         const formattedDate = this.formatDate(relevantDate);
-        
+
         return {
           title: `${formattedDate}: ${article.title}`,
           content: `${formattedDate}: ${article.content}`,
@@ -163,11 +163,11 @@ Return realistic news with proper source attribution using REAL company names.`
       });
 
       console.log(`Found ${articles.length} verified news articles`);
-      
+
       // Cache the results for shorter time to get fresh news more frequently
       this.cache.set(cacheKey, articles);
       setTimeout(() => this.cache.delete(cacheKey), 30 * 60 * 1000); // 30 minutes cache
-      
+
       return articles;
 
     } catch (error) {
@@ -186,27 +186,27 @@ export const openaiNewsService = new OpenAINewsService();
 // Enhanced 20-article management system with hourly updates
 export class AI20ArticleManager {
   private intervalId: NodeJS.Timeout | null = null;
-  
+
   startHourlyUpdates(): void {
     console.log('Starting hourly AI article management system - 20 articles max with 5 new articles every hour');
-    
+
     // Run immediately on startup
     this.generateAndMaintainArticles();
-    
+
     // Then run every hour (3600000 ms)
     this.intervalId = setInterval(() => {
       this.generateAndMaintainArticles();
     }, 3600000); // 1 hour = 60 * 60 * 1000 ms
   }
-  
+
   private async generateAndMaintainArticles(): Promise<void> {
     try {
       console.log('Running hourly AI article update - adding 5 new articles, maintaining 20 total');
-      
+
       // Generate 5 new articles using Perplexity for real market data
       const { perplexityNewsService } = await import('./perplexityNewsService');
       const articles = await perplexityNewsService.fetchRealNews();
-      
+
       if (articles.length > 0) {
         // Store articles will automatically maintain the 20-article limit
         const { storage } = await import('../storage');
@@ -219,7 +219,7 @@ export class AI20ArticleManager {
       console.error('Error in hourly AI article update:', error);
     }
   }
-  
+
   stopHourlyUpdates(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
