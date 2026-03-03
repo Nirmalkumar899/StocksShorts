@@ -88,11 +88,11 @@ function WhatsAppButton() {
 
 function App() {
   const [showSplash, setShowSplash] = useState(() => {
-    return !sessionStorage.getItem('splash_shown_v56');
+    return !sessionStorage.getItem('splash_shown_v57');
   });
 
   const handleSplashFinished = () => {
-    sessionStorage.setItem('splash_shown_v56', 'true');
+    sessionStorage.setItem('splash_shown_v57', 'true');
     setShowSplash(false);
   };
 
