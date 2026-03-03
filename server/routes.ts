@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import * as fs from "fs";
 import * as path from "path";
+import { fileURLToPath } from "url";
 import { storage } from "./storage";
 import { GoogleSheetsService } from "./services/googleSheets";
 import { aiNewsGenerator } from "./services/aiNewsGenerator";
@@ -28,6 +29,18 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Source code download route
+  app.get('/download-source', (req, res) => {
+    const filePath = path.join(process.cwd(), 'client', 'public', 'stocksshorts-code.tar.gz');
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Disposition', 'attachment; filename="stocksshorts-code.tar.gz"');
+      res.setHeader('Content-Type', 'application/gzip');
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ message: 'File not found' });
+    }
+  });
+
   // Health check endpoint
   app.get('/health', (req, res) => {
     res.json({
