@@ -177,19 +177,17 @@ export class RealNewsIngestor {
     const yesterdayIST = new Date(todayIST);
     yesterdayIST.setDate(yesterdayIST.getDate() - 1);
 
-    for (const feed of this.RSS_FEEDS) {
+    // Fetch all RSS feeds concurrently to save time, crucial for Vercel serverless limit
+    await Promise.allSettled(this.RSS_FEEDS.map(async (feed) => {
       try {
         console.log(`🔍 Fetching from ${feed.source}...`);
         const todaysArticles = await this.fetchRSSFeed(feed, todayIST);
         const yesterdaysArticles = await this.fetchRSSFeed(feed, yesterdayIST);
         allArticles.push(...todaysArticles, ...yesterdaysArticles);
-
-        // Add delay between requests to be respectful
-        await this.delay(1000);
       } catch (error: any) {
         console.error(`❌ Error fetching from ${feed.source}:`, error?.message || error);
       }
-    }
+    }));
 
     // Remove duplicates based on title similarity
     const uniqueArticles = this.removeDuplicates(allArticles);
@@ -199,20 +197,12 @@ export class RealNewsIngestor {
       .sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime())
       .slice(0, 50);
 
-    // Rewrite articles in batches of 3 to avoid rate limits
-    console.log(`✍️ Rewriting ${sortedArticles.length} articles with AI...`);
-    const BATCH_SIZE = 3;
-    for (let i = 0; i < sortedArticles.length; i += BATCH_SIZE) {
-      const batch = sortedArticles.slice(i, i + BATCH_SIZE);
-      await Promise.all(batch.map(async (article) => {
-        console.log(`✍️ Rewriting: ${article.title.substring(0, 60)}...`);
-        const rewritten = await rewriteArticle(article.title, article.content, article.source);
-        article.title = rewritten.title;
-        article.content = rewritten.content;
-      }));
-      if (i + BATCH_SIZE < sortedArticles.length) {
-        await this.delay(500);
-      }
+    // No need to delay or batch rewrite here since we bypass AI due to quota
+    console.log(`✍️ Applying articles (bypassing AI)...`);
+    for (const article of sortedArticles) {
+      const rewritten = await rewriteArticle(article.title, article.content, article.source);
+      article.title = rewritten.title;
+      article.content = rewritten.content;
     }
 
     console.log(`✅ Ingested ${sortedArticles.length} unique articles from today`);

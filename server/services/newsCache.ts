@@ -330,9 +330,9 @@ export class NewsCache {
       if (!this.cache.isRefreshing) {
         await this.refreshArticles();
       } else {
-        // Already refreshing - wait up to 30 seconds for it to complete
+        // Already refreshing - wait up to 6.5 seconds for it to complete (safe for Vercel 10s limit)
         let waited = 0;
-        while (this.cache.isRefreshing && waited < 30000) {
+        while (this.cache.isRefreshing && waited < 6500) {
           await new Promise(resolve => setTimeout(resolve, 500));
           waited += 500;
         }
@@ -393,8 +393,8 @@ export class NewsCache {
   }
 
   public async getArticleById(id: number): Promise<Article | null> {
-    // Wait for cache to be ready with longer timeout for shared links
-    const maxWait = 45000; // 45 seconds max wait
+    // Wait for cache to be ready (short timeout for Vercel)
+    const maxWait = 6500; // 6.5 seconds max wait
     const checkInterval = 500;
     let waited = 0;
 
