@@ -165,18 +165,17 @@ app.use((req, res, next) => {
       }
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
+    // Setup static serving: Vite in dev, production build in all other environments
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
-    } else if (!process.env.VERCEL) {
-      // Vercel Edge/CDN handles static files automatically, so we skip static setup
+    } else {
+      // Always serve production static files (works on both Vercel and bare Node.js)
       setupProductionStatic(app);
     }
 
-    // Use environment port for Replit deployment, fallback to 5000 for local development
-    if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+    // Only bind to port in non-Vercel environments
+    // Vercel handles listening automatically via the ESM default export
+    if (!process.env.VERCEL) {
       const port = parseInt(process.env.PORT || '5000', 10);
       server.listen(port, "0.0.0.0", () => {
         log(`serving on port ${port}`);
