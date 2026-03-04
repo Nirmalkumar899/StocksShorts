@@ -5,34 +5,7 @@ import OpenAI from 'openai';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard" });
 
 async function rewriteArticle(title: string, content: string, source: string): Promise<{ title: string; content: string }> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a concise Indian financial news writer for StocksShorts, an Inshorts-style app. Rewrite news in your own unique words. Never copy the original wording. Keep all facts, numbers, company names, and percentages accurate. Write in simple English for retail investors.'
-        },
-        {
-          role: 'user',
-          content: `Source: ${source}\nOriginal headline: ${title}\nOriginal content: ${content}\n\nRewrite this as:\n1. A punchy SEO-friendly headline (max 90 characters, different from original)\n2. A concise 2-3 sentence summary (max 280 characters)\n\nRespond in JSON format: {"title": "...", "content": "..."}`
-        }
-      ],
-      max_tokens: 300,
-      temperature: 0.7,
-    });
-
-    const text = response.choices[0]?.message?.content || '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      if (parsed.title && parsed.content) {
-        return { title: parsed.title.substring(0, 90), content: parsed.content.substring(0, 500) };
-      }
-    }
-  } catch {
-    // Silently fall back to original — quota exceeded or other error
-  }
+  // Bypassing OpenAI since quota is exceeded, just returning original text
   return { title, content };
 }
 

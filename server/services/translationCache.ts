@@ -18,44 +18,8 @@ class TranslationCache {
       return this.cache.get(id)!;
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      console.log('⚠️ OpenAI API key not configured, skipping translation');
-      return null;
-    }
-
-    try {
-      const prompt = `Translate this stock market article to Hindi. Keep financial terms, company names, stock symbols, numbers and percentages in English/digits.
-
-Title: ${title}
-Content: ${content}
-
-Return in exact format:
-TITLE: [Hindi translation]
-CONTENT: [Hindi translation]`;
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        max_completion_tokens: 800
-      });
-
-      const translatedText = response.choices[0].message.content || '';
-
-      const titleMatch = translatedText.match(/TITLE:\s*(.+?)(?=\n|CONTENT:|$)/s);
-      const contentMatch = translatedText.match(/CONTENT:\s*(.+)/s);
-
-      const translatedContent: TranslatedContent = {
-        titleHi: titleMatch?.[1]?.trim() || title,
-        contentHi: contentMatch?.[1]?.trim() || content,
-        translatedAt: new Date()
-      };
-
-      this.cache.set(id, translatedContent);
-      return translatedContent;
-    } catch (error) {
-      console.error(`❌ Translation failed for article ${id}:`, error);
-      return null;
-    }
+    // Bypassing OpenAI since quota is exceeded
+    return null;
   }
 
   async translateBatch(articles: Array<{ id: number; title: string; content: string }>): Promise<void> {
