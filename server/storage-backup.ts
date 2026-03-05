@@ -1,5 +1,5 @@
 import { users, otpVerifications, aiQueries, type User, type InsertUser, type OtpVerification, type InsertOtp, type AiQuery, type InsertAiQuery } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, and, gt, gte, sql } from "drizzle-orm";
 
 // modify the interface with any CRUD methods

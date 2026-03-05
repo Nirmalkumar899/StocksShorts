@@ -1,4 +1,4 @@
-import { stockAI } from './stockAI';
+import { stockAI } from './stockAI.js';
 
 // Test 20 major Indian stocks to validate data extraction
 const testStocks = [

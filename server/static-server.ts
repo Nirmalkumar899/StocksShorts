@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { log } from "./vite";
+import { log } from "./vite.js";
 
 export function setupProductionStatic(app: express.Express) {
   // When running from dist/index.js, the public directory is in dist/public

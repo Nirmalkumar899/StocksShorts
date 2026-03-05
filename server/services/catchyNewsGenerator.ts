@@ -1,4 +1,4 @@
-import { storage } from "../storage";
+import { storage } from "../storage.js";
 
 if (!process.env.PERPLEXITY_API_KEY) {
   throw new Error("PERPLEXITY_API_KEY environment variable is required");

@@ -1,6 +1,6 @@
-import { Article } from '../../shared/schema';
-import { realNewsIngestor } from './realNewsIngestor';
-import { translationCache } from './translationCache';
+import { Article } from '../../shared/schema.js';
+import { realNewsIngestor } from './realNewsIngestor.js';
+import { translationCache } from './translationCache.js';
 import * as fs from 'fs';
 import * as path from 'path';
 

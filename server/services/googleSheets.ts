@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import type { GoogleSheetsRow, Article, InvestmentAdvisorRow, InvestmentAdvisor } from '@shared/schema';
-import { sampleArticles } from '../sampleData';
-import { candlestickImageService } from './candlestickImageService';
+import { sampleArticles } from '../sampleData.js';
+import { candlestickImageService } from './candlestickImageService.js';
 
 // In-memory cache with TTL for faster repeated requests
 interface CacheEntry<T> {

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { storage } from "../storage";
+import { storage } from "../storage.js";
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable is required");

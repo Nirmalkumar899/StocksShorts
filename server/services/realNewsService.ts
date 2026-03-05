@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from '../db.js';
 import { aiArticles, type AiArticle, type InsertAiArticle } from '@shared/schema';
 import { count, desc, eq, or } from 'drizzle-orm';
 

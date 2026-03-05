@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { storage } from "../storage";
+import { storage } from "../storage.js";
 
 interface AuthenticMarketNews {
   title: string;

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import OpenAI from 'openai';
-import { storage } from "../storage";
+import { storage } from "../storage.js";
 import { NewsSource, SourceValidatedAiArticle } from '@shared/schema';
 
 interface SearchResult {

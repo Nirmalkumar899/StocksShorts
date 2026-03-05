@@ -23,7 +23,7 @@ import {
   type Comment,
   type InsertComment
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db.js";
 
 // Add deployment timeout wrapper
 const withTimeout = async <T>(promise: Promise<T>, timeout: number = 5000): Promise<T> => {

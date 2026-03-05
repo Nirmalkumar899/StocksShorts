@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import { Article, SourceValidatedAiArticle } from '../../shared/schema';
-import { realNewsSearchService } from './realNewsSearchService';
+import { Article, SourceValidatedAiArticle } from '../../shared/schema.js';
+import { realNewsSearchService } from './realNewsSearchService.js';
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "missing_key_from_vercel_dashboard" });

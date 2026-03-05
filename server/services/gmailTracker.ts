@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { GoogleGenAI } from '@google/genai';
-import { storage } from '../storage';
+import { storage } from '../storage.js';
 
 interface EmailInsight {
   companies: string[];
