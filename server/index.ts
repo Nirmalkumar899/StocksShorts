@@ -183,7 +183,15 @@ app.use((req, res, next) => {
     }
   } catch (error) {
     console.error('Failed to start server:', error);
-    process.exit(1);
+    // Do NOT call process.exit(1) — in Vercel serverless, this kills the function
+    // before it can return a response. Instead, add a fallback error handler.
+    app.use((_req: Request, res: Response) => {
+      res.status(500).json({
+        error: 'Server initialization failed',
+        message: error instanceof Error ? error.message : 'Unknown startup error',
+        timestamp: new Date().toISOString()
+      });
+    });
   }
 })();
 
